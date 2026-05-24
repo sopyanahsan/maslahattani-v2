@@ -10,6 +10,9 @@ COPY prisma ./prisma
 # Install dependencies
 RUN npm ci
 
+# Generate Prisma Client
+RUN npx prisma generate
+
 # Copy source
 COPY . .
 
@@ -29,7 +32,10 @@ COPY package*.json ./
 COPY prisma ./prisma
 
 # Install production dependencies only
-RUN npm ci --only=production
+RUN npm ci --omit=dev
+
+# Generate Prisma Client
+RUN npx prisma generate
 
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
@@ -43,6 +49,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 # Use dumb-init to run the app
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["npm", "start:prod"]
+CMD ["npm", "run", "start:prod"]
 
 EXPOSE 3000

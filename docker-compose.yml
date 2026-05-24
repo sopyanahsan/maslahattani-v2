@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # PostgreSQL Database
   postgres:
@@ -37,7 +35,7 @@ services:
     networks:
       - maslahat_network
 
-  # Backend API
+  # Backend API (Development)
   backend:
     build:
       context: ./backend
@@ -63,31 +61,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    volumes:
-      - ./backend/src:/app/src
-      - ./backend/prisma:/app/prisma
-      - /app/node_modules
-    command: npm run start:dev
     networks:
       - maslahat_network
-
-  # Frontend (Nuxt 3) - Optional for full stack dev
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #     dockerfile: Dockerfile
-  #   container_name: maslahat_frontend
-  #   ports:
-  #     - '3001:3000'
-  #   depends_on:
-  #     - backend
-  #   environment:
-  #     NUXT_PUBLIC_API_BASE: http://localhost:3000/api
-  #   volumes:
-  #     - ./frontend/src:/app/src
-  #     - /app/node_modules
-  #   networks:
-  #     - maslahat_network
 
 volumes:
   postgres_data:
