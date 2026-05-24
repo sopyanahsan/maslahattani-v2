@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: maslahat_postgres
+    environment:
+      POSTGRES_USER: maslahat
+      POSTGRES_PASSWORD: maslahat123
+      POSTGRES_DB: maslahat_tani
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U maslahat -d maslahat_tani']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - maslahat_network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: maslahat_redis
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - maslahat_network
+
+  # Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: maslahat_backend
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: postgresql://maslahat:maslahat123@postgres:5432/maslahat_tani
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: dev-jwt-secret-change-in-production
+      JWT_EXPIRATION: 86400
+      JWT_REFRESH_SECRET: dev-refresh-secret-change-in-production
+      JWT_REFRESH_EXPIRATION: 2592000
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: 587
+      LOG_LEVEL: debug
+      PORT: 3000
+    ports:
+      - '3000:3000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./backend/src:/app/src
+      - ./backend/prisma:/app/prisma
+      - /app/node_modules
+    command: npm run start:dev
+    networks:
+      - maslahat_network
+
+  # Frontend (Nuxt 3) - Optional for full stack dev
+  # frontend:
+  #   build:
+  #     context: ./frontend
+  #     dockerfile: Dockerfile
+  #   container_name: maslahat_frontend
+  #   ports:
+  #     - '3001:3000'
+  #   depends_on:
+  #     - backend
+  #   environment:
+  #     NUXT_PUBLIC_API_BASE: http://localhost:3000/api
+  #   volumes:
+  #     - ./frontend/src:/app/src
+  #     - /app/node_modules
+  #   networks:
+  #     - maslahat_network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  maslahat_network:
+    driver: bridge

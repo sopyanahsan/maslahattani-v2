@@ -1,0 +1,29 @@
+# Nuxt
+.output
+.nuxt
+dist
+
+# Node
+node_modules
+npm-debug.log
+yarn-error.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+
+# Misc
+.nuxt
+.cache
+.turbo

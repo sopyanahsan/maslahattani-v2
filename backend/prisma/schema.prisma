@@ -1,0 +1,404 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// AUTHENTICATION & USER MANAGEMENT
+// ============================================
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  KASIR
+  CASHIER_SUPERVISOR
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+model User {
+  id                  String    @id @default(cuid())
+  email               String    @unique
+  username            String?   @unique
+  passwordHash        String
+  role                Role      @default(KASIR)
+  status              UserStatus @default(ACTIVE)
+  shop                Shop?     @relation(fields: [shopId], references: [id])
+  shopId              String?
+  
+  lastLogin           DateTime?
+  lastPasswordReset   DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  sessions            Session[]
+  activityLogs        ActivityLog[]
+  transactions        Transaction[]
+  shifts              Shift[]
+
+  @@index([shopId])
+  @@index([email])
+  @@map("users")
+}
+
+model Session {
+  id                  String    @id @default(cuid())
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId              String
+  token               String    @unique
+  refreshToken        String    @unique
+  expiresAt           DateTime
+  refreshExpiresAt    DateTime
+  ipAddress           String?
+  userAgent           String?
+  createdAt           DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([token])
+  @@map("sessions")
+}
+
+model ActivityLog {
+  id                  String    @id @default(cuid())
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId              String
+  action              String    // LOGIN, TRANSACTION, VOID, etc
+  resource            String?   // TRANSACTION, PRODUCT, STOCK, etc
+  resourceId          String?
+  details             String?   // JSON details
+  ipAddress           String?
+  createdAt           DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// ============================================
+// SHOP MANAGEMENT
+// ============================================
+
+model Shop {
+  id                  String    @id @default(cuid())
+  name                String
+  address             String
+  phone               String
+  owner               User?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  ownerId             String?
+  parentShop          Shop?     @relation("ShopToParent", fields: [parentShopId], references: [id], onDelete: SetNull)
+  parentShopId        String?
+  childShops          Shop[]    @relation("ShopToParent")
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  users               User[]
+  products            Product[]
+  stocks              Stock[]
+  transactions        Transaction[]
+  debts               Debt[]
+  payments            Payment[]
+  cashBoxes           CashBox[]
+  shifts              Shift[]
+  settings            ShopSetting?
+
+  @@map("shops")
+}
+
+model ShopSetting {
+  id                  String    @id @default(cuid())
+  shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId              String    @unique
+  language            String    @default("id") // "id", "en", "su", "jv"
+  receiptConfig       String?   // JSON config for receipt printing
+  updatedAt           DateTime  @updatedAt
+  
+  @@map("shop_settings")
+}
+
+// ============================================
+// PRODUCTS & INVENTORY
+// ============================================
+
+model Product {
+  id                  String    @id @default(cuid())
+  shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId              String
+  name                String
+  sku                 String
+  price               Int       // in rupiah
+  cost                Int       // in rupiah
+  supplierId          String?   // future: Supplier model
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+  
+  stocks              Stock[]
+  transactionItems    TransactionItem[]
+  debts               Debt[]
+
+  @@unique([shopId, sku])
+  @@index([shopId])
+  @@map("products")
+}
+
+model Stock {
+  id                  String    @id @default(cuid())
+  shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId              String
+  product             Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  productId           String
+  quantity            Int       @default(0)
+  warehouse           String?   @default("main")
+  
+  updatedAt           DateTime  @updatedAt
+  
+  stockHistories      StockHistory[]
+
+  @@unique([shopId, productId, warehouse])
+  @@index([shopId])
+  @@index([productId])
+  @@map("stocks")
+}
+
+enum StockHistoryType {
+  IN
+  OUT
+  OPNAME
+  TRANSFER_OUT
+  TRANSFER_IN
+  ADJUSTMENT
+}
+
+model StockHistory {
+  id                  String    @id @default(cuid())
+  stock               Stock     @relation(fields: [stockId], references: [id], onDelete: Cascade)
+  stockId             String
+  type                StockHistoryType
+  quantityBefore      Int
+  quantityAfter       Int
+  quantityChange      Int
+  reference           String?   // transaction_id, opname_id, etc
+  notes               String?
+  
+  createdAt           DateTime  @default(now())
+  
+  @@index([stockId])
+  @@index([createdAt])
+  @@map("stock_histories")
+}
+
+// ============================================
+// TRANSACTIONS & SALES
+// ============================================
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  VOIDED
+  PROCESSING
+}
+
+enum PaymentMethod {
+  CASH
+  QRIS
+  TRANSFER
+  HUTANG
+}
+
+model Transaction {
+  id                  String    @id @default(cuid())
+  shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId              String
+  user                User      @relation(fields: [userId], references: [id])
+  userId              String
+  transactionNumber   String    @unique
+  
+  totalPrice          Int       // in rupiah
+  totalCost           Int       // in rupiah
+  totalDiscount       Int       @default(0)
+  status              TransactionStatus @default(PENDING)
+  
+  items               TransactionItem[]
+  payments            Payment[]
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  voidedAt            DateTime?
+  voidedBy            String?   // admin username/id
+  voidReason          String?
+  
+  @@index([shopId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+model TransactionItem {
+  id                  String    @id @default(cuid())
+  transaction         Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  transactionId       String
+  product             Product   @relation(fields: [productId], references: [id])
+  productId           String
+  
+  quantity            Int
+  unitPrice           Int       // in rupiah (saat transaksi)
+  discount            Int       @default(0)
+  subtotal            Int       // quantity * unitPrice - discount
+  
+  @@index([transactionId])
+  @@index([productId])
+  @@map("transaction_items")
+}
+
+// ============================================
+// PAYMENTS & CASH MANAGEMENT
+// ============================================
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model Payment {
+  id                  String    @id @default(cuid())
+  shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId              String
+  transaction         Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  transactionId       String
+  
+  method              PaymentMethod
+  amount              Int       // in rupiah
+  status              PaymentStatus @default(PENDING)
+  reference           String?   // QRIS ref, transfer ref, etc
+  
+  createdAt           DateTime  @default(now())
+  
+  @@index([shopId])
+  @@index([transactionId])
+  @@map("payments")
+}
+
+model CashBox {
+  id                  String    @id @default(cuid())
+  shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId              String    @unique
+  
+  balance             Int       @default(0) // in rupiah
+  lastAudit           DateTime?
+  lastAuditBalance    Int?
+  
+  updatedAt           DateTime  @updatedAt
+  
+  @@map("cash_boxes")
+}
+
+// ============================================
+// DEBTS MANAGEMENT
+// ============================================
+
+enum DebtStatus {
+  PENDING
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model Debt {
+  id                  String    @id @default(cuid())
+  shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId              String
+  product             Product   @relation(fields: [productId], references: [id])
+  productId           String
+  
+  customerName        String
+  customerPhone       String?
+  quantity            Int
+  unitPrice           Int       // in rupiah (saat hutang dibuat)
+  totalAmount         Int       // quantity * unitPrice
+  paidAmount          Int       @default(0)
+  status              DebtStatus @default(PENDING)
+  
+  dueDate             DateTime?
+  notes               String?
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  debtPayments        DebtPayment[]
+  
+  @@index([shopId])
+  @@index([status])
+  @@map("debts")
+}
+
+model DebtPayment {
+  id                  String    @id @default(cuid())
+  debt                Debt      @relation(fields: [debtId], references: [id], onDelete: Cascade)
+  debtId              String
+  
+  amount              Int       // in rupiah
+  method              PaymentMethod
+  reference           String?
+  notes               String?
+  
+  createdAt           DateTime  @default(now())
+  
+  @@index([debtId])
+  @@map("debt_payments")
+}
+
+// ============================================
+// SHIFT MANAGEMENT & CLEREK
+// ============================================
+
+enum ShiftStatus {
+  OPEN
+  CLOSED
+  FINALIZED
+}
+
+model Shift {
+  id                  String    @id @default(cuid())
+  shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId              String
+  user                User      @relation(fields: [userId], references: [id])
+  userId              String
+  
+  startTime           DateTime
+  endTime             DateTime?
+  
+  expectedCash        Int       // calculated from transactions
+  actualCash          Int?      // input manually
+  expectedQRIS        Int       // calculated from transactions
+  actualQRIS          Int?      // input manually
+  variance            Int?      // actualCash - expectedCash
+  
+  status              ShiftStatus @default(OPEN)
+  notes               String?
+  finalizedAt         DateTime?
+  finalizedBy         String?   // admin username
+  
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  
+  @@index([shopId])
+  @@index([userId])
+  @@index([status])
+  @@map("shifts")
+}
