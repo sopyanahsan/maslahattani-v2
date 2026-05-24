@@ -34,7 +34,7 @@ model User {
   passwordHash        String
   role                Role      @default(KASIR)
   status              UserStatus @default(ACTIVE)
-  shop                Shop?     @relation(fields: [shopId], references: [id])
+  shop                Shop?     @relation("ShopUsers", fields: [shopId], references: [id])
   shopId              String?
   
   lastLogin           DateTime?
@@ -46,6 +46,7 @@ model User {
   activityLogs        ActivityLog[]
   transactions        Transaction[]
   shifts              Shift[]
+  ownedShops          Shop[]    @relation("ShopOwner")
 
   @@index([shopId])
   @@index([email])
@@ -94,7 +95,7 @@ model Shop {
   name                String
   address             String
   phone               String
-  owner               User?     @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  owner               User?     @relation("ShopOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   ownerId             String?
   parentShop          Shop?     @relation("ShopToParent", fields: [parentShopId], references: [id], onDelete: SetNull)
   parentShopId        String?
@@ -103,7 +104,7 @@ model Shop {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   
-  users               User[]
+  users               User[]    @relation("ShopUsers")
   products            Product[]
   stocks              Stock[]
   transactions        Transaction[]
