@@ -40,6 +40,7 @@ RUN npx prisma generate
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
 COPY docker-entrypoint.sh ./
+RUN sed -i 's/\r$//' docker-entrypoint.sh && chmod +x docker-entrypoint.sh
 
 # Set environment
 ENV NODE_ENV=production
