@@ -54,7 +54,9 @@
       <div class="grid grid-cols-2 gap-3">
         <div class="bg-white border border-slate-200 rounded-lg p-4">
           <p class="text-[11px] text-slate-500">Transaksi</p>
-          <p class="text-lg font-bold text-slate-950 font-mono mt-1">—</p>
+          <p class="text-lg font-bold text-slate-950 font-mono mt-1">
+            {{ shiftLoading ? '…' : transactionCount || '—' }}
+          </p>
         </div>
         <div class="bg-white border border-slate-200 rounded-lg p-4">
           <p class="text-[11px] text-slate-500">Omzet</p>
@@ -62,17 +64,22 @@
         </div>
         <div class="bg-white border border-slate-200 rounded-lg p-4">
           <p class="text-[11px] text-slate-500">Tunai di Tangan</p>
-          <p class="text-lg font-bold text-slate-950 font-mono mt-1">—</p>
+          <p class="text-lg font-bold text-slate-950 font-mono mt-1">
+            {{ shiftLoading ? '…' : expectedCashLabel }}
+          </p>
         </div>
         <div class="bg-white border border-slate-200 rounded-lg p-4">
           <p class="text-[11px] text-slate-500">Status Shift</p>
-          <p class="text-sm font-semibold text-amber-600 mt-1">Belum dibuka</p>
+          <p :class="['text-sm font-semibold mt-1', shiftStatusColor]">
+            {{ shiftStatusLabel }}
+          </p>
         </div>
       </div>
     </section>
 
     <!-- Shift quick action -->
     <section
+      v-if="!hasOpenShift"
       class="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center gap-3"
     >
       <component :is="ClockIcon" class="w-5 h-5 text-blue-600 shrink-0" />
@@ -89,19 +96,40 @@
         Buka Shift →
       </RouterLink>
     </section>
+
+    <section
+      v-else
+      class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 flex items-center gap-3"
+    >
+      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
+      <div class="flex-1">
+        <p class="text-sm font-semibold text-slate-900">Shift sedang berjalan</p>
+        <p class="text-[11px] text-slate-600">
+          Dimulai {{ shiftStartLabel }} · {{ durationLabel }}
+        </p>
+      </div>
+      <RouterLink
+        to="/retail/shift"
+        class="text-xs font-semibold text-emerald-700 hover:text-emerald-900 whitespace-nowrap"
+      >
+        Lihat / Tutup →
+      </RouterLink>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import {
   ShoppingCart as POSIcon,
   Landmark as LandmarkIcon,
   Clock as ClockIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShiftStore } from '@/shared/stores/shift.store';
 
 const authStore = useAuthStore();
+const shiftStore = useShiftStore();
 
 const userName = computed(
   () => authStore.user?.username || authStore.user?.email?.split('@')[0] || 'Kasir',
@@ -115,4 +143,65 @@ const todayLabel = computed(() =>
     year: 'numeric',
   }),
 );
+
+// Shift state
+const shiftLoading = computed(() => shiftStore.loading);
+const hasOpenShift = computed(() => shiftStore.hasOpenShift);
+const transactionCount = computed(() => shiftStore.transactionCount);
+const currentShift = computed(() => shiftStore.currentShift);
+
+const expectedCashLabel = computed(() => {
+  if (!currentShift.value) return '—';
+  const total = currentShift.value.expectedCash || 0;
+  if (total === 0) return 'Rp 0';
+  return `Rp ${new Intl.NumberFormat('id-ID').format(total)}`;
+});
+
+const shiftStatusLabel = computed(() => {
+  if (shiftLoading.value && !currentShift.value) return 'Memuat…';
+  if (hasOpenShift.value) return 'Aktif';
+  return 'Belum dibuka';
+});
+
+const shiftStatusColor = computed(() =>
+  hasOpenShift.value ? 'text-emerald-600' : 'text-amber-600',
+);
+
+const shiftStartLabel = computed(() => {
+  if (!currentShift.value?.startTime) return '';
+  return new Date(currentShift.value.startTime).toLocaleTimeString('id-ID', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+});
+
+// Live ticker for duration label (refresh every minute)
+const tick = ref(0);
+let tickInterval: ReturnType<typeof setInterval> | null = null;
+
+const durationLabel = computed(() => {
+  // Re-compute setiap tick
+  void tick.value;
+  const total = shiftStore.shiftDurationMinutes;
+  if (total <= 0) return 'baru saja';
+  const hours = Math.floor(total / 60);
+  const minutes = total % 60;
+  if (hours === 0) return `${minutes} menit`;
+  return `${hours} jam ${minutes} menit`;
+});
+
+onMounted(async () => {
+  try {
+    await shiftStore.fetchCurrentShift();
+  } catch {
+    // silent: status shift gagal load, UI tampilkan "—"
+  }
+  tickInterval = setInterval(() => {
+    tick.value++;
+  }, 60000);
+});
+
+onUnmounted(() => {
+  if (tickInterval) clearInterval(tickInterval);
+});
 </script>

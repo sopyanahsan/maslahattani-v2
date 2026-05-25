@@ -1,226 +1,440 @@
 import {
   Injectable,
+  ConflictException,
   NotFoundException,
+  ForbiddenException,
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { OpenShiftDto } from './dto/open-shift.dto';
-import { CloseShiftDto } from './dto/close-shift.dto';
-import { FinalizeShiftDto } from './dto/finalize-shift.dto';
-import { QueryShiftDto } from './dto/query-shift.dto';
-import { ShiftStatus } from '@prisma/client';
+import { ShiftStatus, Role, PaymentMethod } from '@prisma/client';
+import {
+  OpenShiftDto,
+  CloseShiftDto,
+  QueryShiftDto,
+  FinalizeShiftDto,
+} from './dto';
 
 @Injectable()
 export class ShiftsService {
   constructor(private prisma: PrismaService) {}
 
-  // ============================================
-  // OPEN SHIFT
-  // ============================================
-
-  async openShift(dto: OpenShiftDto) {
-    // Check if user already has an open shift
-    const existing = await this.prisma.shift.findFirst({
-      where: { userId: dto.userId, shopId: dto.shopId, status: ShiftStatus.OPEN },
+  /**
+   * Buka shift baru.
+   * Validasi: user belum punya shift OPEN.
+   */
+  async openShift(userId: string, shopId: string, dto: OpenShiftDto) {
+    // Check apakah user sudah punya shift OPEN
+    const existingOpenShift = await this.prisma.shift.findFirst({
+      where: {
+        userId,
+        shopId,
+        status: ShiftStatus.OPEN,
+      },
     });
 
-    if (existing) {
-      throw new BadRequestException('Kasir ini masih punya shift aktif. Tutup shift dulu.');
+    if (existingOpenShift) {
+      throw new ConflictException(
+        'Anda masih punya shift yang belum ditutup. Tutup shift dulu sebelum buka shift baru.',
+      );
     }
 
     const shift = await this.prisma.shift.create({
       data: {
-        shopId: dto.shopId,
-        userId: dto.userId,
+        userId,
+        shopId,
         startTime: new Date(),
-        expectedCash: 0,
+        expectedCash: 0, // akan diupdate saat ada transaksi
         expectedQRIS: 0,
         status: ShiftStatus.OPEN,
+        notes: dto.notes || `Saldo kas awal: Rp ${dto.startingCash.toLocaleString('id-ID')}`,
       },
-      include: { user: { select: { id: true, email: true, username: true } } },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            role: true,
+          },
+        },
+        shop: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     return {
-      success: true,
-      message: 'Shift berhasil dibuka.',
       shift,
+      message: 'Shift berhasil dibuka. Selamat bekerja!',
     };
   }
 
-  // ============================================
-  // CLOSE SHIFT (tutup, belum finalisasi)
-  // ============================================
+  /**
+   * Tutup shift.
+   * Hitung expected cash/QRIS dari transaksi dalam shift ini.
+   * Hitung variance (selisih expected vs actual).
+   */
+  async closeShift(
+    shiftId: string,
+    userId: string,
+    userRole: Role,
+    dto: CloseShiftDto,
+  ) {
+    const shift = await this.prisma.shift.findUnique({
+      where: { id: shiftId },
+      include: {
+        user: true,
+        shop: true,
+      },
+    });
 
-  async closeShift(shiftId: string, dto: CloseShiftDto) {
-    const shift = await this.prisma.shift.findUnique({ where: { id: shiftId } });
-
-    if (!shift) throw new NotFoundException('Shift tidak ditemukan.');
-    if (shift.status !== ShiftStatus.OPEN) {
-      throw new BadRequestException('Shift sudah ditutup/difinalisasi.');
+    if (!shift) {
+      throw new NotFoundException('Shift tidak ditemukan.');
     }
 
-    // Calculate expected totals from transactions during this shift
-    const transactions = await this.prisma.payment.findMany({
+    // Hanya owner shift atau admin yang bisa tutup
+    if (shift.userId !== userId && userRole !== Role.SUPER_ADMIN && userRole !== Role.ADMIN) {
+      throw new ForbiddenException('Anda tidak punya akses untuk tutup shift ini.');
+    }
+
+    if (shift.status !== ShiftStatus.OPEN) {
+      throw new BadRequestException('Shift ini sudah ditutup atau sudah difinalisasi.');
+    }
+
+    // Hitung expected cash & QRIS dari transaksi dalam shift ini
+    const transactions = await this.prisma.transaction.findMany({
       where: {
+        userId: shift.userId,
         shopId: shift.shopId,
         status: 'COMPLETED',
-        createdAt: { gte: shift.startTime },
+        createdAt: {
+          gte: shift.startTime,
+          lte: new Date(),
+        },
+      },
+      include: {
+        payments: true,
       },
     });
 
-    const expectedCash = transactions
-      .filter((p) => p.method === 'CASH')
-      .reduce((sum, p) => sum + p.amount, 0);
+    let expectedCash = 0;
+    let expectedQRIS = 0;
 
-    const expectedQRIS = transactions
-      .filter((p) => p.method === 'QRIS')
-      .reduce((sum, p) => sum + p.amount, 0);
+    for (const trx of transactions) {
+      for (const payment of trx.payments) {
+        if (payment.method === PaymentMethod.CASH) {
+          expectedCash += payment.amount;
+        } else if (payment.method === PaymentMethod.QRIS) {
+          expectedQRIS += payment.amount;
+        }
+        // TRANSFER & HUTANG tidak masuk ke expected cash/qris
+      }
+    }
 
-    const updated = await this.prisma.shift.update({
+    const variance = dto.actualCash - expectedCash;
+
+    const updatedShift = await this.prisma.shift.update({
       where: { id: shiftId },
       data: {
-        status: ShiftStatus.CLOSED,
         endTime: new Date(),
         expectedCash,
+        actualCash: dto.actualCash,
         expectedQRIS,
-        notes: dto.notes || null,
+        actualQRIS: dto.actualQRIS,
+        variance,
+        status: ShiftStatus.CLOSED,
+        notes: dto.notes
+          ? `${shift.notes || ''}\n\nCatatan tutup shift: ${dto.notes}`
+          : shift.notes,
       },
-      include: { user: { select: { id: true, email: true, username: true } } },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            role: true,
+          },
+        },
+        shop: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
     });
 
     return {
-      success: true,
-      message: 'Shift berhasil ditutup. Menunggu finalisasi admin.',
-      shift: updated,
+      shift: updatedShift,
       summary: {
-        duration: this.calculateDuration(shift.startTime, new Date()),
         expectedCash,
+        actualCash: dto.actualCash,
+        varianceCash: variance,
         expectedQRIS,
-        totalExpected: expectedCash + expectedQRIS,
+        actualQRIS: dto.actualQRIS,
+        varianceQRIS: dto.actualQRIS - expectedQRIS,
         totalTransactions: transactions.length,
       },
+      message:
+        Math.abs(variance) > 10000
+          ? `⚠️ Shift ditutup dengan variance Rp ${Math.abs(variance).toLocaleString('id-ID')}. Harap review oleh admin.`
+          : 'Shift berhasil ditutup. Terima kasih atas kerja keras Anda!',
     };
   }
 
-  // ============================================
-  // FINALIZE SHIFT (Admin: hitung uang fisik)
-  // ============================================
-
-  async finalizeShift(shiftId: string, dto: FinalizeShiftDto, adminUser: any) {
-    const shift = await this.prisma.shift.findUnique({
-      where: { id: shiftId },
-      include: { user: { select: { id: true, email: true, username: true } } },
-    });
-
-    if (!shift) throw new NotFoundException('Shift tidak ditemukan.');
-    if (shift.status === ShiftStatus.FINALIZED) {
-      throw new BadRequestException('Shift sudah difinalisasi.');
-    }
-    if (shift.status === ShiftStatus.OPEN) {
-      throw new BadRequestException('Shift belum ditutup. Tutup shift terlebih dahulu.');
-    }
-
-    const cashVariance = dto.actualCash - shift.expectedCash;
-    const qrisVariance = dto.actualQRIS - shift.expectedQRIS;
-    const totalVariance = cashVariance + qrisVariance;
-
-    const finalized = await this.prisma.shift.update({
-      where: { id: shiftId },
-      data: {
-        status: ShiftStatus.FINALIZED,
-        actualCash: dto.actualCash,
-        actualQRIS: dto.actualQRIS,
-        variance: totalVariance,
-        notes: dto.notes || shift.notes,
-        finalizedAt: new Date(),
-        finalizedBy: adminUser.username || adminUser.email,
-      },
-      include: { user: { select: { id: true, email: true, username: true } } },
-    });
-
-    return {
-      success: true,
-      message: totalVariance === 0
-        ? 'Shift berhasil difinalisasi. Saldo COCOK!'
-        : `Shift difinalisasi. ${totalVariance > 0 ? 'SURPLUS' : 'SELISIH'} Rp ${Math.abs(totalVariance).toLocaleString('id-ID')}`,
-      shift: finalized,
-      clerek: {
-        kasir: shift.user,
-        shiftStart: shift.startTime,
-        shiftEnd: shift.endTime,
-        expectedCash: shift.expectedCash,
-        actualCash: dto.actualCash,
-        cashVariance,
-        expectedQRIS: shift.expectedQRIS,
-        actualQRIS: dto.actualQRIS,
-        qrisVariance,
-        totalVariance,
-        status: totalVariance === 0 ? 'MATCH' : totalVariance > 0 ? 'SURPLUS' : 'SELISIH',
-        finalizedBy: adminUser.username || adminUser.email,
-        finalizedAt: new Date(),
-      },
-    };
-  }
-
-  // ============================================
-  // GET SHIFT BY ID (Detail)
-  // ============================================
-
-  async findOne(id: string) {
-    const shift = await this.prisma.shift.findUnique({
-      where: { id },
-      include: { user: { select: { id: true, email: true, username: true } } },
-    });
-
-    if (!shift) throw new NotFoundException('Shift tidak ditemukan.');
-    return shift;
-  }
-
-  // ============================================
-  // LIST SHIFTS (with filters)
-  // ============================================
-
-  async findAll(query: QueryShiftDto) {
-    const page = query.page || 1;
-    const limit = query.limit || 20;
-    const skip = (page - 1) * limit;
-
+  /**
+   * List shifts dengan filter.
+   */
+  async listShifts(
+    query: QueryShiftDto,
+    requestUserId: string,
+    requestUserRole: Role,
+    requestUserShopId: string | null,
+  ) {
     const where: any = {};
-    if (query.shopId) where.shopId = query.shopId;
-    if (query.userId) where.userId = query.userId;
-    if (query.status) where.status = query.status;
 
-    if (query.date) {
-      const start = new Date(query.date);
-      const end = new Date(query.date + 'T23:59:59.999Z');
-      where.startTime = { gte: start, lte: end };
+    // Non-superadmin hanya bisa lihat shift di cabang mereka
+    if (requestUserRole !== Role.SUPER_ADMIN) {
+      where.shopId = requestUserShopId;
     }
 
-    const [shifts, total] = await Promise.all([
-      this.prisma.shift.findMany({
-        where,
-        include: { user: { select: { id: true, email: true, username: true } } },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      this.prisma.shift.count({ where }),
-    ]);
+    // Apply filters
+    if (query.shopId) {
+      where.shopId = query.shopId;
+    }
+
+    if (query.userId) {
+      where.userId = query.userId;
+    }
+
+    if (query.status) {
+      where.status = query.status;
+    }
+
+    if (query.startDate || query.endDate) {
+      where.startTime = {};
+      if (query.startDate) {
+        where.startTime.gte = new Date(query.startDate);
+      }
+      if (query.endDate) {
+        const endDate = new Date(query.endDate);
+        endDate.setHours(23, 59, 59, 999); // sampai akhir hari
+        where.startTime.lte = endDate;
+      }
+    }
+
+    const shifts = await this.prisma.shift.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            role: true,
+          },
+        },
+        shop: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+      orderBy: { startTime: 'desc' },
+    });
 
     return {
       data: shifts,
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+      total: shifts.length,
     };
   }
 
-  // ============================================
-  // PRIVATE HELPERS
-  // ============================================
+  /**
+   * Detail shift dengan list transaksi dalam shift.
+   */
+  async getShiftDetail(
+    shiftId: string,
+    requestUserId: string,
+    requestUserRole: Role,
+    requestUserShopId: string | null,
+  ) {
+    const shift = await this.prisma.shift.findUnique({
+      where: { id: shiftId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            role: true,
+          },
+        },
+        shop: {
+          select: {
+            id: true,
+            name: true,
+            address: true,
+          },
+        },
+      },
+    });
 
-  private calculateDuration(start: Date, end: Date): string {
-    const diff = end.getTime() - start.getTime();
-    const hours = Math.floor(diff / 3600000);
-    const minutes = Math.floor((diff % 3600000) / 60000);
-    return `${hours}j ${minutes}m`;
+    if (!shift) {
+      throw new NotFoundException('Shift tidak ditemukan.');
+    }
+
+    // Non-superadmin hanya bisa lihat shift di cabang mereka
+    if (requestUserRole !== Role.SUPER_ADMIN && shift.shopId !== requestUserShopId) {
+      throw new ForbiddenException('Anda tidak punya akses untuk melihat shift ini.');
+    }
+
+    // Get transactions dalam shift ini
+    const transactions = await this.prisma.transaction.findMany({
+      where: {
+        userId: shift.userId,
+        shopId: shift.shopId,
+        status: 'COMPLETED',
+        createdAt: {
+          gte: shift.startTime,
+          ...(shift.endTime && { lte: shift.endTime }),
+        },
+      },
+      include: {
+        payments: true,
+        items: {
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                sku: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return {
+      shift,
+      transactions: {
+        data: transactions,
+        total: transactions.length,
+      },
+    };
+  }
+
+  /**
+   * Finalize shift (admin only).
+   * Setelah difinalkan, shift tidak bisa diubah lagi.
+   */
+  async finalizeShift(
+    shiftId: string,
+    adminUserId: string,
+    adminUsername: string,
+    dto: FinalizeShiftDto,
+  ) {
+    const shift = await this.prisma.shift.findUnique({
+      where: { id: shiftId },
+    });
+
+    if (!shift) {
+      throw new NotFoundException('Shift tidak ditemukan.');
+    }
+
+    if (shift.status !== ShiftStatus.CLOSED) {
+      throw new BadRequestException(
+        'Hanya shift yang sudah ditutup yang bisa difinalisasi.',
+      );
+    }
+
+    const updatedShift = await this.prisma.shift.update({
+      where: { id: shiftId },
+      data: {
+        status: ShiftStatus.FINALIZED,
+        finalizedAt: new Date(),
+        finalizedBy: adminUsername,
+        notes: dto.notes
+          ? `${shift.notes || ''}\n\nCatatan finalisasi: ${dto.notes}`
+          : shift.notes,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            role: true,
+          },
+        },
+        shop: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    return {
+      shift: updatedShift,
+      message: 'Shift berhasil difinalisasi.',
+    };
+  }
+
+  /**
+   * Get current open shift for user (helper untuk kasir).
+   */
+  async getCurrentShift(userId: string, shopId: string) {
+    const shift = await this.prisma.shift.findFirst({
+      where: {
+        userId,
+        shopId,
+        status: ShiftStatus.OPEN,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            username: true,
+            role: true,
+          },
+        },
+        shop: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!shift) {
+      return { shift: null, message: 'Belum ada shift aktif.' };
+    }
+
+    // Hitung transaksi dalam shift ini
+    const transactionCount = await this.prisma.transaction.count({
+      where: {
+        userId,
+        shopId,
+        status: 'COMPLETED',
+        createdAt: {
+          gte: shift.startTime,
+        },
+      },
+    });
+
+    return {
+      shift,
+      transactionCount,
+    };
   }
 }

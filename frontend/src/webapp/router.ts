@@ -74,7 +74,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'retail/shift',
         name: 'webapp-retail-shift',
-        component: () => import('@/webapp/views/PlaceholderView.vue'),
+        component: () => import('@/webapp/views/ShiftView.vue'),
         meta: {
           title: 'Shift Kasir',
           description: 'Buka shift di awal jam kerja, tutup shift dengan input nominal kas fisik.',

@@ -1,12 +1,20 @@
-import { IsString } from 'class-validator';
-import { ApiProperty } from '@nestjs/swagger';
+import { IsInt, IsPositive, IsOptional, IsString } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class OpenShiftDto {
-  @ApiProperty({ example: 'shop-id-123' })
-  @IsString()
-  shopId: string;
+  @ApiProperty({
+    example: 500000,
+    description: 'Saldo kas awal (dalam rupiah)',
+  })
+  @IsInt()
+  @IsPositive()
+  startingCash: number;
 
-  @ApiProperty({ example: 'user-id-kasir' })
+  @ApiPropertyOptional({
+    example: 'Saldo kas dari shift kemarin',
+    description: 'Catatan optional saat buka shift',
+  })
+  @IsOptional()
   @IsString()
-  userId: string;
+  notes?: string;
 }

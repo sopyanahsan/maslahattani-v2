@@ -7,6 +7,7 @@ import authService, {
   type ShopDto,
 } from '@/shared/services/auth.service';
 import { useShopStore } from './shop.store';
+import { useShiftStore } from './shift.store';
 
 export type AuthUser = AuthUserDto;
 
@@ -80,6 +81,14 @@ export const useAuthStore = defineStore('auth', () => {
       shopStore.clear();
     } catch {
       // shop store belum di-init (mis. di module init), abaikan
+    }
+
+    // Clear shift state juga supaya tidak bocor antar user
+    try {
+      const shiftStore = useShiftStore();
+      shiftStore.clear();
+    } catch {
+      // shift store belum di-init, abaikan
     }
   }
 

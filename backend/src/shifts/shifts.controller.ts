@@ -2,64 +2,124 @@ import {
   Controller,
   Get,
   Post,
-  Param,
   Body,
+  Param,
   Query,
   UseGuards,
   Request,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam } from '@nestjs/swagger';
+import { ShiftsService } from './shifts.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/guards/roles.guard';
-import { ShiftsService } from './shifts.service';
-import { OpenShiftDto } from './dto/open-shift.dto';
-import { CloseShiftDto } from './dto/close-shift.dto';
-import { FinalizeShiftDto } from './dto/finalize-shift.dto';
-import { QueryShiftDto } from './dto/query-shift.dto';
 import { Role } from '@prisma/client';
+import {
+  OpenShiftDto,
+  CloseShiftDto,
+  QueryShiftDto,
+  FinalizeShiftDto,
+} from './dto';
 
-@ApiTags('Shifts / Clerek')
+@ApiTags('Shifts')
 @Controller('api/shifts')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 @ApiBearerAuth()
 export class ShiftsController {
   constructor(private readonly shiftsService: ShiftsService) {}
 
   @Post('open')
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Buka shift kasir (admin only)' })
-  async openShift(@Body() dto: OpenShiftDto) {
-    return this.shiftsService.openShift(dto);
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Buka shift baru',
+    description: 'Kasir buka shift di awal hari kerja. Input saldo kas awal.',
+  })
+  async openShift(@Request() req: any, @Body() dto: OpenShiftDto) {
+    return this.shiftsService.openShift(req.user.id, req.user.shopId, dto);
   }
 
   @Post(':id/close')
-  @ApiOperation({ summary: 'Tutup shift (hitung expected cash/QRIS otomatis)' })
-  async closeShift(@Param('id') id: string, @Body() dto: CloseShiftDto) {
-    return this.shiftsService.closeShift(id, dto);
-  }
-
-  @Post(':id/finalize')
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
-  @ApiOperation({ summary: 'Finalisasi clerek - input uang fisik, hitung selisih (admin only)' })
-  async finalizeShift(
-    @Param('id') id: string,
-    @Body() dto: FinalizeShiftDto,
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Tutup shift',
+    description:
+      'Kasir tutup shift di akhir hari kerja. Input actual cash & QRIS. System auto-calculate variance.',
+  })
+  @ApiParam({ name: 'id', description: 'Shift ID' })
+  async closeShift(
+    @Param('id') shiftId: string,
     @Request() req: any,
+    @Body() dto: CloseShiftDto,
   ) {
-    return this.shiftsService.finalizeShift(id, dto, req.user);
+    return this.shiftsService.closeShift(
+      shiftId,
+      req.user.id,
+      req.user.role,
+      dto,
+    );
   }
 
   @Get()
-  @ApiOperation({ summary: 'List shifts (filter: shop, user, date, status)' })
-  async findAll(@Query() query: QueryShiftDto) {
-    return this.shiftsService.findAll(query);
+  @ApiOperation({
+    summary: 'List shifts',
+    description:
+      'List semua shift dengan filter. Non-superadmin hanya lihat shift di cabang mereka.',
+  })
+  async listShifts(@Query() query: QueryShiftDto, @Request() req: any) {
+    return this.shiftsService.listShifts(
+      query,
+      req.user.id,
+      req.user.role,
+      req.user.shopId,
+    );
+  }
+
+  @Get('current')
+  @ApiOperation({
+    summary: 'Get current open shift',
+    description:
+      'Helper untuk kasir cek apakah ada shift aktif. Return null jika belum buka shift.',
+  })
+  async getCurrentShift(@Request() req: any) {
+    return this.shiftsService.getCurrentShift(req.user.id, req.user.shopId);
   }
 
   @Get(':id')
-  @ApiOperation({ summary: 'Detail shift by ID' })
-  async findOne(@Param('id') id: string) {
-    return this.shiftsService.findOne(id);
+  @ApiOperation({
+    summary: 'Detail shift',
+    description:
+      'Detail shift + list transaksi dalam shift. Non-superadmin hanya bisa lihat shift di cabang mereka.',
+  })
+  @ApiParam({ name: 'id', description: 'Shift ID' })
+  async getShiftDetail(@Param('id') shiftId: string, @Request() req: any) {
+    return this.shiftsService.getShiftDetail(
+      shiftId,
+      req.user.id,
+      req.user.role,
+      req.user.shopId,
+    );
+  }
+
+  @Post(':id/finalize')
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Finalize shift (Admin only)',
+    description:
+      'Admin review & approve shift yang sudah ditutup. Setelah difinalkan, shift tidak bisa diubah lagi.',
+  })
+  @ApiParam({ name: 'id', description: 'Shift ID' })
+  async finalizeShift(
+    @Param('id') shiftId: string,
+    @Request() req: any,
+    @Body() dto: FinalizeShiftDto,
+  ) {
+    return this.shiftsService.finalizeShift(
+      shiftId,
+      req.user.id,
+      req.user.username || req.user.email,
+      dto,
+    );
   }
 }

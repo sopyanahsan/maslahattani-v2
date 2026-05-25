@@ -1,18 +1,11 @@
-import { IsInt, IsOptional, IsString, Min } from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsOptional, IsString } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class FinalizeShiftDto {
-  @ApiProperty({ example: 1500000, description: 'Total uang tunai fisik (Rp)' })
-  @IsInt()
-  @Min(0)
-  actualCash: number;
-
-  @ApiProperty({ example: 350000, description: 'Total QRIS fisik (Rp)' })
-  @IsInt()
-  @Min(0)
-  actualQRIS: number;
-
-  @ApiPropertyOptional({ example: 'Selisih Rp 5000, kemungkinan kembalian salah' })
+  @ApiPropertyOptional({
+    example: 'Shift sudah diverifikasi, variance wajar karena kembalian receh.',
+    description: 'Catatan admin saat finalize shift',
+  })
   @IsOptional()
   @IsString()
   notes?: string;
