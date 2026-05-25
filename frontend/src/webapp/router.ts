@@ -124,12 +124,16 @@ const routes: RouteRecordRaw[] = [
   },
 ];
 
+// Base URL berbeda antara dev & prod:
+// - DEV (npm run dev): index.html di-served dari /webapp/index.html oleh Vite
+//   multi-entry → vue-router base harus '/webapp/' supaya match URL.
+// - PROD (nginx): webapp domain root di maslahattani.my.id, nginx fallback
+//   semua path ke /webapp/index.html, tapi URL di browser tetap '/login',
+//   '/dashboard', dst → vue-router base '/'.
+const ROUTER_BASE = import.meta.env.DEV ? '/webapp/' : '/';
+
 const router = createRouter({
-  // Base "/" — webapp di-deploy di domain root (maslahattani.my.id).
-  // Nginx config: try_files $uri $uri/ /webapp/index.html, jadi semua path
-  // path apapun fallback ke /webapp/index.html, lalu vue-router yang resolve
-  // berdasarkan window.location.pathname.
-  history: createWebHistory('/'),
+  history: createWebHistory(ROUTER_BASE),
   routes,
   scrollBehavior(to, _from, savedPosition) {
     if (savedPosition) return savedPosition;
