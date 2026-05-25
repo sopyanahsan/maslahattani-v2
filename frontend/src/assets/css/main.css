@@ -2,32 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Custom base styles */
+/* === Base styles === */
 @layer base {
   html {
     @apply scroll-smooth;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
 
   body {
-    @apply bg-white text-gray-900;
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+
+  /* Material Symbols icon defaults */
+  .material-symbols-outlined {
+    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
   }
 }
 
-/* Custom components */
+/* === Reusable components === */
 @layer components {
   .btn-primary {
-    @apply px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors;
+    @apply h-10 px-4 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition-colors shadow-sm;
   }
 
   .btn-secondary {
-    @apply px-4 py-2 bg-gray-200 text-gray-900 rounded-lg hover:bg-gray-300 transition-colors;
+    @apply h-10 px-4 bg-slate-100 text-slate-900 text-sm font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors;
+  }
+
+  .btn-danger {
+    @apply h-10 px-4 bg-red-600 text-white text-sm font-semibold rounded-md hover:bg-red-700 transition-colors shadow-sm;
   }
 
   .input-field {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600;
+    @apply w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition;
   }
 
   .card {
-    @apply p-6 bg-white rounded-lg shadow-sm border border-gray-200;
+    @apply p-4 sm:p-6 bg-white rounded-lg shadow-sm border border-slate-200;
   }
+
+  .badge-success {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700;
+  }
+
+  .badge-warning {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700;
+  }
+
+  .badge-danger {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700;
+  }
+}
+
+/* === Custom scrollbar === */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  @apply bg-slate-100;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
 }

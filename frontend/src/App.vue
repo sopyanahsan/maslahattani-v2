@@ -1,9 +1,7 @@
 <template>
-  <div>
-    <NuxtPage />
-  </div>
+  <RouterView />
 </template>
 
 <script setup lang="ts">
-// Global app setup
+// Root component
 </script>
