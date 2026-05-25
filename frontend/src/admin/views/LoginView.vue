@@ -192,7 +192,7 @@
 <script setup lang="ts">
 import { ref, reactive, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth.store';
+import { useAuthStore } from '@/shared/stores/auth.store';
 import {
   ShieldCheck as ShieldCheckIcon,
   User as UserIcon,
@@ -287,6 +287,19 @@ function redirectAfterLogin() {
   router.push(redirectTo);
 }
 
+/**
+ * Super-admin selesai login (sudah lewat OTP) tapi belum pilih cabang.
+ * Bawa redirect param supaya setelah pilih cabang user lanjut ke tujuan
+ * semula (kalau ada).
+ */
+function redirectToShopSelection() {
+  const redirect = route.query.redirect as string | undefined;
+  router.push({
+    name: 'admin-select-shop',
+    query: redirect ? { redirect } : {},
+  });
+}
+
 async function handleCredentials() {
   errorMessage.value = '';
   infoMessage.value = '';
@@ -305,6 +318,12 @@ async function handleCredentials() {
       step.value = 'otp';
       infoMessage.value = outcome.message;
       startOtpCooldown();
+      return;
+    }
+
+    if (outcome.status === 'shop_selection_required') {
+      // Super-admin: pilih cabang dulu sebelum masuk dashboard
+      redirectToShopSelection();
       return;
     }
 
@@ -338,6 +357,9 @@ async function handleOtpLogin() {
 
     if (outcome.status === 'success') {
       redirectAfterLogin();
+    } else if (outcome.status === 'shop_selection_required') {
+      // Super-admin: token sudah ada, lanjut pilih cabang
+      redirectToShopSelection();
     } else {
       // Backend masih minta OTP (mis. OTP-nya udah expired & dikirim baru)
       infoMessage.value = outcome.message;

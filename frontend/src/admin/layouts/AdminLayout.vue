@@ -167,7 +167,80 @@
           <p class="text-xs text-slate-500">{{ pageSubtitle }}</p>
         </div>
         <div class="flex items-center gap-3">
-          <span class="text-xs text-slate-500">
+          <!-- Shop selector (super-admin only, atau user dgn akses >1 cabang) -->
+          <div v-if="canSwitchShop" class="relative">
+            <button
+              type="button"
+              class="flex items-center gap-2 h-9 px-3 bg-slate-50 border border-slate-200 rounded-md hover:bg-slate-100 transition-colors"
+              @click="shopMenuOpen = !shopMenuOpen"
+            >
+              <component :is="Building2Icon" class="w-4 h-4 text-slate-600" />
+              <div class="text-left">
+                <p class="text-[10px] uppercase tracking-wide text-slate-500 leading-tight">
+                  Cabang Aktif
+                </p>
+                <p class="text-xs font-semibold text-slate-900 leading-tight max-w-[180px] truncate">
+                  {{ currentShopName || 'Belum dipilih' }}
+                </p>
+              </div>
+              <component
+                :is="ChevronDownIcon"
+                :class="['w-4 h-4 text-slate-500 transition-transform', shopMenuOpen && 'rotate-180']"
+              />
+            </button>
+
+            <!-- Dropdown -->
+            <div
+              v-if="shopMenuOpen"
+              class="absolute right-0 top-full mt-1 w-72 bg-white border border-slate-200 rounded-lg shadow-lg z-30 overflow-hidden"
+            >
+              <div class="px-4 py-2 border-b border-slate-100 bg-slate-50">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                  Pilih cabang ({{ availableShops.length }})
+                </p>
+              </div>
+              <div class="max-h-72 overflow-y-auto">
+                <button
+                  v-for="shop in availableShops"
+                  :key="shop.id"
+                  type="button"
+                  :disabled="switchingShop"
+                  :class="[
+                    'w-full px-4 py-2.5 text-left hover:bg-slate-50 transition-colors flex items-start gap-2 disabled:opacity-60',
+                    currentShopId === shop.id && 'bg-blue-50',
+                  ]"
+                  @click="handleSwitchShop(shop.id)"
+                >
+                  <component
+                    :is="currentShopId === shop.id ? CheckIcon : StoreIcon"
+                    :class="[
+                      'w-4 h-4 shrink-0 mt-0.5',
+                      currentShopId === shop.id ? 'text-blue-600' : 'text-slate-400',
+                    ]"
+                  />
+                  <div class="flex-1 min-w-0">
+                    <p
+                      :class="[
+                        'text-sm font-medium truncate',
+                        currentShopId === shop.id ? 'text-blue-700' : 'text-slate-900',
+                      ]"
+                    >
+                      {{ shop.name }}
+                    </p>
+                    <p class="text-[11px] text-slate-500 truncate">{{ shop.address }}</p>
+                  </div>
+                </button>
+              </div>
+              <div class="border-t border-slate-100 px-4 py-2 bg-slate-50">
+                <p v-if="switchError" class="text-[11px] text-red-600">{{ switchError }}</p>
+                <p v-else class="text-[10px] text-slate-500">
+                  Klik untuk ganti konteks. Tab lain mungkin perlu refresh.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <span class="text-xs text-slate-500 hidden xl:inline">
             {{ todayLabel }}
           </span>
           <div class="h-8 w-px bg-slate-200"></div>
@@ -193,9 +266,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, type Component } from 'vue';
+import { computed, onMounted, ref, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth.store';
+import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import {
   Menu as MenuIcon,
   Store as StoreIcon,
@@ -208,6 +282,9 @@ import {
   BarChart3 as ReportIcon,
   Settings as SettingsIcon,
   LogOut as LogOutIcon,
+  Building2 as Building2Icon,
+  ChevronDown as ChevronDownIcon,
+  Check as CheckIcon,
   // BRILink
   Landmark as LandmarkIcon,
   ArrowRightLeft as TransferIcon,
@@ -223,8 +300,65 @@ import {
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 
 const sidebarOpen = ref(false);
+const shopMenuOpen = ref(false);
+const switchingShop = ref(false);
+const switchError = ref('');
+
+// === Shop selector state ===
+const currentShopName = computed(() => shopStore.currentShopName);
+const currentShopId = computed(() => shopStore.currentShopId);
+const availableShops = computed(() => shopStore.availableShops);
+
+/**
+ * Switcher cabang ditampilin kalau:
+ * - User SUPER_ADMIN (bisa pilih semua cabang), ATAU
+ * - User punya akses ke >1 cabang (defensive — saat ini schema 1 user = 1 shop,
+ *   tapi nanti kalau berubah tetep aman)
+ */
+const canSwitchShop = computed(
+  () => authStore.isSuperAdmin || availableShops.value.length > 1,
+);
+
+async function handleSwitchShop(shopId: string) {
+  if (shopId === currentShopId.value) {
+    shopMenuOpen.value = false;
+    return;
+  }
+
+  switchingShop.value = true;
+  switchError.value = '';
+
+  try {
+    await shopStore.selectShop(shopId);
+    await authStore.fetchUser();
+    shopMenuOpen.value = false;
+    // Reload current view supaya data refresh sesuai cabang baru.
+    // Pakai router.replace dgn ?_t= untuk trigger re-mount tanpa full page reload.
+    router.replace({
+      path: route.path,
+      query: { ...route.query, _t: Date.now().toString() },
+    });
+  } catch (err: any) {
+    switchError.value = err?.message ?? 'Gagal ganti cabang.';
+  } finally {
+    switchingShop.value = false;
+  }
+}
+
+// Pre-fetch shops list sekali saat mount supaya dropdown selalu siap
+// (login response sudah set buat super-admin, tapi reload page bisa kosong)
+onMounted(async () => {
+  if (canSwitchShop.value && availableShops.value.length === 0) {
+    try {
+      await shopStore.fetchShops();
+    } catch {
+      // Silent: dropdown akan empty kalau gagal
+    }
+  }
+});
 
 interface NavItem {
   to: string;

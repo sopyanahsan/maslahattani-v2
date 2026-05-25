@@ -1,4 +1,14 @@
-import { IsString, IsInt, IsArray, IsEnum, IsOptional, ValidateNested, Min } from 'class-validator';
+import {
+  IsString,
+  IsInt,
+  IsArray,
+  IsEnum,
+  IsOptional,
+  ValidateNested,
+  Min,
+  IsUUID,
+  IsISO8601,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentMethod } from '@prisma/client';
@@ -21,9 +31,10 @@ export class TransactionItemDto {
 }
 
 export class CreateTransactionDto {
-  @ApiProperty({ example: 'shop-id-123' })
-  @IsString()
-  shopId: string;
+  /**
+   * NOTE: shopId TIDAK diterima dari client. Diambil dari JWT user.shopId
+   * supaya kasir tidak bisa spoof transaksi ke cabang lain.
+   */
 
   @ApiProperty({ type: [TransactionItemDto] })
   @IsArray()
@@ -45,4 +56,22 @@ export class CreateTransactionDto {
   @IsOptional()
   @IsString()
   paymentReference?: string;
+
+  @ApiPropertyOptional({
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    description:
+      'Idempotency key (UUID) untuk dedup retry akibat sinyal jelek. Kalau dikirim ulang dengan key yang sama, server return transaksi existing tanpa create dobel.',
+  })
+  @IsOptional()
+  @IsUUID()
+  idempotencyKey?: string;
+
+  @ApiPropertyOptional({
+    example: '2026-05-25T14:30:00.000Z',
+    description:
+      'Waktu transaksi sebenarnya di kasir (ISO 8601). Berbeda dari createdAt (waktu sync ke server). Berguna untuk transaksi offline yang baru sync nanti.',
+  })
+  @IsOptional()
+  @IsISO8601()
+  clientCreatedAt?: string;
 }

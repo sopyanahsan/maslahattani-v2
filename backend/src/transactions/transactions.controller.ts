@@ -9,6 +9,7 @@ import {
   Request,
   HttpCode,
   HttpStatus,
+  ForbiddenException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -30,7 +31,12 @@ export class TransactionsController {
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Buat transaksi baru (POS - kasir)' })
   async create(@Body() dto: CreateTransactionDto, @Request() req: any) {
-    return this.transactionsService.create(dto, req.user.id);
+    if (!req.user.shopId) {
+      throw new ForbiddenException(
+        'Tidak ada cabang aktif. Pilih cabang dulu sebelum membuat transaksi.',
+      );
+    }
+    return this.transactionsService.create(dto, req.user.id, req.user.shopId);
   }
 
   @Get()

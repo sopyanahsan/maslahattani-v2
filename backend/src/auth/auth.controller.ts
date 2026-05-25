@@ -78,6 +78,6 @@ export class AuthController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get current user info' })
   async getMe(@Request() req: any) {
-    return this.authService.getMe(req.user.id);
+    return this.authService.getMe(req.user.id, req.user.shopId);
   }
 }

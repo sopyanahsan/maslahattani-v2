@@ -10,10 +10,12 @@ import { OtpService } from './otp.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { PrismaModule } from '../prisma/prisma.module';
+import { ShopsModule } from '../shops/shops.module';
 
 @Module({
   imports: [
     PrismaModule,
+    ShopsModule, // untuk akses ShopsService.getAccessibleShopsForUser dari AuthService.login
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],

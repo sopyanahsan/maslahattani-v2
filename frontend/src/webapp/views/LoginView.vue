@@ -139,7 +139,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth.store';
+import { useAuthStore } from '@/shared/stores/auth.store';
 import {
   Store as StoreIcon,
   Mail as MailIcon,

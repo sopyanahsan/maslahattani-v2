@@ -330,12 +330,12 @@ import {
   // Tabs
   LayoutDashboard as AllIcon,
 } from 'lucide-vue-next';
-import StatCard from '@/components/dashboard/StatCard.vue';
-import SectionHeader from '@/components/dashboard/SectionHeader.vue';
-import DashboardTabs, { type DashboardTab } from '@/components/dashboard/DashboardTabs.vue';
+import StatCard from '@/admin/components/dashboard/StatCard.vue';
+import SectionHeader from '@/admin/components/dashboard/SectionHeader.vue';
+import DashboardTabs, { type DashboardTab } from '@/admin/components/dashboard/DashboardTabs.vue';
 import BrilinkTransactionTable, {
   type BrilinkTransaction,
-} from '@/components/dashboard/BrilinkTransactionTable.vue';
+} from '@/admin/components/dashboard/BrilinkTransactionTable.vue';
 
 // =====================================================
 // Tab state — persist to URL ?view=
