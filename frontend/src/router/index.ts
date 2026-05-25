@@ -134,6 +134,58 @@ const routes: RouteRecordRaw[] = [
           description: 'Konfigurasi toko, struk, bahasa, dan preferensi sistem.',
         },
       },
+
+      // === BRILink (Phase 2) — semua placeholder dulu ===
+      {
+        path: 'brilink/transfer',
+        name: 'admin-brilink-transfer',
+        component: () => import('@/views/admin/ComingSoonView.vue'),
+        meta: {
+          title: 'BRILink — Transfer',
+          description: 'Kirim dana antar rekening BRI dan bank lain dengan kalkulasi fee otomatis.',
+          phase: 2,
+        },
+      },
+      {
+        path: 'brilink/cash',
+        name: 'admin-brilink-cash',
+        component: () => import('@/views/admin/ComingSoonView.vue'),
+        meta: {
+          title: 'BRILink — Tarik & Setor',
+          description: 'Layani tarik tunai dan setor tunai pelanggan dari/ke rekening BRI.',
+          phase: 2,
+        },
+      },
+      {
+        path: 'brilink/topup',
+        name: 'admin-brilink-topup',
+        component: () => import('@/views/admin/ComingSoonView.vue'),
+        meta: {
+          title: 'BRILink — Top Up & Pulsa',
+          description: 'Top-up e-wallet, pulsa, paket data, token listrik, dan tagihan.',
+          phase: 2,
+        },
+      },
+      {
+        path: 'brilink/mutations',
+        name: 'admin-brilink-mutations',
+        component: () => import('@/views/admin/ComingSoonView.vue'),
+        meta: {
+          title: 'BRILink — Mutasi',
+          description: 'Riwayat transaksi BRILink dan rekonsiliasi dengan saldo BRI.',
+          phase: 2,
+        },
+      },
+      {
+        path: 'brilink/fees',
+        name: 'admin-brilink-fees',
+        component: () => import('@/views/admin/ComingSoonView.vue'),
+        meta: {
+          title: 'BRILink — Pengaturan Fee',
+          description: 'Atur margin fee per nominal dan jenis transaksi.',
+          phase: 2,
+        },
+      },
     ],
   },
 

@@ -58,34 +58,54 @@
       </div>
 
       <!-- Nav -->
-      <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
-        <RouterLink
-          v-for="item in mainNav"
-          :key="item.to"
-          :to="item.to"
-          custom
-          v-slot="{ isActive, href, navigate }"
-        >
-          <a
-            :href="href"
-            :class="[
-              'flex items-center gap-3 px-3 py-2.5 text-sm rounded-md transition-colors',
-              isActive
-                ? 'bg-blue-600 text-white font-medium'
-                : 'text-slate-300 hover:bg-slate-800 hover:text-white',
-            ]"
-            @click="(e) => onNavClick(e, navigate)"
-          >
-            <component :is="item.icon" class="w-4 h-4 shrink-0" />
-            <span>{{ item.label }}</span>
+      <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-4">
+        <div v-for="group in navGroups" :key="group.title">
+          <!-- Group header -->
+          <div class="flex items-center justify-between px-3 mb-1.5">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              {{ group.title }}
+            </p>
             <span
-              v-if="item.badge"
-              class="ml-auto px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-amber-500 text-white"
+              v-if="group.badge"
+              class="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-slate-700 text-slate-300"
             >
-              {{ item.badge }}
+              {{ group.badge }}
             </span>
-          </a>
-        </RouterLink>
+          </div>
+
+          <!-- Group items -->
+          <div class="space-y-0.5">
+            <RouterLink
+              v-for="item in group.items"
+              :key="item.to"
+              :to="item.to"
+              custom
+              v-slot="{ isActive, href, navigate }"
+            >
+              <a
+                :href="href"
+                :class="[
+                  'flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors',
+                  isActive
+                    ? 'bg-blue-600 text-white font-medium'
+                    : group.muted
+                    ? 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'
+                    : 'text-slate-300 hover:bg-slate-800 hover:text-white',
+                ]"
+                @click="(e) => onNavClick(e, navigate)"
+              >
+                <component :is="item.icon" class="w-4 h-4 shrink-0" />
+                <span class="truncate">{{ item.label }}</span>
+                <span
+                  v-if="item.badge"
+                  class="ml-auto px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-amber-500 text-white"
+                >
+                  {{ item.badge }}
+                </span>
+              </a>
+            </RouterLink>
+          </div>
+        </div>
       </nav>
 
       <!-- Bottom section -->
@@ -188,6 +208,13 @@ import {
   BarChart3 as ReportIcon,
   Settings as SettingsIcon,
   LogOut as LogOutIcon,
+  // BRILink
+  Landmark as LandmarkIcon,
+  ArrowRightLeft as TransferIcon,
+  Banknote as BanknoteIcon,
+  Smartphone as SmartphoneIcon,
+  Percent as PercentIcon,
+  ScrollText as MutationIcon,
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -203,14 +230,42 @@ interface NavItem {
   badge?: string | number;
 }
 
-const mainNav: NavItem[] = [
-  { to: '/admin/dashboard', label: 'Dashboard', icon: DashboardIcon },
-  { to: '/admin/transactions', label: 'Transaksi', icon: ReceiptIcon },
-  { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
-  { to: '/admin/debts', label: 'Hutang', icon: DebtIcon },
-  { to: '/admin/payments', label: 'Pembayaran', icon: WalletIcon },
-  { to: '/admin/kasir', label: 'Kasir', icon: UsersIcon },
-  { to: '/admin/reports', label: 'Laporan', icon: ReportIcon },
+interface NavGroup {
+  title: string;
+  badge?: string;
+  /** Render dengan warna lebih redup untuk modul yang belum aktif. */
+  muted?: boolean;
+  items: NavItem[];
+}
+
+const navGroups: NavGroup[] = [
+  {
+    title: 'Retail',
+    items: [
+      { to: '/admin/dashboard', label: 'Dashboard', icon: DashboardIcon },
+      { to: '/admin/transactions', label: 'Transaksi', icon: ReceiptIcon },
+      { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
+      { to: '/admin/debts', label: 'Hutang', icon: DebtIcon },
+      { to: '/admin/payments', label: 'Pembayaran', icon: WalletIcon },
+      { to: '/admin/kasir', label: 'Kasir', icon: UsersIcon },
+    ],
+  },
+  {
+    title: 'BRILink',
+    badge: 'Phase 2',
+    muted: true,
+    items: [
+      { to: '/admin/brilink/transfer', label: 'Transfer', icon: TransferIcon },
+      { to: '/admin/brilink/cash', label: 'Tarik / Setor', icon: BanknoteIcon },
+      { to: '/admin/brilink/topup', label: 'Top Up & Pulsa', icon: SmartphoneIcon },
+      { to: '/admin/brilink/mutations', label: 'Mutasi', icon: MutationIcon },
+      { to: '/admin/brilink/fees', label: 'Pengaturan Fee', icon: PercentIcon },
+    ],
+  },
+  {
+    title: 'Sistem',
+    items: [{ to: '/admin/reports', label: 'Laporan', icon: ReportIcon }],
+  },
 ];
 
 const bottomNav: NavItem[] = [
@@ -260,6 +315,11 @@ const pageTitle = computed(() => {
     'admin-kasir': 'Kasir',
     'admin-reports': 'Laporan',
     'admin-settings': 'Pengaturan',
+    'admin-brilink-transfer': 'BRILink — Transfer',
+    'admin-brilink-cash': 'BRILink — Tarik / Setor',
+    'admin-brilink-topup': 'BRILink — Top Up',
+    'admin-brilink-mutations': 'BRILink — Mutasi',
+    'admin-brilink-fees': 'BRILink — Fee',
   };
   return fallback[String(route.name ?? '')] ?? 'Admin';
 });
@@ -274,6 +334,11 @@ const pageSubtitle = computed(() => {
     'admin-kasir': 'Manajemen akun kasir',
     'admin-reports': 'Laporan penjualan & laba',
     'admin-settings': 'Konfigurasi toko & sistem',
+    'admin-brilink-transfer': 'Kirim dana antar bank',
+    'admin-brilink-cash': 'Layani tarik & setor tunai',
+    'admin-brilink-topup': 'Top up e-wallet, pulsa & paket data',
+    'admin-brilink-mutations': 'Riwayat transaksi BRILink',
+    'admin-brilink-fees': 'Atur margin fee per transaksi',
   };
   return map[String(route.name ?? '')] ?? '';
 });

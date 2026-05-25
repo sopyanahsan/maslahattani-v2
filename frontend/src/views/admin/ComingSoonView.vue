@@ -1,14 +1,41 @@
 <template>
-  <div class="bg-white border border-slate-200 rounded-lg p-8 sm:p-12 text-center max-w-2xl mx-auto">
+  <div
+    :class="[
+      'border rounded-lg p-8 sm:p-12 text-center max-w-2xl mx-auto',
+      isPhase2
+        ? 'bg-gradient-to-br from-slate-50 to-blue-50/40 border-dashed border-slate-300'
+        : 'bg-white border-slate-200',
+    ]"
+  >
     <div
-      class="mx-auto w-14 h-14 rounded-2xl bg-blue-100 border border-blue-200 flex items-center justify-center mb-4"
+      :class="[
+        'mx-auto w-14 h-14 rounded-2xl flex items-center justify-center mb-4',
+        isPhase2
+          ? 'bg-white border border-slate-200'
+          : 'bg-blue-100 border border-blue-200',
+      ]"
     >
-      <component :is="WrenchIcon" class="w-7 h-7 text-blue-600" />
+      <component
+        :is="isPhase2 ? LandmarkIcon : WrenchIcon"
+        :class="['w-7 h-7', isPhase2 ? 'text-slate-700' : 'text-blue-600']"
+      />
     </div>
-    <h2 class="text-xl sm:text-2xl font-bold text-slate-950 mb-1">
-      {{ title }}
-    </h2>
-    <p class="text-sm text-slate-500 mb-2">Sedang dalam pengembangan</p>
+
+    <div class="flex items-center justify-center gap-2 mb-1 flex-wrap">
+      <h2 class="text-xl sm:text-2xl font-bold text-slate-950">
+        {{ title }}
+      </h2>
+      <span
+        v-if="isPhase2"
+        class="text-[10px] font-bold uppercase tracking-wide text-slate-600 bg-slate-200 px-2 py-0.5 rounded-full"
+      >
+        Phase 2
+      </span>
+    </div>
+
+    <p class="text-sm text-slate-500 mb-2">
+      {{ isPhase2 ? 'Modul ini akan tersedia di Phase 2' : 'Sedang dalam pengembangan' }}
+    </p>
     <p v-if="description" class="text-sm text-slate-600 max-w-md mx-auto">
       {{ description }}
     </p>
@@ -28,7 +55,11 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { Wrench as WrenchIcon, ArrowLeft as ArrowLeftIcon } from 'lucide-vue-next';
+import {
+  Wrench as WrenchIcon,
+  Landmark as LandmarkIcon,
+  ArrowLeft as ArrowLeftIcon,
+} from 'lucide-vue-next';
 
 const route = useRoute();
 
@@ -39,5 +70,9 @@ const title = computed(() => {
 
 const description = computed(() => {
   return (route.meta?.description as string | undefined) || '';
+});
+
+const isPhase2 = computed(() => {
+  return (route.meta?.phase as number | undefined) === 2;
 });
 </script>

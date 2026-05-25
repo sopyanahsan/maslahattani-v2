@@ -1,16 +1,27 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-8">
     <!-- Welcome strip (mobile only — desktop has topbar) -->
     <div class="lg:hidden">
       <h1 class="text-xl font-bold text-slate-950">Dashboard</h1>
       <p class="text-xs text-slate-500">Ringkasan operasional toko hari ini</p>
     </div>
 
-    <!-- Stat Cards -->
-    <section>
+    <!-- ============================================ -->
+    <!-- SECTION: RETAIL                              -->
+    <!-- ============================================ -->
+    <section class="space-y-4 sm:space-y-6">
+      <SectionHeader
+        :icon="StoreIcon"
+        title="Retail"
+        subtitle="Operasional toko & POS"
+        badge="Aktif"
+        badge-tone="emerald"
+      />
+
+      <!-- Stat Cards Retail -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
-          v-for="stat in stats"
+          v-for="stat in retailStats"
           :key="stat.label"
           :label="stat.label"
           :value="stat.value"
@@ -21,200 +32,261 @@
           :loading="isLoading"
         />
       </div>
-    </section>
 
-    <!-- 2-column grid: recent trx + sidebar widgets -->
-    <section class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-      <!-- Recent Transactions (2 cols on desktop) -->
-      <div class="lg:col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden">
-        <div class="px-4 sm:px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-          <div>
-            <h3 class="text-sm font-bold text-slate-950">Transaksi Terbaru</h3>
-            <p class="text-[11px] text-slate-500">10 transaksi terakhir</p>
+      <!-- 2-column grid: recent trx + sidebar widgets -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <!-- Recent Transactions -->
+        <div class="lg:col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <div class="px-4 sm:px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+            <div>
+              <h3 class="text-sm font-bold text-slate-950">Transaksi Retail Terbaru</h3>
+              <p class="text-[11px] text-slate-500">10 transaksi terakhir</p>
+            </div>
+            <RouterLink
+              to="/admin/transactions"
+              class="text-xs text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Lihat semua →
+            </RouterLink>
           </div>
+
+          <div v-if="isLoading" class="p-8 flex flex-col items-center text-slate-500">
+            <component :is="Loader2Icon" class="w-6 h-6 animate-spin mb-2" />
+            <p class="text-xs">Memuat transaksi…</p>
+          </div>
+
+          <div v-else-if="recentTransactions.length === 0" class="p-10 text-center">
+            <div class="text-4xl mb-2 opacity-50">🧾</div>
+            <p class="text-sm font-semibold text-slate-900">Belum ada transaksi</p>
+            <p class="text-xs text-slate-500 mt-1">
+              Transaksi yang dibuat kasir akan muncul di sini.
+            </p>
+          </div>
+
+          <div v-else class="overflow-x-auto">
+            <table class="w-full min-w-[600px]">
+              <thead class="bg-slate-50 border-b border-slate-200">
+                <tr>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-700 uppercase tracking-wide">
+                    No Trx
+                  </th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-700 uppercase tracking-wide">
+                    Petugas
+                  </th>
+                  <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-700 uppercase tracking-wide">
+                    Total
+                  </th>
+                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-700 uppercase tracking-wide">
+                    Metode
+                  </th>
+                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-700 uppercase tracking-wide">
+                    Status
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100">
+                <tr
+                  v-for="trx in recentTransactions"
+                  :key="trx.id"
+                  class="hover:bg-slate-50 transition-colors"
+                >
+                  <td class="px-4 py-2.5 text-sm font-mono text-slate-900">
+                    {{ trx.transactionNumber }}
+                  </td>
+                  <td class="px-4 py-2.5 text-sm text-slate-700">{{ trx.cashier }}</td>
+                  <td class="px-4 py-2.5 text-sm font-mono font-medium text-right text-slate-900">
+                    {{ formatRupiah(trx.totalPrice) }}
+                  </td>
+                  <td class="px-4 py-2.5 text-center">
+                    <span
+                      :class="[
+                        'inline-block px-2 py-0.5 rounded text-[11px] font-medium',
+                        methodBadgeClass(trx.method),
+                      ]"
+                    >
+                      {{ trx.method }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-2.5 text-center">
+                    <span
+                      :class="[
+                        'inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium',
+                        statusBadgeClass(trx.status),
+                      ]"
+                    >
+                      {{ statusLabel(trx.status) }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Right column: ringkasan hutang + low stock -->
+        <div class="space-y-4 sm:space-y-6">
+          <!-- Hutang -->
+          <div class="bg-white rounded-lg border border-slate-200">
+            <div class="px-4 sm:px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+              <h3 class="text-sm font-bold text-slate-950">Ringkasan Hutang</h3>
+              <RouterLink
+                to="/admin/debts"
+                class="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Detail →
+              </RouterLink>
+            </div>
+            <div class="p-4 sm:p-5 space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-600">Total hutang aktif</span>
+                <span class="text-sm font-mono font-semibold text-slate-900">
+                  {{ formatRupiah(debtSummary.totalActive) }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-600">Jatuh tempo minggu ini</span>
+                <span class="text-sm font-mono font-semibold text-amber-700">
+                  {{ formatRupiah(debtSummary.dueThisWeek) }}
+                </span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-600">Overdue</span>
+                <span class="text-sm font-mono font-semibold text-red-700">
+                  {{ formatRupiah(debtSummary.overdue) }}
+                </span>
+              </div>
+              <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+                <span class="text-[11px] text-slate-500">{{ debtSummary.customerCount }} pelanggan</span>
+                <span class="badge-warning">{{ debtSummary.overdueCount }} overdue</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Low Stock -->
+          <div class="bg-white rounded-lg border border-slate-200">
+            <div class="px-4 sm:px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+              <h3 class="text-sm font-bold text-slate-950">Stok Menipis</h3>
+              <RouterLink
+                to="/admin/products"
+                class="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Kelola →
+              </RouterLink>
+            </div>
+            <div class="divide-y divide-slate-100">
+              <div
+                v-for="item in lowStock"
+                :key="item.sku"
+                class="flex items-center justify-between px-4 sm:px-5 py-2.5"
+              >
+                <div class="min-w-0 flex-1">
+                  <p class="text-sm font-medium text-slate-900 truncate">{{ item.name }}</p>
+                  <p class="text-[11px] font-mono text-slate-500">{{ item.sku }}</p>
+                </div>
+                <span
+                  :class="[
+                    'shrink-0 ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium',
+                    item.quantity === 0
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-amber-100 text-amber-700',
+                  ]"
+                >
+                  {{ item.quantity === 0 ? 'Habis' : `${item.quantity} tersisa` }}
+                </span>
+              </div>
+              <div v-if="lowStock.length === 0" class="px-4 sm:px-5 py-6 text-center">
+                <p class="text-xs text-slate-500">Semua stok aman 👍</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions Retail -->
+      <div>
+        <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-3">
+          Aksi Cepat
+        </h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
           <RouterLink
-            to="/admin/transactions"
-            class="text-xs text-blue-600 hover:text-blue-700 font-medium"
+            v-for="action in retailQuickActions"
+            :key="action.label"
+            :to="action.to"
+            class="bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/40 rounded-lg p-4 transition-colors group"
           >
-            Lihat semua →
+            <div :class="['w-9 h-9 rounded-lg flex items-center justify-center mb-2', action.iconBg]">
+              <component :is="action.icon" :class="['w-4 h-4', action.iconColor]" />
+            </div>
+            <p class="text-sm font-semibold text-slate-900">{{ action.label }}</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">{{ action.desc }}</p>
           </RouterLink>
         </div>
-
-        <div v-if="isLoading" class="p-8 flex flex-col items-center text-slate-500">
-          <component :is="Loader2Icon" class="w-6 h-6 animate-spin mb-2" />
-          <p class="text-xs">Memuat transaksi…</p>
-        </div>
-
-        <div v-else-if="recentTransactions.length === 0" class="p-10 text-center">
-          <div class="text-4xl mb-2 opacity-50">🧾</div>
-          <p class="text-sm font-semibold text-slate-900">Belum ada transaksi</p>
-          <p class="text-xs text-slate-500 mt-1">
-            Transaksi yang dibuat kasir akan muncul di sini.
-          </p>
-        </div>
-
-        <div v-else class="overflow-x-auto">
-          <table class="w-full min-w-[600px]">
-            <thead class="bg-slate-50 border-b border-slate-200">
-              <tr>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-700 uppercase tracking-wide">
-                  No Trx
-                </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-700 uppercase tracking-wide">
-                  Petugas
-                </th>
-                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-700 uppercase tracking-wide">
-                  Total
-                </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-700 uppercase tracking-wide">
-                  Metode
-                </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-700 uppercase tracking-wide">
-                  Status
-                </th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr
-                v-for="trx in recentTransactions"
-                :key="trx.id"
-                class="hover:bg-slate-50 transition-colors"
-              >
-                <td class="px-4 py-2.5 text-sm font-mono text-slate-900">
-                  {{ trx.transactionNumber }}
-                </td>
-                <td class="px-4 py-2.5 text-sm text-slate-700">{{ trx.cashier }}</td>
-                <td class="px-4 py-2.5 text-sm font-mono font-medium text-right text-slate-900">
-                  {{ formatRupiah(trx.totalPrice) }}
-                </td>
-                <td class="px-4 py-2.5 text-center">
-                  <span
-                    :class="[
-                      'inline-block px-2 py-0.5 rounded text-[11px] font-medium',
-                      methodBadgeClass(trx.method),
-                    ]"
-                  >
-                    {{ trx.method }}
-                  </span>
-                </td>
-                <td class="px-4 py-2.5 text-center">
-                  <span
-                    :class="[
-                      'inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium',
-                      statusBadgeClass(trx.status),
-                    ]"
-                  >
-                    {{ statusLabel(trx.status) }}
-                  </span>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <!-- Right column: ringkasan hutang + low stock -->
-      <div class="space-y-4 sm:space-y-6">
-        <!-- Hutang -->
-        <div class="bg-white rounded-lg border border-slate-200">
-          <div class="px-4 sm:px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-            <h3 class="text-sm font-bold text-slate-950">Ringkasan Hutang</h3>
-            <RouterLink
-              to="/admin/debts"
-              class="text-xs text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Detail →
-            </RouterLink>
-          </div>
-          <div class="p-4 sm:p-5 space-y-3">
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-slate-600">Total hutang aktif</span>
-              <span class="text-sm font-mono font-semibold text-slate-900">
-                {{ formatRupiah(debtSummary.totalActive) }}
-              </span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-slate-600">Jatuh tempo minggu ini</span>
-              <span class="text-sm font-mono font-semibold text-amber-700">
-                {{ formatRupiah(debtSummary.dueThisWeek) }}
-              </span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-xs text-slate-600">Overdue</span>
-              <span class="text-sm font-mono font-semibold text-red-700">
-                {{ formatRupiah(debtSummary.overdue) }}
-              </span>
-            </div>
-            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
-              <span class="text-[11px] text-slate-500">{{ debtSummary.customerCount }} pelanggan</span>
-              <span class="badge-warning">{{ debtSummary.overdueCount }} overdue</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Low Stock -->
-        <div class="bg-white rounded-lg border border-slate-200">
-          <div class="px-4 sm:px-5 py-3 border-b border-slate-200 flex items-center justify-between">
-            <h3 class="text-sm font-bold text-slate-950">Stok Menipis</h3>
-            <RouterLink
-              to="/admin/products"
-              class="text-xs text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Kelola →
-            </RouterLink>
-          </div>
-          <div class="divide-y divide-slate-100">
-            <div
-              v-for="item in lowStock"
-              :key="item.sku"
-              class="flex items-center justify-between px-4 sm:px-5 py-2.5"
-            >
-              <div class="min-w-0 flex-1">
-                <p class="text-sm font-medium text-slate-900 truncate">{{ item.name }}</p>
-                <p class="text-[11px] font-mono text-slate-500">{{ item.sku }}</p>
-              </div>
-              <span
-                :class="[
-                  'shrink-0 ml-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium',
-                  item.quantity === 0
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-amber-100 text-amber-700',
-                ]"
-              >
-                {{ item.quantity === 0 ? 'Habis' : `${item.quantity} tersisa` }}
-              </span>
-            </div>
-            <div v-if="lowStock.length === 0" class="px-4 sm:px-5 py-6 text-center">
-              <p class="text-xs text-slate-500">Semua stok aman 👍</p>
-            </div>
-          </div>
-        </div>
       </div>
     </section>
 
-    <!-- Quick actions -->
-    <section>
-      <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-3">
-        Aksi Cepat
-      </h3>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <RouterLink
-          v-for="action in quickActions"
-          :key="action.label"
-          :to="action.to"
-          class="bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/40 rounded-lg p-4 transition-colors group"
-        >
-          <div
-            :class="[
-              'w-9 h-9 rounded-lg flex items-center justify-center mb-2',
-              action.iconBg,
-            ]"
-          >
-            <component :is="action.icon" :class="['w-4 h-4', action.iconColor]" />
+    <!-- Visual divider -->
+    <div class="border-t border-dashed border-slate-300"></div>
+
+    <!-- ============================================ -->
+    <!-- SECTION: BRILINK                             -->
+    <!-- ============================================ -->
+    <section class="space-y-4 sm:space-y-6">
+      <SectionHeader
+        :icon="LandmarkIcon"
+        title="BRILink"
+        subtitle="Transfer, tarik tunai & top-up"
+        badge="Phase 2"
+        badge-tone="slate"
+        :muted="true"
+      />
+
+      <!-- Stat Cards BRILink (preview/disabled) -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <StatCard
+          v-for="stat in brilinkStats"
+          :key="stat.label"
+          :label="stat.label"
+          :value="stat.value"
+          :icon="stat.icon"
+          :tone="stat.tone"
+          :disabled="true"
+          disabled-label="Phase 2"
+        />
+      </div>
+
+      <!-- Phase 2 preview / coming soon notice -->
+      <div class="bg-gradient-to-br from-slate-50 to-blue-50/40 border border-dashed border-slate-300 rounded-lg p-6 sm:p-8">
+        <div class="flex flex-col sm:flex-row sm:items-start gap-4">
+          <div class="shrink-0 w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center">
+            <component :is="LandmarkIcon" class="w-6 h-6 text-slate-700" />
           </div>
-          <p class="text-sm font-semibold text-slate-900">{{ action.label }}</p>
-          <p class="text-[11px] text-slate-500 mt-0.5">{{ action.desc }}</p>
-        </RouterLink>
+          <div class="flex-1 min-w-0">
+            <div class="flex flex-wrap items-center gap-2 mb-1">
+              <h3 class="text-base font-bold text-slate-950">Modul BRILink</h3>
+              <span class="text-[10px] font-bold uppercase tracking-wide text-slate-600 bg-slate-200 px-2 py-0.5 rounded-full">
+                Phase 2
+              </span>
+            </div>
+            <p class="text-sm text-slate-600 mb-4">
+              Integrasi BRILink untuk transfer antar bank, tarik tunai, top-up, dan kalkulasi fee.
+              Ditargetkan rilis di Phase 2 setelah modul retail stabil.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <div
+                v-for="feature in brilinkFeatures"
+                :key="feature.label"
+                class="flex items-start gap-2.5 bg-white border border-slate-200 rounded-md px-3 py-2"
+              >
+                <component :is="feature.icon" class="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold text-slate-900">{{ feature.label }}</p>
+                  <p class="text-[11px] text-slate-500 leading-snug">{{ feature.desc }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   </div>
@@ -223,6 +295,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import {
+  // Retail
   Wallet as WalletIcon,
   Receipt as ReceiptIcon,
   HandCoins as DebtIcon,
@@ -231,12 +304,22 @@ import {
   UserPlus as UserPlusIcon,
   FileBarChart as ReportIcon,
   Settings as SettingsIcon,
+  Store as StoreIcon,
   Loader2 as Loader2Icon,
+  // BRILink
+  Landmark as LandmarkIcon,
+  ArrowRightLeft as TransferIcon,
+  Banknote as BanknoteIcon,
+  PiggyBank as PiggyBankIcon,
+  Percent as PercentIcon,
+  Smartphone as SmartphoneIcon,
+  CreditCard as CreditCardIcon,
 } from 'lucide-vue-next';
 import StatCard from '@/components/dashboard/StatCard.vue';
+import SectionHeader from '@/components/dashboard/SectionHeader.vue';
 
 // =====================================================
-// State (placeholder data — wire ke /admin/dashboard/stats kalau backend sudah ada)
+// State (placeholder data — wire ke /admin/dashboard/summary kalau backend sudah ada)
 // =====================================================
 
 const isLoading = ref(false);
@@ -251,7 +334,9 @@ interface RecentTrx {
   createdAt: string;
 }
 
-const stats = ref([
+// ============ RETAIL ============
+
+const retailStats = ref([
   {
     label: 'Omzet Hari Ini',
     value: 'Rp 2.500.000',
@@ -359,7 +444,7 @@ const lowStock = ref([
   { name: 'Sabun Lifebuoy', sku: 'SBN-LFB', quantity: 0 },
 ]);
 
-const quickActions = [
+const retailQuickActions = [
   {
     label: 'Tambah Produk',
     desc: 'Buat master produk baru',
@@ -391,6 +476,58 @@ const quickActions = [
     icon: SettingsIcon,
     iconBg: 'bg-slate-100',
     iconColor: 'text-slate-700',
+  },
+];
+
+// ============ BRILINK ============
+
+const brilinkStats = ref([
+  {
+    label: 'Volume Transfer',
+    value: 'Rp 0',
+    icon: TransferIcon,
+    tone: 'blue',
+  },
+  {
+    label: 'Total Fee Hari Ini',
+    value: 'Rp 0',
+    icon: PercentIcon,
+    tone: 'emerald',
+  },
+  {
+    label: 'Saldo BRI',
+    value: 'Rp 0',
+    icon: PiggyBankIcon,
+    tone: 'indigo',
+  },
+  {
+    label: 'Trx BRILink',
+    value: '0 Trx',
+    icon: BanknoteIcon,
+    tone: 'amber',
+  },
+] as const);
+
+const brilinkFeatures = [
+  {
+    label: 'Transfer Antar Bank',
+    desc: 'Kirim dana ke rekening BRI / bank lain dengan tarif transparan.',
+    icon: TransferIcon,
+  },
+  {
+    label: 'Tarik Tunai',
+    desc: 'Layani penarikan tunai pelanggan dari rekening BRI.',
+    icon: BanknoteIcon,
+  },
+  {
+    label: 'Top Up & Pulsa',
+    desc: 'Top-up e-wallet, pulsa, dan paket data.',
+    icon: SmartphoneIcon,
+  },
+  {
+    label: 'Pengaturan Fee',
+    desc: 'Atur margin fee per nominal & jenis transaksi.',
+    icon: CreditCardIcon,
   },
 ];
 
@@ -459,7 +596,10 @@ function statusLabel(status: RecentTrx['status']): string {
 onMounted(async () => {
   // TODO: ganti dengan call ke endpoint dashboard saat backend sudah ada:
   //   const { data } = await api.get('/admin/dashboard/summary');
-  //   stats.value = data.stats; recentTransactions.value = data.recentTransactions; ...
-  // Untuk sekarang pakai placeholder di atas supaya layout terlihat dulu.
+  //   retailStats.value = data.retail.stats;
+  //   recentTransactions.value = data.retail.recentTransactions;
+  //   debtSummary.value = data.retail.debtSummary;
+  //   lowStock.value = data.retail.lowStock;
+  //   brilinkStats.value = data.brilink.stats; // Phase 2
 });
 </script>
