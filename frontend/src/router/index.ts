@@ -31,13 +31,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/kasir/register',
     name: 'kasir-register',
-    component: () => import('@/views/kasir/LoginView.vue'), // Placeholder until register page is built
+    component: () => import('@/views/kasir/RegisterView.vue'),
     meta: { title: 'Daftar Kasir', guestOnly: true },
   },
   {
     path: '/kasir/forgot-password',
     name: 'kasir-forgot-password',
-    component: () => import('@/views/kasir/LoginView.vue'), // Placeholder until forgot-password page is built
+    component: () => import('@/views/kasir/ForgotPasswordView.vue'),
     meta: { title: 'Lupa Password', guestOnly: true },
   },
 
