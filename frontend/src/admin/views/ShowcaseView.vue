@@ -453,7 +453,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useDarkMode } from '@/composables/useDarkMode';
+import { useDarkMode } from '@/shared/composables/useDarkMode';
 
 const { isDark, toggle } = useDarkMode();
 

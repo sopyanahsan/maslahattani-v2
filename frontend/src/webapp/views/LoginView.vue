@@ -139,7 +139,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth.store';
+import { useAuthStore } from '@/shared/stores/auth.store';
 import {
   Store as StoreIcon,
   Mail as MailIcon,
@@ -187,8 +187,8 @@ function validate(): boolean {
   if (!form.password) {
     errors.password = 'Password wajib diisi';
     valid = false;
-  } else if (form.password.length < 6) {
-    errors.password = 'Password minimal 6 karakter';
+  } else if (form.password.length < 8) {
+    errors.password = 'Password minimal 8 karakter';
     valid = false;
   }
 
@@ -203,12 +203,18 @@ async function handleLogin() {
   isLoading.value = true;
 
   try {
-    await authStore.login({
-      email: form.email.trim(),
+    const outcome = await authStore.login({
+      identifier: form.email.trim(),
       password: form.password,
     });
 
-    // Redirect based on role
+    if (outcome.status === 'otp_required') {
+      // Kasir tidak pakai 2FA. Kalau backend minta OTP, berarti akun ini admin.
+      errorMessage.value = 'Akun ini terdaftar sebagai admin. Silakan login via panel admin.';
+      return;
+    }
+
+    // Redirect berdasarkan role
     if (authStore.isAdmin) {
       router.push('/admin/dashboard');
     } else {

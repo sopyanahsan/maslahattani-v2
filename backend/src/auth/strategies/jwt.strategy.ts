@@ -2,7 +2,17 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
+import { Role } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+
+interface JwtPayload {
+  sub: string;
+  email: string;
+  role: Role;
+  shopId?: string;
+  iat?: number;
+  exp?: number;
+}
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -17,7 +27,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     });
   }
 
-  async validate(payload: { sub: string; email: string; role: string; shopId?: string }) {
+  async validate(payload: JwtPayload) {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       select: {
@@ -34,6 +44,19 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       throw new UnauthorizedException('Akses tidak valid.');
     }
 
-    return user;
+    // Effective shopId logic:
+    // - SUPER_ADMIN: pakai shopId dari JWT claim (cabang yang dipilih saat shop selection).
+    //   User.shopId selalu null untuk super-admin.
+    // - User lain: pakai User.shopId dari DB (source of truth, kalau admin pindahin
+    //   user antar cabang, JWT claim mungkin stale tapi DB selalu fresh).
+    const effectiveShopId =
+      user.role === Role.SUPER_ADMIN
+        ? payload.shopId ?? null
+        : user.shopId ?? null;
+
+    return {
+      ...user,
+      shopId: effectiveShopId,
+    };
   }
 }

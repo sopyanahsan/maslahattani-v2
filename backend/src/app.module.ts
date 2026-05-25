@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
+import { ShopsModule } from './shops/shops.module';
 import { HealthModule } from './health/health.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { ProductsModule } from './products/products.module';
@@ -18,6 +19,7 @@ import { SettingsModule } from './settings/settings.module';
       envFilePath: '.env',
     }),
     PrismaModule,
+    ShopsModule, // Harus di-import sebelum AuthModule (yang depend on ShopsService)
     AuthModule,
     HealthModule,
     TransactionsModule,

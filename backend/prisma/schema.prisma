@@ -232,6 +232,14 @@ model Transaction {
   totalDiscount       Int       @default(0)
   status              TransactionStatus @default(PENDING)
   
+  // Offline-ready fields
+  // idempotencyKey: client-generated UUID untuk dedup retry saat sinyal jelek.
+  //   Sama key = transaksi yang sama, server kembalikan record existing tanpa create dobel.
+  // clientCreatedAt: waktu transaksi sebenarnya di sisi kasir (saat scan + bayar),
+  //   bisa berbeda dari createdAt (yang ditulis saat sync ke server).
+  idempotencyKey      String?   @unique
+  clientCreatedAt     DateTime?
+  
   items               TransactionItem[]
   payments            Payment[]
   

@@ -4,11 +4,13 @@ import {
   ConflictException,
   BadRequestException,
   NotFoundException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
+import { ShopsService } from '../shops/shops.service';
 import { OtpService } from './otp.service';
 import { RegisterKasirDto, VerifyOtpDto } from './dto/register.dto';
 import { LoginDto, RefreshTokenDto } from './dto/login.dto';
@@ -29,6 +31,7 @@ export class AuthService {
     private jwtService: JwtService,
     private configService: ConfigService,
     private otpService: OtpService,
+    private shopsService: ShopsService,
   ) {}
 
   // ============================================
@@ -36,7 +39,6 @@ export class AuthService {
   // ============================================
 
   async registerKasir(dto: RegisterKasirDto) {
-    // Check if email already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email.toLowerCase() },
     });
@@ -45,7 +47,6 @@ export class AuthService {
       throw new ConflictException('Email sudah terdaftar.');
     }
 
-    // Generate and send OTP
     const otp = this.otpService.generateOtp(dto.email);
     await this.otpService.sendOtp(dto.email, otp);
 
@@ -56,13 +57,11 @@ export class AuthService {
   }
 
   async verifyOtpAndCreateKasir(dto: VerifyOtpDto & { password: string }) {
-    // Verify OTP
     const otpResult = this.otpService.verifyOtp(dto.email, dto.otp);
     if (!otpResult.valid) {
       throw new BadRequestException(otpResult.message);
     }
 
-    // Check if email already exists (double-check)
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email.toLowerCase() },
     });
@@ -71,10 +70,10 @@ export class AuthService {
       throw new ConflictException('Email sudah terdaftar.');
     }
 
-    // Hash password
     const passwordHash = await bcrypt.hash(dto.password, 12);
 
-    // Create user with KASIR role
+    // NOTE: kasir baru terdaftar tanpa shopId. Admin perlu assign cabang
+    // sebelum kasir bisa login (kalau coba login akan dapet 403).
     const user = await this.prisma.user.create({
       data: {
         email: dto.email.toLowerCase(),
@@ -84,21 +83,10 @@ export class AuthService {
       },
     });
 
-    // Generate tokens
-    const tokens = await this.generateTokens({
-      sub: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
-    // Create session
-    await this.createSession(user.id, tokens.accessToken, tokens.refreshToken);
-
     return {
       success: true,
-      message: 'Registrasi berhasil!',
-      token: tokens.accessToken,
-      refreshToken: tokens.refreshToken,
+      message:
+        'Registrasi berhasil! Akun Anda akan aktif setelah admin assign ke cabang.',
       user: {
         id: user.id,
         email: user.email,
@@ -113,7 +101,6 @@ export class AuthService {
   // ============================================
 
   async login(dto: LoginDto, ipAddress?: string, userAgent?: string) {
-    // Find user by email or username
     const user = await this.prisma.user.findFirst({
       where: {
         OR: [
@@ -131,16 +118,16 @@ export class AuthService {
       throw new UnauthorizedException('Akun Anda dinonaktifkan. Hubungi admin.');
     }
 
-    // Verify password
     const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!isPasswordValid) {
       throw new UnauthorizedException('Email/username atau password salah.');
     }
 
-    // Admin must provide OTP (2FA mandatory)
+    // ============================================
+    // OTP step (admin/super-admin 2FA mandatory)
+    // ============================================
     if (user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN) {
       if (!dto.otp) {
-        // Generate and send OTP for admin login
         const otp = this.otpService.generateOtp(user.email);
         await this.otpService.sendOtp(user.email, otp);
         return {
@@ -150,25 +137,98 @@ export class AuthService {
         };
       }
 
-      // Verify admin OTP
       const otpResult = this.otpService.verifyOtp(user.email, dto.otp);
       if (!otpResult.valid) {
         throw new UnauthorizedException(otpResult.message);
       }
     }
 
-    // Generate tokens
+    // ============================================
+    // SUPER_ADMIN flow: tidak punya shopId tetap, harus pilih cabang dulu
+    // ============================================
+    if (user.role === Role.SUPER_ADMIN) {
+      // Issue token tanpa shopId — frontend akan redirect ke shop selection,
+      // user pilih cabang, lalu POST /api/shops/select/:id buat re-issue token full.
+      const tokens = await this.generateTokens({
+        sub: user.id,
+        email: user.email,
+        role: user.role,
+        shopId: undefined,
+      });
+
+      await this.createSession(
+        user.id,
+        tokens.accessToken,
+        tokens.refreshToken,
+        ipAddress,
+        userAgent,
+      );
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { lastLogin: new Date() },
+      });
+
+      const shops = await this.shopsService.getAccessibleShopsForUser({
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        shopId: null,
+      });
+
+      return {
+        success: true,
+        requireShopSelection: true,
+        token: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+        user: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          role: user.role,
+          status: user.status,
+          shopId: null,
+        },
+        shops,
+      };
+    }
+
+    // ============================================
+    // Regular user (ADMIN/KASIR/CASHIER_SUPERVISOR): wajib punya shopId
+    // ============================================
+    if (!user.shopId) {
+      throw new ForbiddenException(
+        'Akun Anda belum di-assign ke cabang. Hubungi admin untuk aktivasi.',
+      );
+    }
+
+    // Verify shop still exists (defensive — biasanya FK constraint sudah jamin)
+    const shop = await this.prisma.shop.findUnique({
+      where: { id: user.shopId },
+      select: { id: true, name: true, address: true, phone: true },
+    });
+    if (!shop) {
+      throw new ForbiddenException(
+        'Cabang yang di-assign ke akun Anda tidak ditemukan. Hubungi admin.',
+      );
+    }
+
     const tokens = await this.generateTokens({
       sub: user.id,
       email: user.email,
       role: user.role,
-      shopId: user.shopId || undefined,
+      shopId: user.shopId,
     });
 
-    // Create session
-    await this.createSession(user.id, tokens.accessToken, tokens.refreshToken, ipAddress, userAgent);
+    await this.createSession(
+      user.id,
+      tokens.accessToken,
+      tokens.refreshToken,
+      ipAddress,
+      userAgent,
+    );
 
-    // Update lastLogin
     await this.prisma.user.update({
       where: { id: user.id },
       data: { lastLogin: new Date() },
@@ -186,6 +246,7 @@ export class AuthService {
         status: user.status,
         shopId: user.shopId,
       },
+      shop, // include shop info biar frontend langsung tahu konteks aktif
     };
   }
 
@@ -194,7 +255,6 @@ export class AuthService {
   // ============================================
 
   async refreshToken(dto: RefreshTokenDto) {
-    // Find session by refresh token
     const session = await this.prisma.session.findUnique({
       where: { refreshToken: dto.refreshToken },
       include: { user: true },
@@ -205,27 +265,50 @@ export class AuthService {
     }
 
     if (session.refreshExpiresAt < new Date()) {
-      // Delete expired session
       await this.prisma.session.delete({ where: { id: session.id } });
       throw new UnauthorizedException('Refresh token kedaluwarsa. Silakan login ulang.');
     }
 
-    // Generate new tokens
+    // Decode refresh token untuk ambil shopId claim (penting untuk super-admin
+    // yang shopId-nya di JWT bukan di User.shopId).
+    let oldPayload: { shopId?: string } | null = null;
+    try {
+      oldPayload = await this.jwtService.verifyAsync(dto.refreshToken, {
+        secret:
+          this.configService.get<string>('JWT_REFRESH_SECRET') ||
+          'default-refresh-secret',
+      });
+    } catch {
+      throw new UnauthorizedException('Refresh token tidak valid.');
+    }
+
+    // Untuk super-admin: pakai shopId dari JWT claim (cabang yang dipilih).
+    // Untuk regular user: pakai User.shopId terbaru dari DB (kalau admin
+    // pindahin user antar cabang, refresh akan bawa shopId baru).
+    const shopId =
+      session.user.role === Role.SUPER_ADMIN
+        ? oldPayload?.shopId
+        : session.user.shopId || undefined;
+
     const tokens = await this.generateTokens({
       sub: session.user.id,
       email: session.user.email,
       role: session.user.role,
-      shopId: session.user.shopId || undefined,
+      shopId,
     });
 
-    // Update session with new tokens
     await this.prisma.session.update({
       where: { id: session.id },
       data: {
         token: tokens.accessToken,
         refreshToken: tokens.refreshToken,
-        expiresAt: new Date(Date.now() + parseInt(this.configService.get('JWT_EXPIRATION', '86400')) * 1000),
-        refreshExpiresAt: new Date(Date.now() + parseInt(this.configService.get('JWT_REFRESH_EXPIRATION', '2592000')) * 1000),
+        expiresAt: new Date(
+          Date.now() + parseInt(this.configService.get('JWT_EXPIRATION', '86400')) * 1000,
+        ),
+        refreshExpiresAt: new Date(
+          Date.now() +
+            parseInt(this.configService.get('JWT_REFRESH_EXPIRATION', '2592000')) * 1000,
+        ),
       },
     });
 
@@ -241,12 +324,8 @@ export class AuthService {
   // ============================================
 
   async logout(userId: string, token: string) {
-    // Delete session
     await this.prisma.session.deleteMany({
-      where: {
-        userId,
-        token,
-      },
+      where: { userId, token },
     });
 
     return { success: true, message: 'Berhasil logout.' };
@@ -269,7 +348,6 @@ export class AuthService {
       };
     }
 
-    // Generate and send OTP
     const otp = this.otpService.generateOtp(user.email);
     await this.otpService.sendOtp(user.email, otp);
 
@@ -284,13 +362,11 @@ export class AuthService {
   // ============================================
 
   async resetPassword(dto: ResetPasswordDto) {
-    // Verify OTP
     const otpResult = this.otpService.verifyOtp(dto.email, dto.otp);
     if (!otpResult.valid) {
       throw new BadRequestException(otpResult.message);
     }
 
-    // Find user
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email.toLowerCase() },
     });
@@ -299,10 +375,8 @@ export class AuthService {
       throw new NotFoundException('User tidak ditemukan.');
     }
 
-    // Hash new password
     const passwordHash = await bcrypt.hash(dto.newPassword, 12);
 
-    // Update password
     await this.prisma.user.update({
       where: { id: user.id },
       data: {
@@ -311,7 +385,6 @@ export class AuthService {
       },
     });
 
-    // Invalidate all sessions
     await this.prisma.session.deleteMany({
       where: { userId: user.id },
     });
@@ -323,7 +396,7 @@ export class AuthService {
   // GET CURRENT USER
   // ============================================
 
-  async getMe(userId: string) {
+  async getMe(userId: string, currentShopId?: string | null) {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -342,7 +415,29 @@ export class AuthService {
       throw new NotFoundException('User tidak ditemukan.');
     }
 
-    return user;
+    // Untuk super-admin, currentShopId datang dari JWT (cabang aktif yg dipilih).
+    // Override User.shopId (yang null) supaya frontend tahu konteks saat ini.
+    const effectiveShopId =
+      user.role === Role.SUPER_ADMIN ? currentShopId ?? null : user.shopId;
+
+    let currentShop: {
+      id: string;
+      name: string;
+      address: string;
+      phone: string;
+    } | null = null;
+    if (effectiveShopId) {
+      currentShop = await this.prisma.shop.findUnique({
+        where: { id: effectiveShopId },
+        select: { id: true, name: true, address: true, phone: true },
+      });
+    }
+
+    return {
+      ...user,
+      shopId: effectiveShopId,
+      currentShop,
+    };
   }
 
   // ============================================
@@ -371,8 +466,13 @@ export class AuthService {
     ipAddress?: string,
     userAgent?: string,
   ) {
-    const expiresAt = new Date(Date.now() + parseInt(this.configService.get('JWT_EXPIRATION', '86400')) * 1000);
-    const refreshExpiresAt = new Date(Date.now() + parseInt(this.configService.get('JWT_REFRESH_EXPIRATION', '2592000')) * 1000);
+    const expiresAt = new Date(
+      Date.now() + parseInt(this.configService.get('JWT_EXPIRATION', '86400')) * 1000,
+    );
+    const refreshExpiresAt = new Date(
+      Date.now() +
+        parseInt(this.configService.get('JWT_REFRESH_EXPIRATION', '2592000')) * 1000,
+    );
 
     await this.prisma.session.create({
       data: {
