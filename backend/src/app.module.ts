@@ -7,6 +7,7 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { ProductsModule } from './products/products.module';
 import { StockModule } from './stock/stock.module';
 import { DebtsModule } from './debts/debts.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { DebtsModule } from './debts/debts.module';
     ProductsModule,
     StockModule,
     DebtsModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [],
