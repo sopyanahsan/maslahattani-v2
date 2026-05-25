@@ -1,16 +1,24 @@
 <template>
-  <div class="space-y-8">
+  <div class="space-y-6">
     <!-- Welcome strip (mobile only — desktop has topbar) -->
     <div class="lg:hidden">
       <h1 class="text-xl font-bold text-slate-950">Dashboard</h1>
-      <p class="text-xs text-slate-500">Ringkasan operasional toko hari ini</p>
+      <p class="text-xs text-slate-500">{{ tabSubtitle }}</p>
     </div>
+
+    <!-- Tab Switcher -->
+    <DashboardTabs
+      :model-value="activeTab"
+      :tabs="tabs"
+      @update:model-value="setTab"
+    />
 
     <!-- ============================================ -->
     <!-- SECTION: RETAIL                              -->
     <!-- ============================================ -->
-    <section class="space-y-4 sm:space-y-6">
+    <section v-if="showRetail" class="space-y-4 sm:space-y-6">
       <SectionHeader
+        v-if="activeTab === 'semua'"
         :icon="StoreIcon"
         title="Retail"
         subtitle="Operasional toko & POS"
@@ -201,37 +209,14 @@
           </div>
         </div>
       </div>
-
-      <!-- Quick actions Retail -->
-      <div>
-        <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-3">
-          Aksi Cepat
-        </h3>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <RouterLink
-            v-for="action in retailQuickActions"
-            :key="action.label"
-            :to="action.to"
-            class="bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/40 rounded-lg p-4 transition-colors group"
-          >
-            <div :class="['w-9 h-9 rounded-lg flex items-center justify-center mb-2', action.iconBg]">
-              <component :is="action.icon" :class="['w-4 h-4', action.iconColor]" />
-            </div>
-            <p class="text-sm font-semibold text-slate-900">{{ action.label }}</p>
-            <p class="text-[11px] text-slate-500 mt-0.5">{{ action.desc }}</p>
-          </RouterLink>
-        </div>
-      </div>
     </section>
-
-    <!-- Visual divider -->
-    <div class="border-t border-dashed border-slate-300"></div>
 
     <!-- ============================================ -->
     <!-- SECTION: BRILINK                             -->
     <!-- ============================================ -->
-    <section class="space-y-4 sm:space-y-6">
+    <section v-if="showBrilink" class="space-y-4 sm:space-y-6">
       <SectionHeader
+        v-if="activeTab === 'semua'"
         :icon="LandmarkIcon"
         title="BRILink"
         subtitle="Transfer, tarik tunai & top-up"
@@ -254,8 +239,14 @@
         />
       </div>
 
-      <!-- Phase 2 preview / coming soon notice -->
-      <div class="bg-gradient-to-br from-slate-50 to-blue-50/40 border border-dashed border-slate-300 rounded-lg p-6 sm:p-8">
+      <!-- BRILink Transaction History (with filter chips) -->
+      <BrilinkTransactionTable :transactions="brilinkTransactions" />
+
+      <!-- Phase 2 preview / coming soon notice (only on 'semua' tab) -->
+      <div
+        v-if="activeTab === 'brilink'"
+        class="bg-gradient-to-br from-slate-50 to-blue-50/40 border border-dashed border-slate-300 rounded-lg p-6 sm:p-8"
+      >
         <div class="flex flex-col sm:flex-row sm:items-start gap-4">
           <div class="shrink-0 w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center">
             <component :is="LandmarkIcon" class="w-6 h-6 text-slate-700" />
@@ -268,8 +259,8 @@
               </span>
             </div>
             <p class="text-sm text-slate-600 mb-4">
-              Integrasi BRILink untuk transfer antar bank, tarik tunai, top-up, dan kalkulasi fee.
-              Ditargetkan rilis di Phase 2 setelah modul retail stabil.
+              Riwayat transaksi di atas adalah data simulasi. Integrasi BRILink (transfer, tarik tunai,
+              top-up, kalkulasi fee, mutasi) ditargetkan rilis di Phase 2 setelah modul retail stabil.
             </p>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
@@ -289,11 +280,33 @@
         </div>
       </div>
     </section>
+
+    <!-- Quick actions (hidden on BRILink-only tab) -->
+    <section v-if="activeTab !== 'brilink'">
+      <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-3">
+        Aksi Cepat
+      </h3>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <RouterLink
+          v-for="action in retailQuickActions"
+          :key="action.label"
+          :to="action.to"
+          class="bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/40 rounded-lg p-4 transition-colors group"
+        >
+          <div :class="['w-9 h-9 rounded-lg flex items-center justify-center mb-2', action.iconBg]">
+            <component :is="action.icon" :class="['w-4 h-4', action.iconColor]" />
+          </div>
+          <p class="text-sm font-semibold text-slate-900">{{ action.label }}</p>
+          <p class="text-[11px] text-slate-500 mt-0.5">{{ action.desc }}</p>
+        </RouterLink>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { computed, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import {
   // Retail
   Wallet as WalletIcon,
@@ -314,12 +327,63 @@ import {
   Percent as PercentIcon,
   Smartphone as SmartphoneIcon,
   CreditCard as CreditCardIcon,
+  // Tabs
+  LayoutDashboard as AllIcon,
 } from 'lucide-vue-next';
 import StatCard from '@/components/dashboard/StatCard.vue';
 import SectionHeader from '@/components/dashboard/SectionHeader.vue';
+import DashboardTabs, { type DashboardTab } from '@/components/dashboard/DashboardTabs.vue';
+import BrilinkTransactionTable, {
+  type BrilinkTransaction,
+} from '@/components/dashboard/BrilinkTransactionTable.vue';
 
 // =====================================================
-// State (placeholder data — wire ke /admin/dashboard/summary kalau backend sudah ada)
+// Tab state — persist to URL ?view=
+// =====================================================
+
+type ViewTab = 'semua' | 'retail' | 'brilink';
+
+const route = useRoute();
+const router = useRouter();
+
+const tabs: DashboardTab<ViewTab>[] = [
+  { value: 'semua', label: 'Semua', icon: AllIcon },
+  { value: 'retail', label: 'Retail', icon: StoreIcon },
+  { value: 'brilink', label: 'BRILink', icon: LandmarkIcon, badge: 'Phase 2' },
+];
+
+const activeTab = computed<ViewTab>(() => {
+  const v = route.query.view;
+  if (v === 'retail' || v === 'brilink') return v;
+  return 'semua';
+});
+
+const showRetail = computed(() => activeTab.value === 'semua' || activeTab.value === 'retail');
+const showBrilink = computed(() => activeTab.value === 'semua' || activeTab.value === 'brilink');
+
+const tabSubtitle = computed(() => {
+  switch (activeTab.value) {
+    case 'retail':
+      return 'Operasional toko & POS';
+    case 'brilink':
+      return 'Transfer, tarik tunai & top-up';
+    default:
+      return 'Ringkasan operasional retail & BRILink';
+  }
+});
+
+function setTab(value: string) {
+  const v = value as ViewTab;
+  router.replace({
+    query: {
+      ...route.query,
+      view: v === 'semua' ? undefined : v,
+    },
+  });
+}
+
+// =====================================================
+// Placeholder data (TODO: ganti ke /api/admin/dashboard/summary)
 // =====================================================
 
 const isLoading = ref(false);
@@ -372,60 +436,12 @@ const retailStats = ref([
 ] as const);
 
 const recentTransactions = ref<RecentTrx[]>([
-  {
-    id: '1',
-    transactionNumber: 'TRX-20260525-008',
-    cashier: 'kasir1',
-    totalPrice: 125000,
-    method: 'CASH',
-    status: 'COMPLETED',
-    createdAt: '2026-05-25T10:42:00',
-  },
-  {
-    id: '2',
-    transactionNumber: 'TRX-20260525-007',
-    cashier: 'kasir1',
-    totalPrice: 38500,
-    method: 'QRIS',
-    status: 'COMPLETED',
-    createdAt: '2026-05-25T10:18:00',
-  },
-  {
-    id: '3',
-    transactionNumber: 'TRX-20260525-006',
-    cashier: 'kasir2',
-    totalPrice: 215000,
-    method: 'TRANSFER',
-    status: 'COMPLETED',
-    createdAt: '2026-05-25T09:55:00',
-  },
-  {
-    id: '4',
-    transactionNumber: 'TRX-20260525-005',
-    cashier: 'kasir1',
-    totalPrice: 67500,
-    method: 'HUTANG',
-    status: 'PENDING',
-    createdAt: '2026-05-25T09:31:00',
-  },
-  {
-    id: '5',
-    transactionNumber: 'TRX-20260525-004',
-    cashier: 'kasir2',
-    totalPrice: 89000,
-    method: 'CASH',
-    status: 'COMPLETED',
-    createdAt: '2026-05-25T09:12:00',
-  },
-  {
-    id: '6',
-    transactionNumber: 'TRX-20260525-003',
-    cashier: 'kasir1',
-    totalPrice: 45000,
-    method: 'CASH',
-    status: 'VOIDED',
-    createdAt: '2026-05-25T08:47:00',
-  },
+  { id: '1', transactionNumber: 'TRX-20260525-008', cashier: 'kasir1', totalPrice: 125000, method: 'CASH', status: 'COMPLETED', createdAt: '2026-05-25T10:42:00' },
+  { id: '2', transactionNumber: 'TRX-20260525-007', cashier: 'kasir1', totalPrice: 38500, method: 'QRIS', status: 'COMPLETED', createdAt: '2026-05-25T10:18:00' },
+  { id: '3', transactionNumber: 'TRX-20260525-006', cashier: 'kasir2', totalPrice: 215000, method: 'TRANSFER', status: 'COMPLETED', createdAt: '2026-05-25T09:55:00' },
+  { id: '4', transactionNumber: 'TRX-20260525-005', cashier: 'kasir1', totalPrice: 67500, method: 'HUTANG', status: 'PENDING', createdAt: '2026-05-25T09:31:00' },
+  { id: '5', transactionNumber: 'TRX-20260525-004', cashier: 'kasir2', totalPrice: 89000, method: 'CASH', status: 'COMPLETED', createdAt: '2026-05-25T09:12:00' },
+  { id: '6', transactionNumber: 'TRX-20260525-003', cashier: 'kasir1', totalPrice: 45000, method: 'CASH', status: 'VOIDED', createdAt: '2026-05-25T08:47:00' },
 ]);
 
 const debtSummary = ref({
@@ -445,91 +461,40 @@ const lowStock = ref([
 ]);
 
 const retailQuickActions = [
-  {
-    label: 'Tambah Produk',
-    desc: 'Buat master produk baru',
-    to: '/admin/products',
-    icon: PlusIcon,
-    iconBg: 'bg-blue-100',
-    iconColor: 'text-blue-600',
-  },
-  {
-    label: 'Tambah Kasir',
-    desc: 'Daftarkan akun kasir',
-    to: '/admin/kasir',
-    icon: UserPlusIcon,
-    iconBg: 'bg-indigo-100',
-    iconColor: 'text-indigo-600',
-  },
-  {
-    label: 'Lihat Laporan',
-    desc: 'Penjualan & laba',
-    to: '/admin/reports',
-    icon: ReportIcon,
-    iconBg: 'bg-emerald-100',
-    iconColor: 'text-emerald-600',
-  },
-  {
-    label: 'Pengaturan',
-    desc: 'Konfigurasi toko',
-    to: '/admin/settings',
-    icon: SettingsIcon,
-    iconBg: 'bg-slate-100',
-    iconColor: 'text-slate-700',
-  },
+  { label: 'Tambah Produk', desc: 'Buat master produk baru', to: '/admin/products', icon: PlusIcon, iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
+  { label: 'Tambah Kasir', desc: 'Daftarkan akun kasir', to: '/admin/kasir', icon: UserPlusIcon, iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600' },
+  { label: 'Lihat Laporan', desc: 'Penjualan & laba', to: '/admin/reports', icon: ReportIcon, iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+  { label: 'Pengaturan', desc: 'Konfigurasi toko', to: '/admin/settings', icon: SettingsIcon, iconBg: 'bg-slate-100', iconColor: 'text-slate-700' },
 ];
 
 // ============ BRILINK ============
 
+// Phase 2 — semua nilai stat menggunakan placeholder "—"
 const brilinkStats = ref([
-  {
-    label: 'Volume Transfer',
-    value: 'Rp 0',
-    icon: TransferIcon,
-    tone: 'blue',
-  },
-  {
-    label: 'Total Fee Hari Ini',
-    value: 'Rp 0',
-    icon: PercentIcon,
-    tone: 'emerald',
-  },
-  {
-    label: 'Saldo BRI',
-    value: 'Rp 0',
-    icon: PiggyBankIcon,
-    tone: 'indigo',
-  },
-  {
-    label: 'Trx BRILink',
-    value: '0 Trx',
-    icon: BanknoteIcon,
-    tone: 'amber',
-  },
+  { label: 'Volume Transfer', value: '—', icon: TransferIcon, tone: 'blue' },
+  { label: 'Total Fee Hari Ini', value: '—', icon: PercentIcon, tone: 'emerald' },
+  { label: 'Saldo BRI', value: '—', icon: PiggyBankIcon, tone: 'indigo' },
+  { label: 'Trx BRILink', value: '—', icon: BanknoteIcon, tone: 'amber' },
 ] as const);
 
 const brilinkFeatures = [
-  {
-    label: 'Transfer Antar Bank',
-    desc: 'Kirim dana ke rekening BRI / bank lain dengan tarif transparan.',
-    icon: TransferIcon,
-  },
-  {
-    label: 'Tarik Tunai',
-    desc: 'Layani penarikan tunai pelanggan dari rekening BRI.',
-    icon: BanknoteIcon,
-  },
-  {
-    label: 'Top Up & Pulsa',
-    desc: 'Top-up e-wallet, pulsa, dan paket data.',
-    icon: SmartphoneIcon,
-  },
-  {
-    label: 'Pengaturan Fee',
-    desc: 'Atur margin fee per nominal & jenis transaksi.',
-    icon: CreditCardIcon,
-  },
+  { label: 'Transfer Antar Bank', desc: 'Kirim dana ke rekening BRI / bank lain dengan tarif transparan.', icon: TransferIcon },
+  { label: 'Tarik Tunai', desc: 'Layani penarikan tunai pelanggan dari rekening BRI.', icon: BanknoteIcon },
+  { label: 'Top Up & Pulsa', desc: 'Top-up e-wallet, pulsa, paket data, dan token PLN.', icon: SmartphoneIcon },
+  { label: 'Pengaturan Fee', desc: 'Atur margin fee per nominal & jenis transaksi.', icon: CreditCardIcon },
 ];
+
+// Sample data utk preview tabel — Phase 2 belum live
+const brilinkTransactions = ref<BrilinkTransaction[]>([
+  { id: '1', refNumber: 'BRL-20260525-012', category: 'TRANSFER_OTHER', amount: 1_500_000, fee: 6_500, status: 'SUCCESS', cashier: 'kasir1', customerName: 'Budi Santoso', destination: 'BCA · 1234567890', createdAt: '2026-05-25T11:32:00' },
+  { id: '2', refNumber: 'BRL-20260525-011', category: 'TARIK_TUNAI', amount: 500_000, fee: 2_500, status: 'SUCCESS', cashier: 'kasir1', customerName: 'Siti Rahmawati', destination: 'BRI · 9876543210', createdAt: '2026-05-25T10:55:00' },
+  { id: '3', refNumber: 'BRL-20260525-010', category: 'TOPUP_PULSA', amount: 50_000, fee: 1_500, status: 'SUCCESS', cashier: 'kasir2', customerName: 'Andi Pratama', destination: '0812-3456-7890', createdAt: '2026-05-25T10:21:00' },
+  { id: '4', refNumber: 'BRL-20260525-009', category: 'TRANSFER_BRI', amount: 750_000, fee: 0, status: 'SUCCESS', cashier: 'kasir1', customerName: 'Dewi Lestari', destination: 'BRI · 5555-4444-3333', createdAt: '2026-05-25T09:48:00' },
+  { id: '5', refNumber: 'BRL-20260525-008', category: 'TOPUP_PLN', amount: 100_000, fee: 2_500, status: 'SUCCESS', cashier: 'kasir2', customerName: 'Hadi Sulaiman', destination: 'No Meter · 12-3456-7890', createdAt: '2026-05-25T09:15:00' },
+  { id: '6', refNumber: 'BRL-20260525-007', category: 'TOPUP_EWALLET', amount: 200_000, fee: 1_500, status: 'PENDING', cashier: 'kasir1', customerName: 'Rina Kartika', destination: 'OVO · 0813-2345-6789', createdAt: '2026-05-25T08:50:00' },
+  { id: '7', refNumber: 'BRL-20260525-006', category: 'TOPUP_DATA', amount: 75_000, fee: 1_500, status: 'SUCCESS', cashier: 'kasir1', customerName: 'Joni Iskandar', destination: 'Tsel · 0812-9999-8888', createdAt: '2026-05-25T08:22:00' },
+  { id: '8', refNumber: 'BRL-20260525-005', category: 'TRANSFER_OTHER', amount: 2_000_000, fee: 6_500, status: 'FAILED', cashier: 'kasir2', customerName: 'Lia Permata', destination: 'Mandiri · 7890-1234', createdAt: '2026-05-25T07:50:00' },
+]);
 
 // =====================================================
 // Helpers
@@ -588,18 +553,4 @@ function statusLabel(status: RecentTrx['status']): string {
       return status;
   }
 }
-
-// =====================================================
-// Lifecycle
-// =====================================================
-
-onMounted(async () => {
-  // TODO: ganti dengan call ke endpoint dashboard saat backend sudah ada:
-  //   const { data } = await api.get('/admin/dashboard/summary');
-  //   retailStats.value = data.retail.stats;
-  //   recentTransactions.value = data.retail.recentTransactions;
-  //   debtSummary.value = data.retail.debtSummary;
-  //   lowStock.value = data.retail.lowStock;
-  //   brilinkStats.value = data.brilink.stats; // Phase 2
-});
 </script>

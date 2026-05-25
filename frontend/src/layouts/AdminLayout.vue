@@ -215,6 +215,9 @@ import {
   Smartphone as SmartphoneIcon,
   Percent as PercentIcon,
   ScrollText as MutationIcon,
+  // Phase 1 (PRD)
+  Clock as ShiftIcon,
+  Building2 as ShopIcon,
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -247,6 +250,7 @@ const navGroups: NavGroup[] = [
       { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
       { to: '/admin/debts', label: 'Hutang', icon: DebtIcon },
       { to: '/admin/payments', label: 'Pembayaran', icon: WalletIcon },
+      { to: '/admin/shifts', label: 'Shift', icon: ShiftIcon },
       { to: '/admin/kasir', label: 'Kasir', icon: UsersIcon },
     ],
   },
@@ -256,7 +260,7 @@ const navGroups: NavGroup[] = [
     muted: true,
     items: [
       { to: '/admin/brilink/transfer', label: 'Transfer', icon: TransferIcon },
-      { to: '/admin/brilink/cash', label: 'Tarik / Setor', icon: BanknoteIcon },
+      { to: '/admin/brilink/cash', label: 'Tarik Tunai', icon: BanknoteIcon },
       { to: '/admin/brilink/topup', label: 'Top Up & Pulsa', icon: SmartphoneIcon },
       { to: '/admin/brilink/mutations', label: 'Mutasi', icon: MutationIcon },
       { to: '/admin/brilink/fees', label: 'Pengaturan Fee', icon: PercentIcon },
@@ -264,7 +268,10 @@ const navGroups: NavGroup[] = [
   },
   {
     title: 'Sistem',
-    items: [{ to: '/admin/reports', label: 'Laporan', icon: ReportIcon }],
+    items: [
+      { to: '/admin/shops', label: 'Cabang', icon: ShopIcon },
+      { to: '/admin/reports', label: 'Laporan', icon: ReportIcon },
+    ],
   },
 ];
 
@@ -312,11 +319,13 @@ const pageTitle = computed(() => {
     'admin-products': 'Produk & Stok',
     'admin-debts': 'Hutang',
     'admin-payments': 'Pembayaran',
+    'admin-shifts': 'Shift',
     'admin-kasir': 'Kasir',
+    'admin-shops': 'Cabang',
     'admin-reports': 'Laporan',
     'admin-settings': 'Pengaturan',
     'admin-brilink-transfer': 'BRILink — Transfer',
-    'admin-brilink-cash': 'BRILink — Tarik / Setor',
+    'admin-brilink-cash': 'BRILink — Tarik Tunai',
     'admin-brilink-topup': 'BRILink — Top Up',
     'admin-brilink-mutations': 'BRILink — Mutasi',
     'admin-brilink-fees': 'BRILink — Fee',
@@ -331,12 +340,14 @@ const pageSubtitle = computed(() => {
     'admin-products': 'Master produk dan stok gudang',
     'admin-debts': 'Manajemen hutang pelanggan',
     'admin-payments': 'Mutasi kas dan pembayaran',
+    'admin-shifts': 'Buka, tutup, dan rekonsiliasi shift kasir',
     'admin-kasir': 'Manajemen akun kasir',
+    'admin-shops': 'Kelola cabang & multi-toko',
     'admin-reports': 'Laporan penjualan & laba',
     'admin-settings': 'Konfigurasi toko & sistem',
     'admin-brilink-transfer': 'Kirim dana antar bank',
-    'admin-brilink-cash': 'Layani tarik & setor tunai',
-    'admin-brilink-topup': 'Top up e-wallet, pulsa & paket data',
+    'admin-brilink-cash': 'Layani tarik tunai pelanggan',
+    'admin-brilink-topup': 'Top up e-wallet, pulsa, PLN & paket data',
     'admin-brilink-mutations': 'Riwayat transaksi BRILink',
     'admin-brilink-fees': 'Atur margin fee per transaksi',
   };

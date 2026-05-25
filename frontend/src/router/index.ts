@@ -108,12 +108,32 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'shifts',
+        name: 'admin-shifts',
+        component: () => import('@/views/admin/ComingSoonView.vue'),
+        meta: {
+          title: 'Shift',
+          description:
+            'Buka shift di pagi hari, tutup di sore dengan input nominal kas fisik. Sistem otomatis hitung selisih (variance) untuk audit kas harian.',
+        },
+      },
+      {
         path: 'kasir',
         name: 'admin-kasir',
         component: () => import('@/views/admin/ComingSoonView.vue'),
         meta: {
           title: 'Kasir',
           description: 'Kelola akun kasir, reset password, assign toko.',
+        },
+      },
+      {
+        path: 'shops',
+        name: 'admin-shops',
+        component: () => import('@/views/admin/ComingSoonView.vue'),
+        meta: {
+          title: 'Cabang',
+          description:
+            'Kelola toko / cabang — setiap cabang punya stok, kasir, dan laporan terpisah. Transfer antar cabang akan tersedia di Phase 2.',
         },
       },
       {
@@ -142,7 +162,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/admin/ComingSoonView.vue'),
         meta: {
           title: 'BRILink — Transfer',
-          description: 'Kirim dana antar rekening BRI dan bank lain dengan kalkulasi fee otomatis.',
+          description:
+            'Kirim dana antar rekening BRI dan ke bank lain dengan kalkulasi fee otomatis.',
           phase: 2,
         },
       },
@@ -151,8 +172,8 @@ const routes: RouteRecordRaw[] = [
         name: 'admin-brilink-cash',
         component: () => import('@/views/admin/ComingSoonView.vue'),
         meta: {
-          title: 'BRILink — Tarik & Setor',
-          description: 'Layani tarik tunai dan setor tunai pelanggan dari/ke rekening BRI.',
+          title: 'BRILink — Tarik Tunai',
+          description: 'Layani penarikan tunai pelanggan dari rekening BRI.',
           phase: 2,
         },
       },
@@ -162,7 +183,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/admin/ComingSoonView.vue'),
         meta: {
           title: 'BRILink — Top Up & Pulsa',
-          description: 'Top-up e-wallet, pulsa, paket data, token listrik, dan tagihan.',
+          description:
+            'Top-up e-wallet, pulsa, paket data, dan token PLN dalam satu antarmuka.',
           phase: 2,
         },
       },
@@ -172,7 +194,8 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/admin/ComingSoonView.vue'),
         meta: {
           title: 'BRILink — Mutasi',
-          description: 'Riwayat transaksi BRILink dan rekonsiliasi dengan saldo BRI.',
+          description:
+            'Riwayat transaksi BRILink dengan filter per kategori dan rekonsiliasi saldo BRI.',
           phase: 2,
         },
       },
