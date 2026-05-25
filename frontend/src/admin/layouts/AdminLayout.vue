@@ -317,6 +317,7 @@ const availableShops = computed(() => shopStore.availableShops);
  * - User SUPER_ADMIN (bisa pilih semua cabang), ATAU
  * - User punya akses ke >1 cabang (defensive — saat ini schema 1 user = 1 shop,
  *   tapi nanti kalau berubah tetep aman)
+ * - Atau SUPER_ADMIN belum pilih cabang (requireShopSelection still true)
  */
 const canSwitchShop = computed(
   () => authStore.isSuperAdmin || availableShops.value.length > 1,
@@ -356,6 +357,19 @@ onMounted(async () => {
       await shopStore.fetchShops();
     } catch {
       // Silent: dropdown akan empty kalau gagal
+    }
+  }
+
+  // Auto-select first shop kalau super-admin belum punya cabang aktif
+  if (authStore.isSuperAdmin && !shopStore.hasCurrentShop) {
+    const shops = availableShops.value;
+    if (shops.length > 0) {
+      try {
+        await shopStore.selectShop(shops[0].id);
+        await authStore.fetchUser();
+      } catch {
+        // Silent: user bisa pilih manual dari dropdown
+      }
     }
   }
 });
