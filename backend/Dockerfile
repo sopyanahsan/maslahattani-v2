@@ -39,6 +39,7 @@ RUN npx prisma generate
 
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
+COPY docker-entrypoint.sh ./
 
 # Set environment
 ENV NODE_ENV=production
@@ -49,6 +50,6 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 
 # Use dumb-init to run the app
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
-CMD ["npm", "run", "start:prod"]
+CMD ["sh", "docker-entrypoint.sh"]
 
 EXPOSE 3000
