@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
@@ -45,7 +45,13 @@ api.interceptors.response.use(
           // Refresh failed, clear tokens
           localStorage.removeItem('access_token');
           localStorage.removeItem('refresh_token');
-          window.location.href = '/kasir/login';
+          // Redirect ke login page yang sesuai berdasarkan path saat ini
+          const path = window.location.pathname;
+          if (path.startsWith('/admin')) {
+            window.location.href = '/admin/login';
+          } else {
+            window.location.href = '/kasir/login';
+          }
         }
       }
     }

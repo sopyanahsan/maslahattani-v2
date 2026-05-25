@@ -23,31 +23,44 @@
           </div>
         </div>
 
-        <!-- Step 1: Username + Password -->
+        <!-- Info Alert (mis. setelah OTP terkirim) -->
+        <div
+          v-if="infoMessage && !errorMessage"
+          class="mb-5 bg-blue-50 border-l-4 border-blue-500 rounded-md p-4"
+        >
+          <div class="flex items-start gap-2">
+            <component :is="ShieldCheckIcon" class="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+            <p class="text-sm text-blue-800">{{ infoMessage }}</p>
+          </div>
+        </div>
+
+        <!-- Step 1: Username/Email + Password -->
         <form v-if="step === 'credentials'" @submit.prevent="handleCredentials" class="space-y-5">
-          <!-- Username Field -->
+          <!-- Identifier Field (email / username) -->
           <div>
-            <label for="username" class="block text-xs font-semibold text-slate-900 mb-1.5">
-              Username
+            <label for="identifier" class="block text-xs font-semibold text-slate-900 mb-1.5">
+              Email atau Username
             </label>
             <div class="relative">
               <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                 <component :is="UserIcon" class="w-4 h-4 text-slate-400" />
               </div>
               <input
-                id="username"
-                v-model="form.username"
+                id="identifier"
+                v-model="form.identifier"
                 type="text"
-                placeholder="admin"
+                placeholder="admin@maslahat-tani.com"
                 autocomplete="username"
                 required
                 :disabled="isLoading"
                 class="input-field pl-10"
-                :class="{ '!border-red-500 !ring-2 !ring-red-100': errors.username }"
-                @input="clearFieldError('username')"
+                :class="{ '!border-red-500 !ring-2 !ring-red-100': errors.identifier }"
+                @input="clearFieldError('identifier')"
               />
             </div>
-            <p v-if="errors.username" class="mt-1 text-xs text-red-600">{{ errors.username }}</p>
+            <p v-if="errors.identifier" class="mt-1 text-xs text-red-600">
+              {{ errors.identifier }}
+            </p>
           </div>
 
           <!-- Password Field -->
@@ -139,7 +152,7 @@
           <div class="flex items-center justify-between">
             <button
               type="button"
-              :disabled="otpCooldown > 0"
+              :disabled="otpCooldown > 0 || isLoading"
               class="text-xs text-blue-600 hover:text-blue-700 font-medium disabled:text-slate-400 disabled:cursor-not-allowed"
               @click="resendOtp"
             >
@@ -178,7 +191,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onUnmounted } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
 import {
   ShieldCheck as ShieldCheckIcon,
@@ -192,6 +205,7 @@ import {
 } from 'lucide-vue-next';
 
 const router = useRouter();
+const route = useRoute();
 const authStore = useAuthStore();
 
 type Step = 'credentials' | 'otp';
@@ -199,13 +213,13 @@ type Step = 'credentials' | 'otp';
 const step = ref<Step>('credentials');
 
 const form = reactive({
-  username: '',
+  identifier: '',
   password: '',
   otp: '',
 });
 
 const errors = reactive({
-  username: '',
+  identifier: '',
   password: '',
   otp: '',
 });
@@ -213,10 +227,11 @@ const errors = reactive({
 const showPassword = ref(false);
 const isLoading = ref(false);
 const errorMessage = ref('');
+const infoMessage = ref('');
 const otpCooldown = ref(0);
 let cooldownInterval: ReturnType<typeof setInterval> | null = null;
 
-function clearFieldError(field: 'username' | 'password' | 'otp') {
+function clearFieldError(field: 'identifier' | 'password' | 'otp') {
   errors[field] = '';
   errorMessage.value = '';
 }
@@ -224,16 +239,17 @@ function clearFieldError(field: 'username' | 'password' | 'otp') {
 function validateCredentials(): boolean {
   let valid = true;
 
-  if (!form.username.trim()) {
-    errors.username = 'Username wajib diisi';
+  if (!form.identifier.trim()) {
+    errors.identifier = 'Email/username wajib diisi';
     valid = false;
   }
 
   if (!form.password) {
     errors.password = 'Password wajib diisi';
     valid = false;
-  } else if (form.password.length < 6) {
-    errors.password = 'Password minimal 6 karakter';
+  } else if (form.password.length < 8) {
+    // Backend LoginDto: @MinLength(8)
+    errors.password = 'Password minimal 8 karakter';
     valid = false;
   }
 
@@ -249,46 +265,58 @@ function validateOtp(): boolean {
 }
 
 function startOtpCooldown() {
+  if (cooldownInterval) clearInterval(cooldownInterval);
   otpCooldown.value = 60;
   cooldownInterval = setInterval(() => {
     otpCooldown.value--;
-    if (otpCooldown.value <= 0) {
-      if (cooldownInterval) clearInterval(cooldownInterval);
+    if (otpCooldown.value <= 0 && cooldownInterval) {
+      clearInterval(cooldownInterval);
+      cooldownInterval = null;
     }
   }, 1000);
 }
 
 function handleOtpInput() {
-  // Only allow numeric input
+  // Hanya angka, max 6 digit
   form.otp = form.otp.replace(/\D/g, '').slice(0, 6);
   clearFieldError('otp');
 }
 
+function redirectAfterLogin() {
+  const redirectTo = (route.query.redirect as string) || '/admin/dashboard';
+  router.push(redirectTo);
+}
+
 async function handleCredentials() {
   errorMessage.value = '';
+  infoMessage.value = '';
 
   if (!validateCredentials()) return;
 
   isLoading.value = true;
 
   try {
-    // First attempt login without OTP to trigger OTP send
-    await authStore.login({
-      username: form.username.trim(),
+    const outcome = await authStore.login({
+      identifier: form.identifier.trim(),
       password: form.password,
     });
 
-    // If login succeeds without OTP (shouldn't happen for admin but handle gracefully)
-    router.push('/admin/dashboard');
-  } catch (err: any) {
-    // If server responds with OTP required, move to OTP step
-    if (err.message?.toLowerCase().includes('otp') || err.message?.includes('2FA')) {
+    if (outcome.status === 'otp_required') {
       step.value = 'otp';
+      infoMessage.value = outcome.message;
       startOtpCooldown();
-      errorMessage.value = '';
-    } else {
-      errorMessage.value = err.message || 'Username atau password salah.';
+      return;
     }
+
+    // Sukses (kasir/non-admin tanpa OTP — tetap pastikan role admin)
+    if (!authStore.isAdmin) {
+      errorMessage.value = 'Akun ini bukan admin. Gunakan login kasir.';
+      authStore.clearAuth();
+      return;
+    }
+    redirectAfterLogin();
+  } catch (err: any) {
+    errorMessage.value = err.message || 'Email/username atau password salah.';
   } finally {
     isLoading.value = false;
   }
@@ -302,13 +330,19 @@ async function handleOtpLogin() {
   isLoading.value = true;
 
   try {
-    await authStore.login({
-      username: form.username.trim(),
+    const outcome = await authStore.login({
+      identifier: form.identifier.trim(),
       password: form.password,
       otp: form.otp,
     });
 
-    router.push('/admin/dashboard');
+    if (outcome.status === 'success') {
+      redirectAfterLogin();
+    } else {
+      // Backend masih minta OTP (mis. OTP-nya udah expired & dikirim baru)
+      infoMessage.value = outcome.message;
+      startOtpCooldown();
+    }
   } catch (err: any) {
     errorMessage.value = err.message || 'Kode OTP salah atau sudah kadaluarsa.';
   } finally {
@@ -317,19 +351,22 @@ async function handleOtpLogin() {
 }
 
 async function resendOtp() {
-  if (otpCooldown.value > 0) return;
+  if (otpCooldown.value > 0 || isLoading.value) return;
 
   isLoading.value = true;
   errorMessage.value = '';
 
   try {
-    // Re-trigger OTP by attempting login again without OTP
-    await authStore.login({
-      username: form.username.trim(),
+    const outcome = await authStore.login({
+      identifier: form.identifier.trim(),
       password: form.password,
     });
-  } catch {
-    // Expected: OTP sent again
+
+    if (outcome.status === 'otp_required') {
+      infoMessage.value = outcome.message;
+    }
+  } catch (err: any) {
+    errorMessage.value = err.message || 'Gagal kirim ulang OTP.';
   } finally {
     startOtpCooldown();
     isLoading.value = false;
@@ -341,6 +378,12 @@ function backToCredentials() {
   form.otp = '';
   errors.otp = '';
   errorMessage.value = '';
+  infoMessage.value = '';
+  if (cooldownInterval) {
+    clearInterval(cooldownInterval);
+    cooldownInterval = null;
+  }
+  otpCooldown.value = 0;
 }
 
 onUnmounted(() => {

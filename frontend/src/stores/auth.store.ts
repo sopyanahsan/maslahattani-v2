@@ -1,15 +1,20 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import authService, { type AuthResponse, type LoginPayload } from '@/services/auth.service';
+import authService, {
+  type AuthUserDto,
+  type LoginPayload,
+  type LoginResponse,
+} from '@/services/auth.service';
 
-export interface AuthUser {
-  id: string;
-  email: string;
-  username?: string;
-  role: 'SUPER_ADMIN' | 'ADMIN' | 'KASIR' | 'CASHIER_SUPERVISOR';
-  status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
-  shopId?: string;
-}
+export type AuthUser = AuthUserDto;
+
+/** Hasil login dari sisi store untuk UI:
+ *  - 'success'      → token sudah ada, user terisi, boleh redirect.
+ *  - 'otp_required' → backend minta OTP (khusus admin), UI lanjut ke step OTP.
+ */
+export type LoginOutcome =
+  | { status: 'success'; user: AuthUser }
+  | { status: 'otp_required'; message: string };
 
 export const useAuthStore = defineStore('auth', () => {
   // === State ===
@@ -21,10 +26,12 @@ export const useAuthStore = defineStore('auth', () => {
 
   // === Getters ===
   const isAuthenticated = computed(() => !!token.value);
-  const isAdmin = computed(() =>
-    user.value?.role === 'ADMIN' || user.value?.role === 'SUPER_ADMIN',
+  const isAdmin = computed(
+    () => user.value?.role === 'ADMIN' || user.value?.role === 'SUPER_ADMIN',
   );
-  const isKasir = computed(() => user.value?.role === 'KASIR');
+  const isKasir = computed(
+    () => user.value?.role === 'KASIR' || user.value?.role === 'CASHIER_SUPERVISOR',
+  );
   const userRole = computed(() => user.value?.role);
   const fullName = computed(() => user.value?.username || user.value?.email || '');
 
@@ -45,18 +52,34 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('refresh_token');
   }
 
-  async function login(payload: LoginPayload): Promise<AuthResponse> {
+  /**
+   * Login. Mengembalikan outcome supaya UI tahu apakah harus minta OTP.
+   * Throw `Error` kalau credential salah atau request gagal.
+   */
+  async function login(payload: LoginPayload): Promise<LoginOutcome> {
     loading.value = true;
     error.value = null;
 
     try {
-      const response = await authService.login(payload);
+      const response: LoginResponse = await authService.login(payload);
+
+      // Backend butuh OTP (admin step 1). Tidak ada token, JANGAN set apa-apa.
+      if (response.success === false) {
+        return {
+          status: 'otp_required',
+          message: response.message || 'Kode OTP telah dikirim ke email Anda.',
+        };
+      }
+
+      // Login sukses — token tersedia.
       setTokens(response.token, response.refreshToken);
       user.value = response.user;
-      return response;
+      return { status: 'success', user: response.user };
     } catch (err: any) {
       const message =
-        err.response?.data?.message || 'Login gagal. Periksa email dan password Anda.';
+        err.response?.data?.message ||
+        err.message ||
+        'Login gagal. Periksa email/username dan password Anda.';
       error.value = message;
       throw new Error(message);
     } finally {
