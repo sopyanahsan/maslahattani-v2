@@ -1,17 +1,27 @@
 <template>
-  <div class="min-h-screen bg-slate-50">
+  <div class="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
     <!-- Mobile Topbar -->
-    <div class="lg:hidden bg-white border-b border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
+    <div class="lg:hidden bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-3 flex items-center justify-between sticky top-0 z-30">
       <div class="flex items-center gap-2">
         <button
-          class="p-2 -ml-2 text-slate-700 hover:bg-slate-100 rounded-md"
+          class="p-2 -ml-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
           @click="toggleSidebar"
         >
           <span class="material-symbols-outlined">menu</span>
         </button>
-        <h1 class="text-base font-bold text-slate-950">Maslahat Tani</h1>
+        <h1 class="text-base font-bold text-slate-950 dark:text-white">Maslahat Tani</h1>
       </div>
-      <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-[10px] font-medium">Option A</span>
+      <div class="flex items-center gap-2">
+        <!-- Dark Mode Toggle (Mobile) -->
+        <button
+          class="p-2 text-slate-600 dark:text-yellow-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md transition"
+          @click="toggle"
+          :title="isDark ? 'Light Mode' : 'Dark Mode'"
+        >
+          <span class="material-symbols-outlined text-[20px]">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
+        </button>
+        <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded text-[10px] font-medium">Option A</span>
+      </div>
     </div>
 
     <!-- Sidebar Overlay (mobile) -->
@@ -27,8 +37,20 @@
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
     >
       <div class="p-6 border-b border-slate-800">
-        <h1 class="text-lg font-bold text-white">Maslahat Tani</h1>
-        <p class="text-slate-400 text-xs mt-0.5">Design System Showcase</p>
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-lg font-bold text-white">Maslahat Tani</h1>
+            <p class="text-slate-400 text-xs mt-0.5">Design System Showcase</p>
+          </div>
+          <!-- Dark Mode Toggle (Desktop Sidebar) -->
+          <button
+            class="hidden lg:flex p-2 text-slate-400 hover:text-yellow-400 hover:bg-slate-800 rounded-md transition"
+            @click="toggle"
+            :title="isDark ? 'Light Mode' : 'Dark Mode'"
+          >
+            <span class="material-symbols-outlined text-[20px]">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
+          </button>
+        </div>
       </div>
       <nav class="flex-1 px-3 py-3 space-y-1 overflow-y-auto">
         <a
@@ -58,18 +80,25 @@
     <!-- Main Content -->
     <main class="lg:ml-64 p-4 sm:p-6 lg:p-8">
       <header class="mb-8 sm:mb-12">
-        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-950">
+        <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-slate-950 dark:text-white">
           Design System Showcase
         </h1>
-        <p class="text-sm sm:text-base text-slate-600 mt-2">
+        <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-2">
           Visual identity dan UI components untuk Maslahat Tani v2 — POS + BRILink Agent System
         </p>
+        <!-- Dark Mode Status Badge -->
+        <div class="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+          :class="isDark ? 'bg-slate-800 text-yellow-400 border border-slate-700' : 'bg-blue-50 text-blue-700 border border-blue-200'"
+        >
+          <span class="material-symbols-outlined text-[16px]">{{ isDark ? 'dark_mode' : 'light_mode' }}</span>
+          {{ isDark ? 'Dark Mode Active' : 'Light Mode Active' }}
+        </div>
       </header>
 
       <div class="space-y-12 sm:space-y-16">
         <!-- 1. COLOR PALETTE -->
         <section id="section-color">
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 border-b border-slate-200 pb-3 mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 mb-6">
             1. Color Palette
           </h2>
 
@@ -103,10 +132,10 @@
 
         <!-- 2. TYPOGRAPHY -->
         <section id="section-typography">
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 border-b border-slate-200 pb-3 mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 mb-6">
             2. Typography
           </h2>
-          <div class="bg-white border border-slate-200 p-4 sm:p-6 lg:p-8 rounded-lg space-y-6">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 lg:p-8 rounded-lg space-y-6">
             <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between border-b border-slate-100 pb-4 gap-2">
               <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide w-full sm:w-24 shrink-0">H1</span>
               <h1 class="text-2xl sm:text-3xl lg:text-[32px] font-bold text-slate-950 flex-1">Dashboard Admin</h1>
@@ -137,10 +166,10 @@
 
         <!-- 3. BUTTONS -->
         <section id="section-buttons">
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 border-b border-slate-200 pb-3 mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 mb-6">
             3. Buttons
           </h2>
-          <div class="bg-white border border-slate-200 p-4 sm:p-6 rounded-lg space-y-6">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-lg space-y-6">
             <div>
               <p class="text-xs font-semibold text-slate-700 mb-3 uppercase tracking-wide">Variants</p>
               <div class="flex flex-wrap gap-2 sm:gap-3">
@@ -179,11 +208,11 @@
 
         <!-- 4. STAT CARDS -->
         <section id="section-cards">
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 border-b border-slate-200 pb-3 mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 mb-6">
             4. Stat Cards
           </h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-            <div class="bg-white border border-slate-200 p-4 sm:p-6 rounded-lg shadow-sm">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-lg shadow-sm">
               <div class="flex justify-between items-start mb-3">
                 <span class="p-2 bg-blue-100 rounded-lg">
                   <span class="material-symbols-outlined text-blue-600 text-[20px]">payments</span>
@@ -195,18 +224,18 @@
               <p class="text-xs text-slate-600 mb-1">Omzet Hari Ini</p>
               <p class="text-xl sm:text-2xl font-bold font-mono text-slate-950">Rp 2.500.000</p>
             </div>
-            <div class="bg-white border border-slate-200 p-4 sm:p-6 rounded-lg shadow-sm">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-lg shadow-sm">
               <div class="flex justify-between items-start mb-3">
-                <span class="p-2 bg-indigo-100 rounded-lg">
+                <span class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
                   <span class="material-symbols-outlined text-indigo-600 text-[20px]">receipt_long</span>
                 </span>
               </div>
               <p class="text-xs text-slate-600 mb-1">Total Transaksi</p>
               <p class="text-xl sm:text-2xl font-bold font-mono text-slate-950">47 Trx</p>
             </div>
-            <div class="bg-white border border-slate-200 p-4 sm:p-6 rounded-lg shadow-sm">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-lg shadow-sm">
               <div class="flex justify-between items-start mb-3">
-                <span class="p-2 bg-amber-100 rounded-lg">
+                <span class="p-2 bg-amber-100 dark:bg-amber-900/50 rounded-lg">
                   <span class="material-symbols-outlined text-amber-600 text-[20px]">event_busy</span>
                 </span>
               </div>
@@ -229,10 +258,10 @@
 
         <!-- 5. FORMS -->
         <section id="section-forms">
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 border-b border-slate-200 pb-3 mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 mb-6">
             5. Form Inputs
           </h2>
-          <div class="bg-white border border-slate-200 p-4 sm:p-6 rounded-lg">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-lg">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
               <div>
                 <label class="block text-xs font-semibold text-slate-900 mb-1.5">Nama Produk</label>
@@ -272,10 +301,10 @@
 
         <!-- 6. TABLE -->
         <section id="section-table">
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 border-b border-slate-200 pb-3 mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 mb-6">
             6. Table
           </h2>
-          <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg shadow-sm overflow-hidden">
             <div class="overflow-x-auto">
               <table class="w-full min-w-[600px]">
                 <thead class="bg-slate-50 border-b border-slate-200">
@@ -311,10 +340,10 @@
 
         <!-- 7. BADGES -->
         <section id="section-badges">
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 border-b border-slate-200 pb-3 mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 mb-6">
             7. Badges & Status
           </h2>
-          <div class="bg-white border border-slate-200 p-4 sm:p-6 rounded-lg">
+          <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-lg">
             <div class="flex flex-wrap gap-2 sm:gap-3">
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">Lunas</span>
               <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-700">Jatuh Tempo</span>
@@ -328,11 +357,11 @@
 
         <!-- 8. MODAL -->
         <section id="section-modal">
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 border-b border-slate-200 pb-3 mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 mb-6">
             8. Modal / Dialog
           </h2>
-          <div class="bg-slate-200/50 rounded-lg p-4 sm:p-8 flex items-center justify-center min-h-[300px] border border-dashed border-slate-300">
-            <div class="bg-white w-full max-w-md rounded-xl shadow-2xl border border-slate-200 overflow-hidden">
+          <div class="bg-slate-200/50 dark:bg-slate-800/50 rounded-lg p-4 sm:p-8 flex items-center justify-center min-h-[300px] border border-dashed border-slate-300 dark:border-slate-700">
+            <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
               <div class="p-5 sm:p-6">
                 <div class="flex items-center gap-4 mb-4">
                   <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center flex-shrink-0">
@@ -355,11 +384,11 @@
 
         <!-- 9. EMPTY & LOADING STATES -->
         <section id="section-states">
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 border-b border-slate-200 pb-3 mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 mb-6">
             9. Empty & Loading States
           </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-white border border-slate-200 rounded-lg h-64 flex flex-col items-center justify-center text-center p-6">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg h-64 flex flex-col items-center justify-center text-center p-6">
               <span class="text-4xl sm:text-5xl mb-3 opacity-50">📭</span>
               <p class="text-base font-semibold text-slate-900 mb-1">Belum Ada Transaksi</p>
               <p class="text-sm text-slate-600 max-w-[260px] mb-4">Mulai dengan membuat transaksi baru atau import data</p>
@@ -367,9 +396,9 @@
                 <span class="material-symbols-outlined text-[18px]">add</span> Buat Transaksi
               </button>
             </div>
-            <div class="bg-white border border-slate-200 rounded-lg h-64 flex flex-col items-center justify-center">
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg h-64 flex flex-col items-center justify-center">
               <div class="relative w-12 h-12">
-                <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
+                <div class="absolute inset-0 border-4 border-slate-100 dark:border-slate-800 rounded-full"></div>
                 <div class="absolute inset-0 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
               </div>
               <p class="mt-4 text-sm text-slate-600 animate-pulse">Memuat data...</p>
@@ -379,7 +408,7 @@
 
         <!-- 10. TOAST -->
         <section id="section-toast">
-          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 border-b border-slate-200 pb-3 mb-6">
+          <h2 class="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white border-b border-slate-200 dark:border-slate-800 pb-3 mb-6">
             10. Toast / Notifications
           </h2>
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
@@ -409,7 +438,7 @@
       </div>
 
       <!-- Footer -->
-      <footer class="mt-16 border-t border-slate-200 pt-8 pb-6 text-center">
+      <footer class="mt-16 border-t border-slate-200 dark:border-slate-800 pt-8 pb-6 text-center">
         <div class="flex items-center justify-center gap-2 mb-3">
           <div class="h-2 w-10 bg-blue-600 rounded-full"></div>
           <div class="h-2 w-2 bg-blue-200 rounded-full"></div>
@@ -424,6 +453,9 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import { useDarkMode } from '@/composables/useDarkMode';
+
+const { isDark, toggle } = useDarkMode();
 
 const sidebarOpen = ref(false);
 
