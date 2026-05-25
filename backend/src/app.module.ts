@@ -6,6 +6,7 @@ import { HealthModule } from './health/health.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { ProductsModule } from './products/products.module';
 import { StockModule } from './stock/stock.module';
+import { DebtsModule } from './debts/debts.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { StockModule } from './stock/stock.module';
     TransactionsModule,
     ProductsModule,
     StockModule,
+    DebtsModule,
   ],
   controllers: [],
   providers: [],

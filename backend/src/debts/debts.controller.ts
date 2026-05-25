@@ -1,0 +1,57 @@
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Param,
+  Body,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { DebtsService } from './debts.service';
+import { CreateDebtDto } from './dto/create-debt.dto';
+import { PayDebtDto } from './dto/pay-debt.dto';
+import { QueryDebtDto } from './dto/query-debt.dto';
+
+@ApiTags('Debts / Hutang')
+@Controller('api/debts')
+@UseGuards(JwtAuthGuard)
+@ApiBearerAuth()
+export class DebtsController {
+  constructor(private readonly debtsService: DebtsService) {}
+
+  @Post()
+  @ApiOperation({ summary: 'Catat hutang baru (dengan DP opsional)' })
+  async create(@Body() dto: CreateDebtDto) {
+    return this.debtsService.create(dto);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'List hutang (filter: status, customer, shop + pagination)' })
+  async findAll(@Query() query: QueryDebtDto) {
+    return this.debtsService.findAll(query);
+  }
+
+  @Get('by-customer/:customerName')
+  @ApiOperation({ summary: 'List hutang by nama customer' })
+  async findByCustomer(
+    @Param('customerName') customerName: string,
+    @Query('shopId') shopId: string,
+  ) {
+    return this.debtsService.findByCustomer(customerName, shopId);
+  }
+
+  @Get(':id')
+  @ApiOperation({ summary: 'Detail hutang (include riwayat pembayaran)' })
+  async findOne(@Param('id') id: string) {
+    return this.debtsService.findOne(id);
+  }
+
+  @Put(':id/payment')
+  @ApiOperation({ summary: 'Bayar hutang (cicilan / lunas)' })
+  async payDebt(@Param('id') id: string, @Body() dto: PayDebtDto) {
+    return this.debtsService.payDebt(id, dto);
+  }
+}
