@@ -1,7 +1,9 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   devtools: { enabled: true },
-  
+  compatibilityDate: '2026-05-25',
+  srcDir: 'src/',
+
   app: {
     head: {
       title: 'Maslahat Tani v2',
