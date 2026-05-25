@@ -7,8 +7,10 @@ services:
       POSTGRES_USER: maslahat
       POSTGRES_PASSWORD: maslahat123
       POSTGRES_DB: maslahat_tani
+    # Host port bisa di-override via env: POSTGRES_PORT=5433 docker compose up -d
+    # Berguna kalau di host udah ada Postgres native yang make 5432.
     ports:
-      - '5432:5432'
+      - '${POSTGRES_PORT:-5432}:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -24,7 +26,7 @@ services:
     image: redis:7-alpine
     container_name: maslahat_redis
     ports:
-      - '6379:6379'
+      - '${REDIS_PORT:-6379}:6379'
     volumes:
       - redis_data:/data
     healthcheck:
