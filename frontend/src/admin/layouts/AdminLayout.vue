@@ -391,14 +391,16 @@ const navGroups: NavGroup[] = [
   },
   {
     title: 'BRILink',
-    badge: 'Phase 2',
-    muted: true,
     items: [
-      { to: '/admin/brilink/transfer', label: 'Transfer', icon: TransferIcon },
-      { to: '/admin/brilink/cash', label: 'Tarik Tunai', icon: BanknoteIcon },
-      { to: '/admin/brilink/topup', label: 'Top Up & Pulsa', icon: SmartphoneIcon },
-      { to: '/admin/brilink/mutations', label: 'Mutasi', icon: MutationIcon },
-      { to: '/admin/brilink/fees', label: 'Pengaturan Fee', icon: PercentIcon },
+      { to: '/admin/brilink', label: 'BRILink', icon: LandmarkIcon },
+    ],
+  },
+  {
+    title: 'Inventaris',
+    items: [
+      { to: '/admin/opname-sessions', label: 'Opname', icon: CheckIcon },
+      { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
+      { to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon },
     ],
   },
   {
@@ -407,6 +409,7 @@ const navGroups: NavGroup[] = [
       { to: '/admin/shops', label: 'Cabang', icon: ShopIcon },
       { to: '/admin/cashbox-categories', label: 'Kategori Cashbox', icon: BoxesIcon },
       { to: '/admin/reports', label: 'Laporan', icon: ReportIcon },
+      { to: '/admin/analytics', label: 'Analytics', icon: ReportIcon },
     ],
   },
 ];
