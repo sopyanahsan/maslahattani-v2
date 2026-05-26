@@ -171,6 +171,46 @@ const routes: RouteRecordRaw[] = [
         },
       },
 
+      // === Inventaris (Coming Soon) ===
+      {
+        path: 'opname-sessions',
+        name: 'admin-opname-sessions',
+        component: () => import('@/admin/views/ComingSoonView.vue'),
+        meta: {
+          title: 'Opname',
+          description: 'Sesi stock opname untuk verifikasi stok fisik.',
+        },
+      },
+      {
+        path: 'suppliers',
+        name: 'admin-suppliers',
+        component: () => import('@/admin/views/ComingSoonView.vue'),
+        meta: {
+          title: 'Supplier & PO',
+          description: 'Kelola supplier dan purchase order.',
+        },
+      },
+      {
+        path: 'transfers',
+        name: 'admin-transfers',
+        component: () => import('@/admin/views/ComingSoonView.vue'),
+        meta: {
+          title: 'Transfer Stok',
+          description: 'Transfer stok antar cabang.',
+        },
+      },
+
+      // === Analytics (Coming Soon) ===
+      {
+        path: 'analytics',
+        name: 'admin-analytics',
+        component: () => import('@/admin/views/ComingSoonView.vue'),
+        meta: {
+          title: 'Analytics',
+          description: 'Dashboard analitik bisnis.',
+        },
+      },
+
       // === BRILink (Phase 2) — semua placeholder dulu ===
       {
         path: 'brilink/transfer',
