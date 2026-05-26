@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import shiftService, {
   type ShiftDto,
-  type CloseShiftSummary,
+  type CloseShiftCategorySummary,
   type OpenShiftPayload,
   type CloseShiftPayload,
 } from '@/shared/services/shift.service';
@@ -11,8 +11,10 @@ import shiftService, {
  * Shift store: manage current open shift untuk kasir.
  *
  * Bekerja bareng auth.store + shop.store:
- * - currentShift: shift aktif user saat ini (atau null kalau belum buka)
- * - lastClosedSummary: summary saat selesai close shift (untuk UI confirm screen)
+ * - currentShift: shift aktif user saat ini (atau null kalau belum buka).
+ *   Selalu termasuk array `cashBoxes` per kategori.
+ * - lastClosedSummary: array per-kategori summary saat selesai close shift,
+ *   untuk UI confirm screen.
  *
  * Tidak persist ke localStorage karena shift state harus selalu fresh dari
  * server (backend yang authoritative).
@@ -23,7 +25,8 @@ export const useShiftStore = defineStore('shift', () => {
   // ============================================
   const currentShift = ref<ShiftDto | null>(null);
   const transactionCount = ref<number>(0);
-  const lastClosedSummary = ref<CloseShiftSummary | null>(null);
+  const lastClosedSummary = ref<CloseShiftCategorySummary[] | null>(null);
+  const lastClosedTotalTransactions = ref<number>(0);
   const loading = ref(false);
   const error = ref<string | null>(null);
 
@@ -48,6 +51,24 @@ export const useShiftStore = defineStore('shift', () => {
     );
   });
 
+  /** Total tunai di tangan = sum(startingCash + expectedCash) per kategori. */
+  const totalCashInHand = computed(() => {
+    if (!currentShift.value) return 0;
+    return currentShift.value.cashBoxes.reduce(
+      (sum, cb) => sum + cb.startingCash + cb.expectedCash,
+      0,
+    );
+  });
+
+  /** Total expected QRIS = sum dari semua kategori. */
+  const totalExpectedQRIS = computed(() => {
+    if (!currentShift.value) return 0;
+    return currentShift.value.cashBoxes.reduce(
+      (sum, cb) => sum + cb.expectedQRIS,
+      0,
+    );
+  });
+
   // ============================================
   // Actions
   // ============================================
@@ -58,6 +79,7 @@ export const useShiftStore = defineStore('shift', () => {
 
   function clearLastSummary() {
     lastClosedSummary.value = null;
+    lastClosedTotalTransactions.value = 0;
   }
 
   /**
@@ -107,11 +129,11 @@ export const useShiftStore = defineStore('shift', () => {
   }
 
   /**
-   * Tutup shift aktif. Backend hitung expectedCash/QRIS dari transaksi
-   * dalam shift, lalu compute variance.
+   * Tutup shift aktif. Backend hitung expectedCash/QRIS per kategori dari
+   * transaksi dalam shift, lalu compute variance.
    *
    * Set lastClosedSummary supaya UI bisa render layar "Shift Ditutup"
-   * dengan ringkasan variance.
+   * dengan ringkasan variance per kategori.
    */
   async function closeShift(shiftId: string, payload: CloseShiftPayload) {
     loading.value = true;
@@ -122,6 +144,7 @@ export const useShiftStore = defineStore('shift', () => {
       currentShift.value = null;
       transactionCount.value = 0;
       lastClosedSummary.value = response.summary;
+      lastClosedTotalTransactions.value = response.totalTransactions;
       return response;
     } catch (err: any) {
       error.value =
@@ -141,6 +164,7 @@ export const useShiftStore = defineStore('shift', () => {
     currentShift.value = null;
     transactionCount.value = 0;
     lastClosedSummary.value = null;
+    lastClosedTotalTransactions.value = 0;
     error.value = null;
   }
 
@@ -149,12 +173,15 @@ export const useShiftStore = defineStore('shift', () => {
     currentShift,
     transactionCount,
     lastClosedSummary,
+    lastClosedTotalTransactions,
     loading,
     error,
     // Getters
     hasOpenShift,
     shiftStartTime,
     shiftDurationMinutes,
+    totalCashInHand,
+    totalExpectedQRIS,
     // Actions
     fetchCurrentShift,
     openShift,

@@ -129,6 +129,46 @@ model ShopSetting {
 }
 
 // ============================================
+// CASH BOX CATEGORIES (multi-kas)
+// ============================================
+//
+// Toko bisa punya beberapa "kas" terpisah yang regulasi/audit-nya beda:
+// - RETAIL: kas penjualan biasa (default)
+// - SUBSIDI_PUPUK: kas subsidi pemerintah, terpisah karena ada laporan ke
+//   Pupuk Indonesia / Kementan dan margin diatur HET pemerintah
+// - LPG_SUBSIDI / BERAS_BULOG / dll bisa ditambah via admin panel
+//
+// CashBoxCategory di-manage SUPER_ADMIN saja (global, semua cabang pakai
+// kategori yang sama biar reporting cross-cabang konsisten).
+//
+// Per cabang akan punya saldo terpisah lewat ShiftCashBox (akumulasi dari
+// shift-shift yang sudah finalized).
+
+model CashBoxCategory {
+  id            String    @id @default(cuid())
+  code          String    @unique // "RETAIL", "SUBSIDI_PUPUK", dst (UPPERCASE)
+  name          String              // "Kas Retail", "Kas Subsidi Pupuk"
+  description   String?
+  /** Tailwind color class (mis "blue", "amber") atau hex untuk badge UI */
+  color         String?
+  /** Lucide icon name, mis "shopping-cart", "wheat" */
+  icon          String?
+  /** Default category yang dipakai kalau produk belum di-assign kategori. */
+  isDefault     Boolean   @default(false)
+  /** Soft-disable. False = tidak tampil di UI buka shift / POS. */
+  isActive      Boolean   @default(true)
+  sortOrder     Int       @default(0)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  shiftCashBoxes ShiftCashBox[]
+
+  @@index([isActive, sortOrder])
+  @@map("cash_box_categories")
+}
+
+// ============================================
 // PRODUCTS & INVENTORY
 // ============================================
 
@@ -392,17 +432,23 @@ model Shift {
   startTime           DateTime
   endTime             DateTime?
   
-  expectedCash        Int       // calculated from transactions
-  actualCash          Int?      // input manually
-  expectedQRIS        Int       // calculated from transactions
-  actualQRIS          Int?      // input manually
-  variance            Int?      // actualCash - expectedCash
-  
   status              ShiftStatus @default(OPEN)
   notes               String?
   finalizedAt         DateTime?
   finalizedBy         String?   // admin username
   
+  /**
+   * Per-category breakdown of cash & QRIS for this shift.
+   * Setiap kategori (RETAIL, SUBSIDI_PUPUK, dst) punya 1 row di sini dengan
+   * starting cash, expected vs actual, dan variance terpisah.
+   *
+   * Saat openShift: dibuat row per active category dengan startingCash dari
+   *   input kasir.
+   * Saat closeShift: expectedCash/QRIS dihitung dari transaksi shift, kasir
+   *   input actualCash/QRIS, sistem hitung variance.
+   */
+  cashBoxes           ShiftCashBox[]
+
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
   
@@ -410,4 +456,55 @@ model Shift {
   @@index([userId])
   @@index([status])
   @@map("shifts")
+}
+
+/**
+ * Per-category snapshot dari shift. Satu Shift bisa punya beberapa
+ * ShiftCashBox (mis: kas RETAIL + kas SUBSIDI_PUPUK).
+ *
+ * Diisi step-by-step:
+ * 1. Open shift: startingCash di-input kasir, expected/actual masih 0/null.
+ * 2. Selama shift: setiap transaksi update expectedCash/QRIS via service.
+ *    (Untuk sekarang masih dihitung on-demand saat closeShift dari sum
+ *     payments. Optimization caching bisa nanti.)
+ * 3. Close shift: kasir input actualCash & actualQRIS, sistem hitung
+ *    varianceCash & varianceQRIS.
+ */
+model ShiftCashBox {
+  id                  String          @id @default(cuid())
+  shift               Shift           @relation(fields: [shiftId], references: [id], onDelete: Cascade)
+  shiftId             String
+  category            CashBoxCategory @relation(fields: [categoryId], references: [id])
+  categoryId          String
+
+  startingCash        Int      @default(0) // input saat buka shift (rupiah)
+  expectedCash        Int      @default(0) // computed dari payments CASH
+  actualCash          Int?               // input saat tutup shift
+  varianceCash        Int?               // actualCash - (startingCash + expectedCash)
+
+  expectedQRIS        Int      @default(0) // computed dari payments QRIS
+  actualQRIS          Int?
+  varianceQRIS        Int?
+
+  /**
+   * Breakdown denominasi uang fisik saat tutup shift.
+   * Format JSON object: { "100000": 5, "50000": 3, ..., "100": 0, "lainnya": 5000 }
+   *  - key = nominal lembar/koin (rupiah string), kecuali "lainnya"
+   *  - value = jumlah lembar (count) untuk semua kunci kecuali "lainnya"
+   *  - "lainnya" = nominal raw (rupiah) untuk koin/recehan/lain yg tdk masuk slot.
+   *
+   * Optional: kalau kasir tidak input denominasi, field null. actualCash
+   * tetap dipakai sebagai source of truth.
+   *
+   * Server validate: sum(key * value for key != "lainnya") + lainnya == actualCash.
+   */
+  cashDenominations   Json?
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([shiftId, categoryId])
+  @@index([shiftId])
+  @@index([categoryId])
+  @@map("shift_cash_boxes")
 }

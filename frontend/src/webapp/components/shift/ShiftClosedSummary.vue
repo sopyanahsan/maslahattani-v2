@@ -24,121 +24,136 @@
       </p>
     </div>
 
-    <!-- Variance summary -->
-    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm divide-y divide-slate-100">
-      <!-- Cash row -->
-      <div class="p-4">
-        <div class="flex items-center justify-between mb-2">
-          <p class="text-xs font-semibold text-slate-700">Uang Tunai</p>
-          <span
-            v-if="summary.varianceCash !== 0"
-            :class="[
-              'text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded',
-              summary.varianceCash > 0
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-amber-100 text-amber-700',
-            ]"
-          >
-            {{ summary.varianceCash > 0 ? 'Lebih' : 'Kurang' }}
-          </span>
-          <span
-            v-else
-            class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700"
-          >
-            Cocok
-          </span>
+    <!-- Per-category variance breakdown -->
+    <div class="space-y-3">
+      <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-1">
+        Ringkasan per Kategori
+      </p>
+      <div
+        v-for="cat in summary"
+        :key="cat.categoryId"
+        class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
+      >
+        <!-- Category header -->
+        <div class="px-4 py-3 bg-slate-50 border-b border-slate-100">
+          <p class="text-sm font-semibold text-slate-900">{{ cat.categoryName }}</p>
         </div>
-        <div class="grid grid-cols-3 gap-2 text-center">
-          <div>
-            <p class="text-[10px] text-slate-500">Ekspektasi</p>
-            <p class="text-xs font-mono font-semibold text-slate-700 mt-0.5">
-              {{ formatRupiah(summary.expectedCash) }}
-            </p>
-          </div>
-          <div>
-            <p class="text-[10px] text-slate-500">Aktual</p>
-            <p class="text-xs font-mono font-semibold text-slate-900 mt-0.5">
-              {{ formatRupiah(summary.actualCash) }}
-            </p>
-          </div>
-          <div>
-            <p class="text-[10px] text-slate-500">Selisih</p>
-            <p
+
+        <!-- Cash row -->
+        <div class="p-4 border-b border-slate-100">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-semibold text-slate-700">Uang Tunai</p>
+            <span
               :class="[
-                'text-xs font-mono font-bold mt-0.5',
-                summary.varianceCash === 0
-                  ? 'text-emerald-700'
-                  : summary.varianceCash > 0
-                    ? 'text-blue-700'
-                    : 'text-amber-700',
+                'text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded',
+                cat.varianceCash === 0
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : cat.varianceCash > 0
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-amber-100 text-amber-700',
               ]"
             >
-              {{ summary.varianceCash > 0 ? '+' : '' }}{{ formatRupiah(summary.varianceCash) }}
-            </p>
+              {{ cat.varianceCash === 0 ? 'Cocok' : cat.varianceCash > 0 ? 'Lebih' : 'Kurang' }}
+            </span>
+          </div>
+          <div class="grid grid-cols-4 gap-2 text-center">
+            <div>
+              <p class="text-[10px] text-slate-500">Saldo Awal</p>
+              <p class="text-[11px] font-mono font-semibold text-slate-700 mt-0.5">
+                {{ formatRupiah(cat.startingCash) }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500">Ekspektasi</p>
+              <p class="text-[11px] font-mono font-semibold text-slate-700 mt-0.5">
+                {{ formatRupiah(cat.startingCash + cat.expectedCash) }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500">Aktual</p>
+              <p class="text-[11px] font-mono font-semibold text-slate-900 mt-0.5">
+                {{ formatRupiah(cat.actualCash) }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500">Selisih</p>
+              <p
+                :class="[
+                  'text-[11px] font-mono font-bold mt-0.5',
+                  cat.varianceCash === 0
+                    ? 'text-emerald-700'
+                    : cat.varianceCash > 0
+                      ? 'text-blue-700'
+                      : 'text-amber-700',
+                ]"
+              >
+                {{ cat.varianceCash > 0 ? '+' : ''
+                }}{{ formatRupiah(cat.varianceCash) }}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- QRIS row -->
-      <div class="p-4">
-        <div class="flex items-center justify-between mb-2">
-          <p class="text-xs font-semibold text-slate-700">QRIS</p>
-          <span
-            v-if="summary.varianceQRIS !== 0"
-            :class="[
-              'text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded',
-              summary.varianceQRIS > 0
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-amber-100 text-amber-700',
-            ]"
-          >
-            {{ summary.varianceQRIS > 0 ? 'Lebih' : 'Kurang' }}
-          </span>
-          <span
-            v-else
-            class="text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700"
-          >
-            Cocok
-          </span>
-        </div>
-        <div class="grid grid-cols-3 gap-2 text-center">
-          <div>
-            <p class="text-[10px] text-slate-500">Ekspektasi</p>
-            <p class="text-xs font-mono font-semibold text-slate-700 mt-0.5">
-              {{ formatRupiah(summary.expectedQRIS) }}
-            </p>
-          </div>
-          <div>
-            <p class="text-[10px] text-slate-500">Aktual</p>
-            <p class="text-xs font-mono font-semibold text-slate-900 mt-0.5">
-              {{ formatRupiah(summary.actualQRIS) }}
-            </p>
-          </div>
-          <div>
-            <p class="text-[10px] text-slate-500">Selisih</p>
-            <p
+        <!-- QRIS row (only show if there's QRIS expected/actual) -->
+        <div
+          v-if="cat.expectedQRIS > 0 || cat.actualQRIS > 0"
+          class="p-4"
+        >
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-xs font-semibold text-slate-700">QRIS</p>
+            <span
               :class="[
-                'text-xs font-mono font-bold mt-0.5',
-                summary.varianceQRIS === 0
-                  ? 'text-emerald-700'
-                  : summary.varianceQRIS > 0
-                    ? 'text-blue-700'
-                    : 'text-amber-700',
+                'text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded',
+                cat.varianceQRIS === 0
+                  ? 'bg-emerald-100 text-emerald-700'
+                  : cat.varianceQRIS > 0
+                    ? 'bg-blue-100 text-blue-700'
+                    : 'bg-amber-100 text-amber-700',
               ]"
             >
-              {{ summary.varianceQRIS > 0 ? '+' : '' }}{{ formatRupiah(summary.varianceQRIS) }}
-            </p>
+              {{ cat.varianceQRIS === 0 ? 'Cocok' : cat.varianceQRIS > 0 ? 'Lebih' : 'Kurang' }}
+            </span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 text-center">
+            <div>
+              <p class="text-[10px] text-slate-500">Ekspektasi</p>
+              <p class="text-[11px] font-mono font-semibold text-slate-700 mt-0.5">
+                {{ formatRupiah(cat.expectedQRIS) }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500">Aktual</p>
+              <p class="text-[11px] font-mono font-semibold text-slate-900 mt-0.5">
+                {{ formatRupiah(cat.actualQRIS) }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500">Selisih</p>
+              <p
+                :class="[
+                  'text-[11px] font-mono font-bold mt-0.5',
+                  cat.varianceQRIS === 0
+                    ? 'text-emerald-700'
+                    : cat.varianceQRIS > 0
+                      ? 'text-blue-700'
+                      : 'text-amber-700',
+                ]"
+              >
+                {{ cat.varianceQRIS > 0 ? '+' : ''
+                }}{{ formatRupiah(cat.varianceQRIS) }}
+              </p>
+            </div>
           </div>
         </div>
       </div>
+    </div>
 
-      <!-- Total transactions -->
-      <div class="p-4 flex items-center justify-between">
-        <p class="text-xs text-slate-600">Total transaksi shift</p>
-        <p class="text-sm font-mono font-bold text-slate-900">
-          {{ summary.totalTransactions }}
-        </p>
-      </div>
+    <!-- Total transactions -->
+    <div class="bg-white border border-slate-200 rounded-lg p-4 flex items-center justify-between">
+      <p class="text-xs text-slate-600">Total transaksi shift</p>
+      <p class="text-sm font-mono font-bold text-slate-900">
+        {{ totalTransactions }}
+      </p>
     </div>
 
     <!-- Note for big variance -->
@@ -148,8 +163,9 @@
     >
       <component :is="AlertTriangleIcon" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
       <p class="text-[11px] text-amber-800 leading-relaxed">
-        Variance kas Anda di atas Rp 10.000. Admin akan review shift ini sebelum
-        difinalisasi. Pastikan uang fisik sudah dihitung dengan benar.
+        Total variance Anda di atas Rp 10.000. Admin akan review shift ini
+        sebelum difinalisasi. Pastikan uang fisik sudah dihitung dengan benar
+        per kategori.
       </p>
     </div>
 
@@ -171,10 +187,11 @@ import {
   AlertTriangle as AlertTriangleIcon,
   AlertCircle as AlertCircleIcon,
 } from 'lucide-vue-next';
-import type { CloseShiftSummary } from '@/shared/services/shift.service';
+import type { CloseShiftCategorySummary } from '@/shared/services/shift.service';
 
 interface Props {
-  summary: CloseShiftSummary;
+  summary: CloseShiftCategorySummary[];
+  totalTransactions: number;
 }
 
 const props = defineProps<Props>();
@@ -183,16 +200,25 @@ defineEmits<{
   (e: 'done'): void;
 }>();
 
-const totalVariance = computed(
-  () => props.summary.varianceCash + props.summary.varianceQRIS,
+const totalVariance = computed(() =>
+  props.summary.reduce(
+    (sum, cat) => sum + cat.varianceCash + cat.varianceQRIS,
+    0,
+  ),
 );
 
 const hasSignificantVariance = computed(
   () => Math.abs(totalVariance.value) > 10000,
 );
 
+const allCocok = computed(() =>
+  props.summary.every(
+    (cat) => cat.varianceCash === 0 && cat.varianceQRIS === 0,
+  ),
+);
+
 const statusTone = computed(() => {
-  if (totalVariance.value === 0) {
+  if (allCocok.value) {
     return {
       bg: 'bg-emerald-50',
       border: 'border-emerald-200',
@@ -202,7 +228,7 @@ const statusTone = computed(() => {
       subtitleColor: 'text-emerald-700',
       icon: CheckCircleIcon,
       title: 'Shift Berhasil Ditutup',
-      subtitle: 'Saldo cocok, terima kasih atas ketelitiannya!',
+      subtitle: 'Saldo semua kategori cocok, terima kasih atas ketelitiannya!',
     };
   }
   if (hasSignificantVariance.value) {

@@ -2,6 +2,74 @@ import api from './api';
 import type { UserRole } from './auth.service';
 
 // ============================================
+// Cash denominations
+// ============================================
+
+/**
+ * Breakdown denominasi uang fisik per kategori.
+ * Format object dengan key string nominal (rupiah) atau "lainnya":
+ *
+ *   { "100000": 5, "50000": 3, ..., "100": 0, "lainnya": 5000 }
+ *
+ * - Setiap key kecuali "lainnya" = nominal lembar/koin (rupiah string),
+ *   value = jumlah lembar/koin.
+ * - Key "lainnya" = nominal raw (rupiah) untuk koin/recehan/lainnya.
+ */
+export type CashDenominations = {
+  '100000'?: number;
+  '50000'?: number;
+  '20000'?: number;
+  '10000'?: number;
+  '5000'?: number;
+  '2000'?: number;
+  '1000'?: number;
+  '500'?: number;
+  '200'?: number;
+  '100'?: number;
+  /** Raw rupiah (bukan count) untuk koin/recehan/lainnya. */
+  lainnya?: number;
+};
+
+/** Standard denomination keys, dari nominal terbesar ke terkecil. */
+export const DENOMINATION_KEYS: ReadonlyArray<keyof CashDenominations> = [
+  '100000',
+  '50000',
+  '20000',
+  '10000',
+  '5000',
+  '2000',
+  '1000',
+  '500',
+  '200',
+  '100',
+  'lainnya',
+];
+
+/**
+ * Hitung total rupiah dari breakdown denominasi.
+ * - Slot standar: nominal * count
+ * - "lainnya": value langsung (sudah dalam rupiah)
+ */
+export function computeTotalFromDenominations(
+  denominations: CashDenominations,
+): number {
+  let total = 0;
+  for (const key of DENOMINATION_KEYS) {
+    const value = denominations[key] ?? 0;
+    if (typeof value !== 'number' || value < 0) continue;
+    if (key === 'lainnya') {
+      total += value;
+    } else {
+      const nominal = parseInt(key as string, 10);
+      if (!Number.isNaN(nominal)) {
+        total += nominal * value;
+      }
+    }
+  }
+  return total;
+}
+
+// ============================================
 // Shared types (match backend response shape)
 // ============================================
 
@@ -20,18 +88,54 @@ export interface ShiftShopSummary {
   address?: string;
 }
 
+/**
+ * Kategori cashbox versi compact yang di-include di shift response.
+ * Untuk full CashBoxCategoryDto lihat cashbox-category.service.ts.
+ */
+export interface ShiftCashBoxCategorySummary {
+  id: string;
+  code: string;
+  name: string;
+  color?: string | null;
+  icon?: string | null;
+  isDefault: boolean;
+}
+
+/**
+ * Per-category snapshot dalam shift. Satu shift bisa punya N row ini
+ * (mis: RETAIL + SUBSIDI_PUPUK).
+ */
+export interface ShiftCashBoxDto {
+  id: string;
+  shiftId: string;
+  categoryId: string;
+  category: ShiftCashBoxCategorySummary;
+
+  startingCash: number;
+  expectedCash: number;
+  actualCash?: number | null;
+  varianceCash?: number | null;
+
+  expectedQRIS: number;
+  actualQRIS?: number | null;
+  varianceQRIS?: number | null;
+
+  /**
+   * Breakdown denominasi uang fisik saat tutup shift (opsional).
+   * Format: { "100000": 5, "50000": 3, ..., "lainnya": 5000 }
+   */
+  cashDenominations?: CashDenominations | null;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ShiftDto {
   id: string;
   userId: string;
   shopId: string;
   startTime: string;
   endTime?: string | null;
-
-  expectedCash: number;
-  actualCash?: number | null;
-  expectedQRIS: number;
-  actualQRIS?: number | null;
-  variance?: number | null;
 
   status: ShiftStatus;
   notes?: string | null;
@@ -43,20 +147,37 @@ export interface ShiftDto {
 
   user?: ShiftUserSummary;
   shop?: ShiftShopSummary;
+  /** Per-category breakdown — selalu di-include dari backend. */
+  cashBoxes: ShiftCashBoxDto[];
 }
 
 // ============================================
 // Request payloads
 // ============================================
 
-export interface OpenShiftPayload {
+export interface StartingCashByCategoryEntry {
+  categoryId: string;
   startingCash: number;
+}
+
+export interface OpenShiftPayload {
+  startingCashByCategory: StartingCashByCategoryEntry[];
   notes?: string;
 }
 
-export interface CloseShiftPayload {
+export interface ActualCashByCategoryEntry {
+  categoryId: string;
   actualCash: number;
   actualQRIS: number;
+  /**
+   * Optional breakdown denominasi. Kalau di-pass, server validate
+   * sum(denominations) === actualCash.
+   */
+  denominations?: CashDenominations;
+}
+
+export interface CloseShiftPayload {
+  actualByCategory: ActualCashByCategoryEntry[];
   notes?: string;
 }
 
@@ -81,19 +202,27 @@ export interface OpenShiftResponse {
   message: string;
 }
 
-export interface CloseShiftSummary {
+/**
+ * Per-category summary saat close shift. Frontend pakai ini untuk render
+ * layar "Shift Ditutup" dengan breakdown variance.
+ */
+export interface CloseShiftCategorySummary {
+  categoryId: string;
+  categoryCode: string;
+  categoryName: string;
+  startingCash: number;
   expectedCash: number;
   actualCash: number;
   varianceCash: number;
   expectedQRIS: number;
   actualQRIS: number;
   varianceQRIS: number;
-  totalTransactions: number;
 }
 
 export interface CloseShiftResponse {
   shift: ShiftDto;
-  summary: CloseShiftSummary;
+  summary: CloseShiftCategorySummary[];
+  totalTransactions: number;
   message: string;
 }
 

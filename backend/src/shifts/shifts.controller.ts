@@ -69,7 +69,6 @@ export class ShiftsController {
   async listShifts(@Query() query: QueryShiftDto, @Request() req: any) {
     return this.shiftsService.listShifts(
       query,
-      req.user.id,
       req.user.role,
       req.user.shopId,
     );
@@ -95,7 +94,6 @@ export class ShiftsController {
   async getShiftDetail(@Param('id') shiftId: string, @Request() req: any) {
     return this.shiftsService.getShiftDetail(
       shiftId,
-      req.user.id,
       req.user.role,
       req.user.shopId,
     );
@@ -117,7 +115,6 @@ export class ShiftsController {
   ) {
     return this.shiftsService.finalizeShift(
       shiftId,
-      req.user.id,
       req.user.username || req.user.email,
       dto,
     );

@@ -48,6 +48,60 @@
         </div>
       </div>
 
+      <!-- Per-category breakdown -->
+      <div class="space-y-2 mb-4">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-1">
+          Saldo per Kategori
+        </p>
+        <div
+          v-for="cb in shift.cashBoxes"
+          :key="cb.id"
+          class="bg-white border border-slate-200 rounded-lg p-3"
+        >
+          <div class="flex items-center gap-2 mb-2">
+            <span
+              :class="[
+                'inline-flex items-center justify-center w-7 h-7 rounded-md shrink-0',
+                colorBg(cb.category.color),
+              ]"
+            >
+              <span :class="['text-xs font-bold', colorText(cb.category.color)]">
+                {{ initials(cb.category.name) }}
+              </span>
+            </span>
+            <p class="text-xs font-semibold text-slate-900 flex-1 truncate">
+              {{ cb.category.name }}
+            </p>
+            <span
+              v-if="cb.category.isDefault"
+              class="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-blue-100 text-blue-700"
+            >
+              Default
+            </span>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <p class="text-[10px] text-slate-500">Saldo Awal</p>
+              <p class="text-xs font-mono font-semibold text-slate-900 mt-0.5">
+                {{ formatRupiah(cb.startingCash) }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500">Cash Masuk</p>
+              <p class="text-xs font-mono font-semibold text-emerald-700 mt-0.5">
+                {{ formatRupiah(cb.expectedCash) }}
+              </p>
+            </div>
+            <div>
+              <p class="text-[10px] text-slate-500">QRIS</p>
+              <p class="text-xs font-mono font-semibold text-blue-700 mt-0.5">
+                {{ formatRupiah(cb.expectedQRIS) }}
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Notes -->
       <div
         v-if="shift.notes"
@@ -87,8 +141,9 @@
         <div>
           <h2 class="text-base font-bold text-slate-950">Tutup Shift</h2>
           <p class="text-xs text-slate-500 mt-0.5">
-            Hitung uang fisik di laci kas, lalu input nominal aktualnya. Sistem
-            otomatis hitung selisih dengan ekspektasi.
+            Hitung total uang fisik di laci kas per kategori, lalu input
+            jumlah totalnya. Admin akan re-count via denominasi saat
+            verifikasi.
           </p>
         </div>
       </div>
@@ -102,62 +157,88 @@
         <p class="text-xs text-red-800">{{ errorMessage }}</p>
       </div>
 
-      <!-- Actual Cash -->
-      <div>
-        <label for="actual-cash" class="block text-xs font-semibold text-slate-900 mb-1.5">
-          Uang Tunai Aktual di Laci <span class="text-red-500">*</span>
-        </label>
-        <div class="relative">
-          <span
-            class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-mono text-slate-500"
-          >
-            Rp
-          </span>
-          <input
-            id="actual-cash"
-            v-model="actualCashDisplay"
-            type="text"
-            inputmode="numeric"
-            placeholder="0"
-            required
-            :disabled="loading"
-            class="input-field pl-10 font-mono text-right text-base"
-            @input="(e) => handleNumericInput(e, 'cash')"
-            @blur="handleClearError"
-          />
-        </div>
-        <p class="mt-1 text-xs text-slate-500">
-          Hitung semua uang fisik di laci kas, termasuk saldo awal.
+      <!-- Per-category actual inputs -->
+      <div class="space-y-3">
+        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+          Aktual per Kategori
         </p>
-      </div>
+        <div
+          v-for="cb in shift.cashBoxes"
+          :key="cb.id"
+          class="border border-slate-200 rounded-xl p-4 space-y-3"
+        >
+          <div class="flex items-center gap-2">
+            <span
+              :class="[
+                'inline-flex items-center justify-center w-8 h-8 rounded-lg shrink-0',
+                colorBg(cb.category.color),
+              ]"
+            >
+              <span :class="['text-sm font-bold', colorText(cb.category.color)]">
+                {{ initials(cb.category.name) }}
+              </span>
+            </span>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-semibold text-slate-900 truncate">
+                {{ cb.category.name }}
+              </p>
+              <p class="text-[10px] text-slate-500">
+                Ekspektasi: Rp {{ formatNumber(cb.startingCash + cb.expectedCash) }}
+                cash · Rp {{ formatNumber(cb.expectedQRIS) }} QRIS
+              </p>
+            </div>
+          </div>
 
-      <!-- Actual QRIS -->
-      <div>
-        <label for="actual-qris" class="block text-xs font-semibold text-slate-900 mb-1.5">
-          Total QRIS Diterima <span class="text-red-500">*</span>
-        </label>
-        <div class="relative">
-          <span
-            class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-mono text-slate-500"
-          >
-            Rp
-          </span>
-          <input
-            id="actual-qris"
-            v-model="actualQRISDisplay"
-            type="text"
-            inputmode="numeric"
-            placeholder="0"
-            required
-            :disabled="loading"
-            class="input-field pl-10 font-mono text-right text-base"
-            @input="(e) => handleNumericInput(e, 'qris')"
-            @blur="handleClearError"
-          />
+          <!-- Actual cash (single total input) -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-900 mb-1">
+              Uang Tunai Aktual <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <span
+                class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-mono text-slate-500"
+              >
+                Rp
+              </span>
+              <input
+                :value="formattedCash[cb.categoryId] || ''"
+                type="text"
+                inputmode="numeric"
+                placeholder="0"
+                required
+                :disabled="loading"
+                class="input-field pl-10 font-mono text-right text-sm"
+                @input="(e) => handleNumericInput(cb.categoryId, 'cash', e)"
+                @blur="handleClearError"
+              />
+            </div>
+          </div>
+
+          <!-- Actual QRIS -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-900 mb-1">
+              Total QRIS <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <span
+                class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-mono text-slate-500"
+              >
+                Rp
+              </span>
+              <input
+                :value="formattedQRIS[cb.categoryId] || ''"
+                type="text"
+                inputmode="numeric"
+                placeholder="0"
+                required
+                :disabled="loading"
+                class="input-field pl-10 font-mono text-right text-sm"
+                @input="(e) => handleNumericInput(cb.categoryId, 'qris', e)"
+                @blur="handleClearError"
+              />
+            </div>
+          </div>
         </div>
-        <p class="mt-1 text-xs text-slate-500">
-          Cek di app mitra QRIS, total transaksi sukses hari ini.
-        </p>
       </div>
 
       <!-- Notes -->
@@ -200,8 +281,8 @@
       <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
         <component :is="AlertTriangleIcon" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
         <p class="text-[11px] text-amber-800 leading-relaxed">
-          Setelah ditutup, shift akan menunggu finalisasi admin. Pastikan semua
-          uang fisik sudah dihitung dengan teliti.
+          Setelah ditutup, shift menunggu verifikasi admin. Admin akan
+          re-count uang fisik per pecahan saat finalisasi.
         </p>
       </div>
     </form>
@@ -209,7 +290,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import {
   StopCircle as StopCircleIcon,
   AlertCircle as AlertCircleIcon,
@@ -238,11 +319,13 @@ const emit = defineEmits<{
 
 const showCloseForm = ref(false);
 
-const actualCash = ref<number>(0);
-const actualCashDisplay = ref<string>('');
-const actualQRIS = ref<number>(0);
-const actualQRISDisplay = ref<string>('');
-const notes = ref<string>('');
+/** Per-category actual cash & QRIS state. Keyed by categoryId. */
+const actualCash = reactive<Record<string, number>>({});
+const actualQRIS = reactive<Record<string, number>>({});
+const formattedCash = reactive<Record<string, string>>({});
+const formattedQRIS = reactive<Record<string, string>>({});
+
+const notes = ref('');
 
 const shortShiftId = computed(() => props.shift.id.slice(-6).toUpperCase());
 
@@ -265,16 +348,25 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat('id-ID').format(value);
 }
 
-function handleNumericInput(event: Event, field: 'cash' | 'qris') {
+function formatRupiah(value: number): string {
+  return `Rp ${formatNumber(value)}`;
+}
+
+function handleNumericInput(
+  categoryId: string,
+  field: 'cash' | 'qris',
+  event: Event,
+) {
   const target = event.target as HTMLInputElement;
   const cleaned = target.value.replace(/\D/g, '');
   const parsed = cleaned === '' ? 0 : parseInt(cleaned, 10);
+
   if (field === 'cash') {
-    actualCash.value = parsed;
-    actualCashDisplay.value = parsed === 0 ? '' : formatNumber(parsed);
+    actualCash[categoryId] = parsed;
+    formattedCash[categoryId] = parsed === 0 ? '' : formatNumber(parsed);
   } else {
-    actualQRIS.value = parsed;
-    actualQRISDisplay.value = parsed === 0 ? '' : formatNumber(parsed);
+    actualQRIS[categoryId] = parsed;
+    formattedQRIS[categoryId] = parsed === 0 ? '' : formatNumber(parsed);
   }
   handleClearError();
 }
@@ -285,19 +377,78 @@ function handleClearError() {
 
 function handleCancel() {
   showCloseForm.value = false;
-  // reset
-  actualCash.value = 0;
-  actualCashDisplay.value = '';
-  actualQRIS.value = 0;
-  actualQRISDisplay.value = '';
+  for (const key of Object.keys(actualCash)) {
+    actualCash[key] = 0;
+    formattedCash[key] = '';
+  }
+  for (const key of Object.keys(actualQRIS)) {
+    actualQRIS[key] = 0;
+    formattedQRIS[key] = '';
+  }
   notes.value = '';
 }
 
 function handleSubmitClose() {
   emit('close-shift', {
-    actualCash: actualCash.value,
-    actualQRIS: actualQRIS.value,
+    actualByCategory: props.shift.cashBoxes.map((cb) => ({
+      categoryId: cb.categoryId,
+      actualCash: actualCash[cb.categoryId] ?? 0,
+      actualQRIS: actualQRIS[cb.categoryId] ?? 0,
+    })),
     notes: notes.value.trim() || undefined,
   });
+}
+
+function initials(name: string): string {
+  const words = name.split(/\s+/).filter(Boolean);
+  return ((words[0]?.[0] ?? '') + (words[1]?.[0] ?? ''))
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+function colorBg(color?: string | null): string {
+  switch ((color ?? '').toLowerCase()) {
+    case 'amber':
+      return 'bg-amber-100 border border-amber-200';
+    case 'emerald':
+    case 'green':
+      return 'bg-emerald-100 border border-emerald-200';
+    case 'red':
+      return 'bg-red-100 border border-red-200';
+    case 'purple':
+      return 'bg-purple-100 border border-purple-200';
+    case 'pink':
+      return 'bg-pink-100 border border-pink-200';
+    case 'indigo':
+      return 'bg-indigo-100 border border-indigo-200';
+    case 'orange':
+      return 'bg-orange-100 border border-orange-200';
+    case 'blue':
+    default:
+      return 'bg-blue-100 border border-blue-200';
+  }
+}
+
+function colorText(color?: string | null): string {
+  switch ((color ?? '').toLowerCase()) {
+    case 'amber':
+      return 'text-amber-700';
+    case 'emerald':
+    case 'green':
+      return 'text-emerald-700';
+    case 'red':
+      return 'text-red-700';
+    case 'purple':
+      return 'text-purple-700';
+    case 'pink':
+      return 'text-pink-700';
+    case 'indigo':
+      return 'text-indigo-700';
+    case 'orange':
+      return 'text-orange-700';
+    case 'blue':
+    default:
+      return 'text-blue-700';
+  }
 }
 </script>

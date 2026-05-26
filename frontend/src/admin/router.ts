@@ -61,25 +61,34 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'transactions',
         name: 'admin-transactions',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminTransactionsView.vue'),
         meta: {
           title: 'Transaksi',
-          description: 'List transaksi, void, detail receipt akan tersedia di sini.',
+          description: 'Riwayat transaksi retail, filter by tanggal/status, detail & void.',
         },
       },
       {
         path: 'products',
         name: 'admin-products',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminProductsView.vue'),
         meta: {
           title: 'Produk & Stok',
-          description: 'Master produk, stok in/out, opname, transfer antar gudang.',
+          description: 'Master produk, harga jual & modal, stok per cabang.',
+        },
+      },
+      {
+        path: 'stock',
+        name: 'admin-stock',
+        component: () => import('@/admin/views/AdminStockView.vue'),
+        meta: {
+          title: 'Stok & Inventaris',
+          description: 'Overview stok, restok, opname, dan riwayat pergerakan.',
         },
       },
       {
         path: 'debts',
         name: 'admin-debts',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminDebtsView.vue'),
         meta: {
           title: 'Hutang',
           description: 'Daftar hutang aktif, jatuh tempo, dan riwayat pembayaran.',
@@ -88,26 +97,36 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'payments',
         name: 'admin-payments',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminPaymentsView.vue'),
         meta: {
           title: 'Pembayaran',
-          description: 'Mutasi kas, QRIS, transfer, dan rekonsiliasi.',
+          description: 'Mutasi kas, saldo toko, audit, dan riwayat pembayaran per metode.',
         },
       },
       {
         path: 'shifts',
         name: 'admin-shifts',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminShiftsView.vue'),
         meta: {
           title: 'Shift',
           description:
-            'Buka shift di pagi hari, tutup di sore dengan input nominal kas fisik. Sistem otomatis hitung selisih (variance) untuk audit kas harian.',
+            'Daftar shift kasir per cabang. Filter by status & tanggal, lihat detail variance, dan finalisasi shift yang sudah ditutup.',
+        },
+      },
+      {
+        path: 'shifts/:id',
+        name: 'admin-shift-detail',
+        component: () => import('@/admin/views/AdminShiftDetailView.vue'),
+        meta: {
+          title: 'Detail Shift',
+          description:
+            'Rincian shift kasir, breakdown variance per kategori, transaksi, dan tombol finalisasi.',
         },
       },
       {
         path: 'kasir',
         name: 'admin-kasir',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminKasirView.vue'),
         meta: {
           title: 'Kasir',
           description: 'Kelola akun kasir, reset password, assign toko.',
@@ -116,26 +135,36 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'shops',
         name: 'admin-shops',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminShopsView.vue'),
         meta: {
           title: 'Cabang',
           description:
-            'Kelola toko / cabang — setiap cabang punya stok, kasir, dan laporan terpisah. Transfer antar cabang akan tersedia di Phase 2.',
+            'Kelola toko / cabang — setiap cabang punya stok, kasir, dan laporan terpisah.',
+        },
+      },
+      {
+        path: 'cashbox-categories',
+        name: 'admin-cashbox-categories',
+        component: () => import('@/admin/views/CashBoxCategoriesView.vue'),
+        meta: {
+          title: 'Kategori Cashbox',
+          description:
+            'Kelola kategori kas terpisah (Retail, Subsidi Pupuk, dst). Hanya super-admin yang bisa CRUD.',
         },
       },
       {
         path: 'reports',
         name: 'admin-reports',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminReportsView.vue'),
         meta: {
           title: 'Laporan',
-          description: 'Laporan penjualan harian, bulanan, dan laba kotor.',
+          description: 'Laporan penjualan harian, bulanan, laba kotor, dan breakdown metode bayar.',
         },
       },
       {
         path: 'settings',
         name: 'admin-settings',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminSettingsView.vue'),
         meta: {
           title: 'Pengaturan',
           description: 'Konfigurasi toko, struk, bahasa, dan preferensi sistem.',

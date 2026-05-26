@@ -21,6 +21,7 @@
     <ShiftClosedSummary
       v-else-if="lastClosedSummary"
       :summary="lastClosedSummary"
+      :total-transactions="lastClosedTotalTransactions"
       @done="handleDone"
     />
 
@@ -70,6 +71,9 @@ const hasOpenShift = computed(() => shiftStore.hasOpenShift);
 const transactionCount = computed(() => shiftStore.transactionCount);
 const shiftDurationMinutes = computed(() => shiftStore.shiftDurationMinutes);
 const lastClosedSummary = computed(() => shiftStore.lastClosedSummary);
+const lastClosedTotalTransactions = computed(
+  () => shiftStore.lastClosedTotalTransactions,
+);
 
 async function handleOpenShift(payload: OpenShiftPayload) {
   try {

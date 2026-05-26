@@ -11,6 +11,8 @@ import { DebtsModule } from './debts/debts.module';
 import { PaymentsModule } from './payments/payments.module';
 import { ShiftsModule } from './shifts/shifts.module';
 import { SettingsModule } from './settings/settings.module';
+import { CashBoxCategoriesModule } from './cashbox-categories/cashbox-categories.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -27,8 +29,10 @@ import { SettingsModule } from './settings/settings.module';
     StockModule,
     DebtsModule,
     PaymentsModule,
+    CashBoxCategoriesModule, // Harus di-import sebelum ShiftsModule (shift depend on category)
     ShiftsModule,
     SettingsModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [],

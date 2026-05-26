@@ -24,6 +24,36 @@ async function main() {
   console.log('🌱 Seeding database...\n');
 
   // ============================================
+  // CASH BOX CATEGORIES (default RETAIL only)
+  // ============================================
+  // SUBSIDI_PUPUK / kategori lain di-create via admin panel oleh super-admin
+  // sesuai kebutuhan toko. RETAIL adalah default mandatory.
+  await prisma.cashBoxCategory.upsert({
+    where: { code: 'RETAIL' },
+    update: {
+      name: 'Kas Retail',
+      description: 'Kas penjualan retail biasa (non-subsidi).',
+      color: 'blue',
+      icon: 'shopping-cart',
+      isDefault: true,
+      isActive: true,
+      sortOrder: 0,
+    },
+    create: {
+      id: 'cashbox-retail',
+      code: 'RETAIL',
+      name: 'Kas Retail',
+      description: 'Kas penjualan retail biasa (non-subsidi).',
+      color: 'blue',
+      icon: 'shopping-cart',
+      isDefault: true,
+      isActive: true,
+      sortOrder: 0,
+    },
+  });
+  console.log('✅ CashBoxCategory: RETAIL (default)');
+
+  // ============================================
   // SUPER ADMIN (shopId = null, akses semua cabang)
   // ============================================
   const superAdminPassword = await bcrypt.hash('Admin123!', 12);

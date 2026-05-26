@@ -19,6 +19,29 @@
         </div>
       </div>
       <div class="flex items-center gap-1">
+        <!-- Online/Offline indicator + pending sync count -->
+        <div class="flex items-center gap-1.5 mr-1">
+          <span
+            :class="[
+              'w-2 h-2 rounded-full shrink-0',
+              isOnline ? 'bg-emerald-500' : 'bg-red-500 animate-pulse',
+            ]"
+          />
+          <span
+            v-if="pendingCount > 0"
+            class="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-amber-100 text-amber-700"
+          >
+            <component :is="CloudOffIcon" class="w-2.5 h-2.5" />
+            {{ pendingCount }}
+          </span>
+          <span
+            v-if="isSyncing"
+            class="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700"
+          >
+            <component :is="Loader2Icon" class="w-2.5 h-2.5 animate-spin" />
+            Sync
+          </span>
+        </div>
         <button
           type="button"
           class="p-2 text-slate-600 hover:bg-slate-100 rounded-md transition-colors"
@@ -74,10 +97,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, type Component } from 'vue';
+import { computed, onMounted, onUnmounted, ref, type Component } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
+import { useSyncService } from '@/shared/services/sync.service';
 import {
   Store as StoreIcon,
   LogOut as LogOutIcon,
@@ -85,11 +109,31 @@ import {
   ShoppingCart as POSIcon,
   Landmark as LandmarkIcon,
   History as HistoryIcon,
+  CloudOff as CloudOffIcon,
+  Loader2 as Loader2Icon,
 } from 'lucide-vue-next';
 
 const router = useRouter();
 const authStore = useAuthStore();
 const shopStore = useShopStore();
+const { isSyncing, pendingCount, startAutoSync, stopAutoSync, refreshPendingCount } = useSyncService();
+
+const isOnline = ref(navigator.onLine);
+
+function handleOnlineChange() { isOnline.value = navigator.onLine; }
+
+onMounted(() => {
+  window.addEventListener('online', handleOnlineChange);
+  window.addEventListener('offline', handleOnlineChange);
+  startAutoSync();
+  refreshPendingCount();
+});
+
+onUnmounted(() => {
+  window.removeEventListener('online', handleOnlineChange);
+  window.removeEventListener('offline', handleOnlineChange);
+  stopAutoSync();
+});
 
 const shopName = computed(() => shopStore.currentShopName);
 const userName = computed(() => authStore.user?.username || authStore.user?.email);
