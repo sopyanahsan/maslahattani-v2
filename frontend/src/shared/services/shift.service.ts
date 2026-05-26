@@ -20,18 +20,48 @@ export interface ShiftShopSummary {
   address?: string;
 }
 
+/**
+ * Kategori cashbox versi compact yang di-include di shift response.
+ * Untuk full CashBoxCategoryDto lihat cashbox-category.service.ts.
+ */
+export interface ShiftCashBoxCategorySummary {
+  id: string;
+  code: string;
+  name: string;
+  color?: string | null;
+  icon?: string | null;
+  isDefault: boolean;
+}
+
+/**
+ * Per-category snapshot dalam shift. Satu shift bisa punya N row ini
+ * (mis: RETAIL + SUBSIDI_PUPUK).
+ */
+export interface ShiftCashBoxDto {
+  id: string;
+  shiftId: string;
+  categoryId: string;
+  category: ShiftCashBoxCategorySummary;
+
+  startingCash: number;
+  expectedCash: number;
+  actualCash?: number | null;
+  varianceCash?: number | null;
+
+  expectedQRIS: number;
+  actualQRIS?: number | null;
+  varianceQRIS?: number | null;
+
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ShiftDto {
   id: string;
   userId: string;
   shopId: string;
   startTime: string;
   endTime?: string | null;
-
-  expectedCash: number;
-  actualCash?: number | null;
-  expectedQRIS: number;
-  actualQRIS?: number | null;
-  variance?: number | null;
 
   status: ShiftStatus;
   notes?: string | null;
@@ -43,20 +73,32 @@ export interface ShiftDto {
 
   user?: ShiftUserSummary;
   shop?: ShiftShopSummary;
+  /** Per-category breakdown — selalu di-include dari backend. */
+  cashBoxes: ShiftCashBoxDto[];
 }
 
 // ============================================
 // Request payloads
 // ============================================
 
-export interface OpenShiftPayload {
+export interface StartingCashByCategoryEntry {
+  categoryId: string;
   startingCash: number;
+}
+
+export interface OpenShiftPayload {
+  startingCashByCategory: StartingCashByCategoryEntry[];
   notes?: string;
 }
 
-export interface CloseShiftPayload {
+export interface ActualCashByCategoryEntry {
+  categoryId: string;
   actualCash: number;
   actualQRIS: number;
+}
+
+export interface CloseShiftPayload {
+  actualByCategory: ActualCashByCategoryEntry[];
   notes?: string;
 }
 
@@ -81,19 +123,27 @@ export interface OpenShiftResponse {
   message: string;
 }
 
-export interface CloseShiftSummary {
+/**
+ * Per-category summary saat close shift. Frontend pakai ini untuk render
+ * layar "Shift Ditutup" dengan breakdown variance.
+ */
+export interface CloseShiftCategorySummary {
+  categoryId: string;
+  categoryCode: string;
+  categoryName: string;
+  startingCash: number;
   expectedCash: number;
   actualCash: number;
   varianceCash: number;
   expectedQRIS: number;
   actualQRIS: number;
   varianceQRIS: number;
-  totalTransactions: number;
 }
 
 export interface CloseShiftResponse {
   shift: ShiftDto;
-  summary: CloseShiftSummary;
+  summary: CloseShiftCategorySummary[];
+  totalTransactions: number;
   message: string;
 }
 

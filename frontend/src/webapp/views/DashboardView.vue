@@ -152,7 +152,7 @@ const currentShift = computed(() => shiftStore.currentShift);
 
 const expectedCashLabel = computed(() => {
   if (!currentShift.value) return '—';
-  const total = currentShift.value.expectedCash || 0;
+  const total = shiftStore.totalCashInHand;
   if (total === 0) return 'Rp 0';
   return `Rp ${new Intl.NumberFormat('id-ID').format(total)}`;
 });
