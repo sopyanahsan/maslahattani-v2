@@ -97,10 +97,10 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'payments',
         name: 'admin-payments',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminPaymentsView.vue'),
         meta: {
           title: 'Pembayaran',
-          description: 'Mutasi kas, QRIS, transfer, dan rekonsiliasi.',
+          description: 'Mutasi kas, saldo toko, audit, dan riwayat pembayaran per metode.',
         },
       },
       {
