@@ -49,6 +49,7 @@ model User {
   ownedShops          Shop[]    @relation("ShopOwner")
   brilinkTransactions BrilinkTransaction[] @relation("BrilinkCashier")
   opnameSessions      OpnameSession[]      @relation("OpnameConductor")
+  purchaseOrders      PurchaseOrder[]      @relation("POCreator")
 
   @@index([shopId])
   @@index([email])
@@ -118,6 +119,8 @@ model Shop {
   brilinkTransactions BrilinkTransaction[]
   brilinkFees         BrilinkFee[]
   opnameSessions      OpnameSession[]
+  suppliers           Supplier[]
+  purchaseOrders      PurchaseOrder[]
 
   @@map("shops")
 }
@@ -195,6 +198,7 @@ model Product {
   transactionItems    TransactionItem[]
   debts               Debt[]
   opnameItems         OpnameItem[]
+  purchaseOrderItems  PurchaseOrderItem[]
 
   @@unique([shopId, sku])
   @@index([shopId])
@@ -648,4 +652,81 @@ model BrilinkFee {
 
   @@index([shopId, category, isActive])
   @@map("brilink_fees")
+}
+
+
+// ============================================
+// SUPPLIER & PURCHASE ORDER MANAGEMENT
+// ============================================
+
+model Supplier {
+  id              String    @id @default(cuid())
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  name            String
+  phone           String?
+  address         String?
+  notes           String?
+  isActive        Boolean   @default(true)
+
+  purchaseOrders  PurchaseOrder[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([shopId])
+  @@map("suppliers")
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  ORDERED
+  PARTIAL
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id              String              @id @default(cuid())
+  shop            Shop                @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  supplier        Supplier            @relation(fields: [supplierId], references: [id])
+  supplierId      String
+  createdBy       User                @relation("POCreator", fields: [createdById], references: [id])
+  createdById     String
+
+  orderNumber     String              @unique
+  status          PurchaseOrderStatus @default(DRAFT)
+  totalAmount     Int                 @default(0)
+  notes           String?
+  orderedAt       DateTime?
+  receivedAt      DateTime?
+
+  items           PurchaseOrderItem[]
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([shopId])
+  @@index([supplierId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(cuid())
+  order           PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId         String
+  product         Product       @relation(fields: [productId], references: [id])
+  productId       String
+
+  quantity        Int
+  unitCost        Int           // harga beli per unit (rupiah)
+  subtotal        Int           // quantity * unitCost
+  receivedQty     Int           @default(0)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("purchase_order_items")
 }

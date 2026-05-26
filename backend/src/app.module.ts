@@ -15,6 +15,7 @@ import { CashBoxCategoriesModule } from './cashbox-categories/cashbox-categories
 import { ReportsModule } from './reports/reports.module';
 import { BrilinkModule } from './brilink/brilink.module';
 import { OpnameModule } from './opname/opname.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { OpnameModule } from './opname/opname.module';
     ReportsModule,
     BrilinkModule,
     OpnameModule,
+    SuppliersModule,
   ],
   controllers: [],
   providers: [],

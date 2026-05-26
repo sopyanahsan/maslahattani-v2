@@ -184,7 +184,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'suppliers',
         name: 'admin-suppliers',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminSuppliersView.vue'),
         meta: {
           title: 'Supplier & PO',
           description: 'Kelola supplier dan purchase order.',
