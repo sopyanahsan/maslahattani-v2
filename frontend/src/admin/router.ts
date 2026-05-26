@@ -105,6 +105,12 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'shifts/:id',
+        name: 'admin-shift-detail',
+        component: () => import('@/admin/views/AdminShiftDetailView.vue'),
+        meta: { title: 'Detail Shift' },
+      },
+      {
         path: 'kasir',
         name: 'admin-kasir',
         component: () => import('@/admin/views/ComingSoonView.vue'),
