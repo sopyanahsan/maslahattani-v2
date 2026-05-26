@@ -211,7 +211,17 @@ const routes: RouteRecordRaw[] = [
         },
       },
 
-      // === BRILink (Phase 2) — semua placeholder dulu ===
+      // === BRILink (Phase 2) ===
+      {
+        path: 'brilink',
+        name: 'admin-brilink',
+        component: () => import('@/admin/views/AdminBrilinkView.vue'),
+        meta: {
+          title: 'BRILink',
+          description: 'Dashboard layanan BRILink — transfer, tarik tunai, top-up, dan mutasi.',
+          phase: 2,
+        },
+      },
       {
         path: 'brilink/transfer',
         name: 'admin-brilink-transfer',
