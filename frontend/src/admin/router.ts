@@ -70,10 +70,19 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'products',
         name: 'admin-products',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminProductsView.vue'),
         meta: {
           title: 'Produk & Stok',
-          description: 'Master produk, stok in/out, opname, transfer antar gudang.',
+          description: 'Master produk, harga jual & modal, stok per cabang.',
+        },
+      },
+      {
+        path: 'stock',
+        name: 'admin-stock',
+        component: () => import('@/admin/views/AdminStockView.vue'),
+        meta: {
+          title: 'Stok & Inventaris',
+          description: 'Overview stok, restok, opname, dan riwayat pergerakan.',
         },
       },
       {
