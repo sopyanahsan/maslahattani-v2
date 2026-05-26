@@ -155,10 +155,10 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'reports',
         name: 'admin-reports',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminReportsView.vue'),
         meta: {
           title: 'Laporan',
-          description: 'Laporan penjualan harian, bulanan, dan laba kotor.',
+          description: 'Laporan penjualan harian, bulanan, laba kotor, dan breakdown metode bayar.',
         },
       },
       {

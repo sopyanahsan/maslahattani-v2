@@ -12,6 +12,7 @@ import { PaymentsModule } from './payments/payments.module';
 import { ShiftsModule } from './shifts/shifts.module';
 import { SettingsModule } from './settings/settings.module';
 import { CashBoxCategoriesModule } from './cashbox-categories/cashbox-categories.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
@@ -31,6 +32,7 @@ import { CashBoxCategoriesModule } from './cashbox-categories/cashbox-categories
     CashBoxCategoriesModule, // Harus di-import sebelum ShiftsModule (shift depend on category)
     ShiftsModule,
     SettingsModule,
+    ReportsModule,
   ],
   controllers: [],
   providers: [],
