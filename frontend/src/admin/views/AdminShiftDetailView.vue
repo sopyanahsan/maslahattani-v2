@@ -1,433 +1,511 @@
 <template>
-  <div class="space-y-4">
-    <!-- Back button -->
-    <RouterLink
-      :to="{ name: 'admin-shifts' }"
-      class="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-600 hover:text-slate-900 transition-colors"
+  <!-- Mobile blocker -->
+  <div class="md:hidden flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
+    <div class="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center mb-4">
+      <MonitorIcon class="w-8 h-8 text-amber-600" />
+    </div>
+    <h2 class="text-lg font-bold text-slate-900 mb-2">Layar Terlalu Kecil</h2>
+    <p class="text-sm text-slate-600 max-w-xs">
+      Gunakan laptop/tablet untuk verifikasi shift.
+    </p>
+  </div>
+
+  <!-- Desktop/Tablet Content -->
+  <div class="hidden md:block space-y-5">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <RouterLink
+          :to="{ name: 'admin-shifts' }"
+          class="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center
+                 hover:bg-slate-50 transition-colors"
+        >
+          <ArrowLeftIcon class="w-4 h-4 text-slate-600" />
+        </RouterLink>
+        <div>
+          <h1 class="text-xl font-bold text-slate-950">Settlement Shift</h1>
+          <p class="text-xs text-slate-500">{{ shiftMeta }}</p>
+        </div>
+      </div>
+
+      <ShiftStatusBadge v-if="shift" :status="shift.status" />
+    </div>
+
+    <!-- Loading state -->
+    <div v-if="loading" class="flex items-center justify-center py-20">
+      <Loader2Icon class="w-6 h-6 animate-spin text-slate-400" />
+      <span class="ml-2 text-sm text-slate-500">Memuat data shift...</span>
+    </div>
+
+    <!-- Error state -->
+    <div
+      v-else-if="loadError"
+      class="bg-red-50 border border-red-200 rounded-lg p-6 text-center"
     >
-      <component :is="ArrowLeftIcon" class="w-4 h-4" />
-      Kembali ke daftar shift
-    </RouterLink>
-
-    <!-- Loading -->
-    <div v-if="loading" class="bg-white border border-slate-200 rounded-2xl p-12 text-center">
-      <component :is="Loader2Icon" class="w-6 h-6 animate-spin text-blue-600 mx-auto mb-2" />
-      <p class="text-xs text-slate-500">Memuat detail shift…</p>
+      <AlertCircleIcon class="w-8 h-8 text-red-400 mx-auto mb-2" />
+      <p class="text-sm font-medium text-red-800">{{ loadError }}</p>
+      <button
+        class="mt-3 text-xs text-red-600 hover:text-red-700 underline"
+        @click="loadDetail"
+      >
+        Coba lagi
+      </button>
     </div>
 
-    <!-- Error -->
-    <div v-else-if="loadError" class="bg-white border border-slate-200 rounded-2xl p-6">
-      <div class="flex items-start gap-2 bg-red-50 border-l-4 border-red-500 rounded-md p-3">
-        <component :is="AlertCircleIcon" class="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
-        <p class="text-sm text-red-800">{{ loadError }}</p>
-      </div>
-    </div>
-
-    <template v-else-if="shift">
-      <!-- Header card -->
-      <div class="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-        <div class="flex items-start justify-between gap-3 mb-4">
-          <div class="flex items-center gap-3">
-            <div
-              class="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-sm font-bold text-blue-700 shrink-0"
-            >
-              {{ initials(shift.user?.username || shift.user?.email || '?') }}
-            </div>
-            <div>
-              <h2 class="text-base font-bold text-slate-950">
-                {{ shift.user?.username || shift.user?.email }}
-              </h2>
-              <p class="text-[11px] text-slate-500 font-mono">
-                #{{ shift.id.slice(-6).toUpperCase() }}
-              </p>
-            </div>
-          </div>
-          <ShiftStatusBadge :status="shift.status" />
+    <!-- ============================================ -->
+    <!-- 3-Column Settlement Layout                   -->
+    <!-- ============================================ -->
+    <div v-else-if="shift" class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <!-- ============================================ -->
+      <!-- COLUMN 1: Sales Summary                     -->
+      <!-- ============================================ -->
+      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+        <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <ReceiptIcon class="w-4 h-4 text-blue-600" />
+            Ringkasan Penjualan
+          </h3>
         </div>
 
-        <!-- Info grid -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-          <div>
-            <p class="text-[11px] text-slate-500">Cabang</p>
-            <p class="font-semibold text-slate-900 mt-0.5 truncate">
-              {{ shift.shop?.name || '—' }}
-            </p>
-          </div>
-          <div>
-            <p class="text-[11px] text-slate-500">Mulai</p>
-            <p class="font-semibold text-slate-900 mt-0.5">
-              {{ formatDateTime(shift.startTime) }}
-            </p>
-          </div>
-          <div>
-            <p class="text-[11px] text-slate-500">Selesai</p>
-            <p class="font-semibold text-slate-900 mt-0.5">
-              {{ shift.endTime ? formatDateTime(shift.endTime) : '— masih aktif' }}
-            </p>
-          </div>
-          <div>
-            <p class="text-[11px] text-slate-500">Durasi</p>
-            <p class="font-semibold text-slate-900 mt-0.5 font-mono">
-              {{ duration }}
-            </p>
-          </div>
-        </div>
-
-        <!-- Notes -->
-        <div
-          v-if="shift.notes"
-          class="bg-slate-50 border border-slate-200 rounded-lg p-3 mt-4"
-        >
-          <p class="text-[10px] uppercase tracking-wide text-slate-500 font-semibold mb-1">
-            Catatan
-          </p>
-          <p class="text-xs text-slate-700 whitespace-pre-line">{{ shift.notes }}</p>
-        </div>
-
-        <!-- Finalized info -->
-        <div
-          v-if="shift.status === 'FINALIZED' && shift.finalizedAt"
-          class="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4 flex items-start gap-2"
-        >
-          <component :is="CheckCircleIcon" class="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-          <div class="text-xs">
-            <p class="font-semibold text-blue-900">
-              Sudah difinalisasi
-            </p>
-            <p class="text-blue-700 mt-0.5">
-              Oleh <strong>{{ shift.finalizedBy }}</strong> pada
-              {{ formatDateTime(shift.finalizedAt) }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Per-category breakdown -->
-      <section>
-        <h3 class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 px-1">
-          Saldo per Kategori
-        </h3>
-        <div class="space-y-3">
+        <div class="p-5 space-y-4">
+          <!-- Per cashbox category -->
           <div
             v-for="cb in shift.cashBoxes"
             :key="cb.id"
-            class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
+            class="space-y-2 pb-3 border-b border-slate-100 last:border-0 last:pb-0"
           >
-            <!-- Category header -->
-            <div class="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center gap-2">
+            <div class="flex items-center gap-2 mb-1.5">
               <span
                 :class="[
-                  'inline-flex items-center justify-center w-7 h-7 rounded-md shrink-0',
+                  'inline-flex items-center justify-center w-5 h-5 rounded text-[9px] font-bold',
                   colorBg(cb.category.color),
+                  colorText(cb.category.color),
                 ]"
               >
-                <span :class="['text-xs font-bold', colorText(cb.category.color)]">
-                  {{ initials(cb.category.name) }}
-                </span>
+                {{ cb.category.code.slice(0, 2) }}
               </span>
-              <p class="text-sm font-semibold text-slate-900">
-                {{ cb.category.name }}
-              </p>
-              <span
-                v-if="cb.category.isDefault"
-                class="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded bg-blue-100 text-blue-700"
-              >
-                Default
-              </span>
+              <span class="text-xs font-semibold text-slate-800">{{ cb.category.name }}</span>
             </div>
 
-            <!-- Cash row -->
-            <div class="p-4 border-b border-slate-100">
-              <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-semibold text-slate-700">Uang Tunai</p>
-                <span
-                  v-if="shift.status !== 'OPEN'"
-                  :class="[
-                    'text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded',
-                    (cb.varianceCash ?? 0) === 0
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : (cb.varianceCash ?? 0) > 0
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-red-100 text-red-700',
-                  ]"
-                >
-                  {{
-                    (cb.varianceCash ?? 0) === 0
-                      ? 'Cocok'
-                      : (cb.varianceCash ?? 0) > 0
-                        ? 'Lebih'
-                        : 'Kurang'
-                  }}
+            <!-- Tunai -->
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-500 flex items-center gap-1.5">
+                  <BanknoteIcon class="w-3.5 h-3.5 text-emerald-500" />
+                  Tunai (Expected)
+                </span>
+                <span class="text-xs font-mono font-semibold text-slate-900">
+                  {{ formatRupiah(cb.startingCash + cb.expectedCash) }}
                 </span>
               </div>
-              <div class="grid grid-cols-4 gap-2 text-center">
-                <div>
-                  <p class="text-[10px] text-slate-500">Saldo Awal</p>
-                  <p class="text-[11px] font-mono font-semibold text-slate-700 mt-0.5">
-                    {{ formatRupiah(cb.startingCash) }}
-                  </p>
-                </div>
-                <div>
-                  <p class="text-[10px] text-slate-500">Ekspektasi</p>
-                  <p class="text-[11px] font-mono font-semibold text-slate-700 mt-0.5">
-                    {{ formatRupiah(cb.startingCash + cb.expectedCash) }}
-                  </p>
-                </div>
-                <div>
-                  <p class="text-[10px] text-slate-500">Aktual</p>
-                  <p class="text-[11px] font-mono font-semibold text-slate-900 mt-0.5">
-                    {{ cb.actualCash != null ? formatRupiah(cb.actualCash) : '—' }}
-                  </p>
-                </div>
-                <div>
-                  <p class="text-[10px] text-slate-500">Selisih</p>
-                  <p
-                    :class="[
-                      'text-[11px] font-mono font-bold mt-0.5',
-                      (cb.varianceCash ?? 0) === 0
-                        ? 'text-emerald-700'
-                        : (cb.varianceCash ?? 0) > 0
-                          ? 'text-blue-700'
-                          : 'text-red-700',
-                    ]"
-                  >
-                    {{ cb.varianceCash != null ? formatVariance(cb.varianceCash) : '—' }}
-                  </p>
-                </div>
+              <div class="flex items-center justify-between pl-5">
+                <span class="text-[11px] text-slate-400">Actual (kasir)</span>
+                <span class="text-xs font-mono text-slate-600">
+                  {{ cb.actualCash != null ? formatRupiah(cb.actualCash) : '—' }}
+                </span>
               </div>
             </div>
 
-            <!-- QRIS row -->
-            <div class="p-4">
-              <div class="flex items-center justify-between mb-2">
-                <p class="text-xs font-semibold text-slate-700">QRIS</p>
-                <span
-                  v-if="shift.status !== 'OPEN'"
-                  :class="[
-                    'text-[10px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded',
-                    (cb.varianceQRIS ?? 0) === 0
-                      ? 'bg-emerald-100 text-emerald-700'
-                      : (cb.varianceQRIS ?? 0) > 0
-                        ? 'bg-blue-100 text-blue-700'
-                        : 'bg-red-100 text-red-700',
-                  ]"
-                >
-                  {{
-                    (cb.varianceQRIS ?? 0) === 0
-                      ? 'Cocok'
-                      : (cb.varianceQRIS ?? 0) > 0
-                        ? 'Lebih'
-                        : 'Kurang'
-                  }}
+            <!-- QRIS -->
+            <div class="space-y-1">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-500 flex items-center gap-1.5">
+                  <QrCodeIcon class="w-3.5 h-3.5 text-blue-500" />
+                  QRIS (Expected)
+                </span>
+                <span class="text-xs font-mono font-semibold text-slate-900">
+                  {{ formatRupiah(cb.expectedQRIS) }}
                 </span>
               </div>
-              <div class="grid grid-cols-3 gap-2 text-center">
-                <div>
-                  <p class="text-[10px] text-slate-500">Ekspektasi</p>
-                  <p class="text-[11px] font-mono font-semibold text-slate-700 mt-0.5">
-                    {{ formatRupiah(cb.expectedQRIS) }}
-                  </p>
-                </div>
-                <div>
-                  <p class="text-[10px] text-slate-500">Aktual</p>
-                  <p class="text-[11px] font-mono font-semibold text-slate-900 mt-0.5">
-                    {{ cb.actualQRIS != null ? formatRupiah(cb.actualQRIS) : '—' }}
-                  </p>
-                </div>
-                <div>
-                  <p class="text-[10px] text-slate-500">Selisih</p>
-                  <p
-                    :class="[
-                      'text-[11px] font-mono font-bold mt-0.5',
-                      (cb.varianceQRIS ?? 0) === 0
-                        ? 'text-emerald-700'
-                        : (cb.varianceQRIS ?? 0) > 0
-                          ? 'text-blue-700'
-                          : 'text-red-700',
-                    ]"
-                  >
-                    {{ cb.varianceQRIS != null ? formatVariance(cb.varianceQRIS) : '—' }}
-                  </p>
-                </div>
+              <div class="flex items-center justify-between pl-5">
+                <span class="text-[11px] text-slate-400">Actual (kasir)</span>
+                <span class="text-xs font-mono text-slate-600">
+                  {{ cb.actualQRIS != null ? formatRupiah(cb.actualQRIS) : '—' }}
+                </span>
               </div>
+            </div>
+          </div>
+
+          <!-- Debit/Kredit placeholder -->
+          <div class="space-y-1 opacity-50 pt-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-500 flex items-center gap-1.5">
+                <CreditCardIcon class="w-3.5 h-3.5 text-indigo-500" />
+                Debit/Kredit
+              </span>
+              <span class="text-xs font-mono text-slate-400">—</span>
+            </div>
+            <p class="text-[10px] text-slate-400 pl-5">Belum tersedia (Phase 2)</p>
+          </div>
+
+          <!-- Totals -->
+          <div class="border-t border-slate-200 pt-3 space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-slate-700">Total Expected (Tunai)</span>
+              <span class="text-sm font-mono font-bold text-slate-950">
+                {{ formatRupiah(totalExpectedCash) }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-500">Total QRIS</span>
+              <span class="text-xs font-mono font-semibold text-slate-700">
+                {{ formatRupiah(totalExpectedQRIS) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Transaction count -->
+          <div class="bg-slate-50 rounded-md px-3 py-2 flex items-center justify-between">
+            <span class="text-xs text-slate-500">Jumlah Transaksi</span>
+            <span class="text-sm font-mono font-semibold text-slate-900">
+              {{ transactions.length }} trx
+            </span>
+          </div>
+
+          <!-- Shift time info -->
+          <div class="space-y-1.5 text-[11px] text-slate-500">
+            <div class="flex justify-between">
+              <span>Mulai</span>
+              <span class="font-mono">{{ formatDateTime(shift.startTime) }}</span>
+            </div>
+            <div v-if="shift.endTime" class="flex justify-between">
+              <span>Selesai</span>
+              <span class="font-mono">{{ formatDateTime(shift.endTime) }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span>Kasir</span>
+              <span class="font-medium text-slate-700">
+                {{ shift.user?.username ?? shift.user?.email ?? '—' }}
+              </span>
+            </div>
+            <div class="flex justify-between">
+              <span>Durasi</span>
+              <span class="font-mono font-medium text-slate-700">{{ duration }}</span>
             </div>
           </div>
         </div>
-      </section>
-
-      <!-- Transactions -->
-      <section v-if="transactions.length > 0">
-        <h3 class="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 px-1">
-          Transaksi dalam Shift ({{ transactions.length }})
-        </h3>
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
-          <div class="hidden md:block">
-            <table class="w-full">
-              <thead class="bg-slate-50 border-b border-slate-200">
-                <tr>
-                  <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600">
-                    No. Transaksi
-                  </th>
-                  <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600">
-                    Waktu
-                  </th>
-                  <th class="px-4 py-2 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600">
-                    Item
-                  </th>
-                  <th class="px-4 py-2 text-right text-[10px] font-bold uppercase tracking-wider text-slate-600">
-                    Total
-                  </th>
-                  <th class="px-4 py-2 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600">
-                    Pembayaran
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100">
-                <tr v-for="trx in transactions" :key="trx.id">
-                  <td class="px-4 py-2">
-                    <code class="text-[11px] font-mono text-slate-700">
-                      {{ trx.transactionNumber }}
-                    </code>
-                  </td>
-                  <td class="px-4 py-2 text-xs text-slate-600">
-                    {{ formatTime(trx.createdAt) }}
-                  </td>
-                  <td class="px-4 py-2 text-center text-xs font-mono text-slate-600">
-                    {{ trx.items.length }}
-                  </td>
-                  <td class="px-4 py-2 text-right text-sm font-mono font-semibold text-slate-900">
-                    {{ formatRupiah(trx.totalPrice) }}
-                  </td>
-                  <td class="px-4 py-2">
-                    <span
-                      v-for="(p, idx) in trx.payments"
-                      :key="p.id"
-                      class="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-1.5 py-0.5 rounded bg-slate-100 text-slate-700 mr-1"
-                    >
-                      {{ p.method }}
-                      <span class="text-slate-500 normal-case font-mono">
-                        {{ formatRupiah(p.amount) }}
-                      </span>
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <!-- Mobile -->
-          <div class="md:hidden divide-y divide-slate-100">
-            <div v-for="trx in transactions" :key="trx.id" class="p-3">
-              <div class="flex items-start justify-between gap-2 mb-1">
-                <code class="text-[11px] font-mono text-slate-700">
-                  {{ trx.transactionNumber }}
-                </code>
-                <p class="text-sm font-mono font-semibold text-slate-900">
-                  {{ formatRupiah(trx.totalPrice) }}
-                </p>
-              </div>
-              <p class="text-[11px] text-slate-500">
-                {{ formatTime(trx.createdAt) }} · {{ trx.items.length }} item
-              </p>
-              <div class="flex flex-wrap gap-1 mt-1.5">
-                <span
-                  v-for="p in trx.payments"
-                  :key="p.id"
-                  class="text-[10px] font-semibold uppercase px-1.5 py-0.5 rounded bg-slate-100 text-slate-700"
-                >
-                  {{ p.method }} {{ formatRupiah(p.amount) }}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- Empty transactions -->
-      <div
-        v-else
-        class="bg-white border border-dashed border-slate-200 rounded-2xl p-6 text-center"
-      >
-        <component :is="ReceiptIcon" class="w-8 h-8 text-slate-300 mx-auto mb-2" />
-        <p class="text-xs text-slate-500">Belum ada transaksi dalam shift ini.</p>
       </div>
 
-      <!-- Finalize action (CLOSED only) -->
-      <section
-        v-if="shift.status === 'CLOSED'"
-        class="bg-amber-50 border border-amber-200 rounded-2xl p-4"
-      >
-        <div class="flex items-start gap-3">
-          <component :is="AlertTriangleIcon" class="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
-          <div class="flex-1">
-            <h3 class="text-sm font-bold text-amber-900">Shift Menunggu Finalisasi</h3>
-            <p class="text-xs text-amber-800 mt-1 leading-relaxed">
-              Review variance per kategori di atas. Setelah difinalisasi, shift
-              tidak bisa diubah lagi dan saldo masuk ke laporan resmi.
-            </p>
-            <div class="mt-3">
-              <textarea
-                v-model="finalizeNotes"
-                rows="2"
-                placeholder="Catatan finalisasi (opsional, mis. 'Variance wajar dari kembalian receh')"
-                :disabled="finalizing"
-                class="input-field resize-none text-xs"
-              ></textarea>
-            </div>
+      <!-- ============================================ -->
+      <!-- COLUMN 2: Cash Denomination Input            -->
+      <!-- ============================================ -->
+      <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+        <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <CoinsIcon class="w-4 h-4 text-amber-600" />
+            Input Uang Tunai (per Pecahan)
+          </h3>
+          <p class="text-[11px] text-slate-500 mt-0.5">
+            Hitung fisik kas oleh admin saat finalisasi
+          </p>
+        </div>
+
+        <div class="p-5 space-y-4">
+          <!-- Per category denomination input -->
+          <div
+            v-for="cb in shift.cashBoxes"
+            :key="'denom-' + cb.id"
+            class="space-y-2"
+          >
             <div
-              v-if="finalizeError"
-              class="mt-2 text-xs text-red-700 bg-red-50 border border-red-200 rounded p-2"
+              v-if="shift.cashBoxes.length > 1"
+              class="flex items-center gap-2 pb-1"
             >
-              {{ finalizeError }}
-            </div>
-            <div class="flex items-center gap-2 mt-3">
-              <button
-                type="button"
-                :disabled="finalizing"
-                class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
-                @click="handleFinalize"
+              <span
+                :class="[
+                  'inline-flex items-center justify-center w-5 h-5 rounded text-[9px] font-bold',
+                  colorBg(cb.category.color),
+                  colorText(cb.category.color),
+                ]"
               >
-                <component v-if="finalizing" :is="Loader2Icon" class="w-3.5 h-3.5 animate-spin" />
-                <component v-else :is="CheckCircleIcon" class="w-3.5 h-3.5" />
-                {{ finalizing ? 'Memfinalisasi…' : 'Finalisasi Shift' }}
-              </button>
+                {{ cb.category.code.slice(0, 2) }}
+              </span>
+              <span class="text-xs font-semibold text-slate-700">
+                {{ cb.category.name }}
+              </span>
+            </div>
+
+            <CashDenominationInput
+              :model-value="getDenomination(cb.categoryId)"
+              :disabled="shift.status === 'FINALIZED'"
+              @update:model-value="(val) => setDenomination(cb.categoryId, val)"
+              @total-change="(val) => setDenomTotal(cb.categoryId, val)"
+            />
+
+            <div
+              v-if="shift.cashBoxes.length > 1"
+              class="border-b border-slate-100 pb-3 mb-3 last:border-0 last:pb-0 last:mb-0"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================ -->
+      <!-- COLUMN 3: Reconciliation & Finalize          -->
+      <!-- ============================================ -->
+      <div class="space-y-5">
+        <!-- Reconciliation Card -->
+        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <ScaleIcon class="w-4 h-4 text-purple-600" />
+              Rekonsiliasi
+            </h3>
+          </div>
+
+          <div class="p-5 space-y-3">
+            <!-- Per category reconciliation -->
+            <div
+              v-for="cb in shift.cashBoxes"
+              :key="'recon-' + cb.id"
+              class="space-y-2 pb-3 border-b border-slate-100 last:border-0 last:pb-0"
+            >
+              <p
+                v-if="shift.cashBoxes.length > 1"
+                class="text-[11px] font-bold text-slate-600 uppercase tracking-wide"
+              >
+                {{ cb.category.name }}
+              </p>
+
+              <!-- Actual (from denomination) -->
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-500">Actual (Hitung Fisik)</span>
+                <span class="text-xs font-mono font-semibold text-slate-900">
+                  {{ formatRupiah(getDenomTotal(cb.categoryId)) }}
+                </span>
+              </div>
+
+              <!-- Expected -->
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-slate-500">Expected (Sistem)</span>
+                <span class="text-xs font-mono font-semibold text-slate-900">
+                  {{ formatRupiah(cb.startingCash + cb.expectedCash) }}
+                </span>
+              </div>
+
+              <!-- Difference -->
+              <div class="flex items-center justify-between pt-1">
+                <span class="text-xs font-bold text-slate-700">Selisih</span>
+                <span
+                  :class="[
+                    'text-sm font-mono font-bold',
+                    getDifference(cb.categoryId, cb.startingCash + cb.expectedCash) > 0
+                      ? 'text-emerald-600'
+                      : getDifference(cb.categoryId, cb.startingCash + cb.expectedCash) < 0
+                        ? 'text-red-600'
+                        : 'text-slate-900',
+                  ]"
+                >
+                  {{ formatVariance(getDifference(cb.categoryId, cb.startingCash + cb.expectedCash)) }}
+                </span>
+              </div>
+
+              <!-- Badge -->
+              <div class="flex justify-end">
+                <span
+                  v-if="getDenomTotal(cb.categoryId) > 0"
+                  :class="[
+                    'inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide',
+                    getDifference(cb.categoryId, cb.startingCash + cb.expectedCash) > 0
+                      ? 'bg-emerald-100 text-emerald-700'
+                      : getDifference(cb.categoryId, cb.startingCash + cb.expectedCash) < 0
+                        ? 'bg-red-100 text-red-700'
+                        : 'bg-slate-100 text-slate-700',
+                  ]"
+                >
+                  <TrendingUpIcon
+                    v-if="getDifference(cb.categoryId, cb.startingCash + cb.expectedCash) > 0"
+                    class="w-3 h-3"
+                  />
+                  <TrendingDownIcon
+                    v-else-if="getDifference(cb.categoryId, cb.startingCash + cb.expectedCash) < 0"
+                    class="w-3 h-3"
+                  />
+                  <MinusIcon v-else class="w-3 h-3" />
+                  {{
+                    getDifference(cb.categoryId, cb.startingCash + cb.expectedCash) > 0
+                      ? 'SURPLUS'
+                      : getDifference(cb.categoryId, cb.startingCash + cb.expectedCash) < 0
+                        ? 'DEFICIT'
+                        : 'BALANCE'
+                  }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Grand total reconciliation -->
+            <div
+              v-if="shift.cashBoxes.length > 1"
+              class="border-t border-slate-200 pt-3 space-y-1.5"
+            >
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">Total Selisih</span>
+                <span
+                  :class="[
+                    'text-sm font-mono font-bold',
+                    grandDifference > 0
+                      ? 'text-emerald-600'
+                      : grandDifference < 0
+                        ? 'text-red-600'
+                        : 'text-slate-900',
+                  ]"
+                >
+                  {{ formatVariance(grandDifference) }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
-      </section>
-    </template>
+
+        <!-- Notes Card -->
+        <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <FileTextIcon class="w-4 h-4 text-slate-500" />
+              Catatan
+            </h3>
+          </div>
+          <div class="p-5 space-y-3">
+            <!-- Existing notes from kasir -->
+            <div v-if="shift.notes" class="bg-slate-50 rounded-md px-3 py-2">
+              <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Catatan Kasir</p>
+              <p class="text-xs text-slate-700 whitespace-pre-line">{{ shift.notes }}</p>
+            </div>
+
+            <!-- Admin note -->
+            <div>
+              <label class="block text-[11px] text-slate-500 mb-1">
+                Catatan Admin (opsional)
+              </label>
+              <textarea
+                v-model="finalizeNotes"
+                rows="3"
+                class="w-full text-sm border border-slate-300 rounded-md px-3 py-2
+                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none
+                       disabled:bg-slate-100 disabled:text-slate-400 resize-none"
+                placeholder="Catatan tambahan untuk finalisasi..."
+                :disabled="shift.status === 'FINALIZED'"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Finalize Button (CLOSED only) -->
+        <div v-if="shift.status === 'CLOSED'">
+          <div
+            v-if="finalizeError"
+            class="mb-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg p-2.5"
+          >
+            {{ finalizeError }}
+          </div>
+          <button
+            type="button"
+            :disabled="finalizing"
+            class="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg
+                   bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold
+                   transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            @click="handleFinalize"
+          >
+            <Loader2Icon v-if="finalizing" class="w-4 h-4 animate-spin" />
+            <CheckCircleIcon v-else class="w-4 h-4" />
+            {{ finalizing ? 'Memfinalisasi...' : 'Finalisasi Shift' }}
+          </button>
+        </div>
+
+        <!-- Already finalized info -->
+        <div
+          v-if="shift.status === 'FINALIZED'"
+          class="bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3 flex items-start gap-2.5"
+        >
+          <CheckCircleIcon class="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+          <div>
+            <p class="text-xs font-bold text-emerald-800">Shift telah difinalisasi</p>
+            <p class="text-[11px] text-emerald-700 mt-0.5">
+              Oleh <strong>{{ shift.finalizedBy ?? '—' }}</strong>
+              <span v-if="shift.finalizedAt">
+                &middot; {{ formatDateTime(shift.finalizedAt) }}
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Open shift cannot be finalized -->
+        <div
+          v-if="shift.status === 'OPEN'"
+          class="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 flex items-start gap-2.5"
+        >
+          <AlertCircleIcon class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <p class="text-xs font-bold text-amber-800">Shift masih aktif</p>
+            <p class="text-[11px] text-amber-700 mt-0.5">
+              Shift harus ditutup oleh kasir sebelum bisa difinalisasi.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed, onMounted, reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import {
-  Loader2 as Loader2Icon,
-  AlertCircle as AlertCircleIcon,
-  AlertTriangle as AlertTriangleIcon,
-  CheckCircle2 as CheckCircleIcon,
   ArrowLeft as ArrowLeftIcon,
   Receipt as ReceiptIcon,
+  Banknote as BanknoteIcon,
+  QrCode as QrCodeIcon,
+  CreditCard as CreditCardIcon,
+  Coins as CoinsIcon,
+  Scale as ScaleIcon,
+  FileText as FileTextIcon,
+  CheckCircle2 as CheckCircleIcon,
+  AlertCircle as AlertCircleIcon,
+  Loader2 as Loader2Icon,
+  Monitor as MonitorIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+  Minus as MinusIcon,
 } from 'lucide-vue-next';
+import CashDenominationInput from '@/admin/components/shift/CashDenominationInput.vue';
+import ShiftStatusBadge from '@/admin/components/shift/ShiftStatusBadge.vue';
 import shiftService, {
   type ShiftDto,
   type ShiftDetailTransaction,
+  type CashDenominations,
 } from '@/shared/services/shift.service';
-import ShiftStatusBadge from '@/admin/components/shift/ShiftStatusBadge.vue';
 
 const route = useRoute();
-const router = useRouter();
 
-const shiftId = computed(() => route.params.id as string);
-
+// ============================================
+// State
+// ============================================
 const shift = ref<ShiftDto | null>(null);
 const transactions = ref<ShiftDetailTransaction[]>([]);
 const loading = ref(false);
 const loadError = ref<string | null>(null);
-
 const finalizing = ref(false);
 const finalizeError = ref<string | null>(null);
 const finalizeNotes = ref('');
+
+/** Per-category denomination inputs: categoryId → CashDenominations */
+const denominationInputs = reactive<Record<string, CashDenominations>>({});
+/** Per-category computed totals from CashDenominationInput */
+const denomTotals = reactive<Record<string, number>>({});
+
+// ============================================
+// Computed
+// ============================================
+const shiftMeta = computed(() => {
+  if (!shift.value) return 'Memuat...';
+  const shop = shift.value.shop?.name ?? 'Unknown';
+  const date = new Date(shift.value.startTime).toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+  return `${shop} — ${date}`;
+});
 
 const duration = computed(() => {
   if (!shift.value?.startTime) return '—';
@@ -442,40 +520,109 @@ const duration = computed(() => {
   return `${hours}j ${mins}m`;
 });
 
+const totalExpectedCash = computed(() => {
+  if (!shift.value) return 0;
+  return shift.value.cashBoxes.reduce(
+    (sum, cb) => sum + cb.startingCash + cb.expectedCash,
+    0,
+  );
+});
+
+const totalExpectedQRIS = computed(() => {
+  if (!shift.value) return 0;
+  return shift.value.cashBoxes.reduce((sum, cb) => sum + cb.expectedQRIS, 0);
+});
+
+const grandDifference = computed(() => {
+  if (!shift.value) return 0;
+  return shift.value.cashBoxes.reduce((sum, cb) => {
+    const expected = cb.startingCash + cb.expectedCash;
+    return sum + getDifference(cb.categoryId, expected);
+  }, 0);
+});
+
+// ============================================
+// Methods
+// ============================================
+
+function getDenomination(categoryId: string): CashDenominations {
+  return denominationInputs[categoryId] ?? {};
+}
+
+function setDenomination(categoryId: string, val: CashDenominations) {
+  denominationInputs[categoryId] = val;
+}
+
+function getDenomTotal(categoryId: string): number {
+  return denomTotals[categoryId] ?? 0;
+}
+
+function setDenomTotal(categoryId: string, val: number) {
+  denomTotals[categoryId] = val;
+}
+
+function getDifference(categoryId: string, expected: number): number {
+  return getDenomTotal(categoryId) - expected;
+}
+
 async function loadDetail() {
+  const shiftId = route.params.id as string;
+  if (!shiftId) return;
+
   loading.value = true;
   loadError.value = null;
   try {
-    const response = await shiftService.getDetail(shiftId.value);
+    const response = await shiftService.getDetail(shiftId);
     shift.value = response.shift;
-    transactions.value = response.transactions.data;
+    transactions.value = response.transactions?.data ?? [];
+
+    // Pre-populate denomination inputs if shift already has them
+    for (const cb of response.shift.cashBoxes) {
+      if (cb.cashDenominations) {
+        denominationInputs[cb.categoryId] = { ...cb.cashDenominations };
+      }
+    }
   } catch (err: any) {
     loadError.value =
-      err?.response?.data?.message ?? err?.message ?? 'Gagal memuat shift.';
+      err?.response?.data?.message ?? err?.message ?? 'Gagal memuat detail shift.';
   } finally {
     loading.value = false;
   }
 }
 
 async function handleFinalize() {
-  if (!shift.value) return;
+  if (!shift.value || finalizing.value) return;
+
   finalizing.value = true;
   finalizeError.value = null;
   try {
     await shiftService.finalize(shift.value.id, {
       notes: finalizeNotes.value.trim() || undefined,
     });
-    // Refresh detail biar status update jadi FINALIZED
+    // Refresh
     finalizeNotes.value = '';
     await loadDetail();
   } catch (err: any) {
     finalizeError.value =
-      err?.response?.data?.message ??
-      err?.message ??
-      'Gagal memfinalisasi shift.';
+      err?.response?.data?.message ?? err?.message ?? 'Gagal memfinalisasi shift.';
   } finally {
     finalizing.value = false;
   }
+}
+
+function formatRupiah(value: number): string {
+  return new Intl.NumberFormat('id-ID', {
+    style: 'currency',
+    currency: 'IDR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function formatVariance(value: number): string {
+  if (value === 0) return formatRupiah(0);
+  const sign = value > 0 ? '+' : '';
+  return `${sign}${formatRupiah(value)}`;
 }
 
 function formatDateTime(iso: string): string {
@@ -488,74 +635,40 @@ function formatDateTime(iso: string): string {
   });
 }
 
-function formatTime(iso: string): string {
-  return new Date(iso).toLocaleTimeString('id-ID', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
-
-function formatRupiah(value: number): string {
-  return `Rp ${new Intl.NumberFormat('id-ID').format(Math.abs(value))}`;
-}
-
-function formatVariance(value: number): string {
-  if (value === 0) return formatRupiah(0);
-  return `${value > 0 ? '+' : '-'}${formatRupiah(value)}`;
-}
-
-function initials(text: string): string {
-  const parts = text.split(/[@\s._-]+/).filter(Boolean);
-  return ((parts[0]?.[0] ?? '?') + (parts[1]?.[0] ?? ''))
-    .toUpperCase()
-    .slice(0, 2);
-}
-
 function colorBg(color?: string | null): string {
-  switch ((color ?? '').toLowerCase()) {
-    case 'amber':
-      return 'bg-amber-100 border border-amber-200';
-    case 'emerald':
-    case 'green':
-      return 'bg-emerald-100 border border-emerald-200';
-    case 'red':
-      return 'bg-red-100 border border-red-200';
-    case 'purple':
-      return 'bg-purple-100 border border-purple-200';
-    case 'pink':
-      return 'bg-pink-100 border border-pink-200';
-    case 'indigo':
-      return 'bg-indigo-100 border border-indigo-200';
-    case 'orange':
-      return 'bg-orange-100 border border-orange-200';
-    case 'blue':
-    default:
-      return 'bg-blue-100 border border-blue-200';
-  }
+  const c = (color ?? '').toLowerCase();
+  const map: Record<string, string> = {
+    amber: 'bg-amber-100',
+    emerald: 'bg-emerald-100',
+    green: 'bg-emerald-100',
+    red: 'bg-red-100',
+    purple: 'bg-purple-100',
+    pink: 'bg-pink-100',
+    indigo: 'bg-indigo-100',
+    orange: 'bg-orange-100',
+    blue: 'bg-blue-100',
+  };
+  return map[c] ?? 'bg-blue-100';
 }
 
 function colorText(color?: string | null): string {
-  switch ((color ?? '').toLowerCase()) {
-    case 'amber':
-      return 'text-amber-700';
-    case 'emerald':
-    case 'green':
-      return 'text-emerald-700';
-    case 'red':
-      return 'text-red-700';
-    case 'purple':
-      return 'text-purple-700';
-    case 'pink':
-      return 'text-pink-700';
-    case 'indigo':
-      return 'text-indigo-700';
-    case 'orange':
-      return 'text-orange-700';
-    case 'blue':
-    default:
-      return 'text-blue-700';
-  }
+  const c = (color ?? '').toLowerCase();
+  const map: Record<string, string> = {
+    amber: 'text-amber-700',
+    emerald: 'text-emerald-700',
+    green: 'text-emerald-700',
+    red: 'text-red-700',
+    purple: 'text-purple-700',
+    pink: 'text-pink-700',
+    indigo: 'text-indigo-700',
+    orange: 'text-orange-700',
+    blue: 'text-blue-700',
+  };
+  return map[c] ?? 'text-blue-700';
 }
 
+// ============================================
+// Lifecycle
+// ============================================
 onMounted(loadDetail);
 </script>
