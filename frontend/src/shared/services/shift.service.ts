@@ -2,6 +2,74 @@ import api from './api';
 import type { UserRole } from './auth.service';
 
 // ============================================
+// Cash denominations
+// ============================================
+
+/**
+ * Breakdown denominasi uang fisik per kategori.
+ * Format object dengan key string nominal (rupiah) atau "lainnya":
+ *
+ *   { "100000": 5, "50000": 3, ..., "100": 0, "lainnya": 5000 }
+ *
+ * - Setiap key kecuali "lainnya" = nominal lembar/koin (rupiah string),
+ *   value = jumlah lembar/koin.
+ * - Key "lainnya" = nominal raw (rupiah) untuk koin/recehan/lainnya.
+ */
+export type CashDenominations = {
+  '100000'?: number;
+  '50000'?: number;
+  '20000'?: number;
+  '10000'?: number;
+  '5000'?: number;
+  '2000'?: number;
+  '1000'?: number;
+  '500'?: number;
+  '200'?: number;
+  '100'?: number;
+  /** Raw rupiah (bukan count) untuk koin/recehan/lainnya. */
+  lainnya?: number;
+};
+
+/** Standard denomination keys, dari nominal terbesar ke terkecil. */
+export const DENOMINATION_KEYS: ReadonlyArray<keyof CashDenominations> = [
+  '100000',
+  '50000',
+  '20000',
+  '10000',
+  '5000',
+  '2000',
+  '1000',
+  '500',
+  '200',
+  '100',
+  'lainnya',
+];
+
+/**
+ * Hitung total rupiah dari breakdown denominasi.
+ * - Slot standar: nominal * count
+ * - "lainnya": value langsung (sudah dalam rupiah)
+ */
+export function computeTotalFromDenominations(
+  denominations: CashDenominations,
+): number {
+  let total = 0;
+  for (const key of DENOMINATION_KEYS) {
+    const value = denominations[key] ?? 0;
+    if (typeof value !== 'number' || value < 0) continue;
+    if (key === 'lainnya') {
+      total += value;
+    } else {
+      const nominal = parseInt(key as string, 10);
+      if (!Number.isNaN(nominal)) {
+        total += nominal * value;
+      }
+    }
+  }
+  return total;
+}
+
+// ============================================
 // Shared types (match backend response shape)
 // ============================================
 
@@ -52,6 +120,12 @@ export interface ShiftCashBoxDto {
   actualQRIS?: number | null;
   varianceQRIS?: number | null;
 
+  /**
+   * Breakdown denominasi uang fisik saat tutup shift (opsional).
+   * Format: { "100000": 5, "50000": 3, ..., "lainnya": 5000 }
+   */
+  cashDenominations?: CashDenominations | null;
+
   createdAt: string;
   updatedAt: string;
 }
@@ -95,6 +169,11 @@ export interface ActualCashByCategoryEntry {
   categoryId: string;
   actualCash: number;
   actualQRIS: number;
+  /**
+   * Optional breakdown denominasi. Kalau di-pass, server validate
+   * sum(denominations) === actualCash.
+   */
+  denominations?: CashDenominations;
 }
 
 export interface CloseShiftPayload {

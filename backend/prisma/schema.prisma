@@ -486,6 +486,20 @@ model ShiftCashBox {
   actualQRIS          Int?
   varianceQRIS        Int?
 
+  /**
+   * Breakdown denominasi uang fisik saat tutup shift.
+   * Format JSON object: { "100000": 5, "50000": 3, ..., "100": 0, "lainnya": 5000 }
+   *  - key = nominal lembar/koin (rupiah string), kecuali "lainnya"
+   *  - value = jumlah lembar (count) untuk semua kunci kecuali "lainnya"
+   *  - "lainnya" = nominal raw (rupiah) untuk koin/recehan/lain yg tdk masuk slot.
+   *
+   * Optional: kalau kasir tidak input denominasi, field null. actualCash
+   * tetap dipakai sebagai source of truth.
+   *
+   * Server validate: sum(key * value for key != "lainnya") + lainnya == actualCash.
+   */
+  cashDenominations   Json?
+
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
 

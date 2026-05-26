@@ -188,30 +188,12 @@
             </div>
           </div>
 
-          <!-- Actual cash -->
-          <div>
-            <label class="block text-xs font-semibold text-slate-900 mb-1">
-              Uang Tunai Aktual <span class="text-red-500">*</span>
-            </label>
-            <div class="relative">
-              <span
-                class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-mono text-slate-500"
-              >
-                Rp
-              </span>
-              <input
-                :value="formattedCash[cb.categoryId] || ''"
-                type="text"
-                inputmode="numeric"
-                placeholder="0"
-                required
-                :disabled="loading"
-                class="input-field pl-10 font-mono text-right text-sm"
-                @input="(e) => handleNumericInput(cb.categoryId, 'cash', e)"
-                @blur="handleClearError"
-              />
-            </div>
-          </div>
+          <!-- Actual cash via denomination breakdown -->
+          <CashDenominationInput
+            v-model="denominationsByCategory[cb.categoryId]"
+            :disabled="loading"
+            @total-change="(total) => onDenominationTotalChange(cb.categoryId, total)"
+          />
 
           <!-- Actual QRIS -->
           <div>
@@ -289,14 +271,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 import {
   StopCircle as StopCircleIcon,
   AlertCircle as AlertCircleIcon,
   AlertTriangle as AlertTriangleIcon,
   Loader2 as Loader2Icon,
 } from 'lucide-vue-next';
-import type { ShiftDto, CloseShiftPayload } from '@/shared/services/shift.service';
+import type {
+  ShiftDto,
+  CloseShiftPayload,
+  CashDenominations,
+} from '@/shared/services/shift.service';
+import CashDenominationInput from './CashDenominationInput.vue';
 
 interface Props {
   shift: ShiftDto;
@@ -318,13 +305,42 @@ const emit = defineEmits<{
 
 const showCloseForm = ref(false);
 
-/** Per-category actual cash & QRIS state. Keyed by categoryId. */
+/**
+ * Per-category state. Keyed by categoryId.
+ * - denominationsByCategory: breakdown lembar pecahan
+ * - actualCash: total per category, derived dari denominations
+ * - actualQRIS: total QRIS per category, manual input
+ */
+const denominationsByCategory = reactive<Record<string, CashDenominations>>({});
 const actualCash = reactive<Record<string, number>>({});
 const actualQRIS = reactive<Record<string, number>>({});
-const formattedCash = reactive<Record<string, string>>({});
 const formattedQRIS = reactive<Record<string, string>>({});
 
 const notes = ref('');
+
+/**
+ * Init state per cashbox saat shift loaded / cashboxes berubah.
+ * Setiap kategori dapat object kosong supaya v-model di
+ * CashDenominationInput langsung reactive.
+ */
+watch(
+  () => props.shift.cashBoxes,
+  (cashBoxes) => {
+    for (const cb of cashBoxes) {
+      if (!denominationsByCategory[cb.categoryId]) {
+        denominationsByCategory[cb.categoryId] = {};
+      }
+      if (actualCash[cb.categoryId] == null) {
+        actualCash[cb.categoryId] = 0;
+      }
+      if (actualQRIS[cb.categoryId] == null) {
+        actualQRIS[cb.categoryId] = 0;
+        formattedQRIS[cb.categoryId] = '';
+      }
+    }
+  },
+  { immediate: true },
+);
 
 const shortShiftId = computed(() => props.shift.id.slice(-6).toUpperCase());
 
@@ -360,13 +376,17 @@ function handleNumericInput(
   const cleaned = target.value.replace(/\D/g, '');
   const parsed = cleaned === '' ? 0 : parseInt(cleaned, 10);
 
-  if (field === 'cash') {
-    actualCash[categoryId] = parsed;
-    formattedCash[categoryId] = parsed === 0 ? '' : formatNumber(parsed);
-  } else {
+  // Cash now via denomination input — this handler hanya untuk QRIS sekarang.
+  if (field === 'qris') {
     actualQRIS[categoryId] = parsed;
     formattedQRIS[categoryId] = parsed === 0 ? '' : formatNumber(parsed);
   }
+  handleClearError();
+}
+
+/** Dipanggil oleh CashDenominationInput tiap total berubah. */
+function onDenominationTotalChange(categoryId: string, total: number) {
+  actualCash[categoryId] = total;
   handleClearError();
 }
 
@@ -376,9 +396,11 @@ function handleClearError() {
 
 function handleCancel() {
   showCloseForm.value = false;
+  for (const key of Object.keys(denominationsByCategory)) {
+    denominationsByCategory[key] = {};
+  }
   for (const key of Object.keys(actualCash)) {
     actualCash[key] = 0;
-    formattedCash[key] = '';
   }
   for (const key of Object.keys(actualQRIS)) {
     actualQRIS[key] = 0;
@@ -393,6 +415,7 @@ function handleSubmitClose() {
       categoryId: cb.categoryId,
       actualCash: actualCash[cb.categoryId] ?? 0,
       actualQRIS: actualQRIS[cb.categoryId] ?? 0,
+      denominations: denominationsByCategory[cb.categoryId] ?? undefined,
     })),
     notes: notes.value.trim() || undefined,
   });

@@ -13,6 +13,10 @@ import {
   QueryShiftDto,
   FinalizeShiftDto,
 } from './dto';
+import {
+  computeTotalFromDenominations,
+  type CashDenominations,
+} from './dto/close-shift.dto';
 
 const SHIFT_INCLUDE = {
   user: {
@@ -213,21 +217,43 @@ export class ShiftsService {
     // (kalau gak, treat sebagai 0 — tapi log warning).
     const actualMap = new Map<
       string,
-      { actualCash: number; actualQRIS: number }
+      {
+        actualCash: number;
+        actualQRIS: number;
+        denominations?: CashDenominations;
+      }
     >(
       dto.actualByCategory.map((e) => [
         e.categoryId,
-        { actualCash: e.actualCash, actualQRIS: e.actualQRIS },
+        {
+          actualCash: e.actualCash,
+          actualQRIS: e.actualQRIS,
+          denominations: e.denominations,
+        },
       ]),
     );
 
     // Validasi categoryId di input harus exist di shift
     const shiftCategoryIds = new Set(shift.cashBoxes.map((cb) => cb.categoryId));
-    for (const [cid] of actualMap) {
+    for (const [cid, entry] of actualMap) {
       if (!shiftCategoryIds.has(cid)) {
         throw new BadRequestException(
           `Kategori "${cid}" tidak ada di shift ini.`,
         );
+      }
+
+      // Kalau denominations di-pass, validate sum == actualCash.
+      // Toleransi 0 — harus match exactly (kasir bisa cross-check pakai UI
+      // calculator sebelum submit).
+      if (entry.denominations) {
+        const computed = computeTotalFromDenominations(entry.denominations);
+        if (computed !== entry.actualCash) {
+          throw new BadRequestException(
+            `Total denominasi (Rp ${computed.toLocaleString('id-ID')}) tidak ` +
+              `sama dengan actualCash (Rp ${entry.actualCash.toLocaleString('id-ID')}) ` +
+              `untuk kategori "${cid}". Cek hitungan kasir.`,
+          );
+        }
       }
     }
 
@@ -238,6 +264,7 @@ export class ShiftsService {
         const actual = actualMap.get(cashBox.categoryId) ?? {
           actualCash: 0,
           actualQRIS: 0,
+          denominations: undefined,
         };
 
         // variance = actual - (starting + expected)
@@ -255,6 +282,9 @@ export class ShiftsService {
             actualQRIS: actual.actualQRIS,
             varianceCash,
             varianceQRIS,
+            cashDenominations: actual.denominations
+              ? (actual.denominations as any)
+              : null,
           },
         });
       }
