@@ -141,8 +141,9 @@
         <div>
           <h2 class="text-base font-bold text-slate-950">Tutup Shift</h2>
           <p class="text-xs text-slate-500 mt-0.5">
-            Hitung uang fisik di laci kas per kategori, lalu input nominal
-            aktualnya. Sistem otomatis hitung selisih dengan ekspektasi.
+            Hitung total uang fisik di laci kas per kategori, lalu input
+            jumlah totalnya. Admin akan re-count via denominasi saat
+            verifikasi.
           </p>
         </div>
       </div>
@@ -188,12 +189,30 @@
             </div>
           </div>
 
-          <!-- Actual cash via denomination breakdown -->
-          <CashDenominationInput
-            v-model="denominationsByCategory[cb.categoryId]"
-            :disabled="loading"
-            @total-change="(total) => onDenominationTotalChange(cb.categoryId, total)"
-          />
+          <!-- Actual cash (single total input) -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-900 mb-1">
+              Uang Tunai Aktual <span class="text-red-500">*</span>
+            </label>
+            <div class="relative">
+              <span
+                class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-mono text-slate-500"
+              >
+                Rp
+              </span>
+              <input
+                :value="formattedCash[cb.categoryId] || ''"
+                type="text"
+                inputmode="numeric"
+                placeholder="0"
+                required
+                :disabled="loading"
+                class="input-field pl-10 font-mono text-right text-sm"
+                @input="(e) => handleNumericInput(cb.categoryId, 'cash', e)"
+                @blur="handleClearError"
+              />
+            </div>
+          </div>
 
           <!-- Actual QRIS -->
           <div>
@@ -262,8 +281,8 @@
       <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 flex items-start gap-2">
         <component :is="AlertTriangleIcon" class="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
         <p class="text-[11px] text-amber-800 leading-relaxed">
-          Setelah ditutup, shift menunggu finalisasi admin. Pastikan semua
-          uang fisik sudah dihitung dengan teliti per kategori.
+          Setelah ditutup, shift menunggu verifikasi admin. Admin akan
+          re-count uang fisik per pecahan saat finalisasi.
         </p>
       </div>
     </form>
@@ -271,19 +290,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref } from 'vue';
 import {
   StopCircle as StopCircleIcon,
   AlertCircle as AlertCircleIcon,
   AlertTriangle as AlertTriangleIcon,
   Loader2 as Loader2Icon,
 } from 'lucide-vue-next';
-import type {
-  ShiftDto,
-  CloseShiftPayload,
-  CashDenominations,
-} from '@/shared/services/shift.service';
-import CashDenominationInput from './CashDenominationInput.vue';
+import type { ShiftDto, CloseShiftPayload } from '@/shared/services/shift.service';
 
 interface Props {
   shift: ShiftDto;
@@ -305,42 +319,13 @@ const emit = defineEmits<{
 
 const showCloseForm = ref(false);
 
-/**
- * Per-category state. Keyed by categoryId.
- * - denominationsByCategory: breakdown lembar pecahan
- * - actualCash: total per category, derived dari denominations
- * - actualQRIS: total QRIS per category, manual input
- */
-const denominationsByCategory = reactive<Record<string, CashDenominations>>({});
+/** Per-category actual cash & QRIS state. Keyed by categoryId. */
 const actualCash = reactive<Record<string, number>>({});
 const actualQRIS = reactive<Record<string, number>>({});
+const formattedCash = reactive<Record<string, string>>({});
 const formattedQRIS = reactive<Record<string, string>>({});
 
 const notes = ref('');
-
-/**
- * Init state per cashbox saat shift loaded / cashboxes berubah.
- * Setiap kategori dapat object kosong supaya v-model di
- * CashDenominationInput langsung reactive.
- */
-watch(
-  () => props.shift.cashBoxes,
-  (cashBoxes) => {
-    for (const cb of cashBoxes) {
-      if (!denominationsByCategory[cb.categoryId]) {
-        denominationsByCategory[cb.categoryId] = {};
-      }
-      if (actualCash[cb.categoryId] == null) {
-        actualCash[cb.categoryId] = 0;
-      }
-      if (actualQRIS[cb.categoryId] == null) {
-        actualQRIS[cb.categoryId] = 0;
-        formattedQRIS[cb.categoryId] = '';
-      }
-    }
-  },
-  { immediate: true },
-);
 
 const shortShiftId = computed(() => props.shift.id.slice(-6).toUpperCase());
 
@@ -376,17 +361,13 @@ function handleNumericInput(
   const cleaned = target.value.replace(/\D/g, '');
   const parsed = cleaned === '' ? 0 : parseInt(cleaned, 10);
 
-  // Cash now via denomination input — this handler hanya untuk QRIS sekarang.
-  if (field === 'qris') {
+  if (field === 'cash') {
+    actualCash[categoryId] = parsed;
+    formattedCash[categoryId] = parsed === 0 ? '' : formatNumber(parsed);
+  } else {
     actualQRIS[categoryId] = parsed;
     formattedQRIS[categoryId] = parsed === 0 ? '' : formatNumber(parsed);
   }
-  handleClearError();
-}
-
-/** Dipanggil oleh CashDenominationInput tiap total berubah. */
-function onDenominationTotalChange(categoryId: string, total: number) {
-  actualCash[categoryId] = total;
   handleClearError();
 }
 
@@ -396,11 +377,9 @@ function handleClearError() {
 
 function handleCancel() {
   showCloseForm.value = false;
-  for (const key of Object.keys(denominationsByCategory)) {
-    denominationsByCategory[key] = {};
-  }
   for (const key of Object.keys(actualCash)) {
     actualCash[key] = 0;
+    formattedCash[key] = '';
   }
   for (const key of Object.keys(actualQRIS)) {
     actualQRIS[key] = 0;
@@ -415,7 +394,6 @@ function handleSubmitClose() {
       categoryId: cb.categoryId,
       actualCash: actualCash[cb.categoryId] ?? 0,
       actualQRIS: actualQRIS[cb.categoryId] ?? 0,
-      denominations: denominationsByCategory[cb.categoryId] ?? undefined,
     })),
     notes: notes.value.trim() || undefined,
   });
