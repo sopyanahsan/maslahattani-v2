@@ -61,8 +61,12 @@ URL: `/admin/dashboard`
 
 #### Kolom Kanan (lg:col-span-1)
 **Status Operasional**
-- Shift kasir aktif (count + nama kasir + start time)
-- Indicator warning kalau shift sudah > 8 jam
+- **Shift kasir aktif**: count + nama kasir + start time
+  - Indicator warning kalau shift sudah melewati threshold (default 8 jam, configurable di Pengaturan)
+- **Last Online Kasir**: kasir terakhir login / aktivitas terakhir per kasir (top 3)
+  - Format: "Budi — 5 menit lalu"
+- **Last Transaction**: transaksi paling baru (retail / brilink)
+  - Format: "INV-001 • Rp 50.000 • 2 menit lalu"
 - Total kasir hari ini (open/closed/finalized)
 
 ### 3.5 Insight Cards (Row 4) — 3 kolom
@@ -72,8 +76,16 @@ URL: `/admin/dashboard`
 - Klik baris → buka detail produk
 
 #### Aktivitas Terkini (10 baris, scrollable)
-- Mix dari: transaksi baru, void transaksi, restok stok, opname, transfer stok
-- Format: ikon, deskripsi, waktu (X menit lalu)
+- Mix dari **Retail + BRILink** events:
+  - 🧾 Transaksi retail baru
+  - 🏦 Transaksi BRILink baru (transfer/tarik tunai/topup)
+  - ❌ Void transaksi
+  - 📦 Restok stok / Stock IN
+  - ✅ Opname session selesai
+  - ↔️ Transfer stok antar cabang
+  - 💵 Mutasi kas (cash in/out)
+- Format: ikon, deskripsi, waktu (X menit lalu), badge type (RETAIL/BRILINK)
+- Kategori dibedakan dengan warna icon (biru = retail, ungu = brilink, hijau = stock, dll)
 
 #### Breakdown Payment Method
 - Pie / horizontal bar: Cash, QRIS, Transfer, Hutang
@@ -81,13 +93,20 @@ URL: `/admin/dashboard`
 
 ### 3.6 Alert Section (Row 5) — full width grid 3 cols
 
-| Alert | Trigger | Action button |
-|-------|---------|---------------|
-| 🔴 Hutang Jatuh Tempo | dueDate <= today AND status != PAID | "Lihat Hutang" → `/admin/debts` |
-| 🟡 Stok Menipis | quantity <= threshold (default 5) | "Lihat Stok" → `/admin/products` |
-| 🟠 Shift Lama Tidak Tutup | shift OPEN > 8 jam | "Cek Shift" → `/admin/shifts` |
+| Alert | Trigger | Default Threshold | Action button |
+|-------|---------|-------------------|---------------|
+| 🔴 Hutang Jatuh Tempo | dueDate <= today AND status != PAID | — | "Lihat Hutang" → `/admin/debts` |
+| 🟡 Stok Menipis | quantity <= threshold | 5 unit | "Lihat Stok" → `/admin/products` |
+| 🟠 Shift Lama Tidak Tutup | shift OPEN > N jam | 8 jam | "Cek Shift" → `/admin/shifts` |
 
 Tampil hanya kalau ada data. Kalau semua aman, tampil status hijau "Semua aman ✓".
+
+**Threshold configurable di** `/admin/settings` → tab **Notifikasi & Alert**:
+- `lowStockThreshold` (int, default 5) — minimum unit stok sebelum dianggap menipis
+- `shiftDurationWarningHours` (int, default 8) — jam kerja shift sebelum warning muncul
+- `overdueDebtDaysBeforeNotice` (int, default 0) — H- berapa hari sebelum jatuh tempo mau di-warn (0 = exact dueDate)
+
+Stored di tabel baru `ShopSettingAlerts` atau extend existing `ShopSetting.alertConfig` (JSON).
 
 ### 3.7 Comparison Section (Row 6) — 2 kolom
 
@@ -133,9 +152,26 @@ Response:
 ```json
 {
   "activeShifts": [
-    { "id": "s1", "cashierName": "Budi", "startTime": "...", "durationMinutes": 240 }
+    {
+      "id": "s1",
+      "cashierName": "Budi",
+      "startTime": "2026-05-26T08:00:00Z",
+      "durationMinutes": 240,
+      "isOverThreshold": false
+    }
   ],
-  "shiftStats": { "open": 1, "closed": 2, "finalized": 5 }
+  "shiftStats": { "open": 1, "closed": 2, "finalized": 5 },
+  "lastOnlineCashiers": [
+    { "userId": "u1", "name": "Budi", "lastActiveAt": "2026-05-26T11:55:00Z" },
+    { "userId": "u2", "name": "Siti", "lastActiveAt": "2026-05-26T10:30:00Z" }
+  ],
+  "lastTransaction": {
+    "id": "t1",
+    "type": "RETAIL",
+    "transactionNumber": "INV-001",
+    "amount": 50000,
+    "createdAt": "2026-05-26T11:58:00Z"
+  }
 }
 ```
 
@@ -150,15 +186,80 @@ Response:
 ```
 
 ### `GET /api/dashboard/retail/recent-activity?limit=10&shopId=xxx`
+
+Mix events dari berbagai sumber, sorted by timestamp DESC.
+
 Response:
 ```json
 {
   "data": [
-    { "type": "TRANSACTION", "description": "Transaksi #INV-001 - Rp 50.000", "timestamp": "..." },
-    { "type": "STOCK_IN", "description": "Restok 50 kg pupuk NPK", "timestamp": "..." }
+    {
+      "type": "RETAIL_TRANSACTION",
+      "category": "RETAIL",
+      "icon": "receipt",
+      "title": "Transaksi #INV-001",
+      "description": "Rp 50.000 • Cash • Budi",
+      "timestamp": "2026-05-26T11:58:00Z"
+    },
+    {
+      "type": "BRILINK_TRANSACTION",
+      "category": "BRILINK",
+      "icon": "landmark",
+      "title": "Transfer BRI",
+      "description": "Rp 200.000 • fee Rp 6.500 • #BRL-001",
+      "timestamp": "2026-05-26T11:55:00Z"
+    },
+    {
+      "type": "STOCK_IN",
+      "category": "INVENTORY",
+      "icon": "package",
+      "title": "Restok Masuk",
+      "description": "50 kg Pupuk NPK • dari PO #PO-001",
+      "timestamp": "2026-05-26T11:30:00Z"
+    },
+    {
+      "type": "STOCK_TRANSFER",
+      "category": "INVENTORY",
+      "icon": "arrow-right-left",
+      "title": "Transfer Stok Diterima",
+      "description": "10 unit dari Cabang Cibodas",
+      "timestamp": "2026-05-26T10:00:00Z"
+    },
+    {
+      "type": "OPNAME_COMPLETED",
+      "category": "INVENTORY",
+      "icon": "check",
+      "title": "Opname Selesai",
+      "description": "OPN-001 • 3 surplus, 2 kurang",
+      "timestamp": "2026-05-26T09:00:00Z"
+    },
+    {
+      "type": "CASH_MUTATION",
+      "category": "FINANCE",
+      "icon": "wallet",
+      "title": "Pengeluaran Kas",
+      "description": "Rp 50.000 • Beli ATK • Operasional",
+      "timestamp": "2026-05-26T08:30:00Z"
+    },
+    {
+      "type": "TRANSACTION_VOIDED",
+      "category": "RETAIL",
+      "icon": "x-circle",
+      "title": "Transaksi Dibatalkan",
+      "description": "INV-099 • Rp 25.000 • by Admin",
+      "timestamp": "2026-05-26T08:00:00Z"
+    }
   ]
 }
 ```
+
+**Source events** yang di-merge:
+- `transactions` (status COMPLETED + VOIDED)
+- `brilink_transactions` (status SUCCESS)
+- `stock_histories` (type IN, OUT, OPNAME)
+- `stock_transfers` (status RECEIVED)
+- `opname_sessions` (status COMPLETED)
+- `cashbox_mutations` (jika ada — atau computed dari payments)
 
 ### `GET /api/dashboard/retail/payment-breakdown?period=today&shopId=xxx`
 Response:
@@ -172,12 +273,49 @@ Response:
 ```
 
 ### `GET /api/dashboard/retail/alerts?shopId=xxx`
+
+Pakai threshold dari `ShopSetting.alertConfig` (atau default kalau belum di-set).
+
 Response:
 ```json
 {
-  "overdueDebts": { "count": 3, "totalAmount": 750000 },
-  "lowStock": { "count": 5, "products": ["Pupuk Urea", "Beras Premium", ...] },
-  "longRunningShifts": { "count": 1, "shifts": [{ "id": "s1", "cashier": "Budi", "hours": 9 }] }
+  "config": {
+    "lowStockThreshold": 5,
+    "shiftDurationWarningHours": 8,
+    "overdueDebtDaysBeforeNotice": 0
+  },
+  "overdueDebts": {
+    "count": 3,
+    "totalAmount": 750000,
+    "topItems": [
+      { "id": "d1", "customerName": "Pak Tani", "amount": 250000, "daysOverdue": 5 }
+    ]
+  },
+  "lowStock": {
+    "count": 5,
+    "topItems": [
+      { "productId": "p1", "name": "Pupuk Urea", "quantity": 3, "threshold": 5 }
+    ]
+  },
+  "longRunningShifts": {
+    "count": 1,
+    "shifts": [
+      { "id": "s1", "cashier": "Budi", "hours": 9, "thresholdHours": 8 }
+    ]
+  },
+  "allClear": false
+}
+```
+
+### `GET /api/settings/alerts?shopId=xxx`  &  `PATCH /api/settings/alerts`
+Untuk konfigurasi threshold di halaman Pengaturan.
+
+Body PATCH:
+```json
+{
+  "lowStockThreshold": 10,
+  "shiftDurationWarningHours": 12,
+  "overdueDebtDaysBeforeNotice": 3
 }
 ```
 
@@ -215,23 +353,39 @@ Response:
 ## 7. Implementation Plan
 
 ### Phase A — Backend (1 sprint)
-1. Create `DashboardModule` di `backend/src/dashboard/`
-2. `DashboardController` dengan 7 endpoints di atas
-3. `DashboardService` dengan reusable helpers (period filter, prev period calc)
-4. Reuse existing analytics service patterns
+1. **Schema update**: Extend `ShopSetting` dengan field `alertConfig Json?`
+   - Migration baru: `20260530000000_shop_setting_alert_config`
+2. Create `DashboardModule` di `backend/src/dashboard/`
+3. `DashboardController` dengan 8 endpoints di atas
+4. `DashboardService` dengan reusable helpers:
+   - `getPeriodRange(period: today|week|month)` → `{ start, end }`
+   - `getPreviousPeriodRange(period)` → untuk perhitungan compare
+   - `mergeRecentActivities()` → gabung dari berbagai source
+5. Update `SettingsModule` dengan endpoint `/api/settings/alerts` (GET, PATCH)
+6. Reuse existing analytics service patterns
 
 ### Phase B — Frontend (1 sprint)
-1. Update `DashboardView.vue` dengan layout grid baru
+1. Update `DashboardView.vue` dengan layout grid baru (atau buat baru `DashboardRetailView.vue`)
 2. Create `dashboard.service.ts`
-3. Pinia store `dashboard-retail.store.ts`
-4. Komponen reusable: `KpiCard.vue`, `MiniChart.vue`, `AlertCard.vue`
+3. Pinia store `dashboard-retail.store.ts` dengan independent section state + auto-refresh
+4. Komponen reusable di `frontend/src/admin/components/dashboard/`:
+   - `KpiCard.vue` — card with metric + Δ%
+   - `SalesChart.vue` — CSS-based bar chart
+   - `OperationsPanel.vue` — shift + last online + last tx
+   - `TopProductsTable.vue`
+   - `RecentActivityFeed.vue` — mixed retail/brilink/inventory events
+   - `PaymentBreakdown.vue` — horizontal bar
+   - `AlertCard.vue` — single alert card
+   - `CashierLeaderboard.vue`
 5. Apply dark mode classes
+6. Update `AdminSettingsView.vue` dengan tab "Notifikasi & Alert" untuk threshold config
 
 ### Phase C — Polish & Testing
-1. Empty states & loading skeletons
-2. Error handling
+1. Empty states & loading skeletons (per section)
+2. Error handling (per section)
 3. Manual testing dengan data dummy
-4. Performance check (query optimization)
+4. Performance check (parallel fetch, query optimization, indexes)
+5. Dark mode visual QA
 
 ---
 
