@@ -135,11 +135,11 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'shops',
         name: 'admin-shops',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminShopsView.vue'),
         meta: {
           title: 'Cabang',
           description:
-            'Kelola toko / cabang — setiap cabang punya stok, kasir, dan laporan terpisah. Transfer antar cabang akan tersedia di Phase 2.',
+            'Kelola toko / cabang — setiap cabang punya stok, kasir, dan laporan terpisah.',
         },
       },
       {
@@ -164,7 +164,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'settings',
         name: 'admin-settings',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminSettingsView.vue'),
         meta: {
           title: 'Pengaturan',
           description: 'Konfigurasi toko, struk, bahasa, dan preferensi sistem.',
