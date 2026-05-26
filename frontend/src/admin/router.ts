@@ -97,11 +97,21 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'shifts',
         name: 'admin-shifts',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminShiftsView.vue'),
         meta: {
           title: 'Shift',
           description:
-            'Buka shift di pagi hari, tutup di sore dengan input nominal kas fisik. Sistem otomatis hitung selisih (variance) untuk audit kas harian.',
+            'Daftar shift kasir per cabang. Filter by status & tanggal, lihat detail variance, dan finalisasi shift yang sudah ditutup.',
+        },
+      },
+      {
+        path: 'shifts/:id',
+        name: 'admin-shift-detail',
+        component: () => import('@/admin/views/AdminShiftDetailView.vue'),
+        meta: {
+          title: 'Detail Shift',
+          description:
+            'Rincian shift kasir, breakdown variance per kategori, transaksi, dan tombol finalisasi.',
         },
       },
       {
