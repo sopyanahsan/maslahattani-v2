@@ -175,7 +175,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'opname-sessions',
         name: 'admin-opname-sessions',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminOpnameSessionsView.vue'),
         meta: {
           title: 'Opname',
           description: 'Sesi stock opname untuk verifikasi stok fisik.',

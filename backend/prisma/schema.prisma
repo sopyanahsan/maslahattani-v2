@@ -48,6 +48,7 @@ model User {
   shifts              Shift[]
   ownedShops          Shop[]    @relation("ShopOwner")
   brilinkTransactions BrilinkTransaction[] @relation("BrilinkCashier")
+  opnameSessions      OpnameSession[]      @relation("OpnameConductor")
 
   @@index([shopId])
   @@index([email])
@@ -116,6 +117,7 @@ model Shop {
   settings            ShopSetting?
   brilinkTransactions BrilinkTransaction[]
   brilinkFees         BrilinkFee[]
+  opnameSessions      OpnameSession[]
 
   @@map("shops")
 }
@@ -192,6 +194,7 @@ model Product {
   stocks              Stock[]
   transactionItems    TransactionItem[]
   debts               Debt[]
+  opnameItems         OpnameItem[]
 
   @@unique([shopId, sku])
   @@index([shopId])
@@ -510,6 +513,69 @@ model ShiftCashBox {
   @@index([shiftId])
   @@index([categoryId])
   @@map("shift_cash_boxes")
+}
+
+// ============================================
+// STOCK OPNAME SESSION MANAGEMENT
+// ============================================
+
+enum OpnameStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model OpnameSession {
+  id              String        @id @default(cuid())
+  shop            Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  conductor       User          @relation("OpnameConductor", fields: [conductorId], references: [id])
+  conductorId     String
+
+  sessionNumber   String        @unique
+  status          OpnameStatus  @default(DRAFT)
+  notes           String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+
+  /** Summary stats (computed on complete) */
+  totalProducts   Int           @default(0)
+  totalMatched    Int           @default(0)
+  totalSurplus    Int           @default(0)
+  totalDeficit    Int           @default(0)
+
+  items           OpnameItem[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([shopId])
+  @@index([conductorId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("opname_sessions")
+}
+
+model OpnameItem {
+  id              String        @id @default(cuid())
+  session         OpnameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId       String
+  product         Product       @relation(fields: [productId], references: [id])
+  productId       String
+
+  systemQty       Int           // stok di sistem saat opname dimulai
+  actualQty       Int?          // stok fisik yang dihitung
+  variance        Int?          // actualQty - systemQty
+  notes           String?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([sessionId, productId])
+  @@index([sessionId])
+  @@index([productId])
+  @@map("opname_items")
 }
 
 // ============================================
