@@ -253,6 +253,12 @@
             </div>
             <h2 class="text-base font-bold text-slate-950">Transaksi Berhasil!</h2>
             <code class="text-xs font-mono text-slate-500">{{ receiptData.transactionNumber }}</code>
+            <p
+              v-if="receiptData.transactionNumber.startsWith('OFFLINE')"
+              class="text-[10px] text-amber-600 font-semibold mt-1 bg-amber-50 rounded px-2 py-0.5 inline-block"
+            >
+              Tersimpan offline — akan sync otomatis saat online
+            </p>
           </div>
 
           <div class="bg-slate-50 rounded-lg p-4 space-y-2">
@@ -316,9 +322,12 @@ import posService, {
   recalcCartItem,
   calcCartTotals,
 } from '@/shared/services/pos.service';
+import { addPendingTransaction } from '@/shared/services/offline-store';
+import { useSyncService } from '@/shared/services/sync.service';
 
 const authStore = useAuthStore();
 const searchInput = ref<HTMLInputElement | null>(null);
+const { refreshPendingCount } = useSyncService();
 
 // ============================================
 // Products state
@@ -427,21 +436,42 @@ async function handleCheckout() {
   checking.value = true;
   checkoutError.value = null;
 
-  try {
-    const idempotencyKey = crypto.randomUUID();
-    const response = await posService.createTransaction({
-      items: cart.value.map((i) => ({
-        productId: i.productId,
-        quantity: i.quantity,
-        discount: i.discount > 0 ? i.discount : undefined,
-      })),
-      paymentMethod: selectedMethod.value,
-      amountPaid: selectedMethod.value === 'CASH' ? amountPaid.value || totals.value.totalPrice : undefined,
-      idempotencyKey,
-      clientCreatedAt: new Date().toISOString(),
-    });
+  const idempotencyKey = crypto.randomUUID();
+  const payload = {
+    items: cart.value.map((i) => ({
+      productId: i.productId,
+      quantity: i.quantity,
+      discount: i.discount > 0 ? i.discount : undefined,
+    })),
+    paymentMethod: selectedMethod.value,
+    amountPaid: selectedMethod.value === 'CASH' ? amountPaid.value || totals.value.totalPrice : undefined,
+    idempotencyKey,
+    clientCreatedAt: new Date().toISOString(),
+  };
 
-    receiptData.value = response.summary;
+  try {
+    if (navigator.onLine) {
+      // Online: send directly to server
+      const response = await posService.createTransaction(payload);
+      receiptData.value = response.summary;
+    } else {
+      // Offline: queue to IndexedDB for later sync
+      await addPendingTransaction(payload);
+      await refreshPendingCount();
+
+      // Show offline receipt (estimated from cart data)
+      receiptData.value = {
+        transactionNumber: `OFFLINE-${idempotencyKey.slice(0, 8).toUpperCase()}`,
+        totalPrice: totals.value.totalPrice,
+        totalCost: totals.value.totalCost,
+        totalDiscount: totals.value.totalDiscount,
+        profit: totals.value.profit,
+        paymentMethod: selectedMethod.value,
+        amountPaid: selectedMethod.value === 'CASH' ? amountPaid.value || totals.value.totalPrice : totals.value.totalPrice,
+        change: selectedMethod.value === 'CASH' ? Math.max(0, (amountPaid.value || totals.value.totalPrice) - totals.value.totalPrice) : 0,
+      };
+    }
+
     showReceipt.value = true;
 
     // Reset cart
@@ -449,10 +479,37 @@ async function handleCheckout() {
     amountPaid.value = 0;
     selectedMethod.value = 'CASH';
 
-    // Refresh product stock
-    await fetchProducts();
+    // Refresh product stock (only if online)
+    if (navigator.onLine) {
+      await fetchProducts();
+    }
   } catch (err: any) {
-    checkoutError.value = err.response?.data?.message ?? err.message ?? 'Gagal memproses transaksi.';
+    // If online request fails due to network, fallback to offline queue
+    if (!navigator.onLine || err.code === 'ERR_NETWORK' || !err.response) {
+      try {
+        await addPendingTransaction(payload);
+        await refreshPendingCount();
+
+        receiptData.value = {
+          transactionNumber: `OFFLINE-${idempotencyKey.slice(0, 8).toUpperCase()}`,
+          totalPrice: totals.value.totalPrice,
+          totalCost: totals.value.totalCost,
+          totalDiscount: totals.value.totalDiscount,
+          profit: totals.value.profit,
+          paymentMethod: selectedMethod.value,
+          amountPaid: selectedMethod.value === 'CASH' ? amountPaid.value || totals.value.totalPrice : totals.value.totalPrice,
+          change: 0,
+        };
+        showReceipt.value = true;
+        cart.value = [];
+        amountPaid.value = 0;
+        selectedMethod.value = 'CASH';
+      } catch {
+        checkoutError.value = 'Gagal menyimpan transaksi offline.';
+      }
+    } else {
+      checkoutError.value = err.response?.data?.message ?? err.message ?? 'Gagal memproses transaksi.';
+    }
   } finally {
     checking.value = false;
   }
