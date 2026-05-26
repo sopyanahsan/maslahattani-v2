@@ -88,7 +88,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'debts',
         name: 'admin-debts',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminDebtsView.vue'),
         meta: {
           title: 'Hutang',
           description: 'Daftar hutang aktif, jatuh tempo, dan riwayat pembayaran.',
