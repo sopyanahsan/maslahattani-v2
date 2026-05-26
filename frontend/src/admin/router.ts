@@ -193,10 +193,10 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'transfers',
         name: 'admin-transfers',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminTransfersView.vue'),
         meta: {
           title: 'Transfer Stok',
-          description: 'Transfer stok antar cabang.',
+          description: 'Transfer stok antar cabang dengan alur persetujuan.',
         },
       },
 

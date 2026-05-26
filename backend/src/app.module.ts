@@ -16,6 +16,7 @@ import { ReportsModule } from './reports/reports.module';
 import { BrilinkModule } from './brilink/brilink.module';
 import { OpnameModule } from './opname/opname.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
+import { TransfersModule } from './transfers/transfers.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { SuppliersModule } from './suppliers/suppliers.module';
     BrilinkModule,
     OpnameModule,
     SuppliersModule,
+    TransfersModule,
   ],
   controllers: [],
   providers: [],

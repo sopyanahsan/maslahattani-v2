@@ -50,6 +50,8 @@ model User {
   brilinkTransactions BrilinkTransaction[] @relation("BrilinkCashier")
   opnameSessions      OpnameSession[]      @relation("OpnameConductor")
   purchaseOrders      PurchaseOrder[]      @relation("POCreator")
+  transferRequests    StockTransfer[]      @relation("TransferRequester")
+  transferApprovals   StockTransfer[]      @relation("TransferApprover")
 
   @@index([shopId])
   @@index([email])
@@ -121,6 +123,8 @@ model Shop {
   opnameSessions      OpnameSession[]
   suppliers           Supplier[]
   purchaseOrders      PurchaseOrder[]
+  transfersOut        StockTransfer[]      @relation("TransferFrom")
+  transfersIn         StockTransfer[]      @relation("TransferTo")
 
   @@map("shops")
 }
@@ -199,6 +203,7 @@ model Product {
   debts               Debt[]
   opnameItems         OpnameItem[]
   purchaseOrderItems  PurchaseOrderItem[]
+  stockTransferItems  StockTransferItem[]
 
   @@unique([shopId, sku])
   @@index([shopId])
@@ -729,4 +734,66 @@ model PurchaseOrderItem {
   @@index([orderId])
   @@index([productId])
   @@map("purchase_order_items")
+}
+
+
+
+// ============================================
+// STOCK TRANSFER BETWEEN BRANCHES
+// ============================================
+
+enum StockTransferStatus {
+  PENDING
+  APPROVED
+  IN_TRANSIT
+  RECEIVED
+  REJECTED
+  CANCELLED
+}
+
+model StockTransfer {
+  id              String              @id @default(cuid())
+  fromShop        Shop                @relation("TransferFrom", fields: [fromShopId], references: [id])
+  fromShopId      String
+  toShop          Shop                @relation("TransferTo", fields: [toShopId], references: [id])
+  toShopId        String
+  requestedBy     User                @relation("TransferRequester", fields: [requestedById], references: [id])
+  requestedById   String
+  approvedBy      User?               @relation("TransferApprover", fields: [approvedById], references: [id])
+  approvedById    String?
+
+  transferNumber  String              @unique
+  status          StockTransferStatus @default(PENDING)
+  notes           String?
+  approvalNotes   String?
+  requestedAt     DateTime            @default(now())
+  approvedAt      DateTime?
+  shippedAt       DateTime?
+  receivedAt      DateTime?
+
+  items           StockTransferItem[]
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([fromShopId])
+  @@index([toShopId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("stock_transfers")
+}
+
+model StockTransferItem {
+  id              String        @id @default(cuid())
+  transfer        StockTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  transferId      String
+  product         Product       @relation(fields: [productId], references: [id])
+  productId       String
+
+  quantity        Int
+  receivedQty     Int           @default(0)
+
+  @@index([transferId])
+  @@index([productId])
+  @@map("stock_transfer_items")
 }
