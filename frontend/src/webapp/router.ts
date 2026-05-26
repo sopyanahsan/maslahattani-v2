@@ -55,20 +55,20 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'retail/pos',
         name: 'webapp-retail-pos',
-        component: () => import('@/webapp/views/PlaceholderView.vue'),
+        component: () => import('@/webapp/views/POSView.vue'),
         meta: {
           title: 'Kasir Retail — POS',
           description:
-            'Scan/cari produk, atur qty, pilih metode bayar, cetak struk. POS lengkap akan tersedia di iterasi B.',
+            'Cari produk, atur qty, pilih metode bayar, checkout. POS kasir retail.',
         },
       },
       {
         path: 'retail/history',
         name: 'webapp-retail-history',
-        component: () => import('@/webapp/views/PlaceholderView.vue'),
+        component: () => import('@/webapp/views/TransactionHistoryView.vue'),
         meta: {
           title: 'Riwayat Transaksi',
-          description: 'Daftar transaksi yang Anda kerjakan hari ini & shift sebelumnya.',
+          description: 'Daftar transaksi yang Anda kerjakan hari ini.',
         },
       },
       {
