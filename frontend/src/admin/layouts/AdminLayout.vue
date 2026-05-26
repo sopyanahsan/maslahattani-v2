@@ -285,6 +285,7 @@ import {
   Building2 as Building2Icon,
   ChevronDown as ChevronDownIcon,
   Check as CheckIcon,
+  Boxes as BoxesIcon,
   // BRILink
   Landmark as LandmarkIcon,
   ArrowRightLeft as TransferIcon,
@@ -404,6 +405,7 @@ const navGroups: NavGroup[] = [
     title: 'Sistem',
     items: [
       { to: '/admin/shops', label: 'Cabang', icon: ShopIcon },
+      { to: '/admin/cashbox-categories', label: 'Kategori Cashbox', icon: BoxesIcon },
       { to: '/admin/reports', label: 'Laporan', icon: ReportIcon },
     ],
   },
@@ -456,6 +458,7 @@ const pageTitle = computed(() => {
     'admin-shifts': 'Shift',
     'admin-kasir': 'Kasir',
     'admin-shops': 'Cabang',
+    'admin-cashbox-categories': 'Kategori Cashbox',
     'admin-reports': 'Laporan',
     'admin-settings': 'Pengaturan',
     'admin-brilink-transfer': 'BRILink — Transfer',
@@ -477,6 +480,7 @@ const pageSubtitle = computed(() => {
     'admin-shifts': 'Buka, tutup, dan rekonsiliasi shift kasir',
     'admin-kasir': 'Manajemen akun kasir',
     'admin-shops': 'Kelola cabang & multi-toko',
+    'admin-cashbox-categories': 'Kategori kas terpisah (Retail, Subsidi Pupuk, dll)',
     'admin-reports': 'Laporan penjualan & laba',
     'admin-settings': 'Konfigurasi toko & sistem',
     'admin-brilink-transfer': 'Kirim dana antar bank',

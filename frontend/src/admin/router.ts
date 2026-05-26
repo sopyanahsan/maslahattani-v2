@@ -124,6 +124,16 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'cashbox-categories',
+        name: 'admin-cashbox-categories',
+        component: () => import('@/admin/views/CashBoxCategoriesView.vue'),
+        meta: {
+          title: 'Kategori Cashbox',
+          description:
+            'Kelola kategori kas terpisah (Retail, Subsidi Pupuk, dst). Hanya super-admin yang bisa CRUD.',
+        },
+      },
+      {
         path: 'reports',
         name: 'admin-reports',
         component: () => import('@/admin/views/ComingSoonView.vue'),
