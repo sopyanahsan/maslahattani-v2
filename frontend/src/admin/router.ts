@@ -126,7 +126,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'kasir',
         name: 'admin-kasir',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminKasirView.vue'),
         meta: {
           title: 'Kasir',
           description: 'Kelola akun kasir, reset password, assign toko.',
