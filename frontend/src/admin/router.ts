@@ -61,10 +61,10 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'transactions',
         name: 'admin-transactions',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminTransactionsView.vue'),
         meta: {
           title: 'Transaksi',
-          description: 'List transaksi, void, detail receipt akan tersedia di sini.',
+          description: 'Riwayat transaksi retail, filter by tanggal/status, detail & void.',
         },
       },
       {
