@@ -200,14 +200,14 @@ const routes: RouteRecordRaw[] = [
         },
       },
 
-      // === Analytics (Coming Soon) ===
+      // === Analytics ===
       {
         path: 'analytics',
         name: 'admin-analytics',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
+        component: () => import('@/admin/views/AdminAnalyticsView.vue'),
         meta: {
           title: 'Analytics',
-          description: 'Dashboard analitik bisnis.',
+          description: 'Dashboard analitik bisnis — KPI, chart, insight.',
         },
       },
 
