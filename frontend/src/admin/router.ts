@@ -50,13 +50,70 @@ const routes: RouteRecordRaw[] = [
     path: '/admin',
     component: () => import('@/admin/layouts/AdminLayout.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN', 'SUPER_ADMIN'] },
-    redirect: { name: 'admin-dashboard' },
+    redirect: { name: 'admin-home' },
     children: [
+      {
+        path: 'home',
+        name: 'admin-home',
+        component: () => import('@/admin/views/AdminHomeView.vue'),
+        meta: {
+          title: 'Home',
+          description: 'Pintu masuk dashboard Retail dan BRILink.',
+        },
+      },
+      {
+        path: 'profil',
+        name: 'admin-profil',
+        component: () => import('@/admin/views/ProfilView.vue'),
+        meta: {
+          title: 'Profil Saya',
+          description: 'Kelola data pribadi, password, dan keamanan akun.',
+        },
+      },
+      {
+        path: 'kas-retail',
+        name: 'admin-kas-retail',
+        component: () => import('@/admin/views/KasRetailView.vue'),
+        meta: {
+          title: 'Kas Retail',
+          description: 'Mutasi kas retail dan pengaturan metode kas.',
+        },
+      },
+      {
+        path: 'kas-rekening-brilink',
+        name: 'admin-kas-rekening-brilink',
+        component: () => import('@/admin/views/KasRekeningBrilinkView.vue'),
+        meta: {
+          title: 'Kas & Rekening BRILink',
+          description: 'Mutasi saldo, daftar rekening BRI, dan metode kas BRILink.',
+        },
+      },
+      {
+        path: 'brilink/transaksi',
+        name: 'admin-brilink-transaksi',
+        component: () => import('@/admin/views/BrilinkTransaksiView.vue'),
+        meta: {
+          title: 'Transaksi BRILink',
+          description: 'Daftar transaksi BRILink — transfer, tarik tunai, top-up, PLN.',
+        },
+      },
+      {
+        path: 'brilink/fee',
+        name: 'admin-brilink-fee',
+        component: () => import('@/admin/views/BrilinkFeeView.vue'),
+        meta: {
+          title: 'Pengaturan Fee BRILink',
+          description: 'Atur margin fee per nominal dan jenis transaksi.',
+        },
+      },
       {
         path: 'dashboard',
         name: 'admin-dashboard',
         component: () => import('@/admin/views/DashboardView.vue'),
-        meta: { title: 'Dashboard' },
+        meta: {
+          title: 'Dashboard Retail',
+          description: 'Ringkasan operasional toko hari ini.',
+        },
       },
       {
         path: 'transactions',

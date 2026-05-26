@@ -1,13 +1,13 @@
 <template>
-  <div class="min-h-screen bg-slate-50">
+  <div class="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
     <!-- Mobile Topbar -->
     <header
-      class="lg:hidden sticky top-0 z-30 bg-white border-b border-slate-200 px-4 h-14 flex items-center justify-between"
+      class="lg:hidden sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 h-14 flex items-center justify-between"
     >
       <div class="flex items-center gap-2">
         <button
           type="button"
-          class="p-2 -ml-2 text-slate-700 hover:bg-slate-100 rounded-md"
+          class="p-2 -ml-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
           aria-label="Toggle menu"
           @click="sidebarOpen = !sidebarOpen"
         >
@@ -17,13 +17,22 @@
           <div class="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center">
             <component :is="StoreIcon" class="w-4 h-4 text-white" />
           </div>
-          <h1 class="text-sm font-bold text-slate-950">Maslahat Tani</h1>
+          <h1 class="text-sm font-bold text-slate-950 dark:text-slate-100">Maslahat Tani</h1>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1">
+        <!-- Theme toggle (mobile) -->
         <button
           type="button"
-          class="p-2 text-slate-600 hover:bg-slate-100 rounded-md"
+          class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
+          :aria-label="`Switch to ${themeResolved === 'dark' ? 'light' : 'dark'} mode`"
+          @click="toggleTheme"
+        >
+          <component :is="themeResolved === 'dark' ? SunIcon : MoonIcon" class="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
           aria-label="Logout"
           @click="handleLogout"
         >
@@ -39,7 +48,7 @@
       @click="sidebarOpen = false"
     ></div>
 
-    <!-- Sidebar -->
+    <!-- Sidebar (always dark) -->
     <aside
       class="fixed top-0 left-0 z-50 h-screen w-64 bg-slate-900 text-white flex flex-col transition-transform duration-300 lg:translate-x-0"
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
@@ -58,22 +67,40 @@
       </div>
 
       <!-- Nav -->
-      <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-4">
-        <div v-for="group in navGroups" :key="group.title">
-          <!-- Group header -->
-          <div class="flex items-center justify-between px-3 mb-1.5">
+      <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-1">
+        <!-- Top-level items (Home, Dashboard Retail) -->
+        <div class="space-y-0.5 mb-3">
+          <RouterLink
+            v-for="item in topItems"
+            :key="item.to"
+            :to="item.to"
+            custom
+            v-slot="{ isActive, href, navigate }"
+          >
+            <a
+              :href="href"
+              :class="[
+                'flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors',
+                isActive
+                  ? 'bg-blue-600 text-white font-medium'
+                  : 'text-slate-300 hover:bg-slate-800 hover:text-white',
+              ]"
+              @click="(e) => onNavClick(e, navigate)"
+            >
+              <component :is="item.icon" class="w-4 h-4 shrink-0" />
+              <span class="truncate">{{ item.label }}</span>
+            </a>
+          </RouterLink>
+        </div>
+
+        <!-- Grouped items -->
+        <div v-for="group in navGroups" :key="group.title" class="mb-3">
+          <div class="px-3 mb-1.5">
             <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
               {{ group.title }}
             </p>
-            <span
-              v-if="group.badge"
-              class="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full bg-slate-700 text-slate-300"
-            >
-              {{ group.badge }}
-            </span>
           </div>
 
-          <!-- Group items -->
           <div class="space-y-0.5">
             <RouterLink
               v-for="item in group.items"
@@ -88,8 +115,6 @@
                   'flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors',
                   isActive
                     ? 'bg-blue-600 text-white font-medium'
-                    : group.muted
-                    ? 'text-slate-500 hover:bg-slate-800 hover:text-slate-300'
                     : 'text-slate-300 hover:bg-slate-800 hover:text-white',
                 ]"
                 @click="(e) => onNavClick(e, navigate)"
@@ -98,7 +123,10 @@
                 <span class="truncate">{{ item.label }}</span>
                 <span
                   v-if="item.badge"
-                  class="ml-auto px-1.5 py-0.5 text-[10px] font-semibold rounded-full bg-amber-500 text-white"
+                  :class="[
+                    'ml-auto px-1.5 py-0.5 text-[10px] font-semibold rounded-full',
+                    item.badgeColor || 'bg-amber-500 text-white',
+                  ]"
                 >
                   {{ item.badge }}
                 </span>
@@ -160,42 +188,41 @@
     <main class="lg:ml-64 min-h-screen">
       <!-- Desktop topbar -->
       <header
-        class="hidden lg:flex sticky top-0 z-20 h-16 bg-white border-b border-slate-200 px-6 items-center justify-between"
+        class="hidden lg:flex sticky top-0 z-20 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 items-center justify-between transition-colors"
       >
         <div>
-          <h2 class="text-lg font-bold text-slate-950">{{ pageTitle }}</h2>
-          <p class="text-xs text-slate-500">{{ pageSubtitle }}</p>
+          <h2 class="text-lg font-bold text-slate-950 dark:text-slate-100">{{ pageTitle }}</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ pageSubtitle }}</p>
         </div>
         <div class="flex items-center gap-3">
-          <!-- Shop selector (super-admin only, atau user dgn akses >1 cabang) -->
+          <!-- Shop selector -->
           <div v-if="canSwitchShop" class="relative">
             <button
               type="button"
-              class="flex items-center gap-2 h-9 px-3 bg-slate-50 border border-slate-200 rounded-md hover:bg-slate-100 transition-colors"
+              class="flex items-center gap-2 h-9 px-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               @click="shopMenuOpen = !shopMenuOpen"
             >
-              <component :is="Building2Icon" class="w-4 h-4 text-slate-600" />
+              <component :is="Building2Icon" class="w-4 h-4 text-slate-600 dark:text-slate-400" />
               <div class="text-left">
-                <p class="text-[10px] uppercase tracking-wide text-slate-500 leading-tight">
+                <p class="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400 leading-tight">
                   Cabang Aktif
                 </p>
-                <p class="text-xs font-semibold text-slate-900 leading-tight max-w-[180px] truncate">
+                <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 leading-tight max-w-[180px] truncate">
                   {{ currentShopName || 'Belum dipilih' }}
                 </p>
               </div>
               <component
                 :is="ChevronDownIcon"
-                :class="['w-4 h-4 text-slate-500 transition-transform', shopMenuOpen && 'rotate-180']"
+                :class="['w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform', shopMenuOpen && 'rotate-180']"
               />
             </button>
 
-            <!-- Dropdown -->
             <div
               v-if="shopMenuOpen"
-              class="absolute right-0 top-full mt-1 w-72 bg-white border border-slate-200 rounded-lg shadow-lg z-30 overflow-hidden"
+              class="absolute right-0 top-full mt-1 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-30 overflow-hidden"
             >
-              <div class="px-4 py-2 border-b border-slate-100 bg-slate-50">
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+              <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Pilih cabang ({{ availableShops.length }})
                 </p>
               </div>
@@ -206,8 +233,8 @@
                   type="button"
                   :disabled="switchingShop"
                   :class="[
-                    'w-full px-4 py-2.5 text-left hover:bg-slate-50 transition-colors flex items-start gap-2 disabled:opacity-60',
-                    currentShopId === shop.id && 'bg-blue-50',
+                    'w-full px-4 py-2.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-start gap-2 disabled:opacity-60',
+                    currentShopId === shop.id && 'bg-blue-50 dark:bg-blue-950/30',
                   ]"
                   @click="handleSwitchShop(shop.id)"
                 >
@@ -215,50 +242,61 @@
                     :is="currentShopId === shop.id ? CheckIcon : StoreIcon"
                     :class="[
                       'w-4 h-4 shrink-0 mt-0.5',
-                      currentShopId === shop.id ? 'text-blue-600' : 'text-slate-400',
+                      currentShopId === shop.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500',
                     ]"
                   />
                   <div class="flex-1 min-w-0">
                     <p
                       :class="[
                         'text-sm font-medium truncate',
-                        currentShopId === shop.id ? 'text-blue-700' : 'text-slate-900',
+                        currentShopId === shop.id ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-slate-100',
                       ]"
                     >
                       {{ shop.name }}
                     </p>
-                    <p class="text-[11px] text-slate-500 truncate">{{ shop.address }}</p>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">{{ shop.address }}</p>
                   </div>
                 </button>
               </div>
-              <div class="border-t border-slate-100 px-4 py-2 bg-slate-50">
-                <p v-if="switchError" class="text-[11px] text-red-600">{{ switchError }}</p>
-                <p v-else class="text-[10px] text-slate-500">
+              <div class="border-t border-slate-100 dark:border-slate-800 px-4 py-2 bg-slate-50 dark:bg-slate-800">
+                <p v-if="switchError" class="text-[11px] text-red-600 dark:text-red-400">{{ switchError }}</p>
+                <p v-else class="text-[10px] text-slate-500 dark:text-slate-400">
                   Klik untuk ganti konteks. Tab lain mungkin perlu refresh.
                 </p>
               </div>
             </div>
           </div>
 
-          <span class="text-xs text-slate-500 hidden xl:inline">
+          <!-- Theme toggle (desktop) -->
+          <button
+            type="button"
+            class="h-9 w-9 flex items-center justify-center rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            :aria-label="themeAriaLabel"
+            :title="themeAriaLabel"
+            @click="toggleTheme"
+          >
+            <component :is="themeIcon" class="w-4 h-4" />
+          </button>
+
+          <span class="text-xs text-slate-500 dark:text-slate-400 hidden xl:inline">
             {{ todayLabel }}
           </span>
-          <div class="h-8 w-px bg-slate-200"></div>
+          <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
           <div class="flex items-center gap-2">
             <div
-              class="w-8 h-8 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-xs font-semibold text-blue-700"
+              class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-700 flex items-center justify-center text-xs font-semibold text-blue-700 dark:text-blue-300"
             >
               {{ userInitials }}
             </div>
             <div class="text-right">
-              <p class="text-xs font-semibold text-slate-900">{{ displayName }}</p>
-              <p class="text-[11px] text-slate-500">{{ roleLabel }}</p>
+              <p class="text-xs font-semibold text-slate-900 dark:text-slate-100">{{ displayName }}</p>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ roleLabel }}</p>
             </div>
           </div>
         </div>
       </header>
 
-      <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
+      <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto text-slate-900 dark:text-slate-100">
         <RouterView />
       </div>
     </main>
@@ -270,9 +308,11 @@ import { computed, onMounted, ref, type Component } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
+import { useTheme } from '@/shared/composables/useTheme';
 import {
   Menu as MenuIcon,
   Store as StoreIcon,
+  Home as HomeIcon,
   LayoutDashboard as DashboardIcon,
   Receipt as ReceiptIcon,
   Package as PackageIcon,
@@ -285,40 +325,49 @@ import {
   Building2 as Building2Icon,
   ChevronDown as ChevronDownIcon,
   Check as CheckIcon,
-  Boxes as BoxesIcon,
   // BRILink
   Landmark as LandmarkIcon,
   ArrowRightLeft as TransferIcon,
-  Banknote as BanknoteIcon,
-  Smartphone as SmartphoneIcon,
   Percent as PercentIcon,
-  ScrollText as MutationIcon,
-  // Phase 1 (PRD)
+  // Shifts & Profile
   Clock as ShiftIcon,
-  Building2 as ShopIcon,
+  User as UserIcon,
+  // Theme
+  Sun as SunIcon,
+  Moon as MoonIcon,
+  Monitor as MonitorIcon,
 } from 'lucide-vue-next';
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const shopStore = useShopStore();
+const { resolved: themeResolved, mode: themeMode, toggle: cycleTheme } = useTheme();
 
 const sidebarOpen = ref(false);
 const shopMenuOpen = ref(false);
 const switchingShop = ref(false);
 const switchError = ref('');
 
-// === Shop selector state ===
+// === Theme ===
+const themeIcon = computed<Component>(() => {
+  if (themeMode.value === 'system') return MonitorIcon;
+  return themeResolved.value === 'dark' ? MoonIcon : SunIcon;
+});
+const themeAriaLabel = computed(() => {
+  if (themeMode.value === 'light') return 'Switch to Dark mode';
+  if (themeMode.value === 'dark') return 'Switch to System default';
+  return 'Switch to Light mode';
+});
+function toggleTheme() {
+  cycleTheme();
+}
+
+// === Shop selector ===
 const currentShopName = computed(() => shopStore.currentShopName);
 const currentShopId = computed(() => shopStore.currentShopId);
 const availableShops = computed(() => shopStore.availableShops);
 
-/**
- * Switcher cabang ditampilin kalau:
- * - User SUPER_ADMIN (bisa pilih semua cabang), ATAU
- * - User punya akses ke >1 cabang (defensive — saat ini schema 1 user = 1 shop,
- *   tapi nanti kalau berubah tetep aman)
- */
 const canSwitchShop = computed(
   () => authStore.isSuperAdmin || availableShops.value.length > 1,
 );
@@ -328,16 +377,12 @@ async function handleSwitchShop(shopId: string) {
     shopMenuOpen.value = false;
     return;
   }
-
   switchingShop.value = true;
   switchError.value = '';
-
   try {
     await shopStore.selectShop(shopId);
     await authStore.fetchUser();
     shopMenuOpen.value = false;
-    // Reload current view supaya data refresh sesuai cabang baru.
-    // Pakai router.replace dgn ?_t= untuk trigger re-mount tanpa full page reload.
     router.replace({
       path: route.path,
       query: { ...route.query, _t: Date.now().toString() },
@@ -349,42 +394,66 @@ async function handleSwitchShop(shopId: string) {
   }
 }
 
-// Pre-fetch shops list sekali saat mount supaya dropdown selalu siap
-// (login response sudah set buat super-admin, tapi reload page bisa kosong)
 onMounted(async () => {
   if (canSwitchShop.value && availableShops.value.length === 0) {
     try {
       await shopStore.fetchShops();
     } catch {
-      // Silent: dropdown akan empty kalau gagal
+      /* silent */
     }
   }
 });
+
+// ============================================
+// SIDEBAR NAVIGATION
+// ============================================
 
 interface NavItem {
   to: string;
   label: string;
   icon: Component;
   badge?: string | number;
+  badgeColor?: string;
 }
 
 interface NavGroup {
   title: string;
-  badge?: string;
-  /** Render dengan warna lebih redup untuk modul yang belum aktif. */
-  muted?: boolean;
   items: NavItem[];
 }
+
+const topItems: NavItem[] = [
+  { to: '/admin/home', label: 'Home', icon: HomeIcon },
+  { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
+];
 
 const navGroups: NavGroup[] = [
   {
     title: 'Retail',
     items: [
-      { to: '/admin/dashboard', label: 'Dashboard', icon: DashboardIcon },
       { to: '/admin/transactions', label: 'Transaksi', icon: ReceiptIcon },
-      { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
       { to: '/admin/debts', label: 'Hutang', icon: DebtIcon },
-      { to: '/admin/payments', label: 'Pembayaran', icon: WalletIcon },
+      { to: '/admin/kas-retail', label: 'Kas Retail', icon: WalletIcon },
+    ],
+  },
+  {
+    title: 'Inventaris',
+    items: [
+      { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
+      { to: '/admin/shops', label: 'Cabang', icon: Building2Icon },
+      { to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon },
+      { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
+      { to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon },
+    ],
+  },
+  {
+    title: 'Keuangan',
+    items: [
+      { to: '/admin/reports', label: 'Laporan Retail', icon: ReportIcon },
+    ],
+  },
+  {
+    title: 'Operasional',
+    items: [
       { to: '/admin/shifts', label: 'Shift', icon: ShiftIcon },
       { to: '/admin/kasir', label: 'Kasir', icon: UsersIcon },
     ],
@@ -392,36 +461,27 @@ const navGroups: NavGroup[] = [
   {
     title: 'BRILink',
     items: [
-      { to: '/admin/brilink', label: 'BRILink', icon: LandmarkIcon },
-    ],
-  },
-  {
-    title: 'Inventaris',
-    items: [
-      { to: '/admin/opname-sessions', label: 'Opname', icon: CheckIcon },
-      { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
-      { to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon },
-    ],
-  },
-  {
-    title: 'Sistem',
-    items: [
-      { to: '/admin/shops', label: 'Cabang', icon: ShopIcon },
-      { to: '/admin/cashbox-categories', label: 'Kategori Cashbox', icon: BoxesIcon },
-      { to: '/admin/reports', label: 'Laporan', icon: ReportIcon },
-      { to: '/admin/analytics', label: 'Analytics', icon: ReportIcon },
+      { to: '/admin/brilink', label: 'Dashboard BRILink', icon: DashboardIcon },
+      { to: '/admin/brilink/transaksi', label: 'Transaksi BRILink', icon: ReceiptIcon },
+      { to: '/admin/kas-rekening-brilink', label: 'Kas & Rekening', icon: LandmarkIcon },
+      { to: '/admin/brilink/fee', label: 'Pengaturan Fee', icon: PercentIcon },
     ],
   },
 ];
 
 const bottomNav: NavItem[] = [
   { to: '/admin/settings', label: 'Pengaturan', icon: SettingsIcon },
+  { to: '/admin/profil', label: 'Profil', icon: UserIcon },
 ];
 
 function onNavClick(e: MouseEvent, navigate: (e?: MouseEvent) => void) {
   navigate(e);
   sidebarOpen.value = false;
 }
+
+// ============================================
+// USER INFO
+// ============================================
 
 const displayName = computed(() => {
   const u = authStore.user;
@@ -446,55 +506,20 @@ const roleLabel = computed(() => {
   return '—';
 });
 
+// ============================================
+// PAGE TITLES
+// ============================================
+
 const pageTitle = computed(() => {
   const meta = route.meta?.title as string | undefined;
   if (meta) {
-    // Strip suffix " — Maslahat Tani" kalau ada
     return meta.replace(/\s*[—-]\s*Maslahat Tani.*$/i, '').trim() || meta;
   }
-  const fallback: Record<string, string> = {
-    'admin-dashboard': 'Dashboard',
-    'admin-transactions': 'Transaksi',
-    'admin-products': 'Produk & Stok',
-    'admin-debts': 'Hutang',
-    'admin-payments': 'Pembayaran',
-    'admin-shifts': 'Shift',
-    'admin-shift-detail': 'Detail Shift',
-    'admin-kasir': 'Kasir',
-    'admin-shops': 'Cabang',
-    'admin-cashbox-categories': 'Kategori Cashbox',
-    'admin-reports': 'Laporan',
-    'admin-settings': 'Pengaturan',
-    'admin-brilink-transfer': 'BRILink — Transfer',
-    'admin-brilink-cash': 'BRILink — Tarik Tunai',
-    'admin-brilink-topup': 'BRILink — Top Up',
-    'admin-brilink-mutations': 'BRILink — Mutasi',
-    'admin-brilink-fees': 'BRILink — Fee',
-  };
-  return fallback[String(route.name ?? '')] ?? 'Admin';
+  return 'Admin';
 });
 
 const pageSubtitle = computed(() => {
-  const map: Record<string, string> = {
-    'admin-dashboard': 'Ringkasan operasional toko hari ini',
-    'admin-transactions': 'Riwayat & manajemen transaksi',
-    'admin-products': 'Master produk dan stok gudang',
-    'admin-debts': 'Manajemen hutang pelanggan',
-    'admin-payments': 'Mutasi kas dan pembayaran',
-    'admin-shifts': 'Buka, tutup, dan rekonsiliasi shift kasir',
-    'admin-shift-detail': 'Rincian shift dan finalisasi audit kas',
-    'admin-kasir': 'Manajemen akun kasir',
-    'admin-shops': 'Kelola cabang & multi-toko',
-    'admin-cashbox-categories': 'Kategori kas terpisah (Retail, Subsidi Pupuk, dll)',
-    'admin-reports': 'Laporan penjualan & laba',
-    'admin-settings': 'Konfigurasi toko & sistem',
-    'admin-brilink-transfer': 'Kirim dana antar bank',
-    'admin-brilink-cash': 'Layani tarik tunai pelanggan',
-    'admin-brilink-topup': 'Top up e-wallet, pulsa, PLN & paket data',
-    'admin-brilink-mutations': 'Riwayat transaksi BRILink',
-    'admin-brilink-fees': 'Atur margin fee per transaksi',
-  };
-  return map[String(route.name ?? '')] ?? '';
+  return (route.meta?.description as string | undefined) || '';
 });
 
 const todayLabel = computed(() => {
