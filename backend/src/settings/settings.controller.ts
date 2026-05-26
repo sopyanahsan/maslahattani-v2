@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Body,
   Param,
   Query,
@@ -13,8 +14,10 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/guards/roles.guard';
 import { SettingsService } from './settings.service';
+import { DashboardService } from '../dashboard/dashboard.service';
 import { UpdateLanguageDto, UpdateReceiptConfigDto } from './dto/update-settings.dto';
 import { UpdateShopDto, CreateShopDto } from './dto/update-shop.dto';
+import { UpdateAlertConfigDto } from './dto/update-alert-config.dto';
 import { Role } from '@prisma/client';
 
 @ApiTags('Settings / Pengaturan')
@@ -23,7 +26,10 @@ import { Role } from '@prisma/client';
 @Roles(Role.ADMIN, Role.SUPER_ADMIN)
 @ApiBearerAuth()
 export class SettingsController {
-  constructor(private readonly settingsService: SettingsService) {}
+  constructor(
+    private readonly settingsService: SettingsService,
+    private readonly dashboardService: DashboardService,
+  ) {}
 
   @Get()
   @ApiOperation({ summary: 'Get pengaturan toko (bahasa, struk, data toko)' })
@@ -59,5 +65,33 @@ export class SettingsController {
   @ApiOperation({ summary: 'List semua toko/cabang (multi-cabang)' })
   async listShops(@Request() req: any) {
     return this.settingsService.listShops(req.user.id);
+  }
+
+  // ============================================
+  // ALERT CONFIG (Notifikasi & Alert)
+  // ============================================
+
+  @Get('alerts')
+  @ApiOperation({
+    summary: 'Get threshold alert config (lowStock, shift, hutang).',
+    description:
+      'Return current `alertConfig` dari ShopSetting. Kalau belum di-set, ' +
+      'return default values.',
+  })
+  async getAlertConfig(@Query('shopId') shopId: string) {
+    return this.dashboardService.getAlertConfig(shopId);
+  }
+
+  @Patch('alerts')
+  @ApiOperation({
+    summary: 'Update threshold alert config (partial update).',
+    description:
+      'Field yang tidak di-set dipertahankan dari config existing/default.',
+  })
+  async updateAlertConfig(
+    @Query('shopId') shopId: string,
+    @Body() dto: UpdateAlertConfigDto,
+  ) {
+    return this.dashboardService.updateAlertConfig(shopId, dto);
   }
 }

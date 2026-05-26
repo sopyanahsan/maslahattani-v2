@@ -135,6 +135,16 @@ model ShopSetting {
   shopId              String    @unique
   language            String    @default("id") // "id", "en", "su", "jv"
   receiptConfig       String?   // JSON config for receipt printing
+  /**
+   * Konfigurasi threshold alert untuk Dashboard Retail.
+   * JSON shape: {
+   *   lowStockThreshold: number,            // unit min sebelum stock dianggap menipis (default 5)
+   *   shiftDurationWarningHours: number,    // jam kerja shift sebelum warning (default 8)
+   *   overdueDebtDaysBeforeNotice: number,  // H- berapa hari sebelum dueDate mau di-warn (default 0 = exact)
+   * }
+   * Null = pakai default. Lihat DashboardService.DEFAULT_ALERT_CONFIG.
+   */
+  alertConfig         Json?
   updatedAt           DateTime  @updatedAt
   
   @@map("shop_settings")

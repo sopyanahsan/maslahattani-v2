@@ -18,6 +18,7 @@ import { OpnameModule } from './opname/opname.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { TransfersModule } from './transfers/transfers.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     SuppliersModule,
     TransfersModule,
     AnalyticsModule,
+    DashboardModule,
   ],
   controllers: [],
   providers: [],
