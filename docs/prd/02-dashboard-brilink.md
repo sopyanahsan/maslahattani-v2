@@ -1,23 +1,26 @@
 # PRD — Dashboard BRILink
 
-**Status**: Draft (for review)
+**Status**: ✅ Confirmed — Ready to Implement
 **Updated**: May 2026
 **Owner**: Sopyan Ahsan
-**Branch**: `feat/dashboard-retail` (akan dipisah ke branch baru saat implement)
+**Branch**: `feat/dashboard-brilink` (akan dibuat saat implement)
 **Depends on**: PRD 01 (Dashboard Retail) — pakai pattern yang sama
 
 ---
 
 ## 1. Overview
 
-Dashboard BRILink adalah halaman monitoring khusus layanan BRILink (transfer, tarik tunai, top-up, PLN). Targetnya:
+Dashboard BRILink adalah halaman **monitoring & reporting** layanan BRILink (transfer, tarik tunai, top-up, PLN). Targetnya:
 
 - **Owner BRILink** — monitoring profit fee, transaksi sukses/gagal, saldo rekening
 - **Admin Cabang** — monitoring transaksi harian + saldo rekening untuk operasional
 
-URL: `/admin/brilink` (existing route, akan di-redesign)
+URL: `/admin/brilink`
 
-> ⚠️ Existing `AdminBrilinkView.vue` punya 3 tabs (Mutasi, Statistik, Fee). Akan dipecah:
+> ⚠️ **Important: Admin BRILink = REPORTING ONLY**
+> Tidak ada tombol "Buat Transaksi" di admin panel. Semua transaksi BRILink terjadi di **webapp kasir**. Admin panel hanya menampilkan data monitoring & laporan.
+
+> Existing `AdminBrilinkView.vue` punya 3 tabs (Mutasi, Statistik, Fee). Akan dipecah:
 > - **Mutasi tab** → standalone page `/admin/kas-rekening-brilink` (sudah ada placeholder)
 > - **Statistik tab** → conten utama dashboard ini
 > - **Fee tab** → standalone page `/admin/brilink/fee` (sudah ada placeholder)
@@ -28,8 +31,8 @@ URL: `/admin/brilink` (existing route, akan di-redesign)
 
 1. Visual ringkasan operasional BRILink dalam satu layar
 2. Default time range = **Hari Ini** (real-time / refresh 30 detik)
-3. Filter: Hari Ini / 7 Hari / 30 Hari
-4. Quick action ke fitur BRILink yang paling sering diakses
+3. Filter periode: Hari Ini / 7 Hari / 30 Hari
+4. Quick action ke fitur BRILink yang paling sering diakses (reporting only)
 5. Highlight masalah: saldo rekening rendah, transaksi gagal banyak, fee rule mismatch
 
 ---
@@ -48,14 +51,15 @@ Sama seperti Dashboard Retail — period selector, refresh, auto-refresh toggle.
 | Fee Earnings | Sum `fee` | vs kemarin Δ% |
 | Avg Fee/Trx | Sum fee / count | vs kemarin Δ% |
 
-### 3.3 Quick Actions (Row 2) — 6 buttons
+### 3.3 Quick Actions (Row 2) — 5 buttons (reporting only)
 
-1. 🧾 **Buat Transaksi BRILink** → buka link ke webapp kasir POS BRILink
-2. 🏦 **Mutasi & Rekening** → `/admin/kas-rekening-brilink`
+1. 🏦 **Mutasi & Rekening BRILink** → `/admin/kas-rekening-brilink`
+2. 🧾 **List Transaksi BRILink** → `/admin/brilink/transaksi`
 3. ⚙️ **Pengaturan Fee** → `/admin/brilink/fee`
 4. 📊 **Dashboard Retail** → `/admin/dashboard`
-5. 🧾 **List Transaksi BRILink** → `/admin/brilink/transaksi`
-6. 💵 **Mutasi Retail** → `/admin/kas-retail`
+5. 💵 **Mutasi Retail** → `/admin/kas-retail`
+
+> ❌ **Tidak ada** tombol "Buat Transaksi BRILink" di admin. Transaksi BRILink dibuat dari **webapp kasir**.
 
 ### 3.4 Main Grid (Row 3) — 2 kolom
 
@@ -67,13 +71,10 @@ Sama seperti Dashboard Retail — period selector, refresh, auto-refresh toggle.
 - CSS-based visualization
 
 #### Kolom Kanan (lg:col-span-1)
-**Saldo Rekening BRI** (placeholder — belum ada model `BrilinkAccount`)
+**Saldo Rekening BRI**
 - List rekening + saldo current
-- Indicator warning kalau saldo < threshold (configurable)
-- "Setor / Tarik" action button per rekening
-
-> 🚧 Catatan: model `BrilinkAccount` belum ada. PRD ini propose schema baru.
-> Kalau belum siap, fallback dummy "Belum ada rekening — set up dulu di Pengaturan".
+- Indicator warning kalau saldo < `account.lowBalanceThreshold` (per rekening, custom)
+- "Buka Mutasi" link per rekening → `/admin/kas-rekening-brilink?accountId=xxx`
 
 ### 3.5 Insight Cards (Row 4) — 3 kolom
 
@@ -86,22 +87,22 @@ Sama seperti Dashboard Retail — period selector, refresh, auto-refresh toggle.
 - Format: kategori badge, customer name, destination, amount, fee, status
 - Status icon: ✅ SUCCESS / ❌ FAILED / ⏳ PENDING
 
-#### Top Customers (5 rows)
-- Customer dengan transaksi terbanyak (by count atau volume)
-- Format: nama, no HP, jumlah transaksi, total volume
-- Group by `customerName + customerPhone`
+#### Top Customers (5 rows) — **fixed Today**
+- Group by `customerName + customerPhone` (case-insensitive normalize)
+- Format: nama, no HP, jumlah transaksi, total volume, last transaction
+- Period: **selalu Today** (custom date range nanti di Laporan)
 
 ### 3.6 Alert Section (Row 5) — full width grid 3 cols
 
-| Alert | Trigger | Default Threshold | Action |
-|-------|---------|-------------------|--------|
-| 🔴 Saldo Rekening Rendah | balance < threshold | Rp 1jt per rekening | "Setor Saldo" |
-| 🟡 Transaksi Gagal Banyak | count(FAILED today) >= 5 | 5 trx | "Lihat Failed" |
-| 🟠 Fee Rule Tidak Aktif | active fee rules per category < 1 | — | "Cek Fee" → `/admin/brilink/fee` |
+| Alert | Trigger | Action |
+|-------|---------|--------|
+| 🔴 Saldo Rekening Rendah | `account.balance < account.lowBalanceThreshold` (per-rekening) | "Setor Saldo" → `/admin/kas-rekening-brilink?accountId=xxx` |
+| 🟡 Transaksi Gagal Banyak | `count(FAILED today) >= threshold` | "Lihat Failed" → `/admin/brilink/transaksi?status=FAILED` |
+| 🟠 Fee Rule Tidak Aktif | active fee rules per category < 1 | "Cek Fee" → `/admin/brilink/fee` |
 
-Threshold dari `ShopSetting.alertConfig`:
-- `brilinkLowBalanceThreshold` (rupiah, default 1_000_000)
-- `brilinkFailedTransactionThreshold` (count per hari, default 5)
+**Threshold di `ShopSetting.alertConfig`**:
+- ❌ ~~`brilinkLowBalanceThreshold`~~ (REMOVED — per rekening sekarang)
+- ✅ `brilinkFailedTransactionThreshold` (count per hari, default 5)
 
 ### 3.7 Comparison Section (Row 6) — 2 kolom
 
@@ -109,9 +110,10 @@ Threshold dari `ShopSetting.alertConfig`:
 - Side-by-side: total trx, volume, fee earnings
 - Growth indicator (▲/▼)
 
-#### Performance per Kasir BRILink
+#### Performance per Kasir BRILink — **fixed Today**
 - Top 5 kasir by transaksi BRILink count + fee dihasilkan
 - Bar visualization
+- Period: **selalu Today** (custom date range nanti di Laporan)
 
 ---
 
@@ -132,160 +134,75 @@ Semua endpoint JWT protected, filtered by `currentShopId`.
 ```
 
 ### `GET /api/dashboard/brilink/transactions-chart?period=today&shopId=xxx`
-Stacked per kategori:
-```json
-{
-  "labels": ["00:00", "01:00", ..., "23:00"],
-  "datasets": {
-    "TRANSFER_BRI": [0, 0, 50000, ...],
-    "TRANSFER_OTHER": [0, 0, 100000, ...],
-    "TARIK_TUNAI": [0, 0, 200000, ...],
-    "TOPUP_PULSA": [...],
-    "TOPUP_DATA": [...],
-    "TOPUP_EWALLET": [...],
-    "TOPUP_PLN": [...]
-  }
-}
-```
+Stacked per kategori (24 buckets for today, 7/30 for week/month).
 
 ### `GET /api/dashboard/brilink/category-breakdown?period=today&shopId=xxx`
-```json
-{
-  "data": [
-    {
-      "category": "TRANSFER_BRI",
-      "count": 15,
-      "volume": 5000000,
-      "feeEarnings": 75000,
-      "volumePercent": 33.3,
-      "feePercent": 16.7
-    }
-  ]
-}
-```
+Per kategori: count, volume, feeEarnings, volumePercent, feePercent.
 
 ### `GET /api/dashboard/brilink/recent-transactions?limit=10&shopId=xxx`
-```json
-{
-  "data": [
-    {
-      "id": "t1",
-      "refNumber": "BRL-001",
-      "category": "TRANSFER_BRI",
-      "customerName": "Pak Tani",
-      "customerPhone": "0812xxxx",
-      "destination": "1234567890",
-      "amount": 100000,
-      "fee": 6500,
-      "total": 106500,
-      "status": "SUCCESS",
-      "cashierName": "Budi",
-      "createdAt": "..."
-    }
-  ]
-}
-```
+List transaksi BRILink terbaru.
 
-### `GET /api/dashboard/brilink/top-customers?period=today&limit=5&shopId=xxx`
-Group by `customerName + customerPhone`:
-```json
-{
-  "data": [
-    {
-      "customerName": "Pak Tani",
-      "customerPhone": "0812xxxx",
-      "transactionCount": 5,
-      "totalVolume": 1500000,
-      "lastTransactionAt": "..."
-    }
-  ]
-}
-```
+### `GET /api/dashboard/brilink/top-customers?limit=5&shopId=xxx`
+> Period **fixed Today** — tidak ada query param `period`.
+> Group by `LOWER(customerName) + customerPhone`.
 
 ### `GET /api/dashboard/brilink/accounts?shopId=xxx`
-**(Butuh schema baru `BrilinkAccount`)**
-```json
-{
-  "data": [
-    {
-      "id": "acc1",
-      "label": "BRI Default",
-      "accountNumber": "1234567890",
-      "balance": 5000000,
-      "isDefault": true,
-      "isLowBalance": false,
-      "lastMutationAt": "..."
-    }
-  ]
-}
-```
+List rekening BRI dengan balance, threshold, isLowBalance flag.
 
 ### `GET /api/dashboard/brilink/alerts?shopId=xxx`
-```json
-{
-  "config": {
-    "brilinkLowBalanceThreshold": 1000000,
-    "brilinkFailedTransactionThreshold": 5
-  },
-  "lowBalanceAccounts": {
-    "count": 1,
-    "accounts": [{ "id": "acc1", "label": "BRI Default", "balance": 500000 }]
-  },
-  "failedTransactionsToday": {
-    "count": 3,
-    "topCategories": [{ "category": "TARIK_TUNAI", "count": 2 }]
-  },
-  "categoriesWithoutFee": {
-    "count": 2,
-    "categories": ["TOPUP_PLN", "TOPUP_DATA"]
-  },
-  "allClear": false
-}
-```
+Alert untuk lowBalance per account, failedTransactions today, categoriesWithoutFee.
 
-### `GET /api/dashboard/brilink/cashier-performance?period=today&limit=5&shopId=xxx`
-```json
-{
-  "data": [
-    {
-      "userId": "u1",
-      "name": "Budi",
-      "transactionCount": 25,
-      "totalFee": 250000,
-      "totalVolume": 5000000
-    }
-  ]
-}
-```
+### `GET /api/dashboard/brilink/cashier-performance?limit=5&shopId=xxx`
+> Period **fixed Today**.
+
+### CRUD `BrilinkAccount`
+- `GET /api/brilink-accounts?shopId=xxx`
+- `POST /api/brilink-accounts`
+- `PATCH /api/brilink-accounts/:id`
+- `DELETE /api/brilink-accounts/:id` (soft delete)
+- `POST /api/brilink-accounts/:id/setor` — `{ amount, reference?, notes? }`
+- `POST /api/brilink-accounts/:id/tarik` — `{ amount, reference?, notes? }`
+- `GET /api/brilink-accounts/:id/mutations?page=1&limit=20`
 
 ---
 
 ## 5. Schema Changes (NEW)
 
 ### Model `BrilinkAccount` (baru)
-Tracking rekening BRI agen — default 1 + custom multi-rekening.
 
 ```prisma
 model BrilinkAccount {
-  id              String    @id @default(cuid())
-  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  shopId          String
-  label           String          // "BRI Default", "BRI Cabang Cibodas"
-  accountNumber   String          // "1234567890"
-  accountHolder   String?
-  balance         Int       @default(0)  // saldo current (rupiah)
-  isDefault       Boolean   @default(false)
-  isActive        Boolean   @default(true)
-  notes           String?
+  id                    String    @id @default(cuid())
+  shop                  Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId                String
 
-  mutations       BrilinkMutation[]
+  label                 String          // "BRI Default", "BRI Cabang Cibodas"
+  accountNumber         String          // "1234567890"
+  accountHolder         String?
+  balance               Int       @default(0)
+  /** Threshold per rekening — kalau balance < ini, masuk alert "saldo rendah". */
+  lowBalanceThreshold   Int       @default(1000000)
+  isDefault             Boolean   @default(false)
+  isActive              Boolean   @default(true)
+  notes                 String?
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  mutations             BrilinkMutation[]
+  transactions          BrilinkTransaction[]
+
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   @@unique([shopId, accountNumber])
   @@index([shopId])
   @@map("brilink_accounts")
+}
+
+enum BrilinkMutationType {
+  SETOR        // setor saldo agen
+  TARIK        // tarik saldo agen
+  TRX_DEBIT    // saldo berkurang karena transaksi customer
+  TRX_CREDIT   // saldo bertambah karena transaksi
+  ADJUSTMENT   // koreksi manual
 }
 
 model BrilinkMutation {
@@ -296,10 +213,11 @@ model BrilinkMutation {
   amount          Int
   balanceBefore   Int
   balanceAfter    Int
-  reference       String?
+  reference       String?         // ref transaksi atau no setoran
   description     String
   notes           String?
   createdById     String?
+  createdBy       User?           @relation("BrilinkMutationCreator", fields: [createdById], references: [id])
 
   createdAt       DateTime        @default(now())
 
@@ -307,29 +225,27 @@ model BrilinkMutation {
   @@index([createdAt])
   @@map("brilink_mutations")
 }
-
-enum BrilinkMutationType {
-  SETOR        // setor saldo agen
-  TARIK        // tarik saldo agen
-  TRX_DEBIT    // saldo berkurang karena transaksi customer
-  TRX_CREDIT   // saldo bertambah karena transaksi
-  ADJUSTMENT   // koreksi manual
-}
 ```
 
-Extend `BrilinkTransaction` dengan `accountId String?` (optional, link ke rekening yang dipakai).
+### Update `BrilinkTransaction`
+Tambah `accountId` optional, link ke rekening yang dipakai.
 
-### Update `ShopSetting.alertConfig`
-Tambah field BRILink:
+### Update `User` & `Shop` relations
+- `User.brilinkMutations BrilinkMutation[] @relation("BrilinkMutationCreator")`
+- `Shop.brilinkAccounts BrilinkAccount[]`
+
+### Update `ShopSetting.alertConfig` JSON
+Tambah field BRILink (single, bukan per-account threshold):
 ```json
 {
   "lowStockThreshold": 5,
   "shiftDurationWarningHours": 8,
   "overdueDebtDaysBeforeNotice": 0,
-  "brilinkLowBalanceThreshold": 1000000,
   "brilinkFailedTransactionThreshold": 5
 }
 ```
+
+> Note: low balance threshold disimpan **per `BrilinkAccount.lowBalanceThreshold`**, bukan di alertConfig global.
 
 ### Migration
 `backend/prisma/migrations/20260601000000_brilink_accounts_mutations/migration.sql`
@@ -339,31 +255,37 @@ Tambah field BRILink:
 ## 6. Implementation Plan
 
 ### Phase A — Schema & Migration
-1. Create `BrilinkAccount` + `BrilinkMutation` models
-2. Add `accountId` optional di `BrilinkTransaction`
-3. Migration SQL
-4. Auto-create default `BrilinkAccount` per shop pas first transaction
+1. Tambah `BrilinkAccount` + `BrilinkMutation` models
+2. Tambah `accountId` optional di `BrilinkTransaction`
+3. Update relations di `User` & `Shop`
+4. Migration SQL
+5. Auto-seed default `BrilinkAccount` per shop saat first BRILink transaction (atau saat shop create)
 
-### Phase B — Backend
-1. Create `DashboardBrilinkModule` (atau extend `DashboardModule` existing dengan namespace `brilink/`)
-2. 8 endpoints
-3. Update `getAlertConfig` defaults dengan BRILink fields
-4. Endpoints CRUD untuk `BrilinkAccount` + mutation log
+### Phase B — Backend BRILink Accounts Module
+1. Create `BrilinkAccountsModule` di `backend/src/brilink-accounts/`
+2. CRUD endpoints + setor/tarik + mutations log
+3. Saat transaksi BRILink dibuat di webapp, kalau ada `accountId`, deduct/credit saldo + log mutation otomatis
 
-### Phase C — Frontend
+### Phase C — Backend Dashboard BRILink
+1. Create `DashboardBrilinkModule` (atau extend `DashboardModule` existing)
+2. 8 endpoints dashboard
+3. Update `getAlertConfig` defaults dengan `brilinkFailedTransactionThreshold`
+
+### Phase D — Frontend
 1. Replace `AdminBrilinkView.vue` dengan layout dashboard baru
 2. Reusable components di `frontend/src/admin/components/dashboard-brilink/`:
-   - `BrilinkCategoryChart.vue` — stacked bar
-   - `BrilinkAccountsPanel.vue` — saldo per rekening
-   - `BrilinkCategoryBreakdown.vue`
+   - `BrilinkCategoryChart.vue` — stacked bar per kategori
+   - `BrilinkAccountsPanel.vue` — saldo per rekening + low balance indicator
+   - `BrilinkCategoryBreakdown.vue` — donut/horizontal
    - `BrilinkRecentTransactions.vue`
-   - `TopCustomersTable.vue`
+   - `BrilinkTopCustomers.vue`
    - `BrilinkCashierPerformance.vue`
    - Reuse `KpiCard`, `AlertCard`, `QuickActions` dari Dashboard Retail
-3. Pinia store `dashboard-brilink.store.ts`
-4. Update `AdminSettingsView.vue` "Notifikasi & Alert" tab dengan 2 input baru
+3. Pinia store `dashboard-brilink.store.ts` (mirror pattern `dashboard-retail.store.ts`)
+4. Update `KasRekeningBrilinkView.vue` (existing placeholder) dengan tab Mutasi + Rekening + Metode Kas — implementasi minimal CRUD rekening + setor/tarik
+5. Update `AdminSettingsView.vue` "Notifikasi & Alert" tab dengan input baru `brilinkFailedTransactionThreshold`
 
-### Phase D — Polish
+### Phase E — Polish
 - Empty states (terutama jika belum ada rekening / transaksi)
 - Loading skeleton
 - Dark mode QA
@@ -374,41 +296,32 @@ Tambah field BRILink:
 ## 7. Out of Scope (Phase ini)
 
 - ❌ Real-time websocket
-- ❌ Custom date range
+- ❌ Custom date range untuk Top Customers / Cashier Performance (akan di Laporan section)
 - ❌ Forecast BRILink
 - ❌ Export PDF/Excel
 - ❌ BRI API integration (auto-sync saldo dari BRI) — manual entry dulu
 - ❌ Detail breakdown TOPUP per provider (Telkomsel/Indosat/dll)
+- ❌ Tombol "Buat Transaksi BRILink" di admin (admin = reporting only)
 
 ---
 
-## 8. Open Questions (perlu konfirmasi)
+## 8. Confirmed Decisions
 
-1. **Schema `BrilinkAccount`** — gas atau pakai dummy/placeholder dulu?
-   - Opsi A: Gas, schema baru sekalian
-   - Opsi B: Skip dulu, fallback dummy. Kerjain di section "Kas & Rekening BRILink" terpisah nanti.
-
-2. **Quick Action #1 "Buat Transaksi BRILink"** — kemana arahnya?
-   - Opsi A: Link ke webapp kasir (cross-domain)
-   - Opsi B: Buka modal di admin panel langsung
-   - Opsi C: Redirect ke `/admin/brilink/transaksi` (list page)
-
-3. **Top Customers** — group by phone, atau by name+phone?
-   - Opsi A: Group by phone (skip yang null)
-   - Opsi B: Group by name+phone
-
-4. **Alert Threshold Saldo Rendah** — single threshold global atau per rekening?
-   - Opsi A: Single threshold global (Rp 1jt) — simple
-   - Opsi B: Per rekening custom — fleksibel
-
-5. **Period filter** untuk Top Customers + Cashier Performance — pakai yang sama dengan KPI (Today/7d/30d), atau fixed Today aja?
+1. ✅ Schema `BrilinkAccount` + `BrilinkMutation` — **GO** (Opsi A)
+2. ✅ Admin BRILink = **REPORTING ONLY**, tidak ada tombol create transaksi (transaksi di webapp)
+3. ✅ Top Customers grouped by `name + phone` (Opsi B)
+4. ✅ Low balance threshold **per rekening** (Opsi B), removed dari global config
+5. ✅ Period filter:
+   - KPI / Chart / Comparison / Breakdown → ikut period selector (Today/7d/30d)
+   - Top Customers + Cashier Performance → **fixed Today**
+   - Custom date range akan tersedia di section Laporan nanti
 
 ---
 
 ## Notes
 
 PRD ini follow pattern Dashboard Retail (PRD 01) untuk consistency:
-- Same component patterns (KpiCard, Alert — reuse existing)
+- Same component patterns (KpiCard, AlertCard, QuickActions — reuse existing)
 - Same auto-refresh strategy (30s polling, per-section state)
 - Same dark mode approach
 - Same period helpers (reuse `getPeriodRange`, `getPreviousPeriodRange`)
