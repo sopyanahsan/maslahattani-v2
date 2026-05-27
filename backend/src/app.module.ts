@@ -13,6 +13,7 @@ import { ShiftsModule } from './shifts/shifts.module';
 import { SettingsModule } from './settings/settings.module';
 import { CashBoxCategoriesModule } from './cashbox-categories/cashbox-categories.module';
 import { ReportsModule } from './reports/reports.module';
+import { BrilinkModule } from './brilink/brilink.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { ReportsModule } from './reports/reports.module';
     ShiftsModule,
     SettingsModule,
     ReportsModule,
+    BrilinkModule,
   ],
   controllers: [],
   providers: [],

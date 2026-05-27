@@ -220,63 +220,146 @@
         :icon="LandmarkIcon"
         title="BRILink"
         subtitle="Transfer, tarik tunai & top-up"
-        badge="Phase 2"
-        badge-tone="slate"
-        :muted="true"
+        badge="Live"
+        badge-tone="blue"
       />
 
-      <!-- Stat Cards BRILink (preview/disabled) -->
+      <!-- Period selector + refresh (brilink tab only) -->
+      <div v-if="activeTab === 'brilink'" class="flex items-center justify-between gap-3 flex-wrap">
+        <div class="flex gap-1 bg-slate-100 rounded-lg p-1">
+          <button
+            v-for="opt in PERIOD_OPTIONS"
+            :key="opt.value"
+            type="button"
+            :class="[
+              'h-7 px-3 text-xs font-semibold rounded-md transition-colors',
+              brilinkPeriod === opt.value
+                ? 'bg-white text-slate-900 shadow-sm'
+                : 'text-slate-600 hover:text-slate-900',
+            ]"
+            @click="changeBrilinkPeriod(opt.value)"
+          >
+            {{ opt.label }}
+          </button>
+        </div>
+        <button
+          type="button"
+          :disabled="brilinkStore.dashboardLoading"
+          class="h-7 px-3 text-xs font-medium text-slate-600 border border-slate-200 rounded-lg
+                 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1.5"
+          @click="refreshBrilinkDashboard"
+        >
+          <component :is="RefreshIcon" :class="['w-3.5 h-3.5', brilinkStore.dashboardLoading && 'animate-spin']" />
+          Refresh
+        </button>
+      </div>
+
+      <!-- Error boundary BRILink -->
+      <div
+        v-if="brilinkStore.dashboardError"
+        class="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center gap-2"
+      >
+        <component :is="AlertTriangleIcon" class="w-4 h-4 text-red-500 shrink-0" />
+        <p class="text-sm text-red-700 flex-1">{{ brilinkStore.dashboardError }}</p>
+        <button
+          type="button"
+          class="text-xs font-medium text-red-700 underline"
+          @click="refreshBrilinkDashboard"
+        >
+          Coba lagi
+        </button>
+      </div>
+
+      <!-- Stat Cards BRILink (live data) -->
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           v-for="stat in brilinkStats"
           :key="stat.label"
           :label="stat.label"
           :value="stat.value"
+          :delta="stat.delta"
+          :delta-positive="stat.deltaPositive"
           :icon="stat.icon"
           :tone="stat.tone"
-          :disabled="true"
-          disabled-label="Phase 2"
+          :loading="brilinkStore.dashboardLoading"
         />
       </div>
 
-      <!-- BRILink Transaction History (with filter chips) -->
+      <!-- Category breakdown (brilink tab only) -->
+      <div
+        v-if="activeTab === 'brilink' && brilinkCategoryBreakdown.length > 0"
+        class="bg-white rounded-lg border border-slate-200 overflow-hidden"
+      >
+        <div class="px-4 sm:px-5 py-3 border-b border-slate-200">
+          <h3 class="text-sm font-bold text-slate-950">Breakdown per Kategori</h3>
+          <p class="text-[11px] text-slate-500">Berdasarkan periode yang dipilih</p>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[480px]">
+            <thead class="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">Kategori</th>
+                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Volume</th>
+                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Fee</th>
+                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Trx</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr
+                v-for="item in brilinkCategoryBreakdown"
+                :key="item.category"
+                class="hover:bg-slate-50"
+              >
+                <td class="px-4 py-2.5 text-sm text-slate-700">
+                  {{ BRILINK_CATEGORY_LABELS[item.category as BrilinkCategory] ?? item.category }}
+                </td>
+                <td class="px-4 py-2.5 text-right text-sm font-mono text-slate-900">{{ formatRupiah(item.volume) }}</td>
+                <td class="px-4 py-2.5 text-right text-sm font-mono text-emerald-600">{{ formatRupiah(item.fee) }}</td>
+                <td class="px-4 py-2.5 text-right text-sm font-mono text-slate-600">{{ item.count }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BRILink Transaction History -->
       <BrilinkTransactionTable :transactions="brilinkTransactions" />
 
-      <!-- Phase 2 preview / coming soon notice (only on 'semua' tab) -->
+      <!-- Primary account info (brilink tab) -->
       <div
-        v-if="activeTab === 'brilink'"
-        class="bg-gradient-to-br from-slate-50 to-blue-50/40 border border-dashed border-slate-300 rounded-lg p-6 sm:p-8"
+        v-if="activeTab === 'brilink' && brilinkPrimaryAccount"
+        class="bg-gradient-to-br from-blue-50 to-indigo-50/60 border border-blue-200 rounded-lg p-4 flex items-center gap-4"
       >
-        <div class="flex flex-col sm:flex-row sm:items-start gap-4">
-          <div class="shrink-0 w-12 h-12 rounded-xl bg-white border border-slate-200 flex items-center justify-center">
-            <component :is="LandmarkIcon" class="w-6 h-6 text-slate-700" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <div class="flex flex-wrap items-center gap-2 mb-1">
-              <h3 class="text-base font-bold text-slate-950">Modul BRILink</h3>
-              <span class="text-[10px] font-bold uppercase tracking-wide text-slate-600 bg-slate-200 px-2 py-0.5 rounded-full">
-                Phase 2
-              </span>
-            </div>
-            <p class="text-sm text-slate-600 mb-4">
-              Riwayat transaksi di atas adalah data simulasi. Integrasi BRILink (transfer, tarik tunai,
-              top-up, kalkulasi fee, mutasi) ditargetkan rilis di Phase 2 setelah modul retail stabil.
-            </p>
+        <div class="w-10 h-10 rounded-xl bg-white border border-blue-200 flex items-center justify-center shrink-0">
+          <component :is="PiggyBankIcon" class="w-5 h-5 text-blue-600" />
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs text-slate-500">Rekening Utama BRILink</p>
+          <p class="text-sm font-semibold text-slate-900">{{ brilinkPrimaryAccount.accountName }}</p>
+          <p class="text-xs font-mono text-slate-600">{{ brilinkPrimaryAccount.bankName }} · {{ brilinkPrimaryAccount.accountNumber }}</p>
+        </div>
+        <div class="text-right shrink-0">
+          <p class="text-xs text-slate-500">Saldo</p>
+          <p class="text-base font-bold font-mono text-slate-900">{{ formatRupiah(brilinkPrimaryAccount.balance) }}</p>
+        </div>
+      </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div
-                v-for="feature in brilinkFeatures"
-                :key="feature.label"
-                class="flex items-start gap-2.5 bg-white border border-slate-200 rounded-md px-3 py-2"
-              >
-                <component :is="feature.icon" class="w-4 h-4 text-slate-500 shrink-0 mt-0.5" />
-                <div class="min-w-0">
-                  <p class="text-xs font-semibold text-slate-900">{{ feature.label }}</p>
-                  <p class="text-[11px] text-slate-500 leading-snug">{{ feature.desc }}</p>
-                </div>
-              </div>
+      <!-- Quick actions BRILink (brilink tab) -->
+      <div v-if="activeTab === 'brilink'">
+        <h3 class="text-xs font-semibold text-slate-700 uppercase tracking-wide mb-3">Aksi Cepat</h3>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <RouterLink
+            v-for="action in brilinkQuickActions"
+            :key="action.label"
+            :to="action.to"
+            class="bg-white border border-slate-200 hover:border-blue-300 hover:bg-blue-50/40 rounded-lg p-4 transition-colors group"
+          >
+            <div :class="['w-9 h-9 rounded-lg flex items-center justify-center mb-2', action.iconBg]">
+              <component :is="action.icon" :class="['w-4 h-4', action.iconColor]" />
             </div>
-          </div>
+            <p class="text-sm font-semibold text-slate-900">{{ action.label }}</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">{{ action.desc }}</p>
+          </RouterLink>
         </div>
       </div>
     </section>
@@ -305,7 +388,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   // Retail
@@ -319,6 +402,8 @@ import {
   Settings as SettingsIcon,
   Store as StoreIcon,
   Loader2 as Loader2Icon,
+  AlertTriangle as AlertTriangleIcon,
+  RefreshCw as RefreshIcon,
   // BRILink
   Landmark as LandmarkIcon,
   ArrowRightLeft as TransferIcon,
@@ -336,6 +421,12 @@ import DashboardTabs, { type DashboardTab } from '@/admin/components/dashboard/D
 import BrilinkTransactionTable, {
   type BrilinkTransaction,
 } from '@/admin/components/dashboard/BrilinkTransactionTable.vue';
+import { useAuthStore } from '@/shared/stores/auth.store';
+import { useBrilinkDashboardStore } from '@/shared/stores/brilink-dashboard.store';
+import { BRILINK_CATEGORY_LABELS, type BrilinkCategory } from '@/shared/services/brilink.service';
+
+const authStore = useAuthStore();
+const brilinkStore = useBrilinkDashboardStore();
 
 // =====================================================
 // Tab state — persist to URL ?view=
@@ -349,7 +440,7 @@ const router = useRouter();
 const tabs: DashboardTab<ViewTab>[] = [
   { value: 'semua', label: 'Semua', icon: AllIcon },
   { value: 'retail', label: 'Retail', icon: StoreIcon },
-  { value: 'brilink', label: 'BRILink', icon: LandmarkIcon, badge: 'Phase 2' },
+  { value: 'brilink', label: 'BRILink', icon: LandmarkIcon },
 ];
 
 const activeTab = computed<ViewTab>(() => {
@@ -467,15 +558,86 @@ const retailQuickActions = [
   { label: 'Pengaturan', desc: 'Konfigurasi toko', to: '/admin/settings', icon: SettingsIcon, iconBg: 'bg-slate-100', iconColor: 'text-slate-700' },
 ];
 
-// ============ BRILINK ============
+const brilinkQuickActions = [
+  { label: 'Mutasi BRILink', desc: 'Riwayat transaksi nasabah', to: '/admin/brilink', icon: TransferIcon, iconBg: 'bg-blue-100', iconColor: 'text-blue-600' },
+  { label: 'Statistik', desc: 'Volume & fee per kategori', to: '/admin/brilink', icon: ReportIcon, iconBg: 'bg-emerald-100', iconColor: 'text-emerald-600' },
+  { label: 'Pengaturan Fee', desc: 'Atur margin fee per layanan', to: '/admin/brilink', icon: PercentIcon, iconBg: 'bg-indigo-100', iconColor: 'text-indigo-600' },
+  { label: 'Rekening', desc: 'Kelola rekening BRILink', to: '/admin/kas-rekening-brilink', icon: PiggyBankIcon, iconBg: 'bg-amber-100', iconColor: 'text-amber-600' },
+];
 
-// Phase 2 — semua nilai stat menggunakan placeholder "—"
-const brilinkStats = ref([
-  { label: 'Volume Transfer', value: '—', icon: TransferIcon, tone: 'blue' },
-  { label: 'Total Fee Hari Ini', value: '—', icon: PercentIcon, tone: 'emerald' },
-  { label: 'Saldo BRI', value: '—', icon: PiggyBankIcon, tone: 'indigo' },
-  { label: 'Trx BRILink', value: '—', icon: BanknoteIcon, tone: 'amber' },
-] as const);
+// Shopid dari auth store
+const shopId = computed(() => authStore.user?.shopId ?? '');
+
+// KPI computed dari store
+const brilinkKpi = computed(() => brilinkStore.dashboard?.kpi);
+const brilinkCategoryBreakdown = computed(() => brilinkStore.dashboard?.categoryBreakdown ?? []);
+const brilinkPrimaryAccount = computed(() => brilinkStore.dashboard?.primaryAccount);
+
+const brilinkStats = computed(() => [
+  {
+    label: brilinkKpi.value?.volume.label ?? 'Volume Transaksi',
+    value: brilinkKpi.value
+      ? formatRupiah(brilinkKpi.value.volume.value)
+      : '—',
+    delta: brilinkKpi.value?.volume.delta,
+    deltaPositive: brilinkKpi.value?.volume.deltaPositive,
+    icon: TransferIcon,
+    tone: 'blue' as const,
+    loading: brilinkStore.dashboardLoading,
+  },
+  {
+    label: brilinkKpi.value?.fee.label ?? 'Total Fee',
+    value: brilinkKpi.value
+      ? formatRupiah(brilinkKpi.value.fee.value)
+      : '—',
+    delta: brilinkKpi.value?.fee.delta,
+    deltaPositive: brilinkKpi.value?.fee.deltaPositive,
+    icon: PercentIcon,
+    tone: 'emerald' as const,
+    loading: brilinkStore.dashboardLoading,
+  },
+  {
+    label: brilinkKpi.value?.balance.label ?? 'Saldo Rekening',
+    value: brilinkKpi.value
+      ? formatRupiah(brilinkKpi.value.balance.value)
+      : '—',
+    delta: brilinkKpi.value?.balance.accountNumber
+      ? `···${brilinkKpi.value.balance.accountNumber.slice(-4)}`
+      : undefined,
+    deltaPositive: undefined,
+    icon: PiggyBankIcon,
+    tone: 'indigo' as const,
+    loading: brilinkStore.dashboardLoading,
+  },
+  {
+    label: brilinkKpi.value?.count.label ?? 'Trx BRILink',
+    value: brilinkKpi.value
+      ? String(brilinkKpi.value.count.value)
+      : '—',
+    delta: brilinkKpi.value?.count.delta,
+    deltaPositive: brilinkKpi.value?.count.deltaPositive,
+    icon: BanknoteIcon,
+    tone: 'amber' as const,
+    loading: brilinkStore.dashboardLoading,
+  },
+]);
+
+// Recent transactions untuk tabel (dari store)
+const brilinkTransactions = computed<BrilinkTransaction[]>(() => {
+  const recent = brilinkStore.dashboard?.recentTransactions ?? [];
+  return recent.map((t) => ({
+    id: t.id,
+    refNumber: t.refNumber,
+    category: t.category as BrilinkTransaction['category'],
+    amount: t.amount,
+    fee: t.fee,
+    status: t.status as BrilinkTransaction['status'],
+    cashier: t.processedBy ?? '—',
+    customerName: t.customerName,
+    destination: t.destination,
+    createdAt: t.createdAt,
+  }));
+});
 
 const brilinkFeatures = [
   { label: 'Transfer Antar Bank', desc: 'Kirim dana ke rekening BRI / bank lain dengan tarif transparan.', icon: TransferIcon },
@@ -484,17 +646,39 @@ const brilinkFeatures = [
   { label: 'Pengaturan Fee', desc: 'Atur margin fee per nominal & jenis transaksi.', icon: CreditCardIcon },
 ];
 
-// Sample data utk preview tabel — Phase 2 belum live
-const brilinkTransactions = ref<BrilinkTransaction[]>([
-  { id: '1', refNumber: 'BRL-20260525-012', category: 'TRANSFER_OTHER', amount: 1_500_000, fee: 6_500, status: 'SUCCESS', cashier: 'kasir1', customerName: 'Budi Santoso', destination: 'BCA · 1234567890', createdAt: '2026-05-25T11:32:00' },
-  { id: '2', refNumber: 'BRL-20260525-011', category: 'TARIK_TUNAI', amount: 500_000, fee: 2_500, status: 'SUCCESS', cashier: 'kasir1', customerName: 'Siti Rahmawati', destination: 'BRI · 9876543210', createdAt: '2026-05-25T10:55:00' },
-  { id: '3', refNumber: 'BRL-20260525-010', category: 'TOPUP_PULSA', amount: 50_000, fee: 1_500, status: 'SUCCESS', cashier: 'kasir2', customerName: 'Andi Pratama', destination: '0812-3456-7890', createdAt: '2026-05-25T10:21:00' },
-  { id: '4', refNumber: 'BRL-20260525-009', category: 'TRANSFER_BRI', amount: 750_000, fee: 0, status: 'SUCCESS', cashier: 'kasir1', customerName: 'Dewi Lestari', destination: 'BRI · 5555-4444-3333', createdAt: '2026-05-25T09:48:00' },
-  { id: '5', refNumber: 'BRL-20260525-008', category: 'TOPUP_PLN', amount: 100_000, fee: 2_500, status: 'SUCCESS', cashier: 'kasir2', customerName: 'Hadi Sulaiman', destination: 'No Meter · 12-3456-7890', createdAt: '2026-05-25T09:15:00' },
-  { id: '6', refNumber: 'BRL-20260525-007', category: 'TOPUP_EWALLET', amount: 200_000, fee: 1_500, status: 'PENDING', cashier: 'kasir1', customerName: 'Rina Kartika', destination: 'OVO · 0813-2345-6789', createdAt: '2026-05-25T08:50:00' },
-  { id: '7', refNumber: 'BRL-20260525-006', category: 'TOPUP_DATA', amount: 75_000, fee: 1_500, status: 'SUCCESS', cashier: 'kasir1', customerName: 'Joni Iskandar', destination: 'Tsel · 0812-9999-8888', createdAt: '2026-05-25T08:22:00' },
-  { id: '8', refNumber: 'BRL-20260525-005', category: 'TRANSFER_OTHER', amount: 2_000_000, fee: 6_500, status: 'FAILED', cashier: 'kasir2', customerName: 'Lia Permata', destination: 'Mandiri · 7890-1234', createdAt: '2026-05-25T07:50:00' },
-]);
+// Period selector
+const brilinkPeriod = ref<string>('month');
+const PERIOD_OPTIONS = [
+  { value: 'today', label: 'Hari Ini' },
+  { value: 'week', label: 'Minggu Ini' },
+  { value: 'month', label: 'Bulan Ini' },
+  { value: 'year', label: 'Tahun Ini' },
+];
+
+function changeBrilinkPeriod(period: string) {
+  brilinkPeriod.value = period;
+  if (shopId.value) {
+    brilinkStore.fetchDashboard(shopId.value, period);
+  }
+}
+
+async function refreshBrilinkDashboard() {
+  if (shopId.value) {
+    await brilinkStore.fetchDashboard(shopId.value, brilinkPeriod.value);
+  }
+}
+
+// Lifecycle
+onMounted(() => {
+  if (shopId.value) {
+    brilinkStore.initDashboard(shopId.value);
+    brilinkStore.startAutoRefresh(shopId.value, 30_000);
+  }
+});
+
+onUnmounted(() => {
+  brilinkStore.stopAutoRefresh();
+});
 
 // =====================================================
 // Helpers

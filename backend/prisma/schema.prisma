@@ -114,6 +114,12 @@ model Shop {
   shifts              Shift[]
   settings            ShopSetting?
 
+  // BRILink relations
+  brilinkAccounts     BrilinkAccount[]     @relation("ShopBrilinkAccounts")
+  brilinkMutations    BrilinkMutation[]    @relation("ShopBrilinkMutations")
+  brilinkTransactions BrilinkTransaction[] @relation("ShopBrilinkTransactions")
+  brilinkFees         BrilinkFee[]         @relation("ShopBrilinkFees")
+
   @@map("shops")
 }
 
@@ -507,4 +513,141 @@ model ShiftCashBox {
   @@index([shiftId])
   @@index([categoryId])
   @@map("shift_cash_boxes")
+}
+
+
+// ============================================
+// BRILINK MODULE
+// ============================================
+//
+// BrilinkAccount  : Rekening BRI milik agen. Bisa >1 per toko.
+// BrilinkMutation : Mutasi saldo rekening BRILink (credit/debit).
+// BrilinkTransaction: Transaksi layanan ke nasabah (transfer, tarik, top-up).
+// BrilinkFee      : Pengaturan fee per kategori & range nominal.
+
+enum BrilinkTransactionCategory {
+  TRANSFER_BRI
+  TRANSFER_OTHER
+  TARIK_TUNAI
+  TOPUP_PULSA
+  TOPUP_DATA
+  TOPUP_EWALLET
+  TOPUP_PLN
+
+  @@map("BrilinkTransactionCategory")
+}
+
+enum BrilinkTransactionStatus {
+  SUCCESS
+  PENDING
+  FAILED
+  CANCELLED
+
+  @@map("BrilinkTransactionStatus")
+}
+
+enum BrilinkMutationType {
+  CREDIT
+  DEBIT
+
+  @@map("BrilinkMutationType")
+}
+
+enum BrilinkFeeType {
+  FLAT
+  PERCENT
+
+  @@map("BrilinkFeeType")
+}
+
+model BrilinkAccount {
+  id            String   @id @default(cuid())
+  shop          Shop     @relation("ShopBrilinkAccounts", fields: [shopId], references: [id], onDelete: Cascade)
+  shopId        String
+  accountNumber String
+  accountName   String
+  bankName      String   @default("BRI")
+  balance       Int      @default(0) // current balance in rupiah
+  isActive      Boolean  @default(true)
+  isPrimary     Boolean  @default(false) // satu per toko sebagai rekening utama
+  notes         String?
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  mutations     BrilinkMutation[]
+  transactions  BrilinkTransaction[]
+
+  @@unique([shopId, accountNumber])
+  @@index([shopId])
+  @@map("brilink_accounts")
+}
+
+model BrilinkMutation {
+  id            String              @id @default(cuid())
+  account       BrilinkAccount      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId     String
+  shop          Shop                @relation("ShopBrilinkMutations", fields: [shopId], references: [id], onDelete: Cascade)
+  shopId        String
+  type          BrilinkMutationType
+  amount        Int                 // rupiah
+  balanceBefore Int
+  balanceAfter  Int
+  description   String
+  reference     String?             // brilinkTransactionId atau manual ref
+
+  createdAt     DateTime @default(now())
+
+  @@index([accountId])
+  @@index([shopId])
+  @@index([createdAt])
+  @@map("brilink_mutations")
+}
+
+model BrilinkTransaction {
+  id           String                      @id @default(cuid())
+  shop         Shop                        @relation("ShopBrilinkTransactions", fields: [shopId], references: [id], onDelete: Cascade)
+  shopId       String
+  account      BrilinkAccount?             @relation(fields: [accountId], references: [id], onDelete: SetNull)
+  accountId    String?
+  refNumber    String                      @unique
+  category     BrilinkTransactionCategory
+  customerName String
+  destination  String                      // nomor rekening/HP tujuan
+  amount       Int                         // nominal transaksi
+  fee          Int                         @default(0)
+  total        Int                         // amount + fee
+  status       BrilinkTransactionStatus    @default(PENDING)
+  notes        String?
+  processedBy  String?                     // userId kasir
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([shopId])
+  @@index([createdAt])
+  @@index([category])
+  @@map("brilink_transactions")
+}
+
+model BrilinkFee {
+  id         String                      @id @default(cuid())
+  shop       Shop                        @relation("ShopBrilinkFees", fields: [shopId], references: [id], onDelete: Cascade)
+  shopId     String
+  category   BrilinkTransactionCategory
+  label      String
+  minAmount  Int                         @default(0)
+  maxAmount  Int                         @default(999999999)
+  feeType    BrilinkFeeType              @default(FLAT)
+  feeAmount  Int                         @default(0)   // untuk FLAT
+  feePercent Float                       @default(0)   // untuk PERCENT
+  isActive   Boolean                     @default(true)
+  sortOrder  Int                         @default(0)
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([shopId])
+  @@index([category])
+  @@map("brilink_fees")
 }
