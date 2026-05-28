@@ -111,6 +111,7 @@ import {
   History as HistoryIcon,
   CloudOff as CloudOffIcon,
   Loader2 as Loader2Icon,
+  User as UserIcon,
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -146,10 +147,11 @@ interface NavItem {
 }
 
 const bottomNav: NavItem[] = [
-  { to: '/dashboard', label: 'Beranda', icon: HomeIcon },
-  { to: '/retail/pos', label: 'Retail', icon: POSIcon },
-  { to: '/brilink/transfer', label: 'BRILink', icon: LandmarkIcon, phase2: true },
+  { to: '/dashboard', label: 'Dashboard', icon: HomeIcon },
+  { to: '/retail/pos', label: 'Kasir', icon: POSIcon },
+  { to: '/brilink/menu', label: 'BRILink', icon: LandmarkIcon },
   { to: '/retail/history', label: 'Riwayat', icon: HistoryIcon },
+  { to: '/profile', label: 'Profil', icon: UserIcon },
 ];
 
 async function handleLogout() {
