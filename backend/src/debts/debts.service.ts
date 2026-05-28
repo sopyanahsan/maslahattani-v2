@@ -14,52 +14,86 @@ export class DebtsService {
   constructor(private prisma: PrismaService) {}
 
   // ============================================
-  // CREATE DEBT
+  // CREATE DEBT (Hybrid: manual items OR single product)
   // ============================================
 
   async create(dto: CreateDebtDto) {
-    // Validate product exists
-    const product = await this.prisma.product.findUnique({
-      where: { id: dto.productId },
-    });
+    let totalAmount = 0;
+    let productName: string | null = null;
 
-    if (!product || product.deletedAt) {
-      throw new NotFoundException('Produk tidak ditemukan.');
+    // === Mode 1: Manual items (multi-item tanpa link ke produk DB) ===
+    if (dto.manualItems && dto.manualItems.length > 0) {
+      totalAmount = dto.manualItems.reduce(
+        (sum, item) => sum + item.price * item.qty,
+        0,
+      );
+      productName = dto.manualItems.map((i) => i.name).join(', ');
+    }
+    // === Mode 2: Single product (legacy/backward compat) ===
+    else if (dto.productId) {
+      const product = await this.prisma.product.findUnique({
+        where: { id: dto.productId },
+      });
+
+      if (!product || product.deletedAt) {
+        throw new NotFoundException('Produk tidak ditemukan.');
+      }
+
+      totalAmount = product.price * (dto.quantity || 1);
+      productName = product.name;
+    }
+    // === Mode 3: Direct totalAmount (from POS transaction) ===
+    else if (dto.totalAmount) {
+      totalAmount = dto.totalAmount;
+    } else {
+      throw new BadRequestException(
+        'Harus ada manualItems, productId, atau totalAmount.',
+      );
     }
 
-    const totalAmount = product.price * dto.quantity;
     const downPayment = dto.downPayment || 0;
 
     if (downPayment > totalAmount) {
       throw new BadRequestException('DP tidak boleh melebihi total hutang.');
     }
 
-    // Determine initial status
     let status: DebtStatus = DebtStatus.PENDING;
     if (downPayment > 0) {
       status = DebtStatus.PARTIALLY_PAID;
     }
 
-    // Create debt + optional DP payment
     const debt = await this.prisma.$transaction(async (tx) => {
       const newDebt = await tx.debt.create({
         data: {
           shopId: dto.shopId,
-          productId: dto.productId,
+          transactionId: dto.transactionId || null,
+          productId: dto.productId || null,
+          manualItems: dto.manualItems || null,
           customerName: dto.customerName,
           customerPhone: dto.customerPhone || null,
-          quantity: dto.quantity,
-          unitPrice: product.price,
+          quantity: dto.quantity || 1,
+          unitPrice: dto.productId
+            ? Math.round(totalAmount / (dto.quantity || 1))
+            : 0,
           totalAmount,
           paidAmount: downPayment,
           status,
           dueDate: dto.dueDate ? new Date(dto.dueDate) : null,
           notes: dto.notes || null,
         },
-        include: { product: { select: { name: true, sku: true } } },
+        include: {
+          product: { select: { name: true, sku: true } },
+          transaction: {
+            select: {
+              transactionNumber: true,
+              items: {
+                include: { product: { select: { name: true, sku: true } } },
+              },
+            },
+          },
+        },
       });
 
-      // Log DP payment if any
       if (downPayment > 0) {
         await tx.debtPayment.create({
           data: {
@@ -119,7 +153,6 @@ export class DebtsService {
     const newPaidAmount = debt.paidAmount + dto.amount;
     const isFullyPaid = newPaidAmount >= debt.totalAmount;
 
-    // Update debt + log payment
     const updated = await this.prisma.$transaction(async (tx) => {
       const updatedDebt = await tx.debt.update({
         where: { id: debtId },
@@ -178,20 +211,16 @@ export class DebtsService {
       where.customerName = { contains: query.customerName, mode: 'insensitive' };
     }
 
-    // Due date range filter (for calendar view)
     if (query.dueDateFrom || query.dueDateTo) {
       where.dueDate = {};
       if (query.dueDateFrom) where.dueDate.gte = new Date(query.dueDateFrom);
       if (query.dueDateTo) where.dueDate.lte = new Date(query.dueDateTo + 'T23:59:59.999Z');
     }
 
-    // Sort order
-    let orderBy: any = { createdAt: 'desc' }; // default: newest
+    let orderBy: any = { createdAt: 'desc' };
     if (query.sortBy === DebtSortBy.DUE_DATE) {
       orderBy = [{ dueDate: 'asc' }, { createdAt: 'desc' }];
     } else if (query.sortBy === DebtSortBy.REMAINING_DESC) {
-      // Sort by remaining = totalAmount - paidAmount DESC
-      // Prisma doesn't support computed sort, so we sort in JS after fetch
       orderBy = { createdAt: 'desc' };
     }
 
@@ -200,6 +229,14 @@ export class DebtsService {
         where,
         include: {
           product: { select: { name: true, sku: true } },
+          transaction: {
+            select: {
+              transactionNumber: true,
+              items: {
+                include: { product: { select: { name: true } } },
+              },
+            },
+          },
           debtPayments: { orderBy: { createdAt: 'desc' } },
         },
         orderBy,
@@ -209,7 +246,6 @@ export class DebtsService {
       this.prisma.debt.count({ where }),
     ]);
 
-    // Post-sort for remaining_desc (only works within current page — acceptable for UX)
     let sortedDebts = debts;
     if (query.sortBy === DebtSortBy.REMAINING_DESC) {
       sortedDebts = [...debts].sort(
@@ -217,7 +253,6 @@ export class DebtsService {
       );
     }
 
-    // Calculate summary
     const allDebts = await this.prisma.debt.findMany({
       where: { shopId: query.shopId, status: { in: [DebtStatus.PENDING, DebtStatus.PARTIALLY_PAID] } },
     });
@@ -247,6 +282,12 @@ export class DebtsService {
       },
       include: {
         product: { select: { name: true, sku: true } },
+        transaction: {
+          select: {
+            transactionNumber: true,
+            items: { include: { product: { select: { name: true } } } },
+          },
+        },
         debtPayments: { orderBy: { createdAt: 'desc' } },
       },
       orderBy: { createdAt: 'desc' },
@@ -276,6 +317,15 @@ export class DebtsService {
       where: { id },
       include: {
         product: { select: { name: true, sku: true, price: true } },
+        transaction: {
+          select: {
+            transactionNumber: true,
+            totalPrice: true,
+            items: {
+              include: { product: { select: { name: true, sku: true } } },
+            },
+          },
+        },
         debtPayments: { orderBy: { createdAt: 'desc' } },
       },
     });

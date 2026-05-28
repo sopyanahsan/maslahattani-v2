@@ -17,10 +17,29 @@ export interface DebtPaymentDto {
   createdAt: string;
 }
 
+export interface ManualDebtItem {
+  name: string;
+  qty: number;
+  price: number;
+}
+
+export interface DebtTransactionInfo {
+  transactionNumber: string;
+  totalPrice?: number;
+  items?: Array<{
+    product: { name: string; sku?: string };
+    quantity: number;
+    unitPrice: number;
+    subtotal: number;
+  }>;
+}
+
 export interface DebtDto {
   id: string;
   shopId: string;
-  productId: string;
+  transactionId?: string | null;
+  productId?: string | null;
+  manualItems?: ManualDebtItem[] | null;
   customerName: string;
   customerPhone?: string | null;
   quantity: number;
@@ -32,7 +51,8 @@ export interface DebtDto {
   notes?: string | null;
   createdAt: string;
   updatedAt: string;
-  product: { name: string; sku: string; price?: number };
+  product?: { name: string; sku: string; price?: number } | null;
+  transaction?: DebtTransactionInfo | null;
   debtPayments?: DebtPaymentDto[];
 }
 
@@ -42,10 +62,17 @@ export interface DebtDto {
 
 export interface CreateDebtPayload {
   shopId: string;
-  productId: string;
   customerName: string;
   customerPhone?: string;
-  quantity: number;
+  // Mode 1: Manual items (multi-item)
+  manualItems?: ManualDebtItem[];
+  // Mode 2: Single product (legacy)
+  productId?: string;
+  quantity?: number;
+  // Mode 3: From POS transaction
+  transactionId?: string;
+  totalAmount?: number;
+  // Common
   downPayment?: number;
   dueDate?: string;
   notes?: string;

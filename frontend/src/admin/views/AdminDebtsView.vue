@@ -99,8 +99,21 @@
                 <p v-if="debt.customerPhone" class="text-[10px] text-slate-500 dark:text-slate-400">{{ debt.customerPhone }}</p>
               </td>
               <td class="px-4 py-3">
-                <p class="text-xs text-slate-700 dark:text-slate-300">{{ debt.product.name }}</p>
-                <p class="text-[10px] text-slate-500 dark:text-slate-400">{{ debt.quantity }} × {{ formatRupiah(debt.unitPrice) }}</p>
+                <template v-if="debt.transaction">
+                  <p class="text-xs text-slate-700 dark:text-slate-300">Transaksi #{{ debt.transaction.transactionNumber }}</p>
+                  <p class="text-[10px] text-slate-500 dark:text-slate-400">{{ debt.transaction.items?.length || 0 }} item</p>
+                </template>
+                <template v-else-if="debt.manualItems && debt.manualItems.length > 0">
+                  <p class="text-xs text-slate-700 dark:text-slate-300">{{ debt.manualItems.map(i => i.name).join(', ') }}</p>
+                  <p class="text-[10px] text-slate-500 dark:text-slate-400">{{ debt.manualItems.length }} item</p>
+                </template>
+                <template v-else-if="debt.product">
+                  <p class="text-xs text-slate-700 dark:text-slate-300">{{ debt.product.name }}</p>
+                  <p class="text-[10px] text-slate-500 dark:text-slate-400">{{ debt.quantity }} × {{ formatRupiah(debt.unitPrice) }}</p>
+                </template>
+                <template v-else>
+                  <p class="text-xs text-slate-400 dark:text-slate-500">—</p>
+                </template>
               </td>
               <td class="px-4 py-3">
                 <div class="w-full max-w-[120px] ml-auto">
@@ -164,7 +177,7 @@
           </div>
           <div class="grid grid-cols-2 gap-3 text-xs">
             <div><p class="text-slate-500 dark:text-slate-400">Pelanggan</p><p class="font-semibold text-slate-900 dark:text-slate-100">{{ detailDebt.customerName }}</p></div>
-            <div><p class="text-slate-500 dark:text-slate-400">Produk</p><p class="font-semibold text-slate-900 dark:text-slate-100">{{ detailDebt.product.name }}</p></div>
+            <div><p class="text-slate-500 dark:text-slate-400">Item</p><p class="font-semibold text-slate-900 dark:text-slate-100">{{ getDebtItemLabel(detailDebt) }}</p></div>
             <div><p class="text-slate-500 dark:text-slate-400">Total</p><p class="font-semibold text-slate-900 dark:text-slate-100 font-mono">{{ formatRupiah(detailDebt.totalAmount) }}</p></div>
             <div><p class="text-slate-500 dark:text-slate-400">Sisa</p><p class="font-semibold font-mono" :class="detailDebt.totalAmount - detailDebt.paidAmount > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'">{{ formatRupiah(detailDebt.totalAmount - detailDebt.paidAmount) }}</p></div>
           </div>
@@ -199,20 +212,43 @@
     </Teleport>
 
 
-    <!-- Create Debt Modal -->
+    <!-- Create Debt Modal (Multi-item manual) -->
     <Teleport to="body">
       <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showCreateModal = false"></div>
-        <form class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleCreate">
+        <form class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[85vh] overflow-y-auto" @submit.prevent="handleCreate">
           <h2 class="text-base font-bold text-slate-950 dark:text-slate-100">Catat Hutang Baru</h2>
-          <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Pelanggan <span class="text-red-500">*</span></label><input v-model="createForm.customerName" type="text" required placeholder="Pak Ahmad" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
-          <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">No. HP</label><input v-model="createForm.customerPhone" type="text" placeholder="08123456789" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
-          <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Produk <span class="text-red-500">*</span></label><input v-model="createForm.productId" type="text" required placeholder="ID Produk" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Qty <span class="text-red-500">*</span></label><input v-model.number="createForm.quantity" type="number" min="1" required class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
-            <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">DP (Rp)</label><input v-model.number="createForm.downPayment" type="number" min="0" placeholder="0" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
+            <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Pelanggan <span class="text-red-500">*</span></label><input v-model="createForm.customerName" type="text" required placeholder="Pak Ahmad" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
+            <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">No. HP</label><input v-model="createForm.customerPhone" type="text" placeholder="08123456789" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
           </div>
-          <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Jatuh Tempo</label><input v-model="createForm.dueDate" type="date" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
+
+          <!-- Manual Items -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Item Hutang <span class="text-red-500">*</span></label>
+              <button type="button" class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline" @click="addItem">+ Tambah Item</button>
+            </div>
+            <div class="space-y-2">
+              <div v-for="(item, idx) in createForm.items" :key="idx" class="flex items-center gap-2">
+                <input v-model="item.name" type="text" required placeholder="Nama barang" class="flex-1 h-8 px-2 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none" />
+                <input v-model.number="item.qty" type="number" min="1" required placeholder="Qty" class="w-16 h-8 px-2 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none text-center" />
+                <input v-model.number="item.price" type="number" min="0" required placeholder="Harga" class="w-24 h-8 px-2 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none" />
+                <button v-if="createForm.items.length > 1" type="button" class="w-7 h-7 rounded-md border border-red-200 dark:border-red-800 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/30 shrink-0" @click="removeItem(idx)">
+                  <span class="text-red-500 text-xs font-bold">×</span>
+                </button>
+              </div>
+            </div>
+            <div class="mt-2 flex items-center justify-between text-xs">
+              <span class="text-slate-500 dark:text-slate-400">Total:</span>
+              <span class="font-bold font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(computedTotal) }}</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">DP (Rp)</label><input v-model.number="createForm.downPayment" type="number" min="0" placeholder="0" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
+            <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Jatuh Tempo</label><input v-model="createForm.dueDate" type="date" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
+          </div>
           <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan</label><input v-model="createForm.notes" type="text" placeholder="Bayar akhir bulan" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
           <div v-if="createError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ createError }}</div>
           <div class="flex items-center justify-end gap-2 pt-2">
@@ -231,7 +267,7 @@
           <h2 class="text-base font-bold text-slate-950 dark:text-slate-100">Bayar Hutang</h2>
           <div class="bg-slate-50 dark:bg-slate-800 rounded-md px-3 py-2 space-y-1">
             <p class="text-xs font-medium text-slate-900 dark:text-slate-100">{{ payingDebt.customerName }}</p>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ payingDebt.product.name }} · {{ payingDebt.quantity }} unit</p>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ getDebtItemLabel(payingDebt) }}</p>
             <p class="text-xs font-mono text-red-600 dark:text-red-400">Sisa: {{ formatRupiah(payingDebt.totalAmount - payingDebt.paidAmount) }}</p>
           </div>
           <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Jumlah Bayar (Rp) <span class="text-red-500">*</span></label><input v-model.number="payForm.amount" type="number" min="1" :max="payingDebt.totalAmount - payingDebt.paidAmount" required class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
@@ -250,10 +286,10 @@
 
 
 <script setup lang="ts">
-import { onMounted, ref, reactive } from 'vue';
+import { onMounted, ref, reactive, computed } from 'vue';
 import { Plus as PlusIcon, Search as SearchIcon, HandCoins as HandCoinsIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon, Eye as EyeIcon } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
-import debtsService, { type DebtDto, type DebtListResponse, type DebtStatus, type PaymentMethod } from '@/shared/services/debts.service';
+import debtsService, { type DebtDto, type DebtListResponse, type DebtStatus, type PaymentMethod, type ManualDebtItem } from '@/shared/services/debts.service';
 
 const authStore = useAuthStore();
 const debts = ref<DebtDto[]>([]);
@@ -271,7 +307,7 @@ const detailDebt = ref<DebtDto | null>(null);
 const showCreateModal = ref(false);
 const creating = ref(false);
 const createError = ref<string | null>(null);
-const createForm = reactive({ customerName: '', customerPhone: '', productId: '', quantity: 1, downPayment: 0, dueDate: '', notes: '' });
+const createForm = reactive({ customerName: '', customerPhone: '', items: [{ name: '', qty: 1, price: 0 }] as ManualDebtItem[], downPayment: 0, dueDate: '', notes: '' });
 const showPayModal = ref(false);
 const payingDebt = ref<DebtDto | null>(null);
 const paying = ref(false);
@@ -312,16 +348,40 @@ let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 function debouncedSearch() { if (searchTimeout) clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { currentPage.value = 1; fetchDebts(); }, 400); }
 
 function openDetailModal(debt: DebtDto) { detailDebt.value = debt; showDetailModal.value = true; }
-function openCreateModal() { createError.value = null; Object.assign(createForm, { customerName: '', customerPhone: '', productId: '', quantity: 1, downPayment: 0, dueDate: '', notes: '' }); showCreateModal.value = true; }
+function openCreateModal() { createError.value = null; Object.assign(createForm, { customerName: '', customerPhone: '', items: [{ name: '', qty: 1, price: 0 }], downPayment: 0, dueDate: '', notes: '' }); showCreateModal.value = true; }
 function openPayModal(debt: DebtDto) { payingDebt.value = debt; payError.value = null; payForm.amount = debt.totalAmount - debt.paidAmount; payForm.method = 'CASH'; payForm.notes = ''; showPayModal.value = true; }
 
 async function handleCreate() {
   const shopId = getShopId(); if (!shopId) return; creating.value = true; createError.value = null;
-  try { await debtsService.create({ shopId, productId: createForm.productId, customerName: createForm.customerName, customerPhone: createForm.customerPhone || undefined, quantity: createForm.quantity, downPayment: createForm.downPayment || undefined, dueDate: createForm.dueDate || undefined, notes: createForm.notes || undefined }); showCreateModal.value = false; await fetchDebts(); } catch (err: any) { createError.value = err?.response?.data?.message || err?.message || 'Gagal.'; } finally { creating.value = false; }
+  try {
+    const validItems = createForm.items.filter(i => i.name.trim() && i.qty > 0 && i.price > 0);
+    if (validItems.length === 0) { createError.value = 'Tambahkan minimal 1 item dengan nama, qty, dan harga.'; creating.value = false; return; }
+    await debtsService.create({
+      shopId,
+      customerName: createForm.customerName,
+      customerPhone: createForm.customerPhone || undefined,
+      manualItems: validItems,
+      downPayment: createForm.downPayment || undefined,
+      dueDate: createForm.dueDate || undefined,
+      notes: createForm.notes || undefined,
+    });
+    showCreateModal.value = false; await fetchDebts();
+  } catch (err: any) { createError.value = err?.response?.data?.message || err?.message || 'Gagal.'; } finally { creating.value = false; }
 }
 async function handlePay() {
   if (!payingDebt.value) return; paying.value = true; payError.value = null;
   try { await debtsService.pay(payingDebt.value.id, { amount: payForm.amount, method: payForm.method as PaymentMethod, notes: payForm.notes || undefined }); showPayModal.value = false; await fetchDebts(); } catch (err: any) { payError.value = err?.response?.data?.message || err?.message || 'Gagal.'; } finally { paying.value = false; }
+}
+
+function addItem() { createForm.items.push({ name: '', qty: 1, price: 0 }); }
+function removeItem(idx: number) { createForm.items.splice(idx, 1); }
+const computedTotal = computed(() => createForm.items.reduce((sum, i) => sum + (i.price * i.qty), 0));
+
+function getDebtItemLabel(debt: DebtDto): string {
+  if (debt.transaction) return `Transaksi #${debt.transaction.transactionNumber} (${debt.transaction.items?.length || 0} item)`;
+  if (debt.manualItems && debt.manualItems.length > 0) return debt.manualItems.map(i => `${i.name} ×${i.qty}`).join(', ');
+  if (debt.product) return `${debt.product.name} ×${debt.quantity}`;
+  return '—';
 }
 
 onMounted(fetchDebts);

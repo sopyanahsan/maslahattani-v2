@@ -310,6 +310,7 @@ model Transaction {
   
   items               TransactionItem[]
   payments            Payment[]
+  debt                Debt?
   
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -400,14 +401,24 @@ model Debt {
   id                  String    @id @default(cuid())
   shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId              String
-  product             Product   @relation(fields: [productId], references: [id])
-  productId           String
+
+  // === Link ke transaksi (kalau hutang dari POS) ===
+  transaction         Transaction? @relation(fields: [transactionId], references: [id])
+  transactionId       String?   @unique
+
+  // === Legacy single-product (backward compat, nullable sekarang) ===
+  product             Product?  @relation(fields: [productId], references: [id])
+  productId           String?
+
+  // === Manual items (kalau hutang manual tanpa transaksi POS) ===
+  // JSON array: [{ name: "Beras 5kg", qty: 2, price: 65000 }]
+  manualItems         Json?
   
   customerName        String
   customerPhone       String?
-  quantity            Int
-  unitPrice           Int       // in rupiah (saat hutang dibuat)
-  totalAmount         Int       // quantity * unitPrice
+  quantity            Int       @default(1)
+  unitPrice           Int       @default(0)
+  totalAmount         Int
   paidAmount          Int       @default(0)
   status              DebtStatus @default(PENDING)
   
@@ -421,6 +432,7 @@ model Debt {
   
   @@index([shopId])
   @@index([status])
+  @@index([transactionId])
   @@map("debts")
 }
 
