@@ -96,6 +96,9 @@
         </div>
 
         <p class="text-center text-xs text-slate-400 mt-6">v2.0 • Maslahat Tani POS</p>
+        <p class="text-center mt-3">
+          <a href="/admin/login" class="text-xs text-blue-600 hover:underline font-medium">Login sebagai Admin →</a>
+        </p>
       </div>
     </Transition>
 

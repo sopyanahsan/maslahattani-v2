@@ -87,8 +87,9 @@
       </div>
     </Transition>
 
-    <div v-if="step !== 'success'" class="absolute bottom-6 text-xs text-slate-500">
-      Maslahat Tani POS System v2.0
+    <div v-if="step !== 'success'" class="absolute bottom-6 text-center text-xs text-slate-500 space-y-2">
+      <p>Maslahat Tani POS System v2.0</p>
+      <a href="/webapp/login" class="text-blue-400 hover:underline font-medium">Login sebagai Kasir →</a>
     </div>
   </div>
 </template>
