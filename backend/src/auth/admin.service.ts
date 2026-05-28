@@ -64,6 +64,7 @@ export class AdminService {
         role: dto.role || Role.KASIR,
         status: UserStatus.ACTIVE,
         shopId: dto.shopId || null,
+        mustChangePassword: true,
       },
       select: {
         id: true,

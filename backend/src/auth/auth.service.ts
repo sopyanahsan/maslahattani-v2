@@ -245,8 +245,9 @@ export class AuthService {
         role: user.role,
         status: user.status,
         shopId: user.shopId,
+        mustChangePassword: user.mustChangePassword,
       },
-      shop, // include shop info biar frontend langsung tahu konteks aktif
+      shop,
     };
   }
 
@@ -390,6 +391,23 @@ export class AuthService {
     });
 
     return { success: true, message: 'Password berhasil direset. Silakan login ulang.' };
+  }
+
+  // ============================================
+  // CHANGE PASSWORD (for mustChangePassword flow)
+  // ============================================
+
+  async changePassword(userId: string, newPassword: string) {
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+        mustChangePassword: false,
+        lastPasswordReset: new Date(),
+      },
+    });
+    return { success: true, message: 'Password berhasil diubah.' };
   }
 
   // ============================================

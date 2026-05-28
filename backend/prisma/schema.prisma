@@ -37,6 +37,7 @@ model User {
   shop                Shop?     @relation("ShopUsers", fields: [shopId], references: [id])
   shopId              String?
   
+  mustChangePassword  Boolean   @default(false)
   lastLogin           DateTime?
   lastPasswordReset   DateTime?
   createdAt           DateTime  @default(now())

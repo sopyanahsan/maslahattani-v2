@@ -45,6 +45,7 @@ export interface AuthUserDto {
   role: UserRole;
   status: UserStatus;
   shopId?: string | null;
+  mustChangePassword?: boolean;
 }
 
 export interface ShopDto {
@@ -153,6 +154,11 @@ const authService = {
 
   async getMe(): Promise<MeResponse> {
     const { data } = await api.get<MeResponse>('/auth/me');
+    return data;
+  },
+
+  async changePassword(newPassword: string): Promise<{ success: boolean; message: string }> {
+    const { data } = await api.post('/auth/change-password', { newPassword });
     return data;
   },
 };

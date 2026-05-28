@@ -72,15 +72,17 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { Store as StoreIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon } from 'lucide-vue-next';
+import { Store as StoreIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon, Lock as LockIcon } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const step = ref<'login' | 'success'>('login');
+const step = ref<'login' | 'change-password' | 'success'>('login');
 const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
+const newPassword = ref('');
+const confirmPassword = ref('');
 
 const form = reactive({
   email: '',
@@ -97,15 +99,33 @@ const handleLogin = async () => {
   errorMessage.value = null;
 
   try {
-    await authStore.login({ identifier: form.email, password: form.password });
+    const result = await authStore.login({ identifier: form.email, password: form.password });
+    // Check if must change password
+    if (result.status === 'success' && result.user?.mustChangePassword) {
+      step.value = 'change-password';
+      return;
+    }
     step.value = 'success';
-
-    // Redirect setelah animasi selesai (2s)
-    setTimeout(() => {
-      router.push({ name: 'webapp-dashboard' });
-    }, 2000);
+    setTimeout(() => { router.push({ name: 'webapp-dashboard' }); }, 2000);
   } catch (err: any) {
     errorMessage.value = err?.response?.data?.message || err?.message || 'Login gagal. Periksa email dan password.';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handleChangePassword = async () => {
+  if (newPassword.value.length < 6) { errorMessage.value = 'Password minimal 6 karakter.'; return; }
+  if (newPassword.value !== confirmPassword.value) { errorMessage.value = 'Konfirmasi password tidak cocok.'; return; }
+  isLoading.value = true;
+  errorMessage.value = null;
+  try {
+    const authService = (await import('@/shared/services/auth.service')).default;
+    await authService.changePassword(newPassword.value);
+    step.value = 'success';
+    setTimeout(() => { router.push({ name: 'webapp-dashboard' }); }, 2000);
+  } catch (err: any) {
+    errorMessage.value = err?.response?.data?.message || err?.message || 'Gagal mengubah password.';
   } finally {
     isLoading.value = false;
   }
