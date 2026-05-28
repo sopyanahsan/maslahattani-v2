@@ -68,7 +68,7 @@ export class DebtsService {
           shopId: dto.shopId,
           transactionId: dto.transactionId || null,
           productId: dto.productId || null,
-          manualItems: dto.manualItems || null,
+          manualItems: dto.manualItems ? (dto.manualItems as any) : undefined,
           customerName: dto.customerName,
           customerPhone: dto.customerPhone || null,
           quantity: dto.quantity || 1,
