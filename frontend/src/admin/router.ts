@@ -385,11 +385,8 @@ router.beforeEach(async (to, _from, next) => {
   const allowedRoles = getMeta<string[]>(to, 'roles');
   const allowMissingShop = !!getMeta<boolean>(to, 'allowMissingShop');
 
-  // Guest-only: redirect user yang sudah login ke dashboard atau shop selection
+  // Guest-only: redirect user yang sudah login ke dashboard
   if (guestOnly && authStore.isAuthenticated) {
-    if (authStore.requireShopSelection) {
-      return next({ name: 'admin-select-shop' });
-    }
     if (authStore.isAdmin) return next({ name: 'admin-dashboard' });
     // User non-admin akses admin domain → ke home (atau bisa redirect ke webapp)
     return next({ name: 'home' });
@@ -409,17 +406,9 @@ router.beforeEach(async (to, _from, next) => {
     }
   }
 
-  // Shop selection enforcement: user yang authed tapi belum punya shopId
-  // (super-admin yang baru login) harus pilih cabang dulu, kecuali halaman
-  // selectnya sendiri yang allowMissingShop=true.
-  if (
-    requiresAuth &&
-    authStore.isAuthenticated &&
-    authStore.requireShopSelection &&
-    !allowMissingShop
-  ) {
-    return next({ name: 'admin-select-shop' });
-  }
+  // Shop selection: super-admin yang baru login tanpa shopId tetap boleh
+  // masuk dashboard. Branch switcher di AdminLayout header akan handle
+  // pemilihan cabang. Tidak perlu paksa redirect ke select-shop page lagi.
 
   next();
 });
