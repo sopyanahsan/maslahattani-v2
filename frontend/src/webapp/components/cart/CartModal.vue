@@ -5,7 +5,7 @@
       <div class="absolute inset-0 bg-black/30 backdrop-blur-[2px]" @click="$emit('close')"></div>
 
       <!-- Compact Floating Panel -->
-      <div class="relative bg-white/95 backdrop-blur-xl rounded-2xl max-h-[70vh] w-full max-w-[600px] flex flex-col animate-slide-up shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-white/60">
+      <div class="relative bg-white/95 backdrop-blur-xl rounded-2xl max-h-[80vh] w-full max-w-[600px] flex flex-col animate-slide-up shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-white/60">
         <!-- Header -->
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
           <div class="flex items-center gap-2">
@@ -19,7 +19,7 @@
         </div>
 
         <!-- Cart Items (scrollable) -->
-        <div class="flex-1 overflow-y-auto px-4 py-2 space-y-1">
+        <div class="flex-1 overflow-y-auto px-4 py-2 space-y-1 min-h-[120px]">
           <div v-for="item in cart" :key="item.productId" class="py-2 border-b border-slate-50 last:border-0">
             <div class="flex items-center gap-2">
               <div class="flex-1 min-w-0">
