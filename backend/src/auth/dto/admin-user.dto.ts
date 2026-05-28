@@ -1,6 +1,6 @@
 import { IsEmail, IsString, IsOptional, IsEnum } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { UserStatus } from '@prisma/client';
+import { UserStatus, Role } from '@prisma/client';
 
 export class CreateKasirDto {
   @ApiProperty({ example: 'kasir.baru@gmail.com' })
@@ -11,6 +11,11 @@ export class CreateKasirDto {
   @IsOptional()
   @IsString()
   shopId?: string;
+
+  @ApiPropertyOptional({ enum: Role, example: 'KASIR', description: 'Role: KASIR (default) atau ADMIN (admin cabang)' })
+  @IsOptional()
+  @IsEnum(Role)
+  role?: Role;
 }
 
 export class UpdateKasirDto {

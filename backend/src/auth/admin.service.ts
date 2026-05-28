@@ -9,10 +9,10 @@ export class AdminService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * List all kasir users, optional filter by shopId
+   * List all users (kasir + admin cabang), optional filter by shopId
    */
   async listKasir(shopId?: string) {
-    const where: any = { role: Role.KASIR };
+    const where: any = { role: { in: [Role.KASIR, Role.ADMIN, Role.CASHIER_SUPERVISOR] } };
     if (shopId) {
       where.shopId = shopId;
     }
@@ -61,7 +61,7 @@ export class AdminService {
         email: dto.email.toLowerCase(),
         username: suggestedUsername,
         passwordHash,
-        role: Role.KASIR,
+        role: dto.role || Role.KASIR,
         status: UserStatus.ACTIVE,
         shopId: dto.shopId || null,
       },
