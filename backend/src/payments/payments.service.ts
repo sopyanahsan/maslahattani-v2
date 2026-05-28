@@ -113,8 +113,8 @@ export class PaymentsService {
   // ============================================
 
   async auditCash(dto: AuditCashDto) {
-    let cashBox = await this.prisma.cashBox.findUnique({
-      where: { shopId: dto.shopId },
+    let cashBox = await this.prisma.cashBox.findFirst({
+      where: { shopId: dto.shopId, categoryId: null },
     });
 
     if (!cashBox) {
@@ -126,9 +126,9 @@ export class PaymentsService {
 
     // Update cash box with audit info
     await this.prisma.cashBox.update({
-      where: { shopId: dto.shopId },
+      where: { id: cashBox.id },
       data: {
-        balance: dto.actualBalance, // Adjust to actual
+        balance: dto.actualBalance,
         lastAudit: new Date(),
         lastAuditBalance: dto.actualBalance,
       },
@@ -254,7 +254,7 @@ export class PaymentsService {
       _count: true,
     });
 
-    const cashBox = await this.prisma.cashBox.findUnique({ where: { shopId } });
+    const cashBox = await this.prisma.cashBox.findFirst({ where: { shopId } });
 
     const totalCash = byMethod.find((m) => m.method === 'CASH')?._sum.amount || 0;
     const totalQRIS = byMethod.find((m) => m.method === 'QRIS')?._sum.amount || 0;
