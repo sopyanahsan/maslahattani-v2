@@ -1,5 +1,7 @@
 <template>
-  <div class="flex flex-col h-[calc(100vh-4rem)] overflow-hidden -mx-4 -mt-4">
+  <div class="flex h-[calc(100vh-4rem)] overflow-hidden -mx-4 -mt-4">
+    <!-- Left: Products -->
+    <div class="flex-1 flex flex-col overflow-hidden">
     <!-- Top: Search + Scan + View Toggle -->
     <div class="shrink-0 bg-white border-b border-slate-200 p-3 space-y-3">
       <div class="flex items-center gap-2">
@@ -99,9 +101,9 @@
       </div>
     </div>
 
-    <!-- Floating Glass Cart Button (appears when items in cart) -->
+    <!-- Floating Glass Cart Button (mobile only, appears when items in cart) -->
     <Transition name="cart-float">
-      <div v-if="cart.length > 0" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-[600px]">
+      <div v-if="cart.length > 0" class="md:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-[600px]">
         <button
           class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.16)] transition-all active:scale-[0.98]"
           @click="showCart = true"
@@ -122,6 +124,20 @@
     </Transition>
 
     <!-- Scan Modal -->
+    </div><!-- end Left: Products -->
+
+    <!-- Right: Cart Panel (desktop/tablet only) -->
+    <div class="hidden md:block w-80 lg:w-96 shrink-0">
+      <CartPanel
+        :cart="cart"
+        :total-price="totalPrice"
+        @update-qty="updateQty"
+        @update-discount="updateDiscount"
+        @checkout-success="handleCheckoutSuccess"
+      />
+    </div>
+
+    <!-- Scan Modal (mobile) -->
     <Teleport to="body">
       <div v-if="showScanModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/60" @click="showScanModal = false"></div>
@@ -136,9 +152,10 @@
       </div>
     </Teleport>
 
-    <!-- Cart Modal -->
+    <!-- Cart Modal (mobile only) -->
     <CartModal
       v-if="showCart"
+      class="md:hidden"
       :cart="cart"
       :total-price="totalPrice"
       @close="showCart = false"
@@ -161,6 +178,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import posService, { type POSProductDto, type CartItem, createCartItem, recalcCartItem } from '@/shared/services/pos.service';
 import CartModal from '@/webapp/components/cart/CartModal.vue';
+import CartPanel from '@/webapp/components/cart/CartPanel.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
