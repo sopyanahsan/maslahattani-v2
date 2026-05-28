@@ -97,12 +97,12 @@ const handleLogin = async () => {
   errorMessage.value = null;
 
   try {
-    await authStore.login(form.email, form.password);
+    await authStore.login({ identifier: form.email, password: form.password });
     step.value = 'success';
 
     // Redirect setelah animasi selesai (2s)
     setTimeout(() => {
-      router.push('/kasir/dashboard');
+      router.push('/dashboard');
     }, 2000);
   } catch (err: any) {
     errorMessage.value = err?.response?.data?.message || err?.message || 'Login gagal. Periksa email dan password.';
