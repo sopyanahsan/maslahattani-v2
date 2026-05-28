@@ -1,229 +1,178 @@
 <template>
-  <div class="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-slate-50 px-4 py-8">
-    <div class="w-full max-w-md">
-      <!-- Logo & Header -->
-      <div class="text-center mb-8">
-        <div class="mx-auto w-16 h-16 rounded-2xl bg-blue-100 border border-blue-200 flex items-center justify-center mb-4">
-          <component :is="StoreIcon" class="w-8 h-8 text-blue-600" />
-        </div>
-        <h1 class="text-2xl font-bold text-slate-950">Masuk ke Kasir</h1>
-        <p class="text-sm text-slate-600 mt-1">Maslahat Tani — Sistem POS</p>
-      </div>
-
-      <!-- Login Card -->
-      <div class="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 sm:p-8">
-        <!-- Error Alert -->
-        <div
-          v-if="errorMessage"
-          class="mb-5 bg-red-50 border-l-4 border-red-500 rounded-md p-4"
-        >
-          <div class="flex items-start gap-2">
-            <component :is="AlertCircleIcon" class="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-            <p class="text-sm text-red-800">{{ errorMessage }}</p>
-          </div>
-        </div>
-
-        <!-- Form -->
-        <form @submit.prevent="handleLogin" class="space-y-5">
-          <!-- Email Field -->
-          <div>
-            <label for="email" class="block text-xs font-semibold text-slate-900 mb-1.5">
-              Email
-            </label>
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <component :is="MailIcon" class="w-4 h-4 text-slate-400" />
-              </div>
-              <input
-                id="email"
-                v-model="form.email"
-                type="email"
-                placeholder="kasir@gmail.com"
-                autocomplete="email"
-                required
-                :disabled="isLoading"
-                class="input-field pl-10"
-                :class="{ '!border-red-500 !ring-2 !ring-red-100': errors.email }"
-                @input="clearFieldError('email')"
-              />
-            </div>
-            <p v-if="errors.email" class="mt-1 text-xs text-red-600">{{ errors.email }}</p>
-          </div>
-
-          <!-- Password Field -->
-          <div>
-            <div class="flex items-center justify-between mb-1.5">
-              <label for="password" class="block text-xs font-semibold text-slate-900">
-                Password
-              </label>
-              <RouterLink
-                to="/kasir/forgot-password"
-                class="text-xs text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Lupa password?
-              </RouterLink>
-            </div>
-            <div class="relative">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <component :is="LockIcon" class="w-4 h-4 text-slate-400" />
-              </div>
-              <input
-                id="password"
-                v-model="form.password"
-                :type="showPassword ? 'text' : 'password'"
-                placeholder="Masukkan password"
-                autocomplete="current-password"
-                required
-                :disabled="isLoading"
-                class="input-field pl-10 pr-10"
-                :class="{ '!border-red-500 !ring-2 !ring-red-100': errors.password }"
-                @input="clearFieldError('password')"
-              />
-              <button
-                type="button"
-                class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600 transition-colors"
-                @click="showPassword = !showPassword"
-                tabindex="-1"
-              >
-                <component :is="showPassword ? EyeOffIcon : EyeIcon" class="w-4 h-4" />
-              </button>
-            </div>
-            <p v-if="errors.password" class="mt-1 text-xs text-red-600">{{ errors.password }}</p>
-          </div>
-
-          <!-- Submit Button -->
-          <button
-            type="submit"
-            :disabled="isLoading"
-            class="w-full h-12 px-6 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-200 focus:outline-none transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            <component
-              v-if="isLoading"
-              :is="Loader2Icon"
-              class="w-4 h-4 animate-spin"
-            />
-            {{ isLoading ? 'Memproses...' : 'Masuk' }}
-          </button>
-        </form>
-
-        <!-- Divider -->
-        <div class="relative my-6">
-          <div class="absolute inset-0 flex items-center">
-            <div class="w-full border-t border-slate-200"></div>
-          </div>
-          <div class="relative flex justify-center text-xs">
-            <span class="px-3 bg-white text-slate-500">Belum punya akun?</span>
-          </div>
-        </div>
-
-        <!-- Register Link -->
-        <RouterLink
-          to="/kasir/register"
-          class="w-full h-10 px-4 bg-slate-100 text-slate-900 text-sm font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
-        >
-          <component :is="UserPlusIcon" class="w-4 h-4" />
-          Daftar Akun Kasir
-        </RouterLink>
-      </div>
-
-      <!-- Footer -->
-      <div class="text-center mt-6">
-        <RouterLink to="/" class="text-sm text-slate-500 hover:text-slate-700 transition-colors">
-          &larr; Kembali ke Home
-        </RouterLink>
-      </div>
+  <div class="relative min-h-screen bg-gradient-to-br from-white to-blue-50/80 flex flex-col items-center justify-center p-4 font-sans overflow-hidden">
+    
+    <div v-if="step === 'success'" class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
+      <div class="confetti-piece" v-for="n in 15" :key="n" :style="`--x: ${Math.random() * 100}vw; --delay: ${Math.random() * 0.5}s; --duration: ${1 + Math.random()}s; --color: ${['#3B82F6', '#10B981', '#F59E0B'][Math.floor(Math.random() * 3)]}`"></div>
     </div>
+
+    <Transition name="fade-in">
+      <div v-if="step === 'success'" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm">
+        
+        <div class="morph-container relative w-20 h-20 mb-6">
+          <div class="ring absolute inset-0 border-4 border-emerald-100 rounded-full"></div>
+          <div class="spinner absolute inset-0 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin"></div>
+          <svg class="success-check absolute inset-0 w-full h-full text-emerald-500 scale-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+          </svg>
+        </div>
+
+        <Transition name="slide-up" appear>
+          <div class="text-center">
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight mb-2">Shift siap!</h2>
+            <p class="text-slate-600 font-medium">Selamat bekerja, {{ userName }}</p>
+          </div>
+        </Transition>
+      </div>
+    </Transition>
+
+    <Transition name="scale-down" mode="out-in">
+      <div v-if="step === 'login'" class="w-full max-w-sm z-10">
+        <div class="bg-white border border-slate-100 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div class="flex flex-col items-center mb-8">
+            <div class="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mb-5 text-emerald-500 shadow-sm border border-emerald-100">
+              <StoreIcon class="w-7 h-7" />
+            </div>
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Masuk ke Kasir</h1>
+            <p class="text-slate-500 mt-1 text-sm">Maslahat Tani — Sistem POS</p>
+          </div>
+
+          <!-- Error Alert -->
+          <div v-if="errorMessage" class="mb-5 bg-red-50 border-l-4 border-red-500 rounded-md p-4">
+            <div class="flex items-start gap-2">
+              <AlertCircleIcon class="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+              <p class="text-sm text-red-800">{{ errorMessage }}</p>
+            </div>
+          </div>
+
+          <form @submit.prevent="handleLogin" class="space-y-5">
+            <div class="space-y-1.5">
+              <label class="text-sm font-semibold text-slate-700">Email Kasir</label>
+              <input v-model="form.email" type="email" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="kasir@maslahattani.my.id">
+            </div>
+            
+            <div class="space-y-1.5">
+              <label class="text-sm font-semibold text-slate-700">Password</label>
+              <input v-model="form.password" type="password" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="••••••••">
+            </div>
+
+            <button type="submit" :disabled="isLoading" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition-all flex justify-center items-center mt-2 shadow-sm shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed">
+              <Loader2Icon v-if="isLoading" class="w-5 h-5 animate-spin" />
+              <span v-else>Buka Shift</span>
+            </button>
+          </form>
+        </div>
+
+        <p class="text-center text-xs text-slate-400 mt-6">v2.0 • Maslahat Tani POS</p>
+      </div>
+    </Transition>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { Store as StoreIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
-import {
-  Store as StoreIcon,
-  Mail as MailIcon,
-  Lock as LockIcon,
-  Eye as EyeIcon,
-  EyeOff as EyeOffIcon,
-  AlertCircle as AlertCircleIcon,
-  Loader2 as Loader2Icon,
-  UserPlus as UserPlusIcon,
-} from 'lucide-vue-next';
 
 const router = useRouter();
 const authStore = useAuthStore();
+
+const step = ref<'login' | 'success'>('login');
+const isLoading = ref(false);
+const errorMessage = ref<string | null>(null);
 
 const form = reactive({
   email: '',
   password: '',
 });
 
-const errors = reactive({
-  email: '',
-  password: '',
+const userName = computed(() => {
+  const u = authStore.user;
+  return u?.username || u?.email || 'Kasir';
 });
 
-const showPassword = ref(false);
-const isLoading = ref(false);
-const errorMessage = ref('');
-
-function clearFieldError(field: 'email' | 'password') {
-  errors[field] = '';
-  errorMessage.value = '';
-}
-
-function validate(): boolean {
-  let valid = true;
-
-  if (!form.email.trim()) {
-    errors.email = 'Email wajib diisi';
-    valid = false;
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
-    errors.email = 'Format email tidak valid';
-    valid = false;
-  }
-
-  if (!form.password) {
-    errors.password = 'Password wajib diisi';
-    valid = false;
-  } else if (form.password.length < 8) {
-    errors.password = 'Password minimal 8 karakter';
-    valid = false;
-  }
-
-  return valid;
-}
-
-async function handleLogin() {
-  errorMessage.value = '';
-
-  if (!validate()) return;
-
+const handleLogin = async () => {
   isLoading.value = true;
+  errorMessage.value = null;
 
   try {
-    const outcome = await authStore.login({
-      identifier: form.email.trim(),
-      password: form.password,
-    });
+    await authStore.login(form.email, form.password);
+    step.value = 'success';
 
-    if (outcome.status === 'otp_required') {
-      // Kasir tidak pakai 2FA. Kalau backend minta OTP, berarti akun ini admin.
-      errorMessage.value = 'Akun ini terdaftar sebagai admin. Silakan login via panel admin.';
-      return;
-    }
-
-    // Redirect berdasarkan role
-    if (authStore.isAdmin) {
-      router.push('/admin/dashboard');
-    } else {
+    // Redirect setelah animasi selesai (2s)
+    setTimeout(() => {
       router.push('/kasir/dashboard');
-    }
+    }, 2000);
   } catch (err: any) {
-    errorMessage.value = err.message || 'Login gagal. Silakan coba lagi.';
+    errorMessage.value = err?.response?.data?.message || err?.message || 'Login gagal. Periksa email dan password.';
   } finally {
     isLoading.value = false;
   }
-}
+};
 </script>
+
+<style scoped>
+/* Card Transitions */
+.scale-down-leave-active {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.scale-down-leave-to {
+  opacity: 0;
+  transform: scale(0.9) translateY(10px);
+}
+
+/* Background Transition */
+.fade-in-enter-active {
+  transition: opacity 0.5s ease 0.2s;
+}
+.fade-in-enter-from {
+  opacity: 0;
+}
+
+/* Morph Animation Container */
+.morph-container .spinner {
+  animation: fade-out-spin 0.4s ease forwards 0.8s;
+}
+.morph-container .success-check {
+  transform-origin: center;
+  animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 1s;
+}
+
+@keyframes fade-out-spin {
+  0% { transform: rotate(0deg); opacity: 1; }
+  100% { transform: rotate(360deg); opacity: 0; }
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Text Slide Up Transition */
+.slide-up-enter-active {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) 1.2s;
+}
+.slide-up-enter-from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+/* Simple CSS Confetti (Fall & Spin) */
+.confetti-piece {
+  position: absolute;
+  top: -10px;
+  left: var(--x);
+  width: 8px;
+  height: 16px;
+  background-color: var(--color);
+  border-radius: 4px;
+  animation: fall var(--duration) linear var(--delay) forwards;
+  opacity: 0;
+}
+
+@keyframes fall {
+  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+</style>
