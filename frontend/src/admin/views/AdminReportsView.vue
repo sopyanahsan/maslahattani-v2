@@ -8,258 +8,17 @@
       </p>
     </div>
 
-    <!-- Date filter + Export -->
+    <!-- Date filter -->
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
-      <input v-model="startDate" type="date"
-        class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
-      <input v-model="endDate" type="date"
-        class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+      <input v-model="startDate" type="date" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+      <input v-model="endDate" type="date" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
       <button type="button" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 flex items-center gap-1.5" @click="fetchAll">
         <FilterIcon class="w-3.5 h-3.5" /> Terapkan
       </button>
       <div class="flex items-center gap-1.5">
-        <button v-for="r in quickRanges" :key="r.label" type="button"
-          class="h-7 px-2.5 text-[11px] font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800"
-          @click="applyRange(r.days)">{{ r.label }}</button>
+        <button v-for="r in quickRanges" :key="r.label" type="button" class="h-7 px-2.5 text-[11px] font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800" @click="applyRange(r.days)">{{ r.label }}</button>
       </div>
     </div>
-
-
-    <!-- Loading -->
-    <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-      <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat laporan...</span>
-    </div>
-
-    <template v-else>
-      <!-- Sales Summary -->
-      <div v-if="salesReport" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-        <div class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Ringkasan Penjualan</h3>
-          <button type="button" class="h-7 px-2.5 text-[10px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" @click="exportSales">Export CSV</button>
-        </div>
-        <div class="p-5">
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center">
-              <p class="text-[10px] text-slate-500 dark:text-slate-400">Omzet</p>
-              <p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">{{ formatRupiah(salesReport.summary.omzet) }}</p>
-            </div>
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center">
-              <p class="text-[10px] text-slate-500 dark:text-slate-400">Profit</p>
-              <p class="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{{ formatRupiah(salesReport.summary.profit) }}</p>
-            </div>
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center">
-              <p class="text-[10px] text-slate-500 dark:text-slate-400">Transaksi</p>
-              <p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">{{ salesReport.summary.totalTransactions }}</p>
-            </div>
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center">
-              <p class="text-[10px] text-slate-500 dark:text-slate-400">Margin</p>
-              <p class="text-sm font-bold font-mono text-indigo-600 dark:text-indigo-400 mt-1">{{ salesReport.summary.marginPercent }}%</p>
-            </div>
-          </div>
-
-
-          <!-- Top Products -->
-          <div v-if="salesReport.topProducts.length > 0" class="mt-4">
-            <div class="flex items-center justify-between mb-2">
-              <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Top 10 Produk</p>
-              <button type="button" class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline" @click="exportTopProducts">Export</button>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full min-w-[400px]">
-                <thead class="border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Produk</th>
-                    <th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Qty</th>
-                    <th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Revenue</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                  <tr v-for="p in salesReport.topProducts" :key="p.productId" class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td class="px-3 py-2 text-xs text-slate-800 dark:text-slate-200">{{ p.productName }}</td>
-                    <td class="px-3 py-2 text-right text-xs font-mono text-slate-600 dark:text-slate-400">{{ p.totalQty }}</td>
-                    <td class="px-3 py-2 text-right text-xs font-mono font-semibold text-slate-900 dark:text-slate-100">{{ formatRupiah(p.totalRevenue) }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Daily Trend -->
-          <div v-if="salesReport.dailyTrend.length > 0" class="mt-4">
-            <div class="flex items-center justify-between mb-2">
-              <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Trend Harian</p>
-              <button type="button" class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline" @click="exportDailyTrend">Export</button>
-            </div>
-            <div class="overflow-x-auto">
-              <table class="w-full min-w-[400px]">
-                <thead class="border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Tanggal</th>
-                    <th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Omzet</th>
-                    <th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Profit</th>
-                    <th class="px-3 py-2 text-center text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Trx</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                  <tr v-for="day in salesReport.dailyTrend" :key="day.date" class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td class="px-3 py-2 text-xs font-mono text-slate-700 dark:text-slate-300">{{ day.date }}</td>
-                    <td class="px-3 py-2 text-right text-xs font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(day.omzet) }}</td>
-                    <td class="px-3 py-2 text-right text-xs font-mono text-emerald-600 dark:text-emerald-400">{{ formatRupiah(day.profit) }}</td>
-                    <td class="px-3 py-2 text-center text-xs font-mono text-slate-600 dark:text-slate-400">{{ day.transactions }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-
-      <!-- BRILink Report -->
-      <div v-if="brilinkReport" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-        <div class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Laporan BRILink</h3>
-          <button type="button" class="h-7 px-2.5 text-[10px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" @click="exportBrilink">Export CSV</button>
-        </div>
-        <div class="p-5">
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center">
-              <p class="text-[10px] text-slate-500 dark:text-slate-400">Transaksi</p>
-              <p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">{{ brilinkReport.summary.totalTransactions }}</p>
-            </div>
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center">
-              <p class="text-[10px] text-slate-500 dark:text-slate-400">Volume</p>
-              <p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">{{ formatRupiah(brilinkReport.summary.volume) }}</p>
-            </div>
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center">
-              <p class="text-[10px] text-slate-500 dark:text-slate-400">Fee Earnings</p>
-              <p class="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{{ formatRupiah(brilinkReport.summary.feeEarnings) }}</p>
-            </div>
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center">
-              <p class="text-[10px] text-slate-500 dark:text-slate-400">Avg Fee/Trx</p>
-              <p class="text-sm font-bold font-mono text-indigo-600 dark:text-indigo-400 mt-1">{{ formatRupiah(brilinkReport.summary.avgFee) }}</p>
-            </div>
-          </div>
-          <!-- Category breakdown -->
-          <div v-if="brilinkReport.categoryBreakdown.length > 0">
-            <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-2">Per Kategori</p>
-            <div class="overflow-x-auto">
-              <table class="w-full">
-                <thead class="border-b border-slate-200 dark:border-slate-800">
-                  <tr>
-                    <th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Kategori</th>
-                    <th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Trx</th>
-                    <th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Volume</th>
-                    <th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Fee</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                  <tr v-for="cat in brilinkReport.categoryBreakdown" :key="cat.category" class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                    <td class="px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200">{{ cat.category }}</td>
-                    <td class="px-3 py-2 text-right text-xs font-mono text-slate-600 dark:text-slate-400">{{ cat.count }}</td>
-                    <td class="px-3 py-2 text-right text-xs font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(cat.volume) }}</td>
-                    <td class="px-3 py-2 text-right text-xs font-mono text-emerald-600 dark:text-emerald-400">{{ formatRupiah(cat.fee) }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </template>
-  </div>
-</template>
-
-
-<script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { Filter as FilterIcon, Loader2 as Loader2Icon } from 'lucide-vue-next';
-import { useAuthStore } from '@/shared/stores/auth.store';
-import reportsService, { exportToCSV, type SalesReportResponse, type DebtReportResponse, type BrilinkReportResponse } from '@/shared/services/reports.service';
-
-const authStore = useAuthStore();
-const loading = ref(false);
-const startDate = ref('');
-const endDate = ref('');
-const salesReport = ref<SalesReportResponse | null>(null);
-const debtReport = ref<DebtReportResponse | null>(null);
-const brilinkReport = ref<BrilinkReportResponse | null>(null);
-
-const quickRanges = [
-  { label: 'Hari Ini', days: 0 },
-  { label: '7 Hari', days: 7 },
-  { label: '30 Hari', days: 30 },
-  { label: 'Bulan Ini', days: -1 },
-];
-
-function getShopId(): string | undefined { return authStore.user?.shopId || undefined; }
-function formatRupiah(n: number): string { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n); }
-
-function applyRange(days: number) {
-  const now = new Date();
-  if (days === 0) {
-    startDate.value = now.toISOString().slice(0, 10);
-    endDate.value = now.toISOString().slice(0, 10);
-  } else if (days === -1) {
-    const first = new Date(now.getFullYear(), now.getMonth(), 1);
-    startDate.value = first.toISOString().slice(0, 10);
-    endDate.value = now.toISOString().slice(0, 10);
-  } else {
-    const start = new Date(now); start.setDate(start.getDate() - days + 1);
-    startDate.value = start.toISOString().slice(0, 10);
-    endDate.value = now.toISOString().slice(0, 10);
-  }
-  fetchAll();
-}
-
-async function fetchAll() {
-  const shopId = getShopId(); if (!shopId) return;
-  loading.value = true;
-  try {
-    const [sales, debts, brilink] = await Promise.allSettled([
-      reportsService.getSalesReport(shopId, startDate.value || undefined, endDate.value || undefined),
-      reportsService.getDebtReport(shopId),
-      reportsService.getBrilinkReport(shopId, startDate.value || undefined, endDate.value || undefined),
-    ]);
-    salesReport.value = sales.status === 'fulfilled' ? sales.value : null;
-    debtReport.value = debts.status === 'fulfilled' ? debts.value : null;
-    brilinkReport.value = brilink.status === 'fulfilled' ? brilink.value : null;
-  } finally { loading.value = false; }
-}
-
-function exportSales() {
-  if (!salesReport.value) return;
-  const s = salesReport.value.summary;
-  exportToCSV(`laporan-penjualan-${startDate.value || 'all'}-${endDate.value || 'all'}.csv`,
-    ['Metrik', 'Nilai'],
-    [['Omzet', s.omzet], ['Modal', s.modal], ['Profit', s.profit], ['Diskon', s.diskon], ['Transaksi', s.totalTransactions], ['Void', s.totalVoided], ['Margin %', s.marginPercent]]);
-}
-
-function exportTopProducts() {
-  if (!salesReport.value) return;
-  exportToCSV(`top-produk-${startDate.value || 'all'}-${endDate.value || 'all'}.csv`,
-    ['Produk', 'SKU', 'Qty', 'Revenue'],
-    salesReport.value.topProducts.map(p => [p.productName, p.sku, p.totalQty, p.totalRevenue]));
-}
-
-function exportDailyTrend() {
-  if (!salesReport.value) return;
-  exportToCSV(`trend-harian-${startDate.value || 'all'}-${endDate.value || 'all'}.csv`,
-    ['Tanggal', 'Omzet', 'Profit', 'Transaksi'],
-    salesReport.value.dailyTrend.map(d => [d.date, d.omzet, d.profit, d.transactions]));
-}
-
-function exportBrilink() {
-  if (!brilinkReport.value) return;
-  exportToCSV(`laporan-brilink-${startDate.value || 'all'}-${endDate.value || 'all'}.csv`,
-    ['Kategori', 'Transaksi', 'Volume', 'Fee'],
-    brilinkReport.value.categoryBreakdown.map(c => [c.category, c.count, c.volume, c.fee]));
-}
-
-onMounted(() => { applyRange(30); });
-</script>
-
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
@@ -281,12 +40,10 @@ onMounted(() => { applyRange(30); });
             <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center"><p class="text-[10px] text-slate-500 dark:text-slate-400">Transaksi</p><p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">{{ salesReport.summary.totalTransactions }}</p></div>
             <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center"><p class="text-[10px] text-slate-500 dark:text-slate-400">Margin</p><p class="text-sm font-bold font-mono text-indigo-600 dark:text-indigo-400 mt-1">{{ salesReport.summary.marginPercent }}%</p></div>
           </div>
-          <!-- Top Products -->
           <div v-if="salesReport.topProducts.length > 0" class="mt-4">
             <div class="flex items-center justify-between mb-2"><p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Top 10 Produk</p><button type="button" class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline" @click="exportTopProducts">Export</button></div>
             <div class="overflow-x-auto"><table class="w-full"><thead class="border-b border-slate-200 dark:border-slate-800"><tr><th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Produk</th><th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Qty</th><th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Revenue</th></tr></thead><tbody class="divide-y divide-slate-100 dark:divide-slate-800"><tr v-for="p in salesReport.topProducts" :key="p.productId" class="hover:bg-slate-50 dark:hover:bg-slate-800/50"><td class="px-3 py-2 text-xs text-slate-800 dark:text-slate-200">{{ p.productName }}</td><td class="px-3 py-2 text-right text-xs font-mono text-slate-600 dark:text-slate-400">{{ p.totalQty }}</td><td class="px-3 py-2 text-right text-xs font-mono font-semibold text-slate-900 dark:text-slate-100">{{ formatRupiah(p.totalRevenue) }}</td></tr></tbody></table></div>
           </div>
-          <!-- Daily Trend -->
           <div v-if="salesReport.dailyTrend.length > 0" class="mt-4">
             <div class="flex items-center justify-between mb-2"><p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Trend Harian</p><button type="button" class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline" @click="exportDailyTrend">Export</button></div>
             <div class="overflow-x-auto"><table class="w-full"><thead class="border-b border-slate-200 dark:border-slate-800"><tr><th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Tanggal</th><th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Omzet</th><th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Profit</th><th class="px-3 py-2 text-center text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Trx</th></tr></thead><tbody class="divide-y divide-slate-100 dark:divide-slate-800"><tr v-for="day in salesReport.dailyTrend" :key="day.date" class="hover:bg-slate-50 dark:hover:bg-slate-800/50"><td class="px-3 py-2 text-xs font-mono text-slate-700 dark:text-slate-300">{{ day.date }}</td><td class="px-3 py-2 text-right text-xs font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(day.omzet) }}</td><td class="px-3 py-2 text-right text-xs font-mono text-emerald-600 dark:text-emerald-400">{{ formatRupiah(day.profit) }}</td><td class="px-3 py-2 text-center text-xs font-mono text-slate-600 dark:text-slate-400">{{ day.transactions }}</td></tr></tbody></table></div>
@@ -317,7 +74,6 @@ onMounted(() => { applyRange(30); });
   </div>
 </template>
 
-
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import { Filter as FilterIcon, Loader2 as Loader2Icon } from 'lucide-vue-next';
@@ -331,7 +87,6 @@ const endDate = ref('');
 const salesReport = ref<SalesReportResponse | null>(null);
 const debtReport = ref<DebtReportResponse | null>(null);
 const brilinkReport = ref<BrilinkReportResponse | null>(null);
-
 const quickRanges = [{ label: 'Hari Ini', days: 0 }, { label: '7 Hari', days: 7 }, { label: '30 Hari', days: 30 }, { label: 'Bulan Ini', days: -1 }];
 
 function getShopId(): string | undefined { return authStore.user?.shopId || undefined; }
