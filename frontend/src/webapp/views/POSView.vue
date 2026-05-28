@@ -1,169 +1,127 @@
 <template>
-  <div class="flex h-[calc(100vh-4rem)] overflow-hidden -mx-4 -mt-4">
-    <!-- Left: Products -->
-    <div class="flex-1 flex flex-col overflow-hidden">
-    <!-- Top: Search + Scan + View Toggle -->
-    <div class="shrink-0 bg-white border-b border-slate-200 p-3 space-y-3">
-      <div class="flex items-center gap-2">
-        <div class="relative flex-1">
-          <SearchIcon class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="Cari produk..."
-            class="w-full bg-slate-100 rounded-lg py-2.5 pl-9 pr-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 border border-transparent outline-none transition-all"
-            @input="debouncedSearch"
-          />
-        </div>
-        <button class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0" @click="showScanModal = true">
-          <CameraIcon class="w-5 h-5" />
-        </button>
-        <div class="flex rounded-lg border border-slate-200 overflow-hidden shrink-0">
-          <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'grid'">
-            <LayoutGridIcon class="w-4 h-4" />
-          </button>
-          <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'list'">
-            <ListIcon class="w-4 h-4" />
-          </button>
-        </div>
-      </div>
-
-      <!-- Category Tabs -->
-      <div class="flex overflow-x-auto gap-2 hide-scrollbar">
-        <button
-          v-for="cat in categories"
-          :key="cat"
-          :class="['px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors', selectedCategory === cat ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200']"
-          @click="selectCategory(cat)"
-        >
-          {{ cat }}
-        </button>
-      </div>
-    </div>
-
-    <!-- Product Area -->
-    <div class="flex-1 overflow-y-auto p-3 bg-slate-50">
-      <!-- Loading -->
-      <div v-if="productsLoading" class="flex items-center justify-center py-12">
-        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-      </div>
-
-      <!-- Empty -->
-      <div v-else-if="filteredProducts.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
-        <PackageIcon class="w-12 h-12 text-slate-300 mb-3" />
-        <p class="text-sm text-slate-500">{{ searchQuery ? 'Produk tidak ditemukan' : 'Cari atau scan produk' }}</p>
-      </div>
-
-      <!-- Grid View -->
-      <div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-        <button
-          v-for="product in filteredProducts"
-          :key="product.id"
-          :disabled="product.totalStock <= 0"
-          class="bg-white border border-slate-200 rounded-xl p-2.5 text-left hover:border-blue-300 hover:shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-          @click="addToCart(product)"
-        >
-          <div class="relative w-full aspect-[4/3] bg-slate-100 rounded-lg mb-2 overflow-hidden">
-            <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />
-            <PackageIcon v-else class="w-8 h-8 text-slate-300 absolute inset-0 m-auto" />
-            <span class="absolute top-1.5 right-1.5 text-[9px] font-bold bg-white/90 text-slate-700 px-1.5 py-0.5 rounded shadow-sm">
-              {{ product.totalStock }} {{ product.unit || 'pcs' }}
-            </span>
+  <div class="flex flex-col h-[calc(100vh-4rem)] overflow-hidden -mx-4 -mt-4">
+    <!-- === CHECKOUT MODE (desktop: split, mobile: modal) === -->
+    <template v-if="showCheckout">
+      <!-- Desktop/Tablet: Split View -->
+      <div class="hidden md:flex flex-1 overflow-hidden">
+        <!-- Left: Cart Items -->
+        <div class="flex-1 overflow-y-auto p-4 border-r border-slate-200">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="font-bold text-base text-slate-800">Keranjang ({{ totalItems }})</h2>
+            <button class="text-xs text-blue-600 font-semibold hover:underline" @click="showCheckout = false">← Kembali</button>
           </div>
-          <p class="text-xs font-semibold text-slate-800 line-clamp-2 leading-tight mb-1">{{ product.name }}</p>
-          <p class="text-xs font-mono font-bold text-blue-600">{{ formatRupiah(product.price) }}</p>
-        </button>
-      </div>
-
-      <!-- List View -->
-      <div v-else class="space-y-2">
-        <button
-          v-for="product in filteredProducts"
-          :key="product.id"
-          :disabled="product.totalStock <= 0"
-          class="w-full flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-3 text-left hover:border-blue-300 transition-all disabled:opacity-40"
-          @click="addToCart(product)"
-        >
-          <div class="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
-            <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />
-            <PackageIcon v-else class="w-5 h-5 text-slate-300" />
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-sm font-semibold text-slate-800 truncate">{{ product.name }}</p>
-            <p class="text-[10px] text-slate-500 font-mono">{{ product.sku }}</p>
-          </div>
-          <div class="text-right shrink-0">
-            <p class="text-xs font-mono font-bold text-blue-600">{{ formatRupiah(product.price) }}</p>
-            <p class="text-[10px] text-slate-500">{{ product.totalStock }} {{ product.unit || 'pcs' }}</p>
-          </div>
-          <PlusCircleIcon class="w-5 h-5 text-blue-500 shrink-0" />
-        </button>
-      </div>
-    </div>
-
-    <!-- Floating Glass Cart Button (mobile only, appears when items in cart) -->
-    <Transition name="cart-float">
-      <div v-if="cart.length > 0" class="md:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-[600px]">
-        <button
-          class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.16)] transition-all active:scale-[0.98]"
-          @click="showCart = true"
-        >
-          <div class="flex items-center gap-3">
-            <div class="relative">
-              <ShoppingCartIcon class="w-5 h-5 text-blue-600" />
-              <span class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{{ totalItems }}</span>
+          <div class="space-y-2">
+            <div v-for="item in cart" :key="item.productId" class="bg-white border border-slate-100 rounded-xl p-3">
+              <div class="flex items-center gap-3">
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-slate-800 truncate">{{ item.name }}</p>
+                  <p class="text-[10px] text-slate-500">{{ item.quantity }} × {{ formatRupiah(item.price) }}</p>
+                </div>
+                <div class="flex items-center gap-1.5 shrink-0">
+                  <button class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center" @click="updateQty(item.productId, item.quantity - 1)"><MinusIcon class="w-3 h-3" /></button>
+                  <span class="w-6 text-center text-xs font-bold">{{ item.quantity }}</span>
+                  <button class="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center text-blue-600" @click="updateQty(item.productId, item.quantity + 1)"><PlusIcon class="w-3 h-3" /></button>
+                </div>
+                <span class="text-sm font-bold text-slate-800 w-24 text-right shrink-0">{{ formatRupiah(item.subtotal) }}</span>
+              </div>
+              <div class="flex items-center gap-2 mt-1.5">
+                <span class="text-[10px] text-slate-400">Diskon:</span>
+                <input :value="item.discount || 0" type="number" min="0" class="w-20 h-5 px-1.5 text-[10px] font-mono border border-slate-200 rounded text-right focus:border-blue-400 outline-none" @change="(e) => updateDiscount(item.productId, Number((e.target as HTMLInputElement).value) || 0)" />
+              </div>
             </div>
-            <span class="text-sm font-semibold text-slate-700">{{ totalItems }} item</span>
           </div>
-          <div class="flex items-center gap-3">
-            <span class="text-base font-bold text-blue-600 font-mono">{{ formatRupiah(totalPrice) }}</span>
-            <span class="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl">Bayar</span>
-          </div>
-        </button>
+        </div>
+        <!-- Right: Payment -->
+        <div class="w-80 lg:w-96 shrink-0 overflow-y-auto">
+          <CartPanel :cart="cart" :total-price="totalPrice" @update-qty="updateQty" @update-discount="updateDiscount" @checkout-success="handleCheckoutSuccess" />
+        </div>
       </div>
-    </Transition>
+
+      <!-- Mobile: Modal -->
+      <CartModal class="md:hidden" :cart="cart" :total-price="totalPrice" @close="showCheckout = false" @update-qty="updateQty" @update-discount="updateDiscount" @remove-item="removeFromCart" @checkout-success="handleCheckoutSuccess" />
+    </template>
+
+    <!-- === NORMAL MODE: Product Grid === -->
+    <template v-else>
+      <!-- Top: Search + Scan + View Toggle -->
+      <div class="shrink-0 bg-white border-b border-slate-200 p-3 space-y-3">
+        <div class="flex items-center gap-2">
+          <div class="relative flex-1">
+            <SearchIcon class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input v-model="searchQuery" type="text" placeholder="Cari produk..." class="w-full bg-slate-100 rounded-lg py-2.5 pl-9 pr-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 border border-transparent outline-none transition-all" @input="debouncedSearch" />
+          </div>
+          <button class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0" @click="showScanModal = true"><CameraIcon class="w-5 h-5" /></button>
+          <div class="flex rounded-lg border border-slate-200 overflow-hidden shrink-0">
+            <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'grid'"><LayoutGridIcon class="w-4 h-4" /></button>
+            <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'list'"><ListIcon class="w-4 h-4" /></button>
+          </div>
+        </div>
+        <div class="flex overflow-x-auto gap-2 hide-scrollbar">
+          <button v-for="cat in categories" :key="cat" :class="['px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors', selectedCategory === cat ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200']" @click="selectCategory(cat)">{{ cat }}</button>
+        </div>
+      </div>
+
+      <!-- Product Area -->
+      <div class="flex-1 overflow-y-auto p-3 bg-slate-50">
+        <div v-if="productsLoading" class="flex items-center justify-center py-12"><Loader2Icon class="w-5 h-5 animate-spin text-slate-400" /></div>
+        <div v-else-if="filteredProducts.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
+          <PackageIcon class="w-12 h-12 text-slate-300 mb-3" /><p class="text-sm text-slate-500">{{ searchQuery ? 'Produk tidak ditemukan' : 'Cari atau scan produk' }}</p>
+        </div>
+        <!-- Grid -->
+        <div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
+          <button v-for="product in filteredProducts" :key="product.id" :disabled="product.totalStock <= 0" class="bg-white border border-slate-200 rounded-xl p-2.5 text-left hover:border-blue-300 hover:shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed" @click="addToCart(product)">
+            <div class="relative w-full aspect-[4/3] bg-slate-100 rounded-lg mb-2 overflow-hidden">
+              <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />
+              <PackageIcon v-else class="w-8 h-8 text-slate-300 absolute inset-0 m-auto" />
+              <span class="absolute top-1.5 right-1.5 text-[9px] font-bold bg-white/90 text-slate-700 px-1.5 py-0.5 rounded shadow-sm">{{ product.totalStock }} {{ product.unit || 'pcs' }}</span>
+            </div>
+            <p class="text-xs font-semibold text-slate-800 line-clamp-2 leading-tight mb-1">{{ product.name }}</p>
+            <p class="text-xs font-mono font-bold text-blue-600">{{ formatRupiah(product.price) }}</p>
+          </button>
+        </div>
+        <!-- List -->
+        <div v-else class="space-y-2">
+          <button v-for="product in filteredProducts" :key="product.id" :disabled="product.totalStock <= 0" class="w-full flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-3 text-left hover:border-blue-300 transition-all disabled:opacity-40" @click="addToCart(product)">
+            <div class="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+              <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />
+              <PackageIcon v-else class="w-5 h-5 text-slate-300" />
+            </div>
+            <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">{{ product.name }}</p><p class="text-[10px] text-slate-500 font-mono">{{ product.sku }}</p></div>
+            <div class="text-right shrink-0"><p class="text-xs font-mono font-bold text-blue-600">{{ formatRupiah(product.price) }}</p><p class="text-[10px] text-slate-500">{{ product.totalStock }} {{ product.unit || 'pcs' }}</p></div>
+            <PlusCircleIcon class="w-5 h-5 text-blue-500 shrink-0" />
+          </button>
+        </div>
+      </div>
+
+      <!-- Floating Glass Cart (appears when items in cart) -->
+      <Transition name="cart-float">
+        <div v-if="cart.length > 0" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-[600px]">
+          <button class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.16)] transition-all active:scale-[0.98]" @click="showCheckout = true">
+            <div class="flex items-center gap-3">
+              <div class="relative"><ShoppingCartIcon class="w-5 h-5 text-blue-600" /><span class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{{ totalItems }}</span></div>
+              <span class="text-sm font-semibold text-slate-700">{{ totalItems }} item</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-base font-bold text-blue-600 font-mono">{{ formatRupiah(totalPrice) }}</span>
+              <span class="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl">Bayar</span>
+            </div>
+          </button>
+        </div>
+      </Transition>
+    </template>
 
     <!-- Scan Modal -->
-    </div><!-- end Left: Products -->
-
-    <!-- Right: Cart Panel (desktop/tablet only) -->
-    <div class="hidden md:block w-80 lg:w-96 shrink-0">
-      <CartPanel
-        :cart="cart"
-        :total-price="totalPrice"
-        @update-qty="updateQty"
-        @update-discount="updateDiscount"
-        @checkout-success="handleCheckoutSuccess"
-      />
-    </div>
-
-    <!-- Scan Modal (mobile) -->
     <Teleport to="body">
       <div v-if="showScanModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/60" @click="showScanModal = false"></div>
         <div class="relative bg-white rounded-2xl w-full max-w-sm p-6 text-center space-y-4">
           <h3 class="text-base font-bold text-slate-800">Scan Barcode</h3>
-          <div class="w-full aspect-square bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center">
-            <CameraIcon class="w-12 h-12 text-slate-300" />
-          </div>
+          <div class="w-full aspect-square bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center"><CameraIcon class="w-12 h-12 text-slate-300" /></div>
           <p class="text-xs text-slate-500">Arahkan kamera ke barcode produk</p>
           <button class="w-full h-10 bg-slate-100 text-slate-700 font-semibold rounded-lg" @click="showScanModal = false">Tutup</button>
         </div>
       </div>
     </Teleport>
-
-    <!-- Cart Modal (mobile only) -->
-    <CartModal
-      v-if="showCart"
-      class="md:hidden"
-      :cart="cart"
-      :total-price="totalPrice"
-      @close="showCart = false"
-      @update-qty="updateQty"
-      @update-discount="updateDiscount"
-      @remove-item="removeFromCart"
-      @checkout-success="handleCheckoutSuccess"
-    />
   </div>
 </template>
 
@@ -172,7 +130,7 @@ import { ref, computed, onMounted } from 'vue';
 import {
   Search as SearchIcon, Camera as CameraIcon, LayoutGrid as LayoutGridIcon,
   List as ListIcon, Package as PackageIcon, PlusCircle as PlusCircleIcon,
-  ShoppingCart as ShoppingCartIcon, Loader2 as Loader2Icon,
+  ShoppingCart as ShoppingCartIcon, Loader2 as Loader2Icon, Minus as MinusIcon, Plus as PlusIcon,
 } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
@@ -191,7 +149,7 @@ const products = ref<POSProductDto[]>([]);
 const productsLoading = ref(false);
 const cart = ref<CartItem[]>([]);
 const showScanModal = ref(false);
-const showCart = ref(false);
+const showCheckout = ref(false);
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -204,7 +162,6 @@ const totalItems = computed(() => cart.value.reduce((sum, i) => sum + i.quantity
 const totalPrice = computed(() => cart.value.reduce((sum, i) => sum + i.subtotal, 0));
 
 function formatRupiah(n: number): string { return 'Rp ' + n.toLocaleString('id-ID'); }
-
 function selectCategory(cat: string) { selectedCategory.value = cat; }
 
 async function fetchProducts() {
@@ -213,28 +170,18 @@ async function fetchProducts() {
   productsLoading.value = true;
   try {
     products.value = await posService.searchProducts(shopId, searchQuery.value || undefined);
-    // Extract unique categories
     const cats = new Set(products.value.map((p: any) => p.category).filter(Boolean));
     categories.value = ['Semua', ...Array.from(cats)];
   } catch { products.value = []; }
   finally { productsLoading.value = false; }
 }
 
-function debouncedSearch() {
-  if (searchTimer) clearTimeout(searchTimer);
-  searchTimer = setTimeout(fetchProducts, 300);
-}
+function debouncedSearch() { if (searchTimer) clearTimeout(searchTimer); searchTimer = setTimeout(fetchProducts, 300); }
 
 function addToCart(product: POSProductDto) {
   const existing = cart.value.find(i => i.productId === product.id);
-  if (existing) {
-    if (existing.quantity < existing.maxStock) {
-      existing.quantity += 1;
-      Object.assign(existing, recalcCartItem(existing));
-    }
-  } else {
-    cart.value.push(createCartItem(product, 1));
-  }
+  if (existing) { if (existing.quantity < existing.maxStock) { existing.quantity += 1; Object.assign(existing, recalcCartItem(existing)); } }
+  else { cart.value.push(createCartItem(product, 1)); }
 }
 
 function updateQty(productId: string, qty: number) {
@@ -245,9 +192,7 @@ function updateQty(productId: string, qty: number) {
   Object.assign(item, recalcCartItem(item));
 }
 
-function removeFromCart(productId: string) {
-  cart.value = cart.value.filter(i => i.productId !== productId);
-}
+function removeFromCart(productId: string) { cart.value = cart.value.filter(i => i.productId !== productId); }
 
 function updateDiscount(productId: string, discountAmount: number) {
   const item = cart.value.find(i => i.productId === productId);
@@ -256,10 +201,7 @@ function updateDiscount(productId: string, discountAmount: number) {
   Object.assign(item, recalcCartItem(item));
 }
 
-function handleCheckoutSuccess() {
-  cart.value = [];
-  showCart.value = false;
-}
+function handleCheckoutSuccess() { cart.value = []; showCheckout.value = false; }
 
 onMounted(fetchProducts);
 </script>
@@ -267,20 +209,8 @@ onMounted(fetchProducts);
 <style scoped>
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* Floating cart animation */
-.cart-float-enter-active {
-  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-.cart-float-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.cart-float-enter-from {
-  opacity: 0;
-  transform: translate(-50%, 20px) scale(0.9);
-}
-.cart-float-leave-to {
-  opacity: 0;
-  transform: translate(-50%, 20px) scale(0.9);
-}
+.cart-float-enter-active { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.cart-float-leave-active { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.cart-float-enter-from { opacity: 0; transform: translate(-50%, 20px) scale(0.9); }
+.cart-float-leave-to { opacity: 0; transform: translate(-50%, 20px) scale(0.9); }
 </style>
