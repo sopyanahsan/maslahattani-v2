@@ -37,4 +37,16 @@ export class ReportsController {
   async getDebtReport(@Query('shopId') shopId: string) {
     return this.reportsService.getDebtReport(shopId);
   }
+
+  @Get('brilink')
+  @ApiOperation({
+    summary: 'Laporan BRILink (volume, fee, category breakdown)',
+  })
+  async getBrilinkReport(
+    @Query('shopId') shopId: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.reportsService.getBrilinkReport(shopId, startDate, endDate);
+  }
 }

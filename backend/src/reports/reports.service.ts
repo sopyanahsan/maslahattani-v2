@@ -168,4 +168,50 @@ export class ReportsService {
       })),
     };
   }
+
+  /**
+   * Laporan BRILink:
+   * - Summary: totalTransactions, volume, feeEarnings, avgFee
+   * - Category breakdown
+   */
+  async getBrilinkReport(shopId: string, startDate?: string, endDate?: string) {
+    const where: any = { shopId, status: 'SUCCESS' };
+
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = new Date(startDate);
+      if (endDate) where.createdAt.lte = new Date(endDate + 'T23:59:59.999Z');
+    }
+
+    const totals = await this.prisma.brilinkTransaction.aggregate({
+      where,
+      _sum: { amount: true, fee: true },
+      _count: true,
+    });
+
+    const totalTransactions = totals._count || 0;
+    const volume = totals._sum.amount || 0;
+    const feeEarnings = totals._sum.fee || 0;
+    const avgFee = totalTransactions > 0 ? Math.round(feeEarnings / totalTransactions) : 0;
+
+    // Category breakdown
+    const grouped = await this.prisma.brilinkTransaction.groupBy({
+      by: ['category'],
+      where,
+      _sum: { amount: true, fee: true },
+      _count: true,
+    });
+
+    const categoryBreakdown = grouped.map((g) => ({
+      category: g.category,
+      count: g._count,
+      volume: g._sum.amount || 0,
+      fee: g._sum.fee || 0,
+    }));
+
+    return {
+      summary: { totalTransactions, volume, feeEarnings, avgFee },
+      categoryBreakdown,
+    };
+  }
 }
