@@ -1,19 +1,14 @@
 <template>
   <div class="space-y-5 -mx-4 -mt-4">
     <!-- Header -->
-    <header class="px-4 pt-4 pb-3 flex items-center justify-between border-b border-slate-100 bg-white">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
-          <UserIcon class="w-6 h-6 text-slate-500" />
-        </div>
-        <div>
-          <h1 class="font-semibold text-base leading-tight">{{ userName }}</h1>
-          <p class="text-xs text-slate-500">Maslahat Tani</p>
-        </div>
+    <header class="px-4 pt-4 pb-3 flex items-center gap-3 border-b border-slate-100 bg-white">
+      <div class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
+        <UserIcon class="w-6 h-6 text-slate-500" />
       </div>
-      <button class="p-2 rounded-full hover:bg-slate-100 text-slate-600 transition-colors" @click="refresh">
-        <RefreshCwIcon class="w-5 h-5" />
-      </button>
+      <div class="flex-1 min-w-0">
+        <h1 class="font-semibold text-base leading-tight truncate">{{ userName }}</h1>
+        <p class="text-xs text-slate-500">Maslahat Tani</p>
+      </div>
     </header>
 
     <!-- Shift Indicator -->
@@ -125,10 +120,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import {
-  User as UserIcon, RefreshCw as RefreshCwIcon, ShoppingCart as ShoppingCartIcon,
+  User as UserIcon, ShoppingCart as ShoppingCartIcon,
   Landmark as LandmarkIcon, Banknote as BanknoteIcon, ArrowLeftRight as ArrowLeftRightIcon,
   Smartphone as SmartphoneIcon, History as HistoryIcon, BarChart3 as BarChart3Icon,
   Receipt as ReceiptIcon,
@@ -178,9 +173,17 @@ async function refresh() {
   } catch { /* silent */ }
 }
 
+let refreshInterval: ReturnType<typeof setInterval> | null = null;
+
 onMounted(async () => {
   try { await shiftStore.fetchCurrentShift(); } catch { /* */ }
   await refresh();
+  // Auto-refresh every 30s
+  refreshInterval = setInterval(refresh, 30000);
+});
+
+onUnmounted(() => {
+  if (refreshInterval) clearInterval(refreshInterval);
 });
 </script>
 

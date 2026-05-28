@@ -150,7 +150,6 @@ const bottomNav: NavItem[] = [
   { to: '/dashboard', label: 'Dashboard', icon: HomeIcon },
   { to: '/retail/pos', label: 'Kasir', icon: POSIcon },
   { to: '/brilink/menu', label: 'BRILink', icon: LandmarkIcon },
-  { to: '/retail/history', label: 'Riwayat', icon: HistoryIcon },
   { to: '/profile', label: 'Profil', icon: UserIcon },
 ];
 
