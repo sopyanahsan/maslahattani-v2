@@ -34,9 +34,10 @@ export class CashMutationDto {
   @Min(1)
   amount: number;
 
-  @ApiProperty({ example: 'MODAL_OPERASIONAL', description: 'Kategori pengeluaran/pemasukan' })
+  @ApiPropertyOptional({ example: 'MODAL_OPERASIONAL', description: 'Kategori pengeluaran/pemasukan (opsional kalau pakai categoryId)' })
+  @IsOptional()
   @IsString()
-  category: string;
+  category?: string;
 
   @ApiPropertyOptional({ example: 'cashbox-retail-id', description: 'ID CashBoxCategory (kalau multi-kas)' })
   @IsOptional()
