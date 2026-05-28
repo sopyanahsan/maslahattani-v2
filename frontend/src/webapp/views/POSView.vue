@@ -99,25 +99,27 @@
       </div>
     </div>
 
-    <!-- Bottom Cart Bar -->
-    <div v-if="cart.length > 0" class="shrink-0 bg-white border-t border-slate-200 p-3 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
-      <div class="flex items-center justify-between mb-2">
-        <span class="text-sm font-semibold text-slate-600">
-          <ShoppingCartIcon class="w-4 h-4 inline mr-1" />{{ totalItems }} item
-        </span>
-        <span class="text-lg font-bold text-blue-600">{{ formatRupiah(totalPrice) }}</span>
+    <!-- Floating Glass Cart Button (appears when items in cart) -->
+    <Transition name="cart-float">
+      <div v-if="cart.length > 0" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-[600px]">
+        <button
+          class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.16)] transition-all active:scale-[0.98]"
+          @click="showCart = true"
+        >
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <ShoppingCartIcon class="w-5 h-5 text-blue-600" />
+              <span class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{{ totalItems }}</span>
+            </div>
+            <span class="text-sm font-semibold text-slate-700">{{ totalItems }} item</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="text-base font-bold text-blue-600 font-mono">{{ formatRupiah(totalPrice) }}</span>
+            <span class="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl">Bayar</span>
+          </div>
+        </button>
       </div>
-      <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl transition-colors" @click="showCart = true">
-        Bayar Pesanan
-      </button>
-    </div>
-
-    <!-- Empty Cart Bottom -->
-    <div v-else class="shrink-0 bg-white border-t border-slate-200 p-3">
-      <button disabled class="w-full bg-slate-200 text-slate-400 font-bold py-3 rounded-xl cursor-not-allowed">
-        Bayar Pesanan
-      </button>
-    </div>
+    </Transition>
 
     <!-- Scan Modal -->
     <Teleport to="body">
@@ -239,4 +241,20 @@ onMounted(fetchProducts);
 <style scoped>
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Floating cart animation */
+.cart-float-enter-active {
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.cart-float-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.cart-float-enter-from {
+  opacity: 0;
+  transform: translate(-50%, 20px) scale(0.9);
+}
+.cart-float-leave-to {
+  opacity: 0;
+  transform: translate(-50%, 20px) scale(0.9);
+}
 </style>
