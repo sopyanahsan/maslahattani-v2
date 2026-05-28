@@ -116,17 +116,17 @@ export const useAuthStore = defineStore('auth', () => {
         };
       }
 
-      // Branch 2: super-admin butuh pilih cabang. Token sudah ada (shopId=null).
+      // Branch 2: super-admin — langsung masuk tanpa pilih cabang.
+      // Auto-select shop pertama. Switcher di header bisa ganti kapan saja.
       if (response.success === true && response.requireShopSelection) {
         setTokens(response.token, response.refreshToken);
         user.value = response.user;
-        // Simpan list shops biar shop selection page bisa render tanpa fetch ulang
         shopStore.setAvailableShops(response.shops);
-        return {
-          status: 'shop_selection_required',
-          user: response.user,
-          shops: response.shops,
-        };
+        // Auto-select first shop jika tersedia
+        if (response.shops && response.shops.length > 0) {
+          shopStore.setCurrentShop(response.shops[0]);
+        }
+        return { status: 'success', user: response.user, shop: response.shops?.[0] };
       }
 
       // Branch 3: success direct (regular user dengan shop assigned).
@@ -146,6 +146,72 @@ export const useAuthStore = defineStore('auth', () => {
         err.response?.data?.message ||
         err.message ||
         'Login gagal. Periksa email/username dan password Anda.';
+      error.value = message;
+      throw new Error(message);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Admin login Step 1: send credentials, backend triggers OTP email.
+   * Throws if credentials are wrong.
+   */
+  async function loginStep1(identifier: string, password: string): Promise<void> {
+    loading.value = true;
+    error.value = null;
+    try {
+      const response = await authService.login({ identifier, password });
+      // Expecting otp_required response
+      if (response.success === false && response.requireOtp) {
+        return; // OTP sent, UI shows step 2
+      }
+      // If it directly succeeds (no OTP needed), handle as full login
+      if (response.success === true) {
+        const shopStore = useShopStore();
+        setTokens(response.token, response.refreshToken);
+        user.value = response.user;
+        if ((response as any).requireShopSelection && (response as any).shops?.length > 0) {
+          shopStore.setAvailableShops((response as any).shops);
+          shopStore.setCurrentShop((response as any).shops[0]);
+        } else if (response.shop) {
+          shopStore.setCurrentShop(response.shop);
+        }
+        return;
+      }
+      throw new Error('Response tidak valid.');
+    } catch (err: any) {
+      const message = err.response?.data?.message || err.message || 'Login gagal.';
+      error.value = message;
+      throw new Error(message);
+    } finally {
+      loading.value = false;
+    }
+  }
+
+  /**
+   * Admin login Step 2: verify OTP + get tokens.
+   */
+  async function loginStep2(identifier: string, password: string, otp: string): Promise<void> {
+    loading.value = true;
+    error.value = null;
+    try {
+      const response = await authService.login({ identifier, password, otp });
+      if (response.success === true) {
+        const shopStore = useShopStore();
+        setTokens(response.token, response.refreshToken);
+        user.value = response.user;
+        if ((response as any).requireShopSelection && (response as any).shops?.length > 0) {
+          shopStore.setAvailableShops((response as any).shops);
+          shopStore.setCurrentShop((response as any).shops[0]);
+        } else if (response.shop) {
+          shopStore.setCurrentShop(response.shop);
+        }
+        return;
+      }
+      throw new Error('Verifikasi OTP gagal.');
+    } catch (err: any) {
+      const message = err.response?.data?.message || err.message || 'OTP tidak valid.';
       error.value = message;
       throw new Error(message);
     } finally {
@@ -209,6 +275,8 @@ export const useAuthStore = defineStore('auth', () => {
     requireShopSelection,
     // Actions
     login,
+    loginStep1,
+    loginStep2,
     logout,
     fetchUser,
     clearAuth,
