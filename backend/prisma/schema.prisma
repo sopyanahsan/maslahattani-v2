@@ -48,6 +48,7 @@ model User {
   shifts              Shift[]
   ownedShops          Shop[]    @relation("ShopOwner")
   brilinkTransactions BrilinkTransaction[] @relation("BrilinkCashier")
+  brilinkMutations    BrilinkMutation[]    @relation("BrilinkMutationCreator")
   opnameSessions      OpnameSession[]      @relation("OpnameConductor")
   purchaseOrders      PurchaseOrder[]      @relation("POCreator")
   transferRequests    StockTransfer[]      @relation("TransferRequester")
@@ -120,6 +121,7 @@ model Shop {
   settings            ShopSetting?
   brilinkTransactions BrilinkTransaction[]
   brilinkFees         BrilinkFee[]
+  brilinkAccounts     BrilinkAccount[]
   opnameSessions      OpnameSession[]
   suppliers           Supplier[]
   purchaseOrders      PurchaseOrder[]
@@ -628,6 +630,8 @@ model BrilinkTransaction {
   shopId          String
   cashier         User                     @relation("BrilinkCashier", fields: [cashierId], references: [id])
   cashierId       String
+  account         BrilinkAccount?          @relation(fields: [accountId], references: [id])
+  accountId       String?
 
   refNumber       String                   @unique
   category        BrilinkCategory
@@ -667,6 +671,61 @@ model BrilinkFee {
 
   @@index([shopId, category, isActive])
   @@map("brilink_fees")
+}
+
+
+// ============================================
+// BRILINK ACCOUNTS & MUTATIONS
+// ============================================
+
+enum BrilinkMutationType {
+  SETOR
+  TARIK
+  TRX_DEBIT
+  TRX_CREDIT
+  ADJUSTMENT
+}
+
+model BrilinkAccount {
+  id                    String    @id @default(cuid())
+  shop                  Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId                String
+  label                 String
+  accountNumber         String
+  accountHolder         String?
+  balance               Int       @default(0)
+  lowBalanceThreshold   Int       @default(1000000)
+  isDefault             Boolean   @default(false)
+  isActive              Boolean   @default(true)
+  notes                 String?
+  mutations             BrilinkMutation[]
+  transactions          BrilinkTransaction[]
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([shopId, accountNumber])
+  @@index([shopId])
+  @@map("brilink_accounts")
+}
+
+model BrilinkMutation {
+  id              String              @id @default(cuid())
+  account         BrilinkAccount      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId       String
+  type            BrilinkMutationType
+  amount          Int
+  balanceBefore   Int
+  balanceAfter    Int
+  reference       String?
+  description     String
+  notes           String?
+  createdById     String?
+  createdBy       User?               @relation("BrilinkMutationCreator", fields: [createdById], references: [id])
+  createdAt       DateTime            @default(now())
+
+  @@index([accountId])
+  @@index([createdAt])
+  @@map("brilink_mutations")
 }
 
 

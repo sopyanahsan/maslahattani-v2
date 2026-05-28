@@ -242,7 +242,7 @@
             Notifikasi & Alert
           </h3>
           <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-1">
-            Konfigurasi threshold yang muncul di Dashboard Retail.
+            Konfigurasi threshold yang muncul di Dashboard Retail &amp; BRILink.
           </p>
         </div>
         <form class="p-5 space-y-4" @submit.prevent="handleSaveAlert">
@@ -303,6 +303,26 @@
             <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
               0 = tampil saat tepat jatuh tempo. 3 = tampil 3 hari sebelumnya.
               Default: 0.
+            </p>
+          </div>
+
+          <div>
+            <label
+              class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+              for="brilinkFailedTransactionThreshold"
+            >
+              Threshold Transaksi BRILink Gagal (per hari)
+            </label>
+            <input
+              id="brilinkFailedTransactionThreshold"
+              v-model.number="alertForm.brilinkFailedTransactionThreshold"
+              type="number"
+              min="0"
+              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none font-mono"
+            />
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+              Jika jumlah transaksi BRILink gagal hari ini ≥ angka ini, akan muncul alert
+              di Dashboard BRILink. Default: 5.
             </p>
           </div>
 
@@ -395,6 +415,7 @@ const alertForm = reactive({
   lowStockThreshold: 5,
   shiftDurationWarningHours: 8,
   overdueDebtDaysBeforeNotice: 0,
+  brilinkFailedTransactionThreshold: 5,
 });
 const savingAlert = ref(false);
 const alertSuccess = ref<string | null>(null);
@@ -432,6 +453,8 @@ async function fetchSettings() {
       alertForm.shiftDurationWarningHours = alertCfg.shiftDurationWarningHours;
       alertForm.overdueDebtDaysBeforeNotice =
         alertCfg.overdueDebtDaysBeforeNotice;
+      alertForm.brilinkFailedTransactionThreshold =
+        (alertCfg as any).brilinkFailedTransactionThreshold ?? 5;
     } catch {
       /* keep defaults */
     }
@@ -522,10 +545,14 @@ async function handleSaveAlert() {
         Number(alertForm.shiftDurationWarningHours) || 0,
       overdueDebtDaysBeforeNotice:
         Number(alertForm.overdueDebtDaysBeforeNotice) || 0,
-    });
+      brilinkFailedTransactionThreshold:
+        Number(alertForm.brilinkFailedTransactionThreshold) || 5,
+    } as any);
     alertForm.lowStockThreshold = updated.lowStockThreshold;
     alertForm.shiftDurationWarningHours = updated.shiftDurationWarningHours;
     alertForm.overdueDebtDaysBeforeNotice = updated.overdueDebtDaysBeforeNotice;
+    alertForm.brilinkFailedTransactionThreshold =
+      (updated as any).brilinkFailedTransactionThreshold ?? 5;
     alertSuccess.value = 'Threshold berhasil disimpan.';
     setTimeout(() => {
       alertSuccess.value = null;
@@ -542,6 +569,7 @@ function resetAlertToDefault() {
   alertForm.lowStockThreshold = 5;
   alertForm.shiftDurationWarningHours = 8;
   alertForm.overdueDebtDaysBeforeNotice = 0;
+  alertForm.brilinkFailedTransactionThreshold = 5;
 }
 
 onMounted(fetchSettings);
