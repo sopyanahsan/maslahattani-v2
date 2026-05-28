@@ -99,8 +99,11 @@
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Assign ke Cabang</label>
-            <input v-model="createForm.shopId" type="text" placeholder="Shop ID (opsional)" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
-            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Kosongkan jika belum ingin assign.</p>
+            <select v-model="createForm.shopId" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none">
+              <option value="">— Belum assign —</option>
+              <option v-for="shop in shopsList" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
+            </select>
+            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Pilih cabang atau kosongkan jika belum ingin assign.</p>
           </div>
           <div v-if="createError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ createError }}</div>
           <div v-if="createResult" class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-lg p-4 space-y-2">
@@ -161,6 +164,7 @@ import { useAuthStore } from '@/shared/stores/auth.store';
 import kasirService, {
   type KasirDto, type CreateKasirResponse, type ResetPasswordResponse, type UserStatus,
 } from '@/shared/services/kasir.service';
+import shopsService, { type ShopDto } from '@/shared/services/shops.service';
 
 const authStore = useAuthStore();
 
@@ -173,6 +177,7 @@ const creating = ref(false);
 const createError = ref<string | null>(null);
 const createResult = ref<CreateKasirResponse | null>(null);
 const createForm = reactive({ email: '', shopId: '', role: 'KASIR' });
+const shopsList = ref<ShopDto[]>([]);
 
 const showResetModal = ref(false);
 const resettingKasir = ref<KasirDto | null>(null);
@@ -192,6 +197,11 @@ async function fetchKasir() {
 function openCreateModal() {
   createForm.email = ''; createForm.shopId = authStore.user?.shopId ?? ''; createForm.role = 'KASIR';
   createError.value = null; createResult.value = null; showCreateModal.value = true;
+  fetchShops();
+}
+
+async function fetchShops() {
+  try { shopsList.value = await shopsService.list(); } catch { shopsList.value = []; }
 }
 function closeCreateModal() { showCreateModal.value = false; if (createResult.value) fetchKasir(); }
 
