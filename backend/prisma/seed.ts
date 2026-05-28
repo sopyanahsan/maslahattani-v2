@@ -131,11 +131,14 @@ async function main() {
       },
     });
 
-    await prisma.cashBox.upsert({
-      where: { shopId: shop.id },
-      update: {},
-      create: { shopId: shop.id, balance: 0 },
+    const existingCashBox = await prisma.cashBox.findFirst({
+      where: { shopId: shop.id, categoryId: null },
     });
+    if (!existingCashBox) {
+      await prisma.cashBox.create({
+        data: { shopId: shop.id, categoryId: null, label: 'Kas Utama', balance: 0 },
+      });
+    }
   }
   console.log(`✅ Shop settings + cash boxes created`);
 
