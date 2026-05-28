@@ -375,7 +375,9 @@ model Payment {
 model CashBox {
   id                  String    @id @default(cuid())
   shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  shopId              String    @unique
+  shopId              String
+  categoryId          String?   // link ke CashBoxCategory — null = kas utama legacy
+  label               String    @default("Kas Utama")
   
   balance             Int       @default(0) // in rupiah
   lastAudit           DateTime?
@@ -383,6 +385,8 @@ model CashBox {
   
   updatedAt           DateTime  @updatedAt
   
+  @@unique([shopId, categoryId])
+  @@index([shopId])
   @@map("cash_boxes")
 }
 

@@ -21,17 +21,25 @@
     <!-- TAB: Mutasi                                   -->
     <!-- ============================================ -->
     <template v-if="activeTab === 'mutasi'">
-      <!-- Balance + Actions -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <!-- Balance per Kas + Actions -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+        <!-- Total -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Saldo Kas Total</p>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total Semua Kas</p>
           <p class="text-lg font-bold font-mono text-slate-950 dark:text-slate-100 mt-1">{{ formatRupiah(cashBox?.balance ?? 0) }}</p>
-          <p v-if="cashBox?.lastAudit" class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Audit terakhir: {{ formatDate(cashBox.lastAudit) }}</p>
         </div>
-        <div class="flex items-center gap-2 sm:col-span-2">
-          <button type="button" class="h-9 px-4 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40" @click="openMutationModal('CASH_IN')">+ Cash In</button>
-          <button type="button" class="h-9 px-4 text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40" @click="openMutationModal('CASH_OUT')">- Cash Out</button>
+        <!-- Per Category -->
+        <div v-for="cb in cashBox?.cashBoxes || []" :key="cb.id" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ cb.label }}</p>
+          <p class="text-lg font-bold font-mono text-slate-950 dark:text-slate-100 mt-1">{{ formatRupiah(cb.balance) }}</p>
+          <p v-if="cb.lastAudit" class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Audit: {{ formatDate(cb.lastAudit) }}</p>
         </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center gap-2">
+        <button type="button" class="h-9 px-4 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40" @click="openMutationModal('CASH_IN')">+ Cash In</button>
+        <button type="button" class="h-9 px-4 text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40" @click="openMutationModal('CASH_OUT')">- Cash Out</button>
       </div>
 
       <!-- Filter -->

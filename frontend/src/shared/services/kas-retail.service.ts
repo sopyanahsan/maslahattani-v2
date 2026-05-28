@@ -1,10 +1,21 @@
 import api from './api';
 
+export interface CashBoxItem {
+  id: string;
+  shopId: string;
+  categoryId: string | null;
+  label: string;
+  balance: number;
+  lastAudit: string | null;
+  lastAuditBalance: number | null;
+}
+
 export interface CashBoxResponse {
   shopId: string;
   balance: number;
   lastAudit: string | null;
   lastAuditBalance: number | null;
+  cashBoxes: CashBoxItem[];
 }
 
 export interface CashMutationPayload {

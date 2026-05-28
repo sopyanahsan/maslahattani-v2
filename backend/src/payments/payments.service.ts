@@ -16,22 +16,34 @@ export class PaymentsService {
   // ============================================
 
   async getCashBox(shopId: string) {
-    let cashBox = await this.prisma.cashBox.findUnique({
+    // Get all cash boxes for this shop
+    const cashBoxes = await this.prisma.cashBox.findMany({
       where: { shopId },
+      orderBy: { label: 'asc' },
     });
 
-    if (!cashBox) {
-      // Auto-create cash box
-      cashBox = await this.prisma.cashBox.create({
-        data: { shopId, balance: 0 },
+    // Auto-create default cash box if none exist
+    if (cashBoxes.length === 0) {
+      const created = await this.prisma.cashBox.create({
+        data: { shopId, categoryId: null, label: 'Kas Utama', balance: 0 },
       });
+      return {
+        shopId,
+        balance: created.balance,
+        lastAudit: created.lastAudit,
+        lastAuditBalance: created.lastAuditBalance,
+        cashBoxes: [created],
+      };
     }
+
+    const totalBalance = cashBoxes.reduce((sum, cb) => sum + cb.balance, 0);
 
     return {
       shopId,
-      balance: cashBox.balance,
-      lastAudit: cashBox.lastAudit,
-      lastAuditBalance: cashBox.lastAuditBalance,
+      balance: totalBalance,
+      lastAudit: cashBoxes[0]?.lastAudit,
+      lastAuditBalance: null,
+      cashBoxes,
     };
   }
 
@@ -40,20 +52,24 @@ export class PaymentsService {
   // ============================================
 
   async createMutation(dto: CashMutationDto) {
-    let cashBox = await this.prisma.cashBox.findUnique({
-      where: { shopId: dto.shopId },
+    // Find or create CashBox for this category
+    let cashBox = await this.prisma.cashBox.findFirst({
+      where: { shopId: dto.shopId, categoryId: dto.categoryId || null },
     });
 
     if (!cashBox) {
+      const categoryLabel = dto.categoryId
+        ? (await this.prisma.cashBoxCategory.findUnique({ where: { id: dto.categoryId } }))?.name || 'Kas'
+        : 'Kas Utama';
       cashBox = await this.prisma.cashBox.create({
-        data: { shopId: dto.shopId, balance: 0 },
+        data: { shopId: dto.shopId, categoryId: dto.categoryId || null, label: categoryLabel, balance: 0 },
       });
     }
 
     // Validate cash out doesn't exceed balance
     if (dto.type === CashMutationType.CASH_OUT && dto.amount > cashBox.balance) {
       throw new BadRequestException(
-        `Saldo kas tidak mencukupi. Saldo: Rp ${cashBox.balance.toLocaleString('id-ID')}`,
+        `Saldo "${cashBox.label}" tidak mencukupi. Saldo: Rp ${cashBox.balance.toLocaleString('id-ID')}`,
       );
     }
 
@@ -65,7 +81,7 @@ export class PaymentsService {
     // Update cash box + persist mutation record
     const [, mutation] = await this.prisma.$transaction([
       this.prisma.cashBox.update({
-        where: { shopId: dto.shopId },
+        where: { id: cashBox.id },
         data: { balance: newBalance },
       }),
       this.prisma.cashMutation.create({
@@ -86,8 +102,8 @@ export class PaymentsService {
       success: true,
       message:
         dto.type === CashMutationType.CASH_IN
-          ? `Pemasukan Rp ${dto.amount.toLocaleString('id-ID')} berhasil dicatat.`
-          : `Pengeluaran Rp ${dto.amount.toLocaleString('id-ID')} berhasil dicatat.`,
+          ? `Pemasukan Rp ${dto.amount.toLocaleString('id-ID')} ke "${cashBox.label}" berhasil.`
+          : `Pengeluaran Rp ${dto.amount.toLocaleString('id-ID')} dari "${cashBox.label}" berhasil.`,
       mutation,
     };
   }
