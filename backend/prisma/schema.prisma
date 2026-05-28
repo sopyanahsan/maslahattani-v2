@@ -147,6 +147,7 @@ model ShopSetting {
    * Null = pakai default. Lihat DashboardService.DEFAULT_ALERT_CONFIG.
    */
   alertConfig         Json?
+  brilinkCategoryConfig Json?
   updatedAt           DateTime  @updatedAt
   
   @@map("shop_settings")

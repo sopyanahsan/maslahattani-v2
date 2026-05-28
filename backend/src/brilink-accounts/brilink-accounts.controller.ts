@@ -17,6 +17,7 @@ import {
   UpdateBrilinkAccountDto,
   MutationActionDto,
   QueryMutationsDto,
+  QueryAllMutationsDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -31,6 +32,12 @@ export class BrilinkAccountsController {
   @ApiOperation({ summary: 'List all active brilink accounts for a shop' })
   async findAll(@Query('shopId') shopId: string) {
     return this.service.findAll(shopId);
+  }
+
+  @Get('mutations')
+  @ApiOperation({ summary: 'List all mutations across accounts (filterable by account, type, date)' })
+  async getAllMutations(@Query() query: QueryAllMutationsDto) {
+    return this.service.getAllMutations(query);
   }
 
   @Get(':id')

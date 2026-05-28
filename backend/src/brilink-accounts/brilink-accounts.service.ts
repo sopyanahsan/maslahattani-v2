@@ -8,6 +8,7 @@ import {
   CreateBrilinkAccountDto,
   UpdateBrilinkAccountDto,
   MutationActionDto,
+  QueryAllMutationsDto,
 } from './dto';
 
 @Injectable()
@@ -188,6 +189,85 @@ export class BrilinkAccountsService {
 
     return {
       data,
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  // ============================================
+  // ALL MUTATIONS (cross-account, filterable)
+  // ============================================
+
+  async getAllMutations(dto: QueryAllMutationsDto) {
+    const page = dto.page || 1;
+    const limit = dto.limit || 20;
+    const skip = (page - 1) * limit;
+
+    // Build where clause
+    const where: any = {};
+
+    // Filter by shop: get all account IDs for the shop first
+    const accountIds = await this.prisma.brilinkAccount.findMany({
+      where: { shopId: dto.shopId },
+      select: { id: true },
+    });
+    where.accountId = { in: accountIds.map((a) => a.id) };
+
+    // Filter by specific account
+    if (dto.accountId) {
+      where.accountId = dto.accountId;
+    }
+
+    // Filter by mutation type
+    if (dto.type) {
+      where.type = dto.type;
+    }
+
+    // Filter by date range
+    if (dto.startDate || dto.endDate) {
+      where.createdAt = {};
+      if (dto.startDate) {
+        where.createdAt.gte = new Date(dto.startDate + 'T00:00:00.000+07:00');
+      }
+      if (dto.endDate) {
+        where.createdAt.lte = new Date(dto.endDate + 'T23:59:59.999+07:00');
+      }
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.brilinkMutation.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+        include: {
+          account: { select: { id: true, label: true, accountNumber: true } },
+          createdBy: { select: { username: true, email: true } },
+        },
+      }),
+      this.prisma.brilinkMutation.count({ where }),
+    ]);
+
+    return {
+      data: data.map((m) => ({
+        id: m.id,
+        accountId: m.accountId,
+        accountLabel: m.account.label,
+        accountNumber: m.account.accountNumber,
+        type: m.type,
+        amount: m.amount,
+        balanceBefore: m.balanceBefore,
+        balanceAfter: m.balanceAfter,
+        reference: m.reference,
+        description: m.description,
+        notes: m.notes,
+        createdBy: m.createdBy,
+        createdAt: m.createdAt,
+      })),
       meta: {
         page,
         limit,

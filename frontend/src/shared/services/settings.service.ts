@@ -52,6 +52,30 @@ const settingsService = {
     const { data } = await api.put(`/settings/shop/${shopId}`, payload);
     return data;
   },
+
+  // ============================================
+  // BRILink Category Config (Metode Kas)
+  // ============================================
+
+  async getBrilinkCategories(shopId: string): Promise<Record<string, any>> {
+    const { data } = await api.get<Record<string, any>>(
+      '/settings/brilink-categories',
+      { params: { shopId } },
+    );
+    return data;
+  },
+
+  async updateBrilinkCategories(
+    shopId: string,
+    config: Record<string, any>,
+  ): Promise<Record<string, any>> {
+    const { data } = await api.patch<Record<string, any>>(
+      '/settings/brilink-categories',
+      config,
+      { params: { shopId } },
+    );
+    return data;
+  },
 };
 
 export default settingsService;

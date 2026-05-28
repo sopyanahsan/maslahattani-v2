@@ -144,6 +144,22 @@ const brilinkAccountService = {
     );
     return data;
   },
+
+  async getAllMutations(params: {
+    shopId: string;
+    accountId?: string;
+    type?: string;
+    startDate?: string;
+    endDate?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ data: any[]; meta: MutationsResponse['meta'] }> {
+    const { data } = await api.get<{ data: any[]; meta: MutationsResponse['meta'] }>(
+      '/brilink-accounts/mutations',
+      { params },
+    );
+    return data;
+  },
 };
 
 export default brilinkAccountService;

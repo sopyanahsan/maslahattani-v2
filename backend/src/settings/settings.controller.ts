@@ -94,4 +94,27 @@ export class SettingsController {
   ) {
     return this.dashboardService.updateAlertConfig(shopId, dto);
   }
+
+  // ============================================
+  // BRILINK CATEGORY CONFIG (Metode Kas BRILink)
+  // ============================================
+
+  @Get('brilink-categories')
+  @ApiOperation({
+    summary: 'Get BRILink category display config (displayName, color, icon, isActive, sortOrder).',
+  })
+  async getBrilinkCategories(@Query('shopId') shopId: string) {
+    return this.settingsService.getBrilinkCategoryConfig(shopId);
+  }
+
+  @Patch('brilink-categories')
+  @ApiOperation({
+    summary: 'Update BRILink category config (partial per-category update).',
+  })
+  async updateBrilinkCategories(
+    @Query('shopId') shopId: string,
+    @Body() body: Record<string, any>,
+  ) {
+    return this.settingsService.updateBrilinkCategoryConfig(shopId, body);
+  }
 }
