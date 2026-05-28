@@ -143,6 +143,7 @@
       :total-price="totalPrice"
       @close="showCart = false"
       @update-qty="updateQty"
+      @update-discount="updateDiscount"
       @remove-item="removeFromCart"
       @checkout-success="handleCheckoutSuccess"
     />
@@ -228,6 +229,13 @@ function updateQty(productId: string, qty: number) {
 
 function removeFromCart(productId: string) {
   cart.value = cart.value.filter(i => i.productId !== productId);
+}
+
+function updateDiscount(productId: string, discountAmount: number) {
+  const item = cart.value.find(i => i.productId === productId);
+  if (!item) return;
+  item.discount = Math.min(discountAmount, item.price * item.quantity);
+  Object.assign(item, recalcCartItem(item));
 }
 
 function handleCheckoutSuccess() {

@@ -19,22 +19,35 @@
         </div>
 
         <!-- Cart Items (scrollable) -->
-        <div class="flex-1 overflow-y-auto px-4 py-2 space-y-2">
-          <div v-for="item in cart" :key="item.productId" class="flex items-center gap-2 py-2 border-b border-slate-50 last:border-0">
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-slate-800 truncate">{{ item.name }}</p>
-              <p class="text-[10px] text-slate-500">{{ item.quantity }} × {{ formatRupiah(item.price) }}</p>
+        <div class="flex-1 overflow-y-auto px-4 py-2 space-y-1">
+          <div v-for="item in cart" :key="item.productId" class="py-2 border-b border-slate-50 last:border-0">
+            <div class="flex items-center gap-2">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-slate-800 truncate">{{ item.name }}</p>
+                <p class="text-[10px] text-slate-500">{{ item.quantity }} × {{ formatRupiah(item.price) }}</p>
+              </div>
+              <div class="flex items-center gap-1 shrink-0">
+                <button class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200" @click="$emit('update-qty', item.productId, item.quantity - 1)">
+                  <MinusIcon class="w-3 h-3" />
+                </button>
+                <span class="w-6 text-center text-xs font-bold text-slate-800">{{ item.quantity }}</span>
+                <button class="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100" @click="$emit('update-qty', item.productId, item.quantity + 1)">
+                  <PlusIcon class="w-3 h-3" />
+                </button>
+              </div>
+              <span class="text-xs font-bold text-slate-800 w-20 text-right shrink-0">{{ formatRupiah(item.subtotal) }}</span>
             </div>
-            <div class="flex items-center gap-1 shrink-0">
-              <button class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200" @click="$emit('update-qty', item.productId, item.quantity - 1)">
-                <MinusIcon class="w-3 h-3" />
-              </button>
-              <span class="w-6 text-center text-xs font-bold text-slate-800">{{ item.quantity }}</span>
-              <button class="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100" @click="$emit('update-qty', item.productId, item.quantity + 1)">
-                <PlusIcon class="w-3 h-3" />
-              </button>
+            <!-- Per-item discount -->
+            <div class="flex items-center gap-2 mt-1">
+              <span class="text-[10px] text-slate-400">Diskon:</span>
+              <input
+                :value="item.discount || 0"
+                type="number"
+                min="0"
+                class="w-20 h-5 px-1.5 text-[10px] font-mono border border-slate-200 rounded text-right focus:border-blue-400 outline-none"
+                @change="(e) => $emit('update-discount', item.productId, Number((e.target as HTMLInputElement).value) || 0)"
+              />
             </div>
-            <span class="text-xs font-bold text-slate-800 w-20 text-right shrink-0">{{ formatRupiah(item.subtotal) }}</span>
           </div>
         </div>
 
@@ -133,6 +146,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   (e: 'close'): void;
   (e: 'update-qty', productId: string, qty: number): void;
+  (e: 'update-discount', productId: string, discount: number): void;
   (e: 'remove-item', productId: string): void;
   (e: 'checkout-success'): void;
 }>();
@@ -142,7 +156,7 @@ const paymentMethod = ref<'CASH' | 'QRIS'>('CASH');
 const selectedKas = ref('default');
 const kasOptions = ref([{ id: 'default', label: 'Kas Retail / Toko' }]);
 const amountPaid = ref(0);
-const discount = ref(0);
+const discount = computed(() => props.cart.reduce((sum, i) => sum + (i.discount || 0), 0));
 const checking = ref(false);
 const checkoutError = ref<string | null>(null);
 
