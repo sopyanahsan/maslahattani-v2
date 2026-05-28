@@ -26,7 +26,40 @@
     </Transition>
 
     <Transition name="scale-down" mode="out-in">
-      <div v-if="step === 'login'" class="w-full max-w-sm z-10">
+      <!-- Change Password Form (for fresh accounts) -->
+      <div v-if="step === 'change-password'" class="w-full max-w-sm z-10" key="change-pw">
+        <div class="bg-white border border-slate-100 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div class="flex flex-col items-center mb-6">
+            <div class="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center mb-4 text-amber-500 shadow-sm border border-amber-100">
+              <LockIcon class="w-7 h-7" />
+            </div>
+            <h1 class="text-xl font-bold text-slate-800 tracking-tight">Ubah Password</h1>
+            <p class="text-slate-500 mt-1 text-sm text-center">Akun baru — wajib ganti password sebelum mulai.</p>
+          </div>
+
+          <div v-if="errorMessage" class="mb-4 bg-red-50 border-l-4 border-red-500 rounded-md p-3">
+            <p class="text-xs text-red-800">{{ errorMessage }}</p>
+          </div>
+
+          <form @submit.prevent="handleChangePassword" class="space-y-4">
+            <div class="space-y-1.5">
+              <label class="text-sm font-semibold text-slate-700">Password Baru</label>
+              <input v-model="newPassword" type="password" required minlength="6" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all" placeholder="Minimal 6 karakter">
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-sm font-semibold text-slate-700">Konfirmasi Password</label>
+              <input v-model="confirmPassword" type="password" required minlength="6" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all" placeholder="Ulangi password baru">
+            </div>
+            <button type="submit" :disabled="isLoading" class="w-full bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition-all flex justify-center items-center shadow-sm shadow-amber-200 disabled:opacity-50">
+              <Loader2Icon v-if="isLoading" class="w-5 h-5 animate-spin" />
+              <span v-else>Simpan & Lanjutkan</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Login Form -->
+      <div v-else-if="step === 'login'" class="w-full max-w-sm z-10" key="login">
         <div class="bg-white border border-slate-100 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <div class="flex flex-col items-center mb-8">
             <div class="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mb-5 text-emerald-500 shadow-sm border border-emerald-100">
