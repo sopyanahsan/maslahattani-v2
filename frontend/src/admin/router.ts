@@ -181,12 +181,12 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        path: 'kasir',
-        name: 'admin-kasir',
+        path: 'users',
+        name: 'admin-users',
         component: () => import('@/admin/views/AdminKasirView.vue'),
         meta: {
-          title: 'Kasir',
-          description: 'Kelola akun kasir, reset password, assign toko.',
+          title: 'User & Akun',
+          description: 'Kelola akun kasir & admin cabang, reset password, assign toko.',
         },
       },
       {

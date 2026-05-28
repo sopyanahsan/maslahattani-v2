@@ -24,6 +24,7 @@ export interface KasirDto {
 export interface CreateKasirPayload {
   email: string;
   shopId?: string;
+  role?: string;
 }
 
 export interface UpdateKasirPayload {
