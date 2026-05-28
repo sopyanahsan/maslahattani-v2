@@ -13,6 +13,14 @@ import { ShiftsModule } from './shifts/shifts.module';
 import { SettingsModule } from './settings/settings.module';
 import { CashBoxCategoriesModule } from './cashbox-categories/cashbox-categories.module';
 import { ReportsModule } from './reports/reports.module';
+import { BrilinkModule } from './brilink/brilink.module';
+import { OpnameModule } from './opname/opname.module';
+import { SuppliersModule } from './suppliers/suppliers.module';
+import { TransfersModule } from './transfers/transfers.module';
+import { AnalyticsModule } from './analytics/analytics.module';
+import { DashboardModule } from './dashboard/dashboard.module';
+import { DashboardBrilinkModule } from './dashboard-brilink/dashboard-brilink.module';
+import { BrilinkAccountsModule } from './brilink-accounts/brilink-accounts.module';
 
 @Module({
   imports: [
@@ -33,6 +41,14 @@ import { ReportsModule } from './reports/reports.module';
     ShiftsModule,
     SettingsModule,
     ReportsModule,
+    BrilinkModule,
+    BrilinkAccountsModule,
+    OpnameModule,
+    SuppliersModule,
+    TransfersModule,
+    AnalyticsModule,
+    DashboardModule,
+    DashboardBrilinkModule,
   ],
   controllers: [],
   providers: [],

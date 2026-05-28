@@ -50,13 +50,70 @@ const routes: RouteRecordRaw[] = [
     path: '/admin',
     component: () => import('@/admin/layouts/AdminLayout.vue'),
     meta: { requiresAuth: true, roles: ['ADMIN', 'SUPER_ADMIN'] },
-    redirect: { name: 'admin-dashboard' },
+    redirect: { name: 'admin-home' },
     children: [
+      {
+        path: 'home',
+        name: 'admin-home',
+        component: () => import('@/admin/views/AdminHomeView.vue'),
+        meta: {
+          title: 'Home',
+          description: 'Pintu masuk dashboard Retail dan BRILink.',
+        },
+      },
+      {
+        path: 'profil',
+        name: 'admin-profil',
+        component: () => import('@/admin/views/ProfilView.vue'),
+        meta: {
+          title: 'Profil Saya',
+          description: 'Kelola data pribadi, password, dan keamanan akun.',
+        },
+      },
+      {
+        path: 'kas-retail',
+        name: 'admin-kas-retail',
+        component: () => import('@/admin/views/KasRetailView.vue'),
+        meta: {
+          title: 'Kas Retail',
+          description: 'Mutasi kas retail dan pengaturan metode kas.',
+        },
+      },
+      {
+        path: 'kas-rekening-brilink',
+        name: 'admin-kas-rekening-brilink',
+        component: () => import('@/admin/views/KasRekeningBrilinkView.vue'),
+        meta: {
+          title: 'Kas & Rekening BRILink',
+          description: 'Mutasi saldo, daftar rekening BRI, dan metode kas BRILink.',
+        },
+      },
+      {
+        path: 'brilink/transaksi',
+        name: 'admin-brilink-transaksi',
+        component: () => import('@/admin/views/BrilinkTransaksiView.vue'),
+        meta: {
+          title: 'Transaksi BRILink',
+          description: 'Daftar transaksi BRILink — transfer, tarik tunai, top-up, PLN.',
+        },
+      },
+      {
+        path: 'brilink/fee',
+        name: 'admin-brilink-fee',
+        component: () => import('@/admin/views/BrilinkFeeView.vue'),
+        meta: {
+          title: 'Pengaturan Fee BRILink',
+          description: 'Atur margin fee per nominal dan jenis transaksi.',
+        },
+      },
       {
         path: 'dashboard',
         name: 'admin-dashboard',
         component: () => import('@/admin/views/DashboardView.vue'),
-        meta: { title: 'Dashboard' },
+        meta: {
+          title: 'Dashboard Retail',
+          description: 'Ringkasan operasional toko hari ini.',
+        },
       },
       {
         path: 'transactions',
@@ -171,7 +228,57 @@ const routes: RouteRecordRaw[] = [
         },
       },
 
-      // === BRILink (Phase 2) — semua placeholder dulu ===
+      // === Inventaris (Coming Soon) ===
+      {
+        path: 'opname-sessions',
+        name: 'admin-opname-sessions',
+        component: () => import('@/admin/views/AdminOpnameSessionsView.vue'),
+        meta: {
+          title: 'Opname',
+          description: 'Sesi stock opname untuk verifikasi stok fisik.',
+        },
+      },
+      {
+        path: 'suppliers',
+        name: 'admin-suppliers',
+        component: () => import('@/admin/views/AdminSuppliersView.vue'),
+        meta: {
+          title: 'Supplier & PO',
+          description: 'Kelola supplier dan purchase order.',
+        },
+      },
+      {
+        path: 'transfers',
+        name: 'admin-transfers',
+        component: () => import('@/admin/views/AdminTransfersView.vue'),
+        meta: {
+          title: 'Transfer Stok',
+          description: 'Transfer stok antar cabang dengan alur persetujuan.',
+        },
+      },
+
+      // === Analytics ===
+      {
+        path: 'analytics',
+        name: 'admin-analytics',
+        component: () => import('@/admin/views/AdminAnalyticsView.vue'),
+        meta: {
+          title: 'Analytics',
+          description: 'Dashboard analitik bisnis — KPI, chart, insight.',
+        },
+      },
+
+      // === BRILink (Phase 2) ===
+      {
+        path: 'brilink',
+        name: 'admin-brilink',
+        component: () => import('@/admin/views/AdminBrilinkView.vue'),
+        meta: {
+          title: 'BRILink',
+          description: 'Dashboard layanan BRILink — transfer, tarik tunai, top-up, dan mutasi.',
+          phase: 2,
+        },
+      },
       {
         path: 'brilink/transfer',
         name: 'admin-brilink-transfer',

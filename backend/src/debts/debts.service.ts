@@ -6,7 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDebtDto } from './dto/create-debt.dto';
 import { PayDebtDto } from './dto/pay-debt.dto';
-import { QueryDebtDto } from './dto/query-debt.dto';
+import { QueryDebtDto, DebtSortBy } from './dto/query-debt.dto';
 import { DebtStatus } from '@prisma/client';
 
 @Injectable()
@@ -178,6 +178,23 @@ export class DebtsService {
       where.customerName = { contains: query.customerName, mode: 'insensitive' };
     }
 
+    // Due date range filter (for calendar view)
+    if (query.dueDateFrom || query.dueDateTo) {
+      where.dueDate = {};
+      if (query.dueDateFrom) where.dueDate.gte = new Date(query.dueDateFrom);
+      if (query.dueDateTo) where.dueDate.lte = new Date(query.dueDateTo + 'T23:59:59.999Z');
+    }
+
+    // Sort order
+    let orderBy: any = { createdAt: 'desc' }; // default: newest
+    if (query.sortBy === DebtSortBy.DUE_DATE) {
+      orderBy = [{ dueDate: 'asc' }, { createdAt: 'desc' }];
+    } else if (query.sortBy === DebtSortBy.REMAINING_DESC) {
+      // Sort by remaining = totalAmount - paidAmount DESC
+      // Prisma doesn't support computed sort, so we sort in JS after fetch
+      orderBy = { createdAt: 'desc' };
+    }
+
     const [debts, total] = await Promise.all([
       this.prisma.debt.findMany({
         where,
@@ -185,12 +202,20 @@ export class DebtsService {
           product: { select: { name: true, sku: true } },
           debtPayments: { orderBy: { createdAt: 'desc' } },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         skip,
         take: limit,
       }),
       this.prisma.debt.count({ where }),
     ]);
+
+    // Post-sort for remaining_desc (only works within current page — acceptable for UX)
+    let sortedDebts = debts;
+    if (query.sortBy === DebtSortBy.REMAINING_DESC) {
+      sortedDebts = [...debts].sort(
+        (a, b) => (b.totalAmount - b.paidAmount) - (a.totalAmount - a.paidAmount),
+      );
+    }
 
     // Calculate summary
     const allDebts = await this.prisma.debt.findMany({
@@ -200,7 +225,7 @@ export class DebtsService {
     const totalHutang = allDebts.reduce((sum, d) => sum + (d.totalAmount - d.paidAmount), 0);
 
     return {
-      data: debts,
+      data: sortedDebts,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
       summary: {
         totalDebtors: allDebts.length,

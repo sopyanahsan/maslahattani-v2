@@ -3,6 +3,25 @@ import { PrismaService } from '../prisma/prisma.service';
 import { UpdateLanguageDto, UpdateReceiptConfigDto } from './dto/update-settings.dto';
 import { UpdateShopDto, CreateShopDto } from './dto/update-shop.dto';
 
+/** Default BRILink category config — 7 categories with display info. */
+export const DEFAULT_BRILINK_CATEGORY_CONFIG: Record<string, BrilinkCategoryItem> = {
+  TRANSFER_BRI: { displayName: 'Transfer BRI', color: 'blue', icon: 'landmark', isActive: true, sortOrder: 0 },
+  TRANSFER_OTHER: { displayName: 'Transfer Lain', color: 'indigo', icon: 'send', isActive: true, sortOrder: 1 },
+  TARIK_TUNAI: { displayName: 'Tarik Tunai', color: 'amber', icon: 'banknote', isActive: true, sortOrder: 2 },
+  TOPUP_PULSA: { displayName: 'Top-Up Pulsa', color: 'pink', icon: 'smartphone', isActive: true, sortOrder: 3 },
+  TOPUP_DATA: { displayName: 'Top-Up Data', color: 'purple', icon: 'wifi', isActive: true, sortOrder: 4 },
+  TOPUP_EWALLET: { displayName: 'Top-Up E-Wallet', color: 'cyan', icon: 'wallet', isActive: true, sortOrder: 5 },
+  TOPUP_PLN: { displayName: 'Top-Up PLN', color: 'yellow', icon: 'zap', isActive: true, sortOrder: 6 },
+};
+
+export interface BrilinkCategoryItem {
+  displayName: string;
+  color: string;
+  icon: string;
+  isActive: boolean;
+  sortOrder: number;
+}
+
 @Injectable()
 export class SettingsService {
   constructor(private prisma: PrismaService) {}
@@ -130,5 +149,72 @@ export class SettingsService {
     });
 
     return { data: shops, total: shops.length };
+  }
+
+  // ============================================
+  // BRILINK CATEGORY CONFIG
+  // ============================================
+
+  async getBrilinkCategoryConfig(shopId: string): Promise<Record<string, BrilinkCategoryItem>> {
+    const setting = await this.prisma.shopSetting.findUnique({
+      where: { shopId },
+    });
+
+    if (!setting) return { ...DEFAULT_BRILINK_CATEGORY_CONFIG };
+
+    // brilinkCategoryConfig is stored inside alertConfig JSON (reusing pattern)
+    const raw = setting as any;
+    const stored = raw.brilinkCategoryConfig;
+    if (!stored || typeof stored !== 'object') {
+      return { ...DEFAULT_BRILINK_CATEGORY_CONFIG };
+    }
+
+    // Merge with defaults to ensure all 7 categories exist
+    const result: Record<string, BrilinkCategoryItem> = {};
+    for (const key of Object.keys(DEFAULT_BRILINK_CATEGORY_CONFIG)) {
+      result[key] = {
+        ...DEFAULT_BRILINK_CATEGORY_CONFIG[key],
+        ...(stored[key] || {}),
+      };
+    }
+    return result;
+  }
+
+  async updateBrilinkCategoryConfig(
+    shopId: string,
+    config: Record<string, Partial<BrilinkCategoryItem>>,
+  ): Promise<Record<string, BrilinkCategoryItem>> {
+    // Merge with existing/defaults
+    const current = await this.getBrilinkCategoryConfig(shopId);
+    const merged: Record<string, BrilinkCategoryItem> = {};
+
+    for (const key of Object.keys(DEFAULT_BRILINK_CATEGORY_CONFIG)) {
+      merged[key] = {
+        ...current[key],
+        ...(config[key] || {}),
+      };
+    }
+
+    // Get current setting to preserve other fields
+    const existing = await this.prisma.shopSetting.findUnique({
+      where: { shopId },
+    });
+
+    if (existing) {
+      await this.prisma.shopSetting.update({
+        where: { shopId },
+        data: { brilinkCategoryConfig: merged as any },
+      });
+    } else {
+      await this.prisma.shopSetting.create({
+        data: {
+          shopId,
+          language: 'id',
+          brilinkCategoryConfig: merged as any,
+        },
+      });
+    }
+
+    return merged;
   }
 }

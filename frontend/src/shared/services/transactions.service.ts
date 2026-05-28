@@ -63,6 +63,8 @@ export interface QueryTransactionParams {
   startDate?: string;
   endDate?: string;
   userId?: string;
+  search?: string;
+  paymentMethod?: PaymentMethod;
   page?: number;
   limit?: number;
 }

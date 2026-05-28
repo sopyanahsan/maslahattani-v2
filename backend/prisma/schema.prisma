@@ -47,6 +47,12 @@ model User {
   transactions        Transaction[]
   shifts              Shift[]
   ownedShops          Shop[]    @relation("ShopOwner")
+  brilinkTransactions BrilinkTransaction[] @relation("BrilinkCashier")
+  brilinkMutations    BrilinkMutation[]    @relation("BrilinkMutationCreator")
+  opnameSessions      OpnameSession[]      @relation("OpnameConductor")
+  purchaseOrders      PurchaseOrder[]      @relation("POCreator")
+  transferRequests    StockTransfer[]      @relation("TransferRequester")
+  transferApprovals   StockTransfer[]      @relation("TransferApprover")
 
   @@index([shopId])
   @@index([email])
@@ -113,6 +119,14 @@ model Shop {
   cashBoxes           CashBox[]
   shifts              Shift[]
   settings            ShopSetting?
+  brilinkTransactions BrilinkTransaction[]
+  brilinkFees         BrilinkFee[]
+  brilinkAccounts     BrilinkAccount[]
+  opnameSessions      OpnameSession[]
+  suppliers           Supplier[]
+  purchaseOrders      PurchaseOrder[]
+  transfersOut        StockTransfer[]      @relation("TransferFrom")
+  transfersIn         StockTransfer[]      @relation("TransferTo")
 
   @@map("shops")
 }
@@ -123,6 +137,17 @@ model ShopSetting {
   shopId              String    @unique
   language            String    @default("id") // "id", "en", "su", "jv"
   receiptConfig       String?   // JSON config for receipt printing
+  /**
+   * Konfigurasi threshold alert untuk Dashboard Retail.
+   * JSON shape: {
+   *   lowStockThreshold: number,            // unit min sebelum stock dianggap menipis (default 5)
+   *   shiftDurationWarningHours: number,    // jam kerja shift sebelum warning (default 8)
+   *   overdueDebtDaysBeforeNotice: number,  // H- berapa hari sebelum dueDate mau di-warn (default 0 = exact)
+   * }
+   * Null = pakai default. Lihat DashboardService.DEFAULT_ALERT_CONFIG.
+   */
+  alertConfig         Json?
+  brilinkCategoryConfig Json?
   updatedAt           DateTime  @updatedAt
   
   @@map("shop_settings")
@@ -189,6 +214,9 @@ model Product {
   stocks              Stock[]
   transactionItems    TransactionItem[]
   debts               Debt[]
+  opnameItems         OpnameItem[]
+  purchaseOrderItems  PurchaseOrderItem[]
+  stockTransferItems  StockTransferItem[]
 
   @@unique([shopId, sku])
   @@index([shopId])
@@ -507,4 +535,335 @@ model ShiftCashBox {
   @@index([shiftId])
   @@index([categoryId])
   @@map("shift_cash_boxes")
+}
+
+// ============================================
+// STOCK OPNAME SESSION MANAGEMENT
+// ============================================
+
+enum OpnameStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model OpnameSession {
+  id              String        @id @default(cuid())
+  shop            Shop          @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  conductor       User          @relation("OpnameConductor", fields: [conductorId], references: [id])
+  conductorId     String
+
+  sessionNumber   String        @unique
+  status          OpnameStatus  @default(DRAFT)
+  notes           String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+
+  /** Summary stats (computed on complete) */
+  totalProducts   Int           @default(0)
+  totalMatched    Int           @default(0)
+  totalSurplus    Int           @default(0)
+  totalDeficit    Int           @default(0)
+
+  items           OpnameItem[]
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([shopId])
+  @@index([conductorId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("opname_sessions")
+}
+
+model OpnameItem {
+  id              String        @id @default(cuid())
+  session         OpnameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId       String
+  product         Product       @relation(fields: [productId], references: [id])
+  productId       String
+
+  systemQty       Int           // stok di sistem saat opname dimulai
+  actualQty       Int?          // stok fisik yang dihitung
+  variance        Int?          // actualQty - systemQty
+  notes           String?
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([sessionId, productId])
+  @@index([sessionId])
+  @@index([productId])
+  @@map("opname_items")
+}
+
+// ============================================
+// BRILINK TRANSACTIONS & FEE MANAGEMENT
+// ============================================
+
+enum BrilinkCategory {
+  TRANSFER_BRI
+  TRANSFER_OTHER
+  TARIK_TUNAI
+  TOPUP_PULSA
+  TOPUP_DATA
+  TOPUP_EWALLET
+  TOPUP_PLN
+}
+
+enum BrilinkTransactionStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+enum BrilinkFeeType {
+  FLAT
+  PERCENT
+}
+
+model BrilinkTransaction {
+  id              String                   @id @default(cuid())
+  shop            Shop                     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  cashier         User                     @relation("BrilinkCashier", fields: [cashierId], references: [id])
+  cashierId       String
+  account         BrilinkAccount?          @relation(fields: [accountId], references: [id])
+  accountId       String?
+
+  refNumber       String                   @unique
+  category        BrilinkCategory
+  customerName    String
+  customerPhone   String?
+  destination     String
+  amount          Int                      // nominal transaksi (rupiah)
+  fee             Int                      @default(0) // fee yang dikenakan
+  total           Int                      // amount + fee
+  status          BrilinkTransactionStatus @default(SUCCESS)
+
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+
+  @@index([shopId])
+  @@index([cashierId])
+  @@index([category])
+  @@index([createdAt])
+  @@map("brilink_transactions")
+}
+
+model BrilinkFee {
+  id              String          @id @default(cuid())
+  shop            Shop            @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  category        BrilinkCategory
+  label           String          // "Transfer BRI 1-50jt", etc
+  minAmount       Int             @default(0)
+  maxAmount       Int             @default(999999999)
+  feeType         BrilinkFeeType  @default(FLAT)
+  feeAmount       Int             @default(0) // flat fee (rupiah)
+  feePercent      Float           @default(0) // percent fee (e.g. 0.5 = 0.5%)
+  isActive        Boolean         @default(true)
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([shopId, category, isActive])
+  @@map("brilink_fees")
+}
+
+
+// ============================================
+// BRILINK ACCOUNTS & MUTATIONS
+// ============================================
+
+enum BrilinkMutationType {
+  SETOR
+  TARIK
+  TRX_DEBIT
+  TRX_CREDIT
+  ADJUSTMENT
+}
+
+model BrilinkAccount {
+  id                    String    @id @default(cuid())
+  shop                  Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId                String
+  label                 String
+  accountNumber         String
+  accountHolder         String?
+  balance               Int       @default(0)
+  lowBalanceThreshold   Int       @default(1000000)
+  isDefault             Boolean   @default(false)
+  isActive              Boolean   @default(true)
+  notes                 String?
+  mutations             BrilinkMutation[]
+  transactions          BrilinkTransaction[]
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([shopId, accountNumber])
+  @@index([shopId])
+  @@map("brilink_accounts")
+}
+
+model BrilinkMutation {
+  id              String              @id @default(cuid())
+  account         BrilinkAccount      @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  accountId       String
+  type            BrilinkMutationType
+  amount          Int
+  balanceBefore   Int
+  balanceAfter    Int
+  reference       String?
+  description     String
+  notes           String?
+  createdById     String?
+  createdBy       User?               @relation("BrilinkMutationCreator", fields: [createdById], references: [id])
+  createdAt       DateTime            @default(now())
+
+  @@index([accountId])
+  @@index([createdAt])
+  @@map("brilink_mutations")
+}
+
+
+// ============================================
+// SUPPLIER & PURCHASE ORDER MANAGEMENT
+// ============================================
+
+model Supplier {
+  id              String    @id @default(cuid())
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  name            String
+  phone           String?
+  address         String?
+  notes           String?
+  isActive        Boolean   @default(true)
+
+  purchaseOrders  PurchaseOrder[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([shopId])
+  @@map("suppliers")
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  ORDERED
+  PARTIAL
+  RECEIVED
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id              String              @id @default(cuid())
+  shop            Shop                @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  supplier        Supplier            @relation(fields: [supplierId], references: [id])
+  supplierId      String
+  createdBy       User                @relation("POCreator", fields: [createdById], references: [id])
+  createdById     String
+
+  orderNumber     String              @unique
+  status          PurchaseOrderStatus @default(DRAFT)
+  totalAmount     Int                 @default(0)
+  notes           String?
+  orderedAt       DateTime?
+  receivedAt      DateTime?
+
+  items           PurchaseOrderItem[]
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([shopId])
+  @@index([supplierId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              String        @id @default(cuid())
+  order           PurchaseOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId         String
+  product         Product       @relation(fields: [productId], references: [id])
+  productId       String
+
+  quantity        Int
+  unitCost        Int           // harga beli per unit (rupiah)
+  subtotal        Int           // quantity * unitCost
+  receivedQty     Int           @default(0)
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("purchase_order_items")
+}
+
+
+
+// ============================================
+// STOCK TRANSFER BETWEEN BRANCHES
+// ============================================
+
+enum StockTransferStatus {
+  PENDING
+  APPROVED
+  IN_TRANSIT
+  RECEIVED
+  REJECTED
+  CANCELLED
+}
+
+model StockTransfer {
+  id              String              @id @default(cuid())
+  fromShop        Shop                @relation("TransferFrom", fields: [fromShopId], references: [id])
+  fromShopId      String
+  toShop          Shop                @relation("TransferTo", fields: [toShopId], references: [id])
+  toShopId        String
+  requestedBy     User                @relation("TransferRequester", fields: [requestedById], references: [id])
+  requestedById   String
+  approvedBy      User?               @relation("TransferApprover", fields: [approvedById], references: [id])
+  approvedById    String?
+
+  transferNumber  String              @unique
+  status          StockTransferStatus @default(PENDING)
+  notes           String?
+  approvalNotes   String?
+  requestedAt     DateTime            @default(now())
+  approvedAt      DateTime?
+  shippedAt       DateTime?
+  receivedAt      DateTime?
+
+  items           StockTransferItem[]
+
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([fromShopId])
+  @@index([toShopId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("stock_transfers")
+}
+
+model StockTransferItem {
+  id              String        @id @default(cuid())
+  transfer        StockTransfer @relation(fields: [transferId], references: [id], onDelete: Cascade)
+  transferId      String
+  product         Product       @relation(fields: [productId], references: [id])
+  productId       String
+
+  quantity        Int
+  receivedQty     Int           @default(0)
+
+  @@index([transferId])
+  @@index([productId])
+  @@map("stock_transfer_items")
 }

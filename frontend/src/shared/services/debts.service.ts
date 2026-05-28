@@ -62,6 +62,9 @@ export interface QueryDebtParams {
   shopId?: string;
   status?: DebtStatus;
   customerName?: string;
+  sortBy?: 'newest' | 'due_date' | 'remaining_desc';
+  dueDateFrom?: string;
+  dueDateTo?: string;
   page?: number;
   limit?: number;
 }
