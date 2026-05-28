@@ -1,45 +1,49 @@
 <template>
   <div class="space-y-5 -mx-4 -mt-4">
-    <!-- Header -->
-    <header class="px-4 pt-4 pb-3 flex items-center gap-3 border-b border-slate-100 bg-white">
-      <div class="w-10 h-10 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0">
-        <UserIcon class="w-6 h-6 text-slate-500" />
+    <!-- Top Bar: Greeting + Shift Button -->
+    <header class="px-4 pt-4 pb-3 bg-white border-b border-slate-100">
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <p class="text-xs text-slate-500">Halo,</p>
+          <h1 class="font-bold text-lg text-slate-800 leading-tight">{{ userName }}</h1>
+        </div>
+        <!-- Shift Button (top bar) -->
+        <RouterLink
+          v-if="!hasOpenShift"
+          to="/retail/shift"
+          class="h-8 px-3 bg-blue-600 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 hover:bg-blue-700 transition-colors"
+        >
+          <PlayIcon class="w-3.5 h-3.5" />
+          Buka Shift
+        </RouterLink>
+        <div v-else class="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg">
+          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          <span class="text-[11px] font-semibold text-emerald-700">{{ shiftDurationLabel }}</span>
+        </div>
       </div>
-      <div class="flex-1 min-w-0">
-        <h1 class="font-semibold text-base leading-tight truncate">{{ userName }}</h1>
-        <p class="text-xs text-slate-500">Maslahat Tani</p>
-      </div>
+      <!-- Realtime date/time -->
+      <p class="text-xs text-slate-500">{{ currentDateTime }}</p>
     </header>
 
-    <!-- Shift Indicator -->
-    <div class="px-4 py-2.5 border-b border-slate-100 flex items-center gap-2 text-sm bg-slate-50/50">
-      <span :class="['w-2.5 h-2.5 rounded-full', hasOpenShift ? 'bg-emerald-500' : 'bg-red-500']"></span>
-      <span v-if="hasOpenShift" class="text-slate-600 font-medium text-xs">
-        Shift aktif &middot; {{ shiftDurationLabel }}
-      </span>
-      <span v-else class="text-slate-600 font-medium text-xs flex items-center gap-1">
-        Shift belum dibuka
-        <RouterLink to="/retail/shift" class="text-blue-600 hover:underline font-semibold ml-1">Buka Shift</RouterLink>
-      </span>
-    </div>
-
-    <!-- Revenue Cards -->
-    <div class="flex overflow-x-auto snap-x snap-mandatory hide-scrollbar gap-4 px-4 py-1">
-      <div class="min-w-[260px] snap-center rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 p-4 text-white shadow-md">
-        <div class="flex items-center gap-2 mb-4 opacity-90">
-          <ShoppingCartIcon class="w-5 h-5" />
-          <span class="text-sm font-medium">Penjualan Retail</span>
+    <!-- Revenue Cards (centered, 2 columns) -->
+    <div class="px-4">
+      <div class="grid grid-cols-2 gap-3">
+        <div class="rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 p-4 text-white shadow-md">
+          <div class="flex items-center gap-2 mb-3 opacity-90">
+            <ShoppingCartIcon class="w-4 h-4" />
+            <span class="text-xs font-medium">Penjualan Retail</span>
+          </div>
+          <h2 class="text-xl font-bold mb-0.5">{{ formatRupiah(retailOmzet) }}</h2>
+          <p class="text-[10px] opacity-80">Total omzet hari ini</p>
         </div>
-        <h2 class="text-2xl font-bold mb-1">{{ formatRupiah(retailOmzet) }}</h2>
-        <p class="text-xs opacity-80">Total omzet hari ini</p>
-      </div>
-      <div class="min-w-[260px] snap-center rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 p-4 text-white shadow-md">
-        <div class="flex items-center gap-2 mb-4 opacity-90">
-          <LandmarkIcon class="w-5 h-5" />
-          <span class="text-sm font-medium">Transaksi BRILink</span>
+        <div class="rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-600 p-4 text-white shadow-md">
+          <div class="flex items-center gap-2 mb-3 opacity-90">
+            <LandmarkIcon class="w-4 h-4" />
+            <span class="text-xs font-medium">Transaksi BRILink</span>
+          </div>
+          <h2 class="text-xl font-bold mb-0.5">{{ formatRupiah(brilinkVolume) }}</h2>
+          <p class="text-[10px] opacity-80">Total volume hari ini</p>
         </div>
-        <h2 class="text-2xl font-bold mb-1">{{ formatRupiah(brilinkVolume) }}</h2>
-        <p class="text-xs opacity-80">Total volume hari ini</p>
       </div>
     </div>
 
@@ -123,10 +127,10 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { RouterLink } from 'vue-router';
 import {
-  User as UserIcon, ShoppingCart as ShoppingCartIcon,
-  Landmark as LandmarkIcon, Banknote as BanknoteIcon, ArrowLeftRight as ArrowLeftRightIcon,
+  ShoppingCart as ShoppingCartIcon, Landmark as LandmarkIcon,
+  Banknote as BanknoteIcon, ArrowLeftRight as ArrowLeftRightIcon,
   Smartphone as SmartphoneIcon, History as HistoryIcon, BarChart3 as BarChart3Icon,
-  Receipt as ReceiptIcon,
+  Receipt as ReceiptIcon, Play as PlayIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShiftStore } from '@/shared/stores/shift.store';
@@ -144,6 +148,17 @@ const shiftDurationLabel = computed(() => {
   return h > 0 ? `${h}j ${min}m` : `${min}m`;
 });
 
+// Realtime clock
+const currentDateTime = ref('');
+let clockInterval: ReturnType<typeof setInterval> | null = null;
+
+function updateClock() {
+  currentDateTime.value = new Date().toLocaleString('id-ID', {
+    weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+  });
+}
+
 const retailOmzet = ref(0);
 const brilinkVolume = ref(0);
 const stats = ref({ total: 0, retail: 0, brilink: 0 });
@@ -157,7 +172,6 @@ async function refresh() {
   const shopId = authStore.user?.shopId;
   if (!shopId) return;
   try {
-    const today = new Date().toISOString().slice(0, 10);
     const res = await posService.getTodayTransactions(shopId, authStore.user?.id);
     const data = res.data ?? [];
     const completed = data.filter((t: any) => t.status === 'COMPLETED');
@@ -176,18 +190,15 @@ async function refresh() {
 let refreshInterval: ReturnType<typeof setInterval> | null = null;
 
 onMounted(async () => {
+  updateClock();
+  clockInterval = setInterval(updateClock, 1000);
   try { await shiftStore.fetchCurrentShift(); } catch { /* */ }
   await refresh();
-  // Auto-refresh every 30s
   refreshInterval = setInterval(refresh, 30000);
 });
 
 onUnmounted(() => {
   if (refreshInterval) clearInterval(refreshInterval);
+  if (clockInterval) clearInterval(clockInterval);
 });
 </script>
-
-<style scoped>
-.hide-scrollbar::-webkit-scrollbar { display: none; }
-.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-</style>
