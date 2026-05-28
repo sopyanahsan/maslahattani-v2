@@ -102,7 +102,7 @@ const handleLogin = async () => {
 
     // Redirect setelah animasi selesai (2s)
     setTimeout(() => {
-      router.push('/dashboard');
+      router.push({ name: 'webapp-dashboard' });
     }, 2000);
   } catch (err: any) {
     errorMessage.value = err?.response?.data?.message || err?.message || 'Login gagal. Periksa email dan password.';
