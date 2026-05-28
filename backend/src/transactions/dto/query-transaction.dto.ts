@@ -1,7 +1,7 @@
 import { IsOptional, IsString, IsEnum, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-import { TransactionStatus } from '@prisma/client';
+import { TransactionStatus, PaymentMethod } from '@prisma/client';
 
 export class QueryTransactionDto {
   @ApiPropertyOptional({ example: 'shop-id-123' })
@@ -28,6 +28,16 @@ export class QueryTransactionDto {
   @IsOptional()
   @IsString()
   userId?: string;
+
+  @ApiPropertyOptional({ example: 'TRX-2026', description: 'Search by nomor transaksi (partial match)' })
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @ApiPropertyOptional({ enum: PaymentMethod, description: 'Filter by metode pembayaran' })
+  @IsOptional()
+  @IsEnum(PaymentMethod)
+  paymentMethod?: PaymentMethod;
 
   @ApiPropertyOptional({ example: 1, description: 'Halaman (pagination)' })
   @IsOptional()
