@@ -5,7 +5,7 @@
       <div class="absolute inset-0 bg-black/30 backdrop-blur-[2px]" @click="$emit('close')"></div>
 
       <!-- Compact Floating Panel -->
-      <div class="relative bg-white/95 backdrop-blur-xl rounded-2xl max-h-[80vh] w-full max-w-[600px] flex flex-col animate-slide-up shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-white/60">
+      <div class="relative bg-white/95 backdrop-blur-xl rounded-2xl max-h-[85vh] w-full max-w-[600px] md:max-w-[820px] flex flex-col animate-slide-up shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-white/60">
         <!-- Header -->
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
           <div class="flex items-center gap-2">
@@ -18,8 +18,11 @@
           </button>
         </div>
 
-        <!-- Cart Items (scrollable) -->
-        <div class="flex-1 overflow-y-auto px-4 py-2 space-y-1 min-h-[120px]">
+        <!-- Content wrapper: column on mobile, row on desktop -->
+        <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
+
+        <!-- Cart Items (scrollable) — left side on desktop -->
+        <div class="md:flex-1 overflow-y-auto px-4 py-2 space-y-1 min-h-[120px] md:border-r md:border-slate-100">
           <div v-for="item in cart" :key="item.productId" class="py-2 border-b border-slate-50 last:border-0">
             <div class="flex items-center gap-2">
               <div class="flex-1 min-w-0">
@@ -51,8 +54,8 @@
           </div>
         </div>
 
-        <!-- Summary + Payment -->
-        <div class="shrink-0 border-t border-slate-200 px-4 py-3 space-y-3 bg-slate-50/80">
+        <!-- Summary + Payment — right side on desktop -->
+        <div class="shrink-0 md:w-[320px] md:overflow-y-auto border-t md:border-t-0 border-slate-200 px-4 py-3 space-y-3 bg-slate-50/80">
           <!-- Totals -->
           <div class="space-y-1">
             <div class="flex justify-between text-sm text-slate-600">
@@ -121,6 +124,7 @@
             <span>{{ checking ? 'Memproses...' : 'Proses Pembayaran' }}</span>
           </button>
         </div>
+        </div><!-- end flex wrapper -->
       </div>
     </div>
   </Teleport>
