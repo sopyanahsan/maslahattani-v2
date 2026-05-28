@@ -34,21 +34,16 @@
         </div>
       </div>
 
-      <!-- Summary per method -->
-      <div v-if="historySummary.length > 0" class="flex flex-wrap gap-2">
-        <span v-for="s in historySummary" :key="s.method" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-xs">
-          <span class="font-bold text-slate-700 dark:text-slate-300">{{ s.method }}</span>
-          <span class="font-mono text-slate-600 dark:text-slate-400">{{ formatRupiah(s.totalAmount) }}</span>
-          <span class="text-slate-400 dark:text-slate-500">({{ s.count }})</span>
-        </span>
-      </div>
-
       <!-- Filter -->
       <div class="flex flex-col sm:flex-row gap-3">
+        <select v-model="mutasiCategoryFilter" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" @change="fetchHistory">
+          <option value="">Semua Kas</option>
+          <option v-for="cat in mutationCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+        </select>
         <input v-model="mutasiStartDate" type="date" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" @change="fetchHistory" />
         <input v-model="mutasiEndDate" type="date" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" @change="fetchHistory" />
         <div class="flex-1"></div>
-        <span v-if="historyMeta" class="text-xs text-slate-500 dark:text-slate-400 self-center">{{ historyMeta.total }} pembayaran</span>
+        <span v-if="historyMeta" class="text-xs text-slate-500 dark:text-slate-400 self-center">{{ historyMeta.total }} mutasi</span>
       </div>
 
       <!-- Loading -->
@@ -69,19 +64,19 @@
             <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
               <tr>
                 <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Tanggal</th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Metode</th>
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Tipe</th>
                 <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Jumlah</th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Transaksi</th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Status</th>
+                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Saldo Setelah</th>
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Catatan</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               <tr v-for="item in historyData" :key="item.id" class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                 <td class="px-4 py-3 text-xs font-mono text-slate-600 dark:text-slate-400">{{ formatDateTime(item.createdAt) }}</td>
-                <td class="px-4 py-3 text-center"><span :class="['px-2 py-0.5 rounded text-[10px] font-bold uppercase', methodBadge(item.method)]">{{ item.method }}</span></td>
-                <td class="px-4 py-3 text-right text-xs font-mono font-semibold text-slate-900 dark:text-slate-100">{{ formatRupiah(item.amount) }}</td>
-                <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">{{ item.transaction?.transactionNumber || '—' }}</td>
-                <td class="px-4 py-3 text-center"><span :class="['px-2 py-0.5 rounded-full text-[10px] font-bold uppercase', item.status === 'COMPLETED' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400']">{{ item.status }}</span></td>
+                <td class="px-4 py-3 text-center"><span :class="['px-2 py-0.5 rounded text-[10px] font-bold uppercase', item.type === 'CASH_IN' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300']">{{ item.type === 'CASH_IN' ? 'Masuk' : 'Keluar' }}</span></td>
+                <td class="px-4 py-3 text-right text-xs font-mono font-semibold" :class="item.type === 'CASH_IN' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400'">{{ item.type === 'CASH_IN' ? '+' : '-' }}{{ formatRupiah(item.amount) }}</td>
+                <td class="px-4 py-3 text-right text-xs font-mono text-slate-700 dark:text-slate-300">{{ formatRupiah(item.balanceAfter) }}</td>
+                <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">{{ item.notes || '—' }}</td>
               </tr>
             </tbody>
           </table>
@@ -223,10 +218,10 @@ function methodBadge(m: string): string { const map: Record<string, string> = { 
 const cashBox = ref<CashBoxResponse | null>(null);
 const historyData = ref<PaymentHistoryItem[]>([]);
 const historyMeta = ref<PaymentHistoryResponse['meta'] | null>(null);
-const historySummary = ref<PaymentHistoryResponse['summary']>([]);
 const historyLoading = ref(false);
 const mutasiStartDate = ref('');
 const mutasiEndDate = ref('');
+const mutasiCategoryFilter = ref('');
 const showMutationModal = ref(false);
 const mutationType = ref<'CASH_IN' | 'CASH_OUT'>('CASH_IN');
 const mutationAmount = ref(0);
@@ -246,8 +241,8 @@ const categoryError = ref<string | null>(null);
 const categoryForm = reactive({ code: '', name: '', color: '', icon: '', isDefault: false, isActive: true });
 
 async function fetchCashBox() { const s = getShopId(); if (!s) return; try { cashBox.value = await kasRetailService.getCashBox(s); } catch { /* */ } }
-async function fetchHistory() { const s = getShopId(); if (!s) return; historyLoading.value = true; try { const res = await kasRetailService.getHistory({ shopId: s, startDate: mutasiStartDate.value || undefined, endDate: mutasiEndDate.value || undefined, page: 1, limit: 20 }); historyData.value = res.data; historyMeta.value = res.meta; historySummary.value = res.summary; } catch { historyData.value = []; } finally { historyLoading.value = false; } }
-async function fetchHistoryPage(p: number) { const s = getShopId(); if (!s) return; historyLoading.value = true; try { const res = await kasRetailService.getHistory({ shopId: s, startDate: mutasiStartDate.value || undefined, endDate: mutasiEndDate.value || undefined, page: p, limit: 20 }); historyData.value = res.data; historyMeta.value = res.meta; } catch { /* */ } finally { historyLoading.value = false; } }
+async function fetchHistory() { const s = getShopId(); if (!s) return; historyLoading.value = true; try { const res = await kasRetailService.getHistory({ shopId: s, categoryId: mutasiCategoryFilter.value || undefined, startDate: mutasiStartDate.value || undefined, endDate: mutasiEndDate.value || undefined, page: 1, limit: 20 }); historyData.value = res.data; historyMeta.value = res.meta; } catch { historyData.value = []; } finally { historyLoading.value = false; } }
+async function fetchHistoryPage(p: number) { const s = getShopId(); if (!s) return; historyLoading.value = true; try { const res = await kasRetailService.getHistory({ shopId: s, categoryId: mutasiCategoryFilter.value || undefined, startDate: mutasiStartDate.value || undefined, endDate: mutasiEndDate.value || undefined, page: p, limit: 20 }); historyData.value = res.data; historyMeta.value = res.meta; } catch { /* */ } finally { historyLoading.value = false; } }
 
 function openMutationModal(type: 'CASH_IN' | 'CASH_OUT') { mutationType.value = type; mutationAmount.value = 0; mutationNotes.value = ''; mutationCategoryId.value = ''; mutationError.value = null; showMutationModal.value = true; if (mutationCategories.value.length === 0) { fetchMutationCategories(); } }
 async function fetchMutationCategories() { try { const res = await cashBoxCategoryService.list(false); mutationCategories.value = res.data; } catch { /* */ } }
@@ -260,5 +255,5 @@ async function handleDeleteCategory(cat: CashBoxCategoryDto) { if (!confirm(`Hap
 
 function handleTabChange(tab: TabKey) { activeTab.value = tab; if (tab === 'metode' && categories.value.length === 0) fetchCategories(); }
 
-onMounted(() => { fetchCashBox(); fetchHistory(); });
+onMounted(() => { fetchCashBox(); fetchHistory(); fetchMutationCategories(); });
 </script>

@@ -18,6 +18,11 @@ export class QueryCashMutationDto {
   @IsString()
   category?: string;
 
+  @ApiPropertyOptional({ example: 'cashbox-category-id', description: 'Filter by kas/kategori' })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
   @ApiPropertyOptional({ example: '2026-05-01' })
   @IsOptional()
   @IsString()

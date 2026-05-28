@@ -49,6 +49,12 @@ export class PaymentsController {
     return this.paymentsService.getPaymentHistory(query);
   }
 
+  @Get('cash-mutations')
+  @ApiOperation({ summary: 'Riwayat mutasi kas (cash in/out) — filter by categoryId, date' })
+  async getCashMutations(@Query() query: QueryCashMutationDto) {
+    return this.paymentsService.getCashMutationHistory(query);
+  }
+
   @Get('summary')
   @ApiOperation({ summary: 'Total kas retail (breakdown: cash, QRIS, transfer, hutang)' })
   async getKasSummary(

@@ -117,6 +117,7 @@ model Shop {
   debts               Debt[]
   payments            Payment[]
   cashBoxes           CashBox[]
+  cashMutations       CashMutation[]
   shifts              Shift[]
   settings            ShopSetting?
   brilinkTransactions BrilinkTransaction[]
@@ -383,6 +384,25 @@ model CashBox {
   updatedAt           DateTime  @updatedAt
   
   @@map("cash_boxes")
+}
+
+model CashMutation {
+  id              String    @id @default(cuid())
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  categoryId      String?   // link ke CashBoxCategory (kalau multi-kas)
+  type            String    // CASH_IN | CASH_OUT
+  amount          Int
+  balanceBefore   Int
+  balanceAfter    Int
+  category        String?   // label kategori (MODAL_OPERASIONAL, dll)
+  notes           String?
+  createdAt       DateTime  @default(now())
+
+  @@index([shopId])
+  @@index([createdAt])
+  @@index([categoryId])
+  @@map("cash_mutations")
 }
 
 // ============================================

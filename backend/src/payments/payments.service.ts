@@ -62,11 +62,25 @@ export class PaymentsService {
         ? cashBox.balance + dto.amount
         : cashBox.balance - dto.amount;
 
-    // Update cash box
-    await this.prisma.cashBox.update({
-      where: { shopId: dto.shopId },
-      data: { balance: newBalance },
-    });
+    // Update cash box + persist mutation record
+    const [, mutation] = await this.prisma.$transaction([
+      this.prisma.cashBox.update({
+        where: { shopId: dto.shopId },
+        data: { balance: newBalance },
+      }),
+      this.prisma.cashMutation.create({
+        data: {
+          shopId: dto.shopId,
+          categoryId: dto.categoryId || null,
+          type: dto.type,
+          amount: dto.amount,
+          balanceBefore: cashBox.balance,
+          balanceAfter: newBalance,
+          category: dto.category || null,
+          notes: dto.notes || null,
+        },
+      }),
+    ]);
 
     return {
       success: true,
@@ -74,14 +88,7 @@ export class PaymentsService {
         dto.type === CashMutationType.CASH_IN
           ? `Pemasukan Rp ${dto.amount.toLocaleString('id-ID')} berhasil dicatat.`
           : `Pengeluaran Rp ${dto.amount.toLocaleString('id-ID')} berhasil dicatat.`,
-      mutation: {
-        type: dto.type,
-        amount: dto.amount,
-        category: dto.category,
-        notes: dto.notes,
-        balanceBefore: cashBox.balance,
-        balanceAfter: newBalance,
-      },
+      mutation,
     };
   }
 
@@ -181,6 +188,38 @@ export class PaymentsService {
   // ============================================
   // GET TOTAL KAS RETAIL (Summary)
   // ============================================
+
+  async getCashMutationHistory(query: QueryCashMutationDto) {
+    const page = query.page || 1;
+    const limit = query.limit || 20;
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (query.shopId) where.shopId = query.shopId;
+    if (query.type) where.type = query.type;
+    if (query.categoryId) where.categoryId = query.categoryId;
+
+    if (query.startDate || query.endDate) {
+      where.createdAt = {};
+      if (query.startDate) where.createdAt.gte = new Date(query.startDate);
+      if (query.endDate) where.createdAt.lte = new Date(query.endDate + 'T23:59:59.999Z');
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.cashMutation.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.cashMutation.count({ where }),
+    ]);
+
+    return {
+      data,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
 
   async getKasSummary(shopId: string, startDate?: string, endDate?: string) {
     const where: any = { shopId, status: 'COMPLETED' };

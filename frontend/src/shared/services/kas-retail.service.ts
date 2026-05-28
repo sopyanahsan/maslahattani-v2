@@ -18,18 +18,20 @@ export interface CashMutationPayload {
 
 export interface PaymentHistoryItem {
   id: string;
-  method: string;
+  shopId: string;
+  categoryId: string | null;
+  type: string;
   amount: number;
-  status: string;
-  reference: string | null;
+  balanceBefore: number;
+  balanceAfter: number;
+  category: string | null;
+  notes: string | null;
   createdAt: string;
-  transaction: { transactionNumber: string; status: string } | null;
 }
 
 export interface PaymentHistoryResponse {
   data: PaymentHistoryItem[];
   meta: { total: number; page: number; limit: number; totalPages: number };
-  summary: Array<{ method: string; totalAmount: number; count: number }>;
 }
 
 export interface KasSummaryResponse {
@@ -62,11 +64,12 @@ const kasRetailService = {
     shopId: string;
     startDate?: string;
     endDate?: string;
+    categoryId?: string;
     page?: number;
     limit?: number;
   }): Promise<PaymentHistoryResponse> {
     const { data } = await api.get<PaymentHistoryResponse>(
-      '/payments/history',
+      '/payments/cash-mutations',
       { params },
     );
     return data;
