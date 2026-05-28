@@ -81,36 +81,26 @@ const routes: RouteRecordRaw[] = [
         },
       },
 
-      // === BRILink (Phase 2) ===
+      // === BRILink ===
       {
-        path: 'brilink/transfer',
-        name: 'webapp-brilink-transfer',
-        component: () => import('@/webapp/views/PlaceholderView.vue'),
-        meta: {
-          title: 'BRILink — Transfer',
-          description: 'Kirim dana antar bank dengan kalkulasi fee otomatis.',
-          phase: 2,
-        },
+        path: 'brilink/menu',
+        name: 'webapp-brilink-menu',
+        component: () => import('@/webapp/views/BrilinkMenuView.vue'),
+        meta: { title: 'BRILink — Menu' },
       },
       {
-        path: 'brilink/cash',
-        name: 'webapp-brilink-cash',
-        component: () => import('@/webapp/views/PlaceholderView.vue'),
-        meta: {
-          title: 'BRILink — Tarik Tunai',
-          description: 'Layani penarikan tunai pelanggan dari rekening BRI.',
-          phase: 2,
-        },
+        path: 'brilink/transaction',
+        name: 'webapp-brilink-transaction',
+        component: () => import('@/webapp/views/BrilinkTransactionView.vue'),
+        meta: { title: 'BRILink — Transaksi' },
       },
+
+      // === Receipt ===
       {
-        path: 'brilink/topup',
-        name: 'webapp-brilink-topup',
-        component: () => import('@/webapp/views/PlaceholderView.vue'),
-        meta: {
-          title: 'BRILink — Top Up',
-          description: 'Top-up e-wallet, pulsa, paket data, dan token PLN.',
-          phase: 2,
-        },
+        path: 'retail/receipt',
+        name: 'webapp-receipt',
+        component: () => import('@/webapp/views/ReceiptView.vue'),
+        meta: { title: 'Struk Pembayaran' },
       },
     ],
   },
