@@ -11,6 +11,7 @@ export interface CashMutationPayload {
   shopId: string;
   type: 'CASH_IN' | 'CASH_OUT';
   amount: number;
+  categoryId?: string;
   category?: string;
   notes?: string;
 }

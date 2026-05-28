@@ -24,7 +24,7 @@
       <!-- Balance + Actions -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Saldo Kas</p>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Saldo Kas Total</p>
           <p class="text-lg font-bold font-mono text-slate-950 dark:text-slate-100 mt-1">{{ formatRupiah(cashBox?.balance ?? 0) }}</p>
           <p v-if="cashBox?.lastAudit" class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Audit terakhir: {{ formatDate(cashBox.lastAudit) }}</p>
         </div>
@@ -155,6 +155,13 @@
         <div class="absolute inset-0 bg-black/40" @click="showMutationModal = false"></div>
         <form class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleMutation">
           <h3 class="text-sm font-bold" :class="mutationType === 'CASH_IN' ? 'text-emerald-700 dark:text-emerald-400' : 'text-red-700 dark:text-red-400'">{{ mutationType === 'CASH_IN' ? 'Cash In' : 'Cash Out' }}</h3>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kas / Kategori *</label>
+            <select v-model="mutationCategoryId" required class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none">
+              <option value="">— Pilih Kas —</option>
+              <option v-for="cat in mutationCategories" :key="cat.id" :value="cat.id">{{ cat.name }} ({{ cat.code }})</option>
+            </select>
+          </div>
           <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Jumlah (Rp) *</label><input v-model.number="mutationAmount" type="number" min="1" required class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
           <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan</label><input v-model="mutationNotes" type="text" placeholder="Opsional" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" /></div>
           <div v-if="mutationError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ mutationError }}</div>
@@ -224,6 +231,8 @@ const showMutationModal = ref(false);
 const mutationType = ref<'CASH_IN' | 'CASH_OUT'>('CASH_IN');
 const mutationAmount = ref(0);
 const mutationNotes = ref('');
+const mutationCategoryId = ref('');
+const mutationCategories = ref<CashBoxCategoryDto[]>([]);
 const mutationError = ref<string | null>(null);
 const mutationSaving = ref(false);
 
@@ -240,8 +249,9 @@ async function fetchCashBox() { const s = getShopId(); if (!s) return; try { cas
 async function fetchHistory() { const s = getShopId(); if (!s) return; historyLoading.value = true; try { const res = await kasRetailService.getHistory({ shopId: s, startDate: mutasiStartDate.value || undefined, endDate: mutasiEndDate.value || undefined, page: 1, limit: 20 }); historyData.value = res.data; historyMeta.value = res.meta; historySummary.value = res.summary; } catch { historyData.value = []; } finally { historyLoading.value = false; } }
 async function fetchHistoryPage(p: number) { const s = getShopId(); if (!s) return; historyLoading.value = true; try { const res = await kasRetailService.getHistory({ shopId: s, startDate: mutasiStartDate.value || undefined, endDate: mutasiEndDate.value || undefined, page: p, limit: 20 }); historyData.value = res.data; historyMeta.value = res.meta; } catch { /* */ } finally { historyLoading.value = false; } }
 
-function openMutationModal(type: 'CASH_IN' | 'CASH_OUT') { mutationType.value = type; mutationAmount.value = 0; mutationNotes.value = ''; mutationError.value = null; showMutationModal.value = true; }
-async function handleMutation() { const s = getShopId(); if (!s) return; mutationSaving.value = true; mutationError.value = null; try { await kasRetailService.createMutation({ shopId: s, type: mutationType.value, amount: mutationAmount.value, notes: mutationNotes.value || undefined }); showMutationModal.value = false; await fetchCashBox(); await fetchHistory(); } catch (e: any) { mutationError.value = e?.response?.data?.message || e?.message || 'Gagal.'; } finally { mutationSaving.value = false; } }
+function openMutationModal(type: 'CASH_IN' | 'CASH_OUT') { mutationType.value = type; mutationAmount.value = 0; mutationNotes.value = ''; mutationCategoryId.value = ''; mutationError.value = null; showMutationModal.value = true; if (mutationCategories.value.length === 0) { fetchMutationCategories(); } }
+async function fetchMutationCategories() { try { const res = await cashBoxCategoryService.list(false); mutationCategories.value = res.data; } catch { /* */ } }
+async function handleMutation() { const s = getShopId(); if (!s) return; if (!mutationCategoryId.value) { mutationError.value = 'Pilih kas/kategori terlebih dahulu.'; return; } mutationSaving.value = true; mutationError.value = null; try { await kasRetailService.createMutation({ shopId: s, type: mutationType.value, amount: mutationAmount.value, categoryId: mutationCategoryId.value, notes: mutationNotes.value || undefined }); showMutationModal.value = false; await fetchCashBox(); await fetchHistory(); } catch (e: any) { mutationError.value = e?.response?.data?.message || e?.message || 'Gagal.'; } finally { mutationSaving.value = false; } }
 
 async function fetchCategories() { categoriesLoading.value = true; try { const res = await cashBoxCategoryService.list(true); categories.value = res.data; } catch { categories.value = []; } finally { categoriesLoading.value = false; } }
 function openCategoryModal(cat: CashBoxCategoryDto | null) { editingCategory.value = cat; categoryError.value = null; if (cat) { Object.assign(categoryForm, { code: cat.code, name: cat.name, color: cat.color || '', icon: cat.icon || '', isDefault: cat.isDefault, isActive: cat.isActive }); } else { Object.assign(categoryForm, { code: '', name: '', color: '', icon: '', isDefault: false, isActive: true }); } showCategoryModal.value = true; }

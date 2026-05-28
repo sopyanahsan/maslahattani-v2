@@ -38,6 +38,11 @@ export class CashMutationDto {
   @IsString()
   category: string;
 
+  @ApiPropertyOptional({ example: 'cashbox-retail-id', description: 'ID CashBoxCategory (kalau multi-kas)' })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
   @ApiPropertyOptional({ example: 'Beli kantong plastik' })
   @IsOptional()
   @IsString()
