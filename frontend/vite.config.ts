@@ -13,7 +13,21 @@ import { resolve } from 'node:path';
 //
 // Both bundles share src/shared/* → split into common chunks for cache reuse.
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    vue(),
+    // SPA fallback: /webapp/* routes serve webapp/index.html
+    {
+      name: 'webapp-spa-fallback',
+      configureServer(server) {
+        server.middlewares.use((req, _res, next) => {
+          if (req.url && req.url.startsWith('/webapp') && !req.url.includes('.')) {
+            req.url = '/webapp/index.html';
+          }
+          next();
+        });
+      },
+    },
+  ],
 
   resolve: {
     alias: {
