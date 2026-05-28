@@ -1,45 +1,7 @@
 <template>
   <div class="flex flex-col h-[calc(100vh-4rem)] overflow-hidden -mx-4 -mt-4">
-    <!-- === CHECKOUT MODE (desktop: split, mobile: modal) === -->
-    <template v-if="showCheckout">
-      <!-- Desktop/Tablet: Split View -->
-      <div class="hidden md:flex flex-1 overflow-hidden">
-        <!-- Left: Cart Items -->
-        <div class="flex-1 overflow-y-auto p-4 border-r border-slate-200">
-          <div class="flex items-center justify-between mb-4">
-            <h2 class="font-bold text-base text-slate-800">Keranjang ({{ totalItems }})</h2>
-            <button class="text-xs text-blue-600 font-semibold hover:underline" @click="showCheckout = false">← Kembali</button>
-          </div>
-          <div class="space-y-2">
-            <div v-for="item in cart" :key="item.productId" class="bg-white border border-slate-100 rounded-xl p-3">
-              <div class="flex items-center gap-3">
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-semibold text-slate-800 truncate">{{ item.name }}</p>
-                  <p class="text-[10px] text-slate-500">{{ item.quantity }} × {{ formatRupiah(item.price) }}</p>
-                </div>
-                <div class="flex items-center gap-1.5 shrink-0">
-                  <button class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center" @click="updateQty(item.productId, item.quantity - 1)"><MinusIcon class="w-3 h-3" /></button>
-                  <span class="w-6 text-center text-xs font-bold">{{ item.quantity }}</span>
-                  <button class="w-6 h-6 rounded-md bg-blue-50 flex items-center justify-center text-blue-600" @click="updateQty(item.productId, item.quantity + 1)"><PlusIcon class="w-3 h-3" /></button>
-                </div>
-                <span class="text-sm font-bold text-slate-800 w-24 text-right shrink-0">{{ formatRupiah(item.subtotal) }}</span>
-              </div>
-              <div class="flex items-center gap-2 mt-1.5">
-                <span class="text-[10px] text-slate-400">Diskon:</span>
-                <input :value="item.discount || 0" type="number" min="0" class="w-20 h-5 px-1.5 text-[10px] font-mono border border-slate-200 rounded text-right focus:border-blue-400 outline-none" @change="(e) => updateDiscount(item.productId, Number((e.target as HTMLInputElement).value) || 0)" />
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Right: Payment -->
-        <div class="w-80 lg:w-96 shrink-0 overflow-y-auto">
-          <CartPanel :cart="cart" :total-price="totalPrice" @update-qty="updateQty" @update-discount="updateDiscount" @checkout-success="handleCheckoutSuccess" />
-        </div>
-      </div>
-
-      <!-- Mobile: Modal -->
-      <CartModal class="md:hidden" :cart="cart" :total-price="totalPrice" @close="showCheckout = false" @update-qty="updateQty" @update-discount="updateDiscount" @remove-item="removeFromCart" @checkout-success="handleCheckoutSuccess" />
-    </template>
+    <!-- === CHECKOUT: Floating modal (same on all screen sizes) === -->
+    <CartModal v-if="showCheckout" :cart="cart" :total-price="totalPrice" @close="showCheckout = false" @update-qty="updateQty" @update-discount="updateDiscount" @remove-item="removeFromCart" @checkout-success="handleCheckoutSuccess" />
 
     <!-- === NORMAL MODE: Product Grid === -->
     <template v-else>
@@ -130,13 +92,12 @@ import { ref, computed, onMounted } from 'vue';
 import {
   Search as SearchIcon, Camera as CameraIcon, LayoutGrid as LayoutGridIcon,
   List as ListIcon, Package as PackageIcon, PlusCircle as PlusCircleIcon,
-  ShoppingCart as ShoppingCartIcon, Loader2 as Loader2Icon, Minus as MinusIcon, Plus as PlusIcon,
+  ShoppingCart as ShoppingCartIcon, Loader2 as Loader2Icon,
 } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import posService, { type POSProductDto, type CartItem, createCartItem, recalcCartItem } from '@/shared/services/pos.service';
 import CartModal from '@/webapp/components/cart/CartModal.vue';
-import CartPanel from '@/webapp/components/cart/CartPanel.vue';
 
 const router = useRouter();
 const authStore = useAuthStore();
