@@ -3,6 +3,12 @@ import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { DebtStatus } from '@prisma/client';
 
+export enum DebtSortBy {
+  NEWEST = 'newest',
+  DUE_DATE = 'due_date',
+  REMAINING_DESC = 'remaining_desc',
+}
+
 export class QueryDebtDto {
   @ApiPropertyOptional({ example: 'shop-id-123' })
   @IsOptional()
@@ -18,6 +24,21 @@ export class QueryDebtDto {
   @IsOptional()
   @IsString()
   customerName?: string;
+
+  @ApiPropertyOptional({ enum: DebtSortBy, description: 'Sort: newest | due_date | remaining_desc' })
+  @IsOptional()
+  @IsEnum(DebtSortBy)
+  sortBy?: DebtSortBy;
+
+  @ApiPropertyOptional({ example: '2026-06-01', description: 'Filter jatuh tempo dari tanggal' })
+  @IsOptional()
+  @IsString()
+  dueDateFrom?: string;
+
+  @ApiPropertyOptional({ example: '2026-06-30', description: 'Filter jatuh tempo sampai tanggal' })
+  @IsOptional()
+  @IsString()
+  dueDateTo?: string;
 
   @ApiPropertyOptional({ example: 1 })
   @IsOptional()
