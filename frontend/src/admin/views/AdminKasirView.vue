@@ -1,12 +1,18 @@
 <template>
   <div class="space-y-5">
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div>
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+      <div class="min-w-0">
         <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Multi-User</h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kelola akun kasir — buat user dengan username & PIN, reset PIN, assign toko.</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kelola akun kasir — buat user dengan username &amp; PIN, reset PIN, assign toko.</p>
       </div>
-      <button type="button" class="h-9 px-4 bg-violet-600 text-white text-xs font-semibold rounded-lg hover:bg-violet-700 transition-colors flex items-center gap-1.5 shrink-0" @click="openCreateModal">
-        <UserPlusIcon class="w-4 h-4" /> Tambah Kasir
+      <button
+        type="button"
+        style="background-color: #7c3aed; color: white;"
+        class="h-10 px-5 text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2 shrink-0 shadow-sm shadow-violet-200"
+        @click="openCreateModal"
+      >
+        <UserPlusIcon class="w-4 h-4" />
+        <span>Tambah Kasir</span>
       </button>
     </div>
 
