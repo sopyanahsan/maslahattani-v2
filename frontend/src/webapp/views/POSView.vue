@@ -1,5 +1,5 @@
 <template>
-  <div class="h-[calc(100vh-7.5rem)] overflow-hidden flex flex-col md:flex-row">
+  <div class="flex flex-col md:flex-row min-h-[calc(100vh-7.5rem)]">
 
     <!-- === LEFT COLUMN: Products (always visible) === -->
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
@@ -39,7 +39,7 @@
           <PackageIcon class="w-12 h-12 text-slate-300 mb-3" /><p class="text-sm text-slate-500">{{ searchQuery ? 'Produk tidak ditemukan' : 'Cari atau scan produk' }}</p>
         </div>
         <!-- Grid -->
-        <div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+        <div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
           <button v-for="product in filteredProducts" :key="product.id" :disabled="product.totalStock <= 0" class="bg-white border border-slate-200 rounded-xl p-2.5 text-left hover:border-violet-300 hover:shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed" @click="addToCart(product)">
             <div class="relative w-full aspect-[4/3] bg-slate-100 rounded-lg mb-2 overflow-hidden">
               <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />

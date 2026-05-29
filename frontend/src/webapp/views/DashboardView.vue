@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-5 p-4 max-w-3xl mx-auto overflow-y-auto h-full">
+  <div class="space-y-5 p-4">
     <!-- Top Bar: Greeting + Shift Button -->
     <header class="px-4 pt-4 pb-3 bg-white border-b border-slate-100">
       <div class="flex items-center justify-between mb-2">
