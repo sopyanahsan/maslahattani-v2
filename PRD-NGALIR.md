@@ -935,3 +935,210 @@ model QrisImage {
 - Image di-validate: hanya JPG/PNG, max 2MB
 - Tidak ada auto-confirm pembayaran (kasir manual konfirmasi setelah pelanggan bilang sudah bayar)
 - Future: webhook integration dengan payment gateway untuk auto-detect
+
+
+
+---
+
+## 20. Metode Bayar "Hutang" — Detail Flow (Sprint 3)
+
+### 20.1 Opsi Hutang di Payment Modal
+
+Saat kasir pilih metode **"Hutang"** di popup Pembayaran:
+
+#### A. Hutang Full (Seluruh Total)
+
+```
+┌─────────────────────────────────────┐
+│ Pembayaran                    [✕]   │
+│                                      │
+│ Total Bayar: Rp 50.000             │
+│                                      │
+│ Metode: [Tunai] [QRIS] [●Hutang]   │
+│                                      │
+│ ⚠ Seluruh transaksi Rp 50.000 akan │
+│   dicatat sebagai hutang.            │
+│                                      │
+│ 👤 Nama pelanggan *  [___________]  │
+│ 📱 No HP *           [___________]  │
+│ 📅 Jatuh tempo       [dd/mm/yyyy]  │
+│ 📝 Catatan           [___________]  │
+│                                      │
+│ [✓ Konfirmasi — Catat Hutang]       │
+└─────────────────────────────────────┘
+```
+
+**Behavior:**
+- Jumlah bayar otomatis = Rp 0
+- **Nama pelanggan & No HP menjadi WAJIB** (validasi frontend)
+- Jatuh tempo opsional (default: 30 hari dari sekarang)
+- Setelah konfirmasi:
+  - Transaction status = COMPLETED
+  - Payment amount = 0
+  - Debt record created: totalAmount = grandTotal, status = PENDING
+
+#### B. Hutang Partial (Bayar Sebagian, Sisa Hutang)
+
+```
+┌─────────────────────────────────────┐
+│ Pembayaran                    [✕]   │
+│                                      │
+│ Total Bayar: Rp 50.000             │
+│                                      │
+│ Metode: [●Tunai] [QRIS] [Hutang]   │
+│                                      │
+│ Jumlah Bayar: [  30.000  ]          │
+│ [1K][2K][5K]...[Uang Pas]          │
+│                                      │
+│ ⚠ Kurang Rp 20.000                 │
+│ ┌─────────────────────────────────┐ │
+│ │ ☐ Catat sisa sebagai hutang?    │ │
+│ │   Hutang: Rp 20.000             │ │
+│ │   👤 Nama *  [___________]      │ │
+│ │   📱 No HP * [___________]      │ │
+│ └─────────────────────────────────┘ │
+│                                      │
+│ [✓ Konfirmasi Transaksi]            │
+└─────────────────────────────────────┘
+```
+
+**Behavior:**
+- Kasir bayar Tunai/QRIS tapi jumlahnya < total
+- Sistem detect "kurang" dan tawarkan checkbox "Catat sisa sebagai hutang?"
+- Jika dicentang: Nama & No HP wajib
+- Setelah konfirmasi:
+  - Payment created: amount = 30.000 (Tunai)
+  - Debt created: totalAmount = 20.000, status = PENDING
+  - Transaction status = COMPLETED
+
+### 20.2 Backend Logic
+
+```typescript
+// POST /api/transactions/checkout
+// Jika paymentMethod === 'HUTANG':
+//   - Payment amount = 0
+//   - Create Debt full amount
+// Jika amountPaid < grandTotal && createDebtForRemainder === true:
+//   - Payment amount = amountPaid
+//   - Create Debt for (grandTotal - amountPaid)
+// Else jika amountPaid < grandTotal && createDebtForRemainder === false:
+//   - Reject: "Jumlah bayar kurang"
+```
+
+### 20.3 Struk untuk Transaksi Hutang
+
+```
+─────────────────────────────
+Ayam Bakar   1 x Rp 20.000
+Mie Goreng   1 x Rp 12.000
+─────────────────────────────
+Subtotal            Rp 32.000
+TOTAL               Rp 32.000
+─────────────────────────────
+Bayar (Tunai)       Rp 20.000
+HUTANG              Rp 12.000
+  → Atas nama: Pak Ahmad
+  → Jatuh tempo: 28/06/2026
+─────────────────────────────
+```
+
+---
+
+## 21. Metode Bayar "QRIS" — Flow Lengkap (Sprint 3)
+
+### 21.1 Prasyarat
+
+Admin harus sudah upload minimal 1 gambar QRIS di admin panel (lihat Section 19).
+
+### 21.2 Flow di Payment Modal
+
+```
+┌─────────────────────────────────────┐
+│ Pembayaran                    [✕]   │
+│                                      │
+│ Total Bayar: Rp 50.000             │
+│                                      │
+│ Metode: [Tunai] [●QRIS] [Hutang]   │
+│                                      │
+│ ┌─────────────────────────────────┐ │
+│ │  Tunjukkan QR ke pelanggan:     │ │
+│ │                                  │ │
+│ │       ┌──────────────┐          │ │
+│ │       │              │          │ │
+│ │       │   [QR CODE]  │          │ │
+│ │       │   (gambar)   │          │ │
+│ │       │              │          │ │
+│ │       └──────────────┘          │ │
+│ │       QRIS BRI — Toko ABC      │ │
+│ │                                  │ │
+│ │  (Jika >1 QR) [Pilih QR ▼]     │ │
+│ └─────────────────────────────────┘ │
+│                                      │
+│ 👤 Nama pelanggan (opsional)        │
+│ 📱 No HP (opsional)                │
+│ 📝 Catatan (opsional)              │
+│                                      │
+│ [✓ Konfirmasi — Pelanggan Sudah    │
+│    Membayar]                         │
+└─────────────────────────────────────┘
+```
+
+**Behavior:**
+- Saat QRIS dipilih:
+  - Jumlah Bayar & nominal buttons di-hide (tidak relevan)
+  - Kembalian di-hide (tidak ada kembalian di QRIS)
+  - Gambar QR muncul (fetch dari API `/api/shops/:id/qris`)
+  - Tombol konfirmasi berubah text: "Pelanggan Sudah Membayar"
+- Jika belum ada QR diupload: tampil pesan "Belum ada QRIS. Admin perlu upload di Pengaturan."
+- Setelah konfirmasi:
+  - Payment method = QRIS, amount = grandTotal
+  - Transaction status = COMPLETED
+
+### 21.3 Catatan Penting
+
+- **Tidak ada auto-verification** (belum ada integrasi payment gateway)
+- Kasir manual konfirmasi setelah pelanggan bilang sudah transfer/scan
+- Future enhancement: webhook dari payment provider untuk auto-confirm
+- Gambar QR diambil dari `QrisImage` model (admin upload via Cloudinary)
+
+---
+
+## 22. Sprint 1 Completion Checklist
+
+| # | Task | Status |
+|---|------|--------|
+| 1 | Rebrand "Maslahat Tani" → "Ngalir" | ✅ |
+| 2 | Primary color → blue-600 (per UI Showcase) | ✅ |
+| 3 | Login kasir: Username + PIN | ✅ |
+| 4 | mustChangePin flow (akun baru wajib ganti PIN) | ✅ |
+| 5 | Admin Multi-User: create kasir with PIN | ✅ |
+| 6 | Admin Multi-User: reset PIN | ✅ |
+| 7 | Email nullable (opsional, bukan wajib) | ✅ |
+| 8 | Bottom nav 5 tab (Beranda, BRILink, Kasir FAB, Laporan, Pengaturan) | ✅ |
+| 9 | Halaman /settings (profil, ganti PIN, shift, logout) | ✅ |
+| 10 | Halaman /reports (placeholder) | ✅ |
+| 11 | POS 2-kolom desktop/tablet | ✅ |
+| 12 | POS mobile: floating cart bar + bottom sheet | ✅ |
+| 13 | POS grid 4-col mobile, 5-col desktop | ✅ |
+| 14 | POS grid/list toggle visible on mobile | ✅ |
+| 15 | Payment Modal popup (Tunai, QRIS, Hutang) | ✅ |
+| 16 | Kas Tujuan dropdown (conditional) | ✅ |
+| 17 | Barcode/SKU scan modal + auto-add + toast | ✅ |
+| 18 | Inline diskon per item (CSS, bukan prompt) | ✅ |
+| 19 | Inline catatan per item | ✅ |
+| 20 | Diskon total transaksi (functional) | ✅ |
+| 21 | Simpan Bill (localStorage) | ✅ |
+| 22 | Nama + No HP equal width + opsional | ✅ |
+| 23 | Layout max-w-6xl centered (not full-bleed) | ✅ |
+| 24 | PRD: Email verification roadmap (Section 18) | ✅ |
+| 25 | PRD: QRIS image upload flow (Section 19) | ✅ |
+| 26 | PRD: Hutang full/partial flow (Section 20) | ✅ |
+| 27 | PRD: QRIS payment display flow (Section 21) | ✅ |
+
+**Sprint 1 = DONE** 🎉
+
+Selanjutnya Sprint 2:
+- Open Bill recall (load dari localStorage/backend)
+- Receipt Modal (popup struk: unduh JPG, bagikan, cetak)
+- Shift guard (block POS jika belum buka shift)
+- Backend: save bill endpoint (Transaction status=PENDING)

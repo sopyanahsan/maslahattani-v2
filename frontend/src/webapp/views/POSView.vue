@@ -149,11 +149,11 @@
         <div class="flex gap-2">
           <div class="flex-1 relative">
             <UserIcon class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-            <input v-model="customerName" type="text" placeholder="Nama pelanggan" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
+            <input v-model="customerName" type="text" placeholder="Nama pelanggan (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
           </div>
           <div class="flex-1 relative">
             <PhoneIcon class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-            <input v-model="customerPhone" type="text" placeholder="No HP" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
+            <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
           </div>
         </div>
 
@@ -258,11 +258,11 @@
             <div class="flex gap-2">
               <div class="flex-1 relative">
                 <UserIcon class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                <input v-model="customerName" type="text" placeholder="Nama pelanggan" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
+                <input v-model="customerName" type="text" placeholder="Nama pelanggan (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
               </div>
               <div class="flex-1 relative">
                 <PhoneIcon class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                <input v-model="customerPhone" type="text" placeholder="No HP" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
+                <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
               </div>
             </div>
             <div>
