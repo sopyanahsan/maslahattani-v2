@@ -1,9 +1,16 @@
 <template>
   <div class="space-y-5 p-4">
-    <header>
+    <!-- Header -->
+    <header class="flex items-center gap-2">
+      <BarChart3Icon class="w-5 h-5 text-blue-600" />
       <h1 class="font-bold text-lg text-slate-800">Laporan</h1>
-      <p class="text-xs text-slate-500 mt-0.5">Ringkasan penjualan & performa hari ini</p>
     </header>
+
+    <!-- Period Toggle -->
+    <div class="flex rounded-xl bg-slate-100 p-1">
+      <button :class="['flex-1 py-2 text-sm font-semibold rounded-lg transition-all', period === '7d' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500']" @click="period = '7d'; fetchAll()">7 Hari</button>
+      <button :class="['flex-1 py-2 text-sm font-semibold rounded-lg transition-all', period === '30d' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500']" @click="period = '30d'; fetchAll()">30 Hari</button>
+    </div>
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
@@ -11,86 +18,103 @@
     </div>
 
     <template v-else>
-      <!-- Today Summary Card -->
-      <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-5 text-white shadow-md">
-        <p class="text-xs font-medium opacity-80 mb-1">Penjualan Hari Ini</p>
-        <h2 class="text-2xl font-bold font-mono">{{ formatRupiah(statsData.omzet) }}</h2>
-        <p class="text-[11px] opacity-70 mt-1">{{ statsData.totalTransaksi }} transaksi</p>
-      </div>
-
-      <!-- Stats Grid (2x2) -->
-      <div class="grid grid-cols-2 gap-3">
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <p class="text-[10px] text-slate-500 font-medium uppercase mb-1">Profit</p>
-          <p class="text-lg font-bold font-mono text-emerald-600">{{ formatRupiah(statsData.profit) }}</p>
+      <!-- Summary Cards (3 cols) -->
+      <div class="grid grid-cols-3 gap-3">
+        <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
+          <ShoppingCartIcon class="w-5 h-5 text-blue-600 mx-auto mb-2" />
+          <p class="text-xl font-bold text-slate-900">{{ stats.totalTransaksi }}</p>
+          <p class="text-[10px] text-slate-500">Transaksi</p>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <p class="text-[10px] text-slate-500 font-medium uppercase mb-1">Hutang Baru</p>
-          <p class="text-lg font-bold font-mono text-amber-600">{{ formatRupiah(statsData.totalHutang) }}</p>
-          <p class="text-[10px] text-slate-400">{{ statsData.jumlahHutang }} transaksi</p>
+        <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
+          <TrendingUpIcon class="w-5 h-5 text-emerald-500 mx-auto mb-2" />
+          <p class="text-lg font-bold text-slate-900 font-mono">{{ formatRupiahShort(stats.omzet) }}</p>
+          <p class="text-[10px] text-slate-500">Penjualan</p>
         </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <p class="text-[10px] text-slate-500 font-medium uppercase mb-1">Total Diskon</p>
-          <p class="text-lg font-bold font-mono text-slate-700">{{ formatRupiah(statsData.diskon) }}</p>
-        </div>
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <p class="text-[10px] text-slate-500 font-medium uppercase mb-1">Void</p>
-          <p class="text-lg font-bold font-mono text-red-500">{{ statsData.totalVoid }}</p>
+        <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
+          <TrendingUpIcon class="w-5 h-5 text-emerald-500 mx-auto mb-2" />
+          <p class="text-lg font-bold text-slate-900 font-mono">{{ formatRupiahShort(stats.profit) }}</p>
+          <p class="text-[10px] text-slate-500">Profit</p>
         </div>
       </div>
 
-      <!-- Payment Method Breakdown -->
-      <div>
-        <h3 class="text-sm font-bold text-slate-800 mb-3">Breakdown Metode Bayar</h3>
-        <div class="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
-          <div v-for="pm in paymentBreakdown" :key="pm.method" class="flex items-center gap-3">
-            <div class="flex-1">
-              <div class="flex items-center justify-between mb-1">
-                <span class="text-xs font-medium text-slate-700">{{ pm.label }}</span>
-                <span class="text-xs font-mono text-slate-600">{{ pm.count }} trx · {{ pm.percent }}%</span>
-              </div>
-              <div class="h-2 bg-slate-100 rounded-full overflow-hidden">
-                <div class="h-full rounded-full transition-all" :style="{ width: pm.percent + '%', backgroundColor: pm.color }"></div>
-              </div>
+      <!-- Laba Rugi Section -->
+      <div class="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
+        <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+          <DollarSignIcon class="w-4 h-4" /> Laba Rugi
+        </h3>
+        <div class="space-y-2 text-sm">
+          <div class="flex justify-between items-center">
+            <span class="flex items-center gap-1.5 text-slate-700"><ArrowUpIcon class="w-3.5 h-3.5 text-emerald-500" /> Pendapatan Kotor</span>
+            <span class="font-mono text-slate-900">{{ formatRupiah(stats.omzet) }}</span>
+          </div>
+          <div class="border-t border-slate-100 pt-2">
+            <div class="flex justify-between items-center">
+              <span class="text-slate-700 font-medium">Penjualan Bersih</span>
+              <span class="font-mono text-slate-900">{{ formatRupiah(stats.omzet - stats.diskon) }}</span>
+            </div>
+            <div class="flex justify-between items-center mt-1">
+              <span class="flex items-center gap-1.5 text-red-500"><ArrowDownIcon class="w-3.5 h-3.5" /> HPP (Modal)</span>
+              <span class="font-mono text-red-500">-{{ formatRupiah(stats.modal) }}</span>
             </div>
           </div>
-          <div v-if="paymentBreakdown.length === 0" class="text-center py-4 text-xs text-slate-400">
-            Belum ada data transaksi
+          <div class="border-t border-slate-100 pt-2">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-slate-900">Laba Kotor</span>
+              <span class="font-mono font-bold text-emerald-600">{{ formatRupiah(stats.profit) }}</span>
+            </div>
+            <div class="flex justify-between items-center mt-0.5">
+              <span class="text-xs text-slate-500">Margin Kotor</span>
+              <span class="text-xs text-slate-500">{{ marginPercent }}%</span>
+            </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Top Products -->
-      <div>
-        <h3 class="text-sm font-bold text-slate-800 mb-3">Produk Terlaris</h3>
-        <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-          <div v-if="topProducts.length === 0" class="p-6 text-center">
-            <TrendingUpIcon class="w-8 h-8 mx-auto mb-2 text-slate-300" />
-            <p class="text-xs text-slate-400">Belum ada data</p>
-          </div>
-          <div v-else class="divide-y divide-slate-100">
-            <div v-for="(prod, idx) in topProducts" :key="prod.name" class="flex items-center justify-between px-4 py-3">
-              <div class="flex items-center gap-3">
-                <span class="w-6 h-6 rounded-full bg-blue-50 text-blue-600 text-[10px] font-bold flex items-center justify-center">{{ idx + 1 }}</span>
-                <div>
-                  <p class="text-sm font-medium text-slate-800">{{ prod.name }}</p>
-                  <p class="text-[10px] text-slate-500">{{ prod.totalQty }}x terjual</p>
-                </div>
-              </div>
-              <span class="text-xs font-mono font-bold text-slate-700">{{ formatRupiah(prod.totalRevenue) }}</span>
+          <div class="border-t border-slate-100 pt-2">
+            <div class="flex justify-between items-center">
+              <span class="font-bold text-slate-900">Laba Bersih</span>
+              <span class="font-mono font-bold text-emerald-600">{{ formatRupiah(stats.profit) }}</span>
+            </div>
+            <div class="flex justify-between items-center mt-0.5">
+              <span class="text-xs text-slate-500">Margin Bersih</span>
+              <span class="text-xs text-slate-500">{{ marginPercent }}%</span>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 7-Day Chart Placeholder -->
-      <div>
-        <h3 class="text-sm font-bold text-slate-800 mb-3">Grafik 7 Hari</h3>
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <div class="flex items-end gap-1 h-32">
-            <div v-for="(day, i) in weeklyData" :key="i" class="flex-1 flex flex-col items-center gap-1">
-              <div class="w-full bg-blue-500 rounded-t transition-all" :style="{ height: day.heightPercent + '%', minHeight: '4px' }"></div>
-              <span class="text-[9px] text-slate-500">{{ day.label }}</span>
+      <!-- Tren Penjualan (Bar Chart with Hover) -->
+      <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <h3 class="text-sm font-bold text-slate-800 mb-4">Tren Penjualan</h3>
+        <div class="flex items-end gap-1 h-40 relative">
+          <div v-for="(day, i) in chartData" :key="i" class="flex-1 flex flex-col items-center justify-end h-full relative group cursor-pointer">
+            <!-- Tooltip on hover -->
+            <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white border border-slate-200 rounded-lg shadow-lg px-3 py-2 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+              <p class="font-bold text-slate-800">{{ day.dateLabel }}</p>
+              <p class="text-blue-600">Penjualan: {{ formatRupiah(day.value) }}</p>
+            </div>
+            <!-- Bar -->
+            <div class="w-full rounded-t transition-all group-hover:opacity-80" :class="day.value > 0 ? 'bg-blue-500' : 'bg-slate-200'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px' }"></div>
+            <!-- Date label -->
+            <span class="text-[9px] text-slate-500 mt-1.5">{{ day.shortLabel }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Produk Terlaris -->
+      <div class="bg-white rounded-xl border border-slate-200 p-4">
+        <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-1.5">
+          <PackageIcon class="w-4 h-4" /> Produk Terlaris
+        </h3>
+        <div v-if="topProducts.length === 0" class="text-center py-6 text-xs text-slate-400">
+          Belum ada data produk
+        </div>
+        <div v-else class="space-y-3">
+          <div v-for="(prod, idx) in topProducts" :key="prod.name" class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span :class="['w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center', idx < 3 ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600']">{{ idx + 1 }}</span>
+              <span class="text-sm font-medium text-slate-800">{{ prod.name }}</span>
+            </div>
+            <div class="text-right">
+              <p class="text-sm font-bold font-mono text-slate-900">{{ formatRupiah(prod.totalRevenue) }}</p>
+              <p class="text-[10px] text-slate-500">{{ prod.totalQty }} terjual · laba {{ formatRupiah(prod.profit) }}</p>
             </div>
           </div>
         </div>
@@ -100,106 +124,123 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
-import { Loader2 as Loader2Icon, TrendingUp as TrendingUpIcon } from 'lucide-vue-next';
+import { onMounted, ref, computed } from 'vue';
+import {
+  BarChart3 as BarChart3Icon, Loader2 as Loader2Icon,
+  ShoppingCart as ShoppingCartIcon, TrendingUp as TrendingUpIcon,
+  DollarSign as DollarSignIcon, ArrowUp as ArrowUpIcon,
+  ArrowDown as ArrowDownIcon, Package as PackageIcon,
+} from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import api from '@/shared/services/api';
 
 const authStore = useAuthStore();
 const loading = ref(true);
+const period = ref<'7d' | '30d'>('7d');
 
-const statsData = ref({
-  omzet: 0, modal: 0, profit: 0, diskon: 0,
-  totalTransaksi: 0, totalVoid: 0, totalHutang: 0, jumlahHutang: 0,
+const stats = ref({ omzet: 0, modal: 0, profit: 0, diskon: 0, totalTransaksi: 0, totalVoid: 0, totalHutang: 0, jumlahHutang: 0 });
+const chartData = ref<Array<{ dateLabel: string; shortLabel: string; value: number; heightPercent: number }>>([]);
+const topProducts = ref<Array<{ name: string; totalQty: number; totalRevenue: number; profit: number }>>([]);
+
+const marginPercent = computed(() => {
+  if (stats.value.omzet === 0) return '0.0';
+  return ((stats.value.profit / stats.value.omzet) * 100).toFixed(1);
 });
 
-const paymentBreakdown = ref<Array<{ method: string; label: string; count: number; percent: number; color: string }>>([]);
-const topProducts = ref<Array<{ name: string; totalQty: number; totalRevenue: number }>>([]);
-const weeklyData = ref<Array<{ label: string; value: number; heightPercent: number }>>([]);
-
-function formatRupiah(n: number): string {
+function formatRupiah(n: number): string { return 'Rp ' + n.toLocaleString('id-ID'); }
+function formatRupiahShort(n: number): string {
+  if (n >= 1000000) return 'Rp ' + (n / 1000000).toFixed(1) + 'jt';
+  if (n >= 1000) return 'Rp ' + (n / 1000).toFixed(0) + 'rb';
   return 'Rp ' + n.toLocaleString('id-ID');
+}
+
+function getDateRange(): { startDate: string; endDate: string } {
+  const end = new Date();
+  const start = new Date();
+  start.setDate(end.getDate() - (period.value === '7d' ? 6 : 29));
+  return {
+    startDate: start.toISOString().slice(0, 10),
+    endDate: end.toISOString().slice(0, 10),
+  };
 }
 
 async function fetchStats() {
   const shopId = authStore.user?.shopId;
   if (!shopId) return;
-
   try {
-    const today = new Date().toISOString().slice(0, 10);
-    const { data } = await api.get('/transactions/stats', {
-      params: { shopId, startDate: today, endDate: today },
-    });
-    statsData.value = data;
+    const { startDate, endDate } = getDateRange();
+    const { data } = await api.get('/transactions/stats', { params: { shopId, startDate, endDate } });
+    stats.value = data;
   } catch { /* silent */ }
 }
 
-async function fetchPaymentBreakdown() {
+async function fetchChart() {
   const shopId = authStore.user?.shopId;
   if (!shopId) return;
-
   try {
-    const today = new Date().toISOString().slice(0, 10);
-    const { data } = await api.get('/transactions', {
-      params: { shopId, startDate: today, endDate: today, limit: 200 },
-    });
-    const trxList = data.data || [];
-    const methodCounts: Record<string, number> = {};
-    for (const trx of trxList) {
-      if (trx.status !== 'COMPLETED') continue;
-      const m = trx.payments?.[0]?.method || 'CASH';
-      methodCounts[m] = (methodCounts[m] || 0) + 1;
+    const days = period.value === '7d' ? 7 : 30;
+    const { startDate, endDate } = getDateRange();
+    const { data } = await api.get('/transactions', { params: { shopId, startDate, endDate, limit: 500 } });
+    const trxList = (data.data || []).filter((t: any) => t.status === 'COMPLETED');
+
+    // Group by date
+    const dailyMap: Record<string, number> = {};
+    for (let i = 0; i < days; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() - (days - 1 - i));
+      dailyMap[d.toISOString().slice(0, 10)] = 0;
     }
-    const total = Object.values(methodCounts).reduce((s, c) => s + c, 0) || 1;
-    const colors: Record<string, string> = { CASH: '#2563eb', QRIS: '#7c3aed', TRANSFER: '#0ea5e9', HUTANG: '#d97706' };
-    const labels: Record<string, string> = { CASH: 'Tunai', QRIS: 'QRIS', TRANSFER: 'Transfer', HUTANG: 'Hutang' };
-    paymentBreakdown.value = Object.entries(methodCounts).map(([method, count]) => ({
-      method, label: labels[method] || method, count,
-      percent: Math.round((count / total) * 100),
-      color: colors[method] || '#64748b',
-    }));
-  } catch { /* silent */ }
+    for (const trx of trxList) {
+      const dateKey = trx.createdAt.slice(0, 10);
+      if (dailyMap[dateKey] !== undefined) dailyMap[dateKey] += trx.totalPrice;
+    }
+
+    const values = Object.values(dailyMap);
+    const maxVal = Math.max(...values, 1);
+
+    chartData.value = Object.entries(dailyMap).map(([date, value]) => {
+      const d = new Date(date);
+      return {
+        dateLabel: d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' }),
+        shortLabel: d.toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit' }),
+        value,
+        heightPercent: Math.max((value / maxVal) * 100, 0),
+      };
+    });
+  } catch { chartData.value = []; }
 }
 
 async function fetchTopProducts() {
   const shopId = authStore.user?.shopId;
   if (!shopId) return;
-
   try {
-    const today = new Date().toISOString().slice(0, 10);
-    const { data } = await api.get('/transactions', {
-      params: { shopId, startDate: today, endDate: today, limit: 200 },
-    });
-    const trxList = data.data || [];
-    const productMap: Record<string, { name: string; totalQty: number; totalRevenue: number }> = {};
+    const { startDate, endDate } = getDateRange();
+    const { data } = await api.get('/transactions', { params: { shopId, startDate, endDate, limit: 500 } });
+    const trxList = (data.data || []).filter((t: any) => t.status === 'COMPLETED');
+
+    const productMap: Record<string, { name: string; totalQty: number; totalRevenue: number; totalCost: number }> = {};
     for (const trx of trxList) {
-      if (trx.status !== 'COMPLETED') continue;
       for (const item of (trx.items || [])) {
         const name = item.product?.name || item.productId;
-        if (!productMap[name]) productMap[name] = { name, totalQty: 0, totalRevenue: 0 };
+        if (!productMap[name]) productMap[name] = { name, totalQty: 0, totalRevenue: 0, totalCost: 0 };
         productMap[name].totalQty += item.quantity;
         productMap[name].totalRevenue += item.subtotal;
+        productMap[name].totalCost += (item.unitPrice - (item.subtotal / item.quantity)) * item.quantity; // approximate
       }
     }
+
     topProducts.value = Object.values(productMap)
-      .sort((a, b) => b.totalQty - a.totalQty)
+      .map(p => ({ ...p, profit: p.totalRevenue - p.totalCost }))
+      .sort((a, b) => b.totalRevenue - a.totalRevenue)
       .slice(0, 5);
-  } catch { /* silent */ }
+  } catch { topProducts.value = []; }
 }
 
-function generateWeeklyPlaceholder() {
-  const days = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
-  const today = new Date().getDay(); // 0=Sun
-  weeklyData.value = days.map((label, i) => {
-    const value = i <= (today === 0 ? 6 : today - 1) ? Math.floor(Math.random() * 80) + 20 : 0;
-    return { label, value, heightPercent: value };
-  });
-}
-
-onMounted(async () => {
+async function fetchAll() {
   loading.value = true;
-  await Promise.all([fetchStats(), fetchPaymentBreakdown(), fetchTopProducts()]);
-  generateWeeklyPlaceholder();
+  await Promise.all([fetchStats(), fetchChart(), fetchTopProducts()]);
   loading.value = false;
-});
+}
+
+onMounted(fetchAll);
 </script>
