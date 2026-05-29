@@ -68,7 +68,7 @@ class ThermalPrintService {
 
   /**
    * Pair and connect to a Bluetooth thermal printer.
-   * Shows browser pairing dialog.
+   * Shows browser pairing dialog — user picks printer from list.
    */
   async connect(): Promise<boolean> {
     if (!navigator.bluetooth) {
@@ -76,41 +76,51 @@ class ThermalPrintService {
     }
 
     try {
+      // Accept all Bluetooth devices (most thermal printers don't advertise standard services)
       this.device = await navigator.bluetooth.requestDevice({
-        filters: [
-          { services: [SERIAL_SERVICE_UUID] },
-          { services: [ALT_SERVICE_UUID] },
-          { namePrefix: 'Printer' },
-          { namePrefix: 'POS' },
-          { namePrefix: 'BT' },
-          { namePrefix: 'XP' },
-        ],
-        optionalServices: [SERIAL_SERVICE_UUID, ALT_SERVICE_UUID],
+        acceptAllDevices: true,
+        optionalServices: [SERIAL_SERVICE_UUID, ALT_SERVICE_UUID, '000018f0-0000-1000-8000-00805f9b34fb', '0000ff00-0000-1000-8000-00805f9b34fb', 'e7810a71-73ae-499d-8c15-faa9aef0c3f2'],
       });
 
       const server = await this.device.gatt!.connect();
 
-      // Try primary service first, fallback to alt
-      let service: BluetoothRemoteGATTService;
-      try {
-        service = await server.getPrimaryService(SERIAL_SERVICE_UUID);
-      } catch {
-        service = await server.getPrimaryService(ALT_SERVICE_UUID);
+      // Try different service UUIDs (printers vary widely)
+      const serviceUUIDs = [SERIAL_SERVICE_UUID, ALT_SERVICE_UUID, 'e7810a71-73ae-499d-8c15-faa9aef0c3f2'];
+      let service: BluetoothRemoteGATTService | null = null;
+
+      for (const uuid of serviceUUIDs) {
+        try {
+          service = await server.getPrimaryService(uuid);
+          break;
+        } catch { continue; }
       }
 
-      // Try primary characteristic first, fallback to alt
-      try {
-        this.characteristic = await service.getCharacteristic(SERIAL_CHAR_UUID);
-      } catch {
-        this.characteristic = await service.getCharacteristic(ALT_CHAR_UUID);
+      if (!service) {
+        // Try getting any available service
+        const services = await server.getPrimaryServices();
+        if (services.length > 0) service = services[0];
+      }
+
+      if (!service) {
+        throw new Error('Tidak bisa menemukan service printer. Coba restart printer.');
+      }
+
+      // Get writable characteristic
+      const characteristics = await service.getCharacteristics();
+      this.characteristic = characteristics.find(c =>
+        c.properties.write || c.properties.writeWithoutResponse
+      ) || characteristics[0];
+
+      if (!this.characteristic) {
+        throw new Error('Tidak bisa menemukan characteristic untuk menulis ke printer.');
       }
 
       this._connected = true;
       return true;
     } catch (err: any) {
       this._connected = false;
-      if (err.name === 'NotFoundError') {
-        throw new Error('Tidak ada printer ditemukan. Pastikan printer menyala dan Bluetooth aktif.');
+      if (err.name === 'NotFoundError' || err.message?.includes('User cancelled')) {
+        throw new Error('cancelled');
       }
       throw new Error(`Gagal connect: ${err.message}`);
     }

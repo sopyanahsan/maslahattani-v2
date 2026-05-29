@@ -911,32 +911,39 @@ function handleShareReceipt() {
 }
 
 function handlePrintReceipt() {
-  // Try thermal print first, fallback to window.print
+  if (!receiptData.value) return;
+
   import('@/shared/services/thermal-print.service').then(async ({ thermalPrint }) => {
-    if (thermalPrint.isConnected && receiptData.value) {
-      try {
-        await thermalPrint.printReceipt({
-          shopName: receiptData.value.shopName,
-          trxNumber: receiptData.value.trxNumber,
-          date: receiptData.value.date,
-          cashierName: receiptData.value.cashierName,
-          items: receiptData.value.items,
-          subtotal: receiptData.value.total,
-          total: receiptData.value.total,
-          paid: receiptData.value.paid,
-          change: receiptData.value.change,
-          method: receiptData.value.method,
-        });
-        showToast('Struk dicetak ke printer thermal', 'success');
-        return;
-      } catch (err: any) {
-        showToast(err.message || 'Gagal cetak thermal', 'error');
+    try {
+      // Always show Bluetooth pairing dialog to select printer
+      if (!thermalPrint.isConnected) {
+        showToast('Mencari printer Bluetooth...', 'info');
+        await thermalPrint.connect();
+      }
+
+      // Send receipt to thermal printer
+      await thermalPrint.printReceipt({
+        shopName: receiptData.value!.shopName,
+        trxNumber: receiptData.value!.trxNumber,
+        date: receiptData.value!.date,
+        cashierName: receiptData.value!.cashierName,
+        items: receiptData.value!.items,
+        subtotal: receiptData.value!.total,
+        total: receiptData.value!.total,
+        paid: receiptData.value!.paid,
+        change: receiptData.value!.change,
+        method: receiptData.value!.method,
+      });
+      showToast(`Struk tercetak ke ${thermalPrint.deviceName}`, 'success');
+    } catch (err: any) {
+      if (err.message?.includes('cancelled') || err.message?.includes('NotFound')) {
+        showToast('Pairing dibatalkan', 'info');
+      } else {
+        showToast(err.message || 'Gagal cetak. Pastikan printer menyala.', 'error');
       }
     }
-    // Fallback: browser print
-    window.print();
   }).catch(() => {
-    window.print();
+    showToast('Bluetooth tidak tersedia di browser ini. Gunakan Chrome/Edge.', 'error');
   });
 }
 
