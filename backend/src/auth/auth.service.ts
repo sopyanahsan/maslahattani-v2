@@ -348,7 +348,7 @@ export class AuthService {
     });
 
     // Don't reveal if user exists or not (security)
-    if (!user) {
+    if (!user || !user.email) {
       return {
         success: true,
         message: 'Jika email terdaftar, kode OTP akan dikirim.',
