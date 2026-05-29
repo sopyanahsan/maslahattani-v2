@@ -401,6 +401,114 @@
       </div>
     </Teleport>
 
+    <!-- === RECEIPT MODAL (popup struk setelah bayar) === -->
+    <Teleport to="body">
+      <div v-if="showReceiptModal && receiptData" class="fixed inset-0 z-50 flex items-center justify-center p-3">
+        <div class="absolute inset-0 bg-black/60"></div>
+        <div class="relative bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+          <!-- Success toast bar -->
+          <div class="bg-emerald-500 px-4 py-2.5 flex items-center gap-2 text-white text-sm font-medium">
+            <CheckIcon class="w-4 h-4" />
+            <span>Transaksi berhasil! {{ receiptData.trxNumber }}</span>
+          </div>
+          <!-- Header -->
+          <div class="flex items-center justify-between px-5 pt-4 pb-2">
+            <h3 class="text-base font-bold text-slate-800">Struk Transaksi</h3>
+            <button class="p-1 hover:bg-slate-100 rounded-lg" @click="closeReceipt"><XIcon class="w-5 h-5 text-slate-500" /></button>
+          </div>
+          <!-- Receipt content -->
+          <div class="px-5 pb-4">
+            <div class="border border-slate-200 rounded-xl p-4 space-y-3 text-sm">
+              <!-- Shop name -->
+              <p class="text-center font-bold text-slate-800">{{ receiptData.shopName }}</p>
+              <div class="border-t border-dashed border-slate-200"></div>
+              <!-- Meta -->
+              <div class="flex justify-between text-[11px] text-slate-500">
+                <span>No: {{ receiptData.trxNumber }}</span>
+                <span>{{ receiptData.method }}</span>
+              </div>
+              <div class="flex justify-between text-[11px] text-slate-500">
+                <span>{{ receiptData.date }}</span>
+                <span>Kasir: {{ receiptData.cashierName }}</span>
+              </div>
+              <div class="border-t border-dashed border-slate-200"></div>
+              <!-- Items -->
+              <div class="space-y-1.5">
+                <div v-for="(item, idx) in receiptData.items" :key="idx" class="flex justify-between text-xs">
+                  <div>
+                    <p class="text-slate-800">{{ item.name }}</p>
+                    <p class="text-slate-500">{{ item.qty }} x {{ formatRupiah(item.price) }}</p>
+                  </div>
+                  <span class="font-mono text-slate-700 shrink-0">{{ formatRupiah(item.subtotal) }}</span>
+                </div>
+              </div>
+              <div class="border-t border-dashed border-slate-200"></div>
+              <!-- Totals -->
+              <div class="space-y-1">
+                <div class="flex justify-between text-xs text-slate-600">
+                  <span>Subtotal</span>
+                  <span class="font-mono">{{ formatRupiah(receiptData.total) }}</span>
+                </div>
+                <div class="flex justify-between text-sm font-bold text-slate-900">
+                  <span>TOTAL</span>
+                  <span class="font-mono">{{ formatRupiah(receiptData.total) }}</span>
+                </div>
+                <div class="flex justify-between text-xs text-slate-600">
+                  <span>Bayar</span>
+                  <span class="font-mono">{{ formatRupiah(receiptData.paid) }}</span>
+                </div>
+                <div v-if="receiptData.change > 0" class="flex justify-between text-xs text-slate-600">
+                  <span>Kembali</span>
+                  <span class="font-mono">{{ formatRupiah(receiptData.change) }}</span>
+                </div>
+              </div>
+              <div class="border-t border-dashed border-slate-200"></div>
+              <p class="text-center text-[10px] text-slate-400">Terima kasih atas kunjungan Anda!</p>
+            </div>
+          </div>
+          <!-- Action buttons -->
+          <div class="px-5 pb-5 space-y-2">
+            <div class="grid grid-cols-3 gap-2">
+              <button class="h-10 flex flex-col items-center justify-center border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors" @click="handleDownloadReceipt">
+                <DownloadIcon class="w-4 h-4 text-slate-600" />
+                <span class="text-[9px] text-slate-500 mt-0.5">Unduh</span>
+              </button>
+              <button class="h-10 flex flex-col items-center justify-center border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors" @click="handleShareReceipt">
+                <Share2Icon class="w-4 h-4 text-slate-600" />
+                <span class="text-[9px] text-slate-500 mt-0.5">Bagikan</span>
+              </button>
+              <button class="h-10 flex flex-col items-center justify-center border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors" @click="handlePrintReceipt">
+                <PrinterIcon class="w-4 h-4 text-slate-600" />
+                <span class="text-[9px] text-slate-500 mt-0.5">Cetak</span>
+              </button>
+            </div>
+            <button class="w-full h-10 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-colors" @click="closeReceipt">
+              Selesai
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- === SHIFT GUARD (block POS if no open shift) === -->
+    <Teleport to="body">
+      <div v-if="showShiftGuard" class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-900/70">
+        <div class="relative bg-white rounded-2xl w-full max-w-sm p-6 text-center space-y-4 shadow-2xl">
+          <div class="w-16 h-16 bg-amber-50 rounded-full flex items-center justify-center mx-auto">
+            <AlertTriangleIcon class="w-8 h-8 text-amber-500" />
+          </div>
+          <h3 class="text-lg font-bold text-slate-800">Shift Belum Dibuka</h3>
+          <p class="text-sm text-slate-600">Anda harus membuka shift terlebih dahulu sebelum bisa melakukan transaksi di kasir.</p>
+          <button class="w-full h-11 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2" style="background-color: #2563eb;" @click="router.push({ name: 'webapp-retail-shift' })">
+            <PlayIcon class="w-5 h-5" /> Buka Shift Sekarang
+          </button>
+          <button class="w-full h-10 text-sm text-slate-500 hover:text-slate-700" @click="router.push({ name: 'webapp-dashboard' })">
+            Kembali ke Beranda
+          </button>
+        </div>
+      </div>
+    </Teleport>
+
   </div>
 </template>
 
@@ -414,14 +522,20 @@ import {
   X as XIcon, Minus as MinusIcon, Plus as PlusIcon,
   Tag as TagIcon, Edit3 as EditIcon, User as UserIcon, Phone as PhoneIcon,
   Save as SaveIcon, CreditCard as CreditCardIcon, Check as CheckIcon,
-  ClipboardList as ClipboardListIcon,
+  ClipboardList as ClipboardListIcon, Download as DownloadIcon,
+  Share2 as Share2Icon, Printer as PrinterIcon, AlertTriangle as AlertTriangleIcon,
+  Play as PlayIcon,
 } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShiftStore } from '@/shared/stores/shift.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import posService, { type POSProductDto, type CartItem, createCartItem, recalcCartItem } from '@/shared/services/pos.service';
 
 const router = useRouter();
 const authStore = useAuthStore();
+const shiftStore = useShiftStore();
+const shopStore = useShopStore();
 
 // Product state
 const searchQuery = ref('');
@@ -447,9 +561,25 @@ let toastTimer: ReturnType<typeof setTimeout> | null = null;
 const showScanModal = ref(false);
 const showMobileCart = ref(false);
 const showPaymentModal = ref(false);
+const showReceiptModal = ref(false);
 const showOpenBill = ref(false);
+const showShiftGuard = ref(false);
 const scanInput = ref('');
 const savedBills = ref<any[]>([]);
+
+// Receipt data (after successful checkout)
+const receiptData = ref<{
+  trxNumber: string;
+  items: any[];
+  total: number;
+  paid: number;
+  change: number;
+  method: string;
+  customerName: string;
+  cashierName: string;
+  shopName: string;
+  date: string;
+} | null>(null);
 
 // Payment state
 const paymentMethod = ref('Tunai');
@@ -579,7 +709,7 @@ async function handleCheckout() {
   checking.value = true;
   checkoutError.value = null;
 
-  const methodMap: Record<string, string> = { 'Tunai': 'CASH', 'Transfer': 'TRANSFER', 'QRIS': 'QRIS' };
+  const methodMap: Record<string, string> = { 'Tunai': 'CASH', 'Transfer': 'TRANSFER', 'QRIS': 'QRIS', 'Hutang': 'HUTANG' };
   const idempotencyKey = crypto.randomUUID();
   const payload = {
     items: cart.value.map(i => ({
@@ -588,25 +718,36 @@ async function handleCheckout() {
       discount: i.discount > 0 ? i.discount : undefined,
     })),
     paymentMethod: methodMap[paymentMethod.value] || 'CASH',
-    amountPaid: paymentMethod.value === 'Tunai' ? amountPaid.value || totalPrice.value : undefined,
+    amountPaid: paymentMethod.value === 'Tunai' ? amountPaid.value || grandTotal.value : grandTotal.value,
     idempotencyKey,
     clientCreatedAt: new Date().toISOString(),
   };
 
   try {
     const response = await posService.createTransaction(payload);
-    router.push({
-      name: 'webapp-receipt',
-      query: {
-        trxNumber: response.summary.transactionNumber,
-        total: String(totalPrice.value),
-        paid: String(amountPaid.value || totalPrice.value),
-        change: String(change.value),
-        method: paymentMethod.value,
-      },
-    });
+    // Build receipt data
+    receiptData.value = {
+      trxNumber: response.summary?.transactionNumber || 'TX' + Date.now(),
+      items: cart.value.map(i => ({ name: i.name, qty: i.quantity, price: i.price, subtotal: i.subtotal })),
+      total: grandTotal.value,
+      paid: paymentMethod.value === 'Tunai' ? (amountPaid.value || grandTotal.value) : grandTotal.value,
+      change: paymentMethod.value === 'Tunai' ? change.value : 0,
+      method: paymentMethod.value,
+      customerName: customerName.value,
+      cashierName: authStore.user?.username || 'Kasir',
+      shopName: shopStore.currentShopName || 'Toko',
+      date: new Date().toLocaleString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+    };
+    // Reset state & show receipt
     cart.value = [];
     showPaymentModal.value = false;
+    showReceiptModal.value = true;
+    customerName.value = '';
+    customerPhone.value = '';
+    customerNote.value = '';
+    amountPaid.value = 0;
+    trxDiscount.value = 0;
+    showTrxDiscount.value = false;
   } catch (err: any) {
     checkoutError.value = err?.response?.data?.message || err?.message || 'Gagal memproses pembayaran.';
   } finally {
@@ -614,7 +755,43 @@ async function handleCheckout() {
   }
 }
 
-onMounted(fetchProducts);
+function closeReceipt() {
+  showReceiptModal.value = false;
+  receiptData.value = null;
+}
+
+function handleDownloadReceipt() {
+  // Use html2canvas or simple approach
+  showToast('Fitur unduh JPG akan tersedia segera', 'info');
+}
+
+function handleShareReceipt() {
+  if (navigator.share && receiptData.value) {
+    navigator.share({
+      title: `Struk ${receiptData.value.trxNumber}`,
+      text: `Transaksi ${receiptData.value.trxNumber} - Total ${formatRupiah(receiptData.value.total)} (${receiptData.value.method})`,
+    }).catch(() => {});
+  } else {
+    showToast('Share tidak tersedia di browser ini', 'info');
+  }
+}
+
+function handlePrintReceipt() {
+  window.print();
+}
+
+onMounted(async () => {
+  // Shift guard: check if shift is open
+  try {
+    await shiftStore.fetchCurrentShift();
+    if (!shiftStore.hasOpenShift) {
+      showShiftGuard.value = true;
+    }
+  } catch {
+    showShiftGuard.value = true;
+  }
+  fetchProducts();
+});
 </script>
 
 <style scoped>
