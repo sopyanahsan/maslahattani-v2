@@ -28,7 +28,7 @@
             <SearchIcon class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input v-model="searchQuery" type="text" placeholder="Cari nama / SKU produk..." class="w-full bg-slate-100 rounded-lg py-2.5 pl-9 pr-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 border border-transparent outline-none transition-all" @input="debouncedSearch" />
           </div>
-          <button class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0" @click="showScanModal = true">
+          <button class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0" @click="showScanModal = true; setTimeout(startCamera, 300)">
             <ScanBarcodeIcon class="w-5 h-5" />
           </button>
           <div class="flex rounded-lg border border-slate-200 overflow-hidden shrink-0">
@@ -379,18 +379,27 @@
     <!-- Scan Barcode Modal -->
     <Teleport to="body">
       <div v-if="showScanModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/60" @click="showScanModal = false"></div>
+        <div class="absolute inset-0 bg-black/60" @click="closeScanModal"></div>
         <div class="relative bg-white rounded-2xl w-full max-w-sm p-6 space-y-4">
           <h3 class="text-base font-bold text-slate-800 text-center">Scan / Ketik SKU</h3>
-          <div class="w-full aspect-[3/2] bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center">
-            <ScanBarcodeIcon class="w-12 h-12 text-slate-300" />
+          <!-- Camera viewfinder -->
+          <div class="relative w-full aspect-[4/3] bg-black rounded-xl overflow-hidden">
+            <video ref="scanVideoRef" class="w-full h-full object-cover" autoplay playsinline muted></video>
+            <div v-if="!cameraActive" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-100">
+              <ScanBarcodeIcon class="w-12 h-12 text-slate-300 mb-2" />
+              <p class="text-xs text-slate-500">Kamera tidak tersedia</p>
+            </div>
+            <!-- Scan overlay -->
+            <div v-if="cameraActive" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div class="w-3/4 h-1/3 border-2 border-white/60 rounded-lg"></div>
+            </div>
           </div>
-          <p class="text-xs text-slate-500 text-center">Arahkan kamera ke barcode, atau ketik SKU manual:</p>
-          <form @submit.prevent="handleBarcodeScan(scanInput)" class="flex gap-2">
+          <p class="text-xs text-slate-500 text-center">{{ cameraActive ? 'Arahkan barcode ke area kotak' : 'Atau ketik SKU manual:' }}</p>
+          <form @submit.prevent="handleBarcodeScan(scanInput); scanInput = ''" class="flex gap-2">
             <input v-model="scanInput" type="text" placeholder="Ketik SKU lalu Enter..." autofocus class="flex-1 h-10 px-3 text-sm font-mono border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
             <button type="submit" class="h-10 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">Cari</button>
           </form>
-          <button class="w-full h-10 bg-slate-100 text-slate-700 font-semibold rounded-lg" @click="showScanModal = false">Tutup</button>
+          <button class="w-full h-10 bg-slate-100 text-slate-700 font-semibold rounded-lg" @click="closeScanModal">Tutup</button>
         </div>
       </div>
     </Teleport>
@@ -442,7 +451,7 @@
             <button class="p-1 hover:bg-slate-100 rounded-lg" @click="closeReceipt"><XIcon class="w-5 h-5 text-slate-500" /></button>
           </div>
           <!-- Receipt content -->
-          <div class="px-5 pb-4">
+          <div class="px-5 pb-4" id="receipt-content">
             <div class="border border-slate-200 rounded-xl p-4 space-y-3 text-sm">
               <!-- Shop name -->
               <p class="text-center font-bold text-slate-800">{{ receiptData.shopName }}</p>
@@ -591,6 +600,10 @@ const showOpenBill = ref(false);
 const showShiftGuard = ref(false);
 const scanInput = ref('');
 const savedBills = ref<any[]>([]);
+const scanVideoRef = ref<HTMLVideoElement | null>(null);
+const cameraActive = ref(false);
+let cameraStream: MediaStream | null = null;
+let barcodeInterval: ReturnType<typeof setInterval> | null = null;
 
 // Receipt data (after successful checkout)
 const receiptData = ref<{
@@ -736,6 +749,49 @@ function deleteBill(billId: string) {
   savedBills.value = filtered;
 }
 
+// Camera barcode scanning
+async function startCamera() {
+  try {
+    cameraStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 640 }, height: { ideal: 480 } },
+    });
+    if (scanVideoRef.value) {
+      scanVideoRef.value.srcObject = cameraStream;
+      cameraActive.value = true;
+    }
+    // Try BarcodeDetector API (Chrome/Edge/Android)
+    if ('BarcodeDetector' in window) {
+      const detector = new (window as any).BarcodeDetector({ formats: ['ean_13', 'ean_8', 'code_128', 'code_39', 'upc_a'] });
+      barcodeInterval = setInterval(async () => {
+        if (!scanVideoRef.value || !cameraActive.value) return;
+        try {
+          const barcodes = await detector.detect(scanVideoRef.value);
+          if (barcodes.length > 0) {
+            const code = barcodes[0].rawValue;
+            handleBarcodeScan(code);
+          }
+        } catch { /* detection failed, continue */ }
+      }, 500);
+    }
+  } catch {
+    cameraActive.value = false;
+  }
+}
+
+function stopCamera() {
+  if (cameraStream) {
+    cameraStream.getTracks().forEach(t => t.stop());
+    cameraStream = null;
+  }
+  if (barcodeInterval) { clearInterval(barcodeInterval); barcodeInterval = null; }
+  cameraActive.value = false;
+}
+
+function closeScanModal() {
+  stopCamera();
+  showScanModal.value = false;
+}
+
 
 async function handleCheckout() {
   checking.value = true;
@@ -796,8 +852,20 @@ function closeReceipt() {
 }
 
 function handleDownloadReceipt() {
-  // Use html2canvas or simple approach
-  showToast('Fitur unduh JPG akan tersedia segera', 'info');
+  // Dynamic import html2canvas for receipt download
+  import('html2canvas').then(({ default: html2canvas }) => {
+    const receiptEl = document.getElementById('receipt-content');
+    if (!receiptEl) { showToast('Gagal mengunduh struk', 'error'); return; }
+    html2canvas(receiptEl, { scale: 2, backgroundColor: '#ffffff' }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `struk-${receiptData.value?.trxNumber || 'trx'}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('Struk berhasil diunduh', 'success');
+    });
+  }).catch(() => {
+    showToast('Install html2canvas: npm i html2canvas', 'error');
+  });
 }
 
 function handleShareReceipt() {

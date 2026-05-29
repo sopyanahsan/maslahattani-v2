@@ -27,7 +27,7 @@
           <span class="text-sm text-slate-600">Status</span>
           <span v-if="hasOpenShift" class="flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
             <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Aktif
+            Aktif ({{ shiftDurationLabel }})
           </span>
           <span v-else class="text-sm text-slate-400">Tidak ada shift aktif</span>
         </div>
@@ -35,6 +35,16 @@
           <span class="text-sm text-slate-600">Kelola Shift</span>
           <ChevronRightIcon class="w-4 h-4 text-slate-400" />
         </RouterLink>
+        <div v-if="shiftHistory.length > 0" class="p-4">
+          <p class="text-[10px] text-slate-500 font-medium uppercase mb-2">Riwayat Shift Terakhir</p>
+          <div class="space-y-2">
+            <div v-for="sh in shiftHistory" :key="sh.id" class="flex items-center justify-between text-xs">
+              <span class="text-slate-700">{{ sh.date }}</span>
+              <span class="text-slate-500">{{ sh.duration }}</span>
+              <span :class="['font-semibold', sh.status === 'CLOSED' ? 'text-slate-600' : 'text-emerald-600']">{{ sh.status === 'CLOSED' ? 'Ditutup' : sh.status }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -116,7 +126,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   User as UserIcon,
@@ -130,6 +140,7 @@ import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
 import { useShiftStore } from '@/shared/stores/shift.store';
 import authService from '@/shared/services/auth.service';
+import api from '@/shared/services/api';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -139,6 +150,14 @@ const shiftStore = useShiftStore();
 const userName = computed(() => authStore.user?.username || authStore.user?.email || 'Kasir');
 const shopName = computed(() => shopStore.currentShopName || 'Toko');
 const hasOpenShift = computed(() => shiftStore.hasOpenShift);
+const shiftDurationLabel = computed(() => {
+  const m = shiftStore.shiftDurationMinutes;
+  const h = Math.floor(m / 60);
+  const min = m % 60;
+  return h > 0 ? `${h}j ${min}m` : `${min}m`;
+});
+
+const shiftHistory = ref<Array<{ id: string; date: string; duration: string; status: string }>>([]);
 
 // Change PIN
 const showChangePinModal = ref(false);
@@ -174,4 +193,16 @@ async function handleLogout() {
   await authStore.logout();
   router.push({ name: 'login' });
 }
+
+onMounted(async () => {
+  try { await shiftStore.fetchCurrentShift(); } catch {}
+  // Fetch shift history
+  try {
+    const { data } = await api.get('/transactions', {
+      params: { shopId: authStore.user?.shopId, limit: 5 },
+    });
+    // We don't have a shift history endpoint yet, so leave empty for now
+    // shiftHistory will be populated when backend has shift list endpoint for kasir
+  } catch {}
+});
 </script>
