@@ -291,60 +291,59 @@
       </div>
     </Teleport>
 
-    <!-- === PAYMENT MODAL (popup — both mobile & desktop) === -->
+    <!-- === PAYMENT MODAL (fixed frame, no scroll) === -->
     <Teleport to="body">
-      <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-3">
         <div class="absolute inset-0 bg-black/50" @click="showPaymentModal = false"></div>
-        <div class="relative bg-white rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
+        <div class="relative bg-white rounded-2xl w-full max-w-md p-5 space-y-3 shadow-2xl">
           <div class="flex items-center justify-between">
             <h3 class="text-lg font-bold text-slate-800">Pembayaran</h3>
             <button class="p-1 hover:bg-slate-100 rounded-lg" @click="showPaymentModal = false"><XIcon class="w-5 h-5 text-slate-500" /></button>
           </div>
           <!-- Total -->
-          <div class="bg-blue-50 rounded-xl p-4 text-center">
-            <p class="text-xs text-blue-500 mb-1">Total Bayar</p>
+          <div class="bg-blue-50 rounded-xl p-3 text-center">
+            <p class="text-[10px] text-blue-500">Total Bayar</p>
             <p class="text-2xl font-bold text-blue-700 font-mono">{{ formatRupiah(grandTotal) }}</p>
           </div>
-          <!-- Payment method -->
-          <div>
-            <p class="text-xs font-semibold text-slate-600 mb-2">Metode Pembayaran</p>
-            <div class="grid grid-cols-3 gap-2">
-              <button v-for="m in ['Tunai','QRIS','Hutang']" :key="m" :class="['py-2.5 rounded-lg border-2 text-xs font-semibold transition-all', paymentMethod === m ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500']" @click="paymentMethod = m">{{ m }}</button>
-            </div>
-          </div>
-          <!-- Kas Tujuan (only if multiple kas available) -->
+          <!-- Kas Tujuan (only if multiple kas) -->
           <div v-if="kasOptions.length > 1">
-            <p class="text-xs font-semibold text-slate-600 mb-2">Kas Tujuan</p>
-            <select v-model="selectedKas" class="w-full h-10 px-3 text-sm border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none">
+            <p class="text-xs font-semibold text-slate-600 mb-1">Kas Tujuan</p>
+            <select v-model="selectedKas" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none">
               <option v-for="kas in kasOptions" :key="kas.id" :value="kas.id">{{ kas.label }}</option>
             </select>
           </div>
-          <!-- Amount -->
+          <!-- Payment method -->
           <div>
-            <p class="text-xs font-semibold text-slate-600 mb-2">Jumlah Bayar</p>
-            <input v-model.number="amountPaid" type="number" class="w-full h-12 px-4 text-lg font-mono font-bold text-center border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none" />
-            <div class="grid grid-cols-4 gap-2 mt-2">
-              <button v-for="n in [1000,2000,5000,10000,20000,50000,100000]" :key="n" class="h-8 rounded-lg border border-slate-200 text-[11px] font-semibold text-slate-600 hover:bg-slate-50" @click="amountPaid += n">{{ n >= 1000 ? (n/1000) + 'K' : n }}</button>
-              <button class="h-8 rounded-lg border-2 border-blue-200 text-[11px] font-semibold text-blue-600 hover:bg-blue-50" @click="amountPaid = grandTotal">Uang Pas</button>
+            <p class="text-xs font-semibold text-slate-600 mb-1.5">Metode Pembayaran</p>
+            <div class="grid grid-cols-3 gap-2">
+              <button v-for="m in ['Tunai','QRIS','Hutang']" :key="m" :class="['py-2 rounded-lg border-2 text-xs font-semibold transition-all', paymentMethod === m ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500']" @click="paymentMethod = m">{{ m }}</button>
             </div>
-            <button class="text-[10px] text-slate-400 mt-1 hover:text-slate-600" @click="amountPaid = 0">Reset</button>
           </div>
-
-          <!-- Customer info -->
+          <!-- Amount (only for Tunai) -->
+          <div v-if="paymentMethod === 'Tunai'">
+            <p class="text-xs font-semibold text-slate-600 mb-1.5">Jumlah Bayar</p>
+            <input v-model.number="amountPaid" type="number" class="w-full h-10 px-4 text-lg font-mono font-bold text-center border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none" />
+            <div class="grid grid-cols-4 gap-1.5 mt-2">
+              <button v-for="n in [1000,2000,5000,10000,20000,50000,100000]" :key="n" class="h-7 rounded-lg border border-slate-200 text-[10px] font-semibold text-slate-600 hover:bg-slate-50" @click="amountPaid += n">{{ (n/1000) + 'K' }}</button>
+              <button class="h-7 rounded-lg border-2 border-blue-200 text-[10px] font-semibold text-blue-600 hover:bg-blue-50" @click="amountPaid = grandTotal">Uang Pas</button>
+            </div>
+            <button class="text-[10px] text-slate-400 mt-0.5 hover:text-slate-600" @click="amountPaid = 0">Reset</button>
+          </div>
+          <!-- Customer info (shared state with cart panel) -->
           <div class="flex gap-2">
             <input v-model="customerName" type="text" placeholder="Nama pelanggan (opsional)" class="flex-1 h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
             <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="flex-1 h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
           </div>
           <input v-model="customerNote" type="text" placeholder="Catatan tambahan (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
-          <!-- Kembalian -->
-          <div v-if="change > 0" class="flex justify-between items-center bg-emerald-50 rounded-xl px-4 py-2.5">
+          <!-- Kembalian (only Tunai & change > 0) -->
+          <div v-if="paymentMethod === 'Tunai' && change > 0" class="flex justify-between items-center bg-emerald-50 rounded-xl px-4 py-2">
             <span class="text-sm font-medium text-emerald-700">Kembalian</span>
             <span class="text-lg font-bold font-mono text-emerald-600">{{ formatRupiah(change) }}</span>
           </div>
           <!-- Error -->
           <div v-if="checkoutError" class="bg-red-50 border border-red-200 rounded-lg p-2 text-xs text-red-700">{{ checkoutError }}</div>
           <!-- Confirm -->
-          <button :disabled="!canCheckout || checking" class="w-full h-12 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40" style="background-color: #2563eb;" @click="handleCheckout">
+          <button :disabled="!canCheckout || checking" class="w-full h-11 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40" style="background-color: #2563eb;" @click="handleCheckout">
             <Loader2Icon v-if="checking" class="w-5 h-5 animate-spin" />
             <template v-else><CheckIcon class="w-5 h-5" /> Konfirmasi Transaksi</template>
           </button>
