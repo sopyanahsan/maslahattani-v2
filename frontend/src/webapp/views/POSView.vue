@@ -12,14 +12,14 @@
     </Transition>
 
     <!-- === LEFT COLUMN: Products (always visible) === -->
-    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden h-[calc(100vh-7.5rem)]">
       <!-- Top: Header + Search + Scan + View Toggle -->
       <div class="shrink-0 bg-white border-b border-slate-200 p-3 space-y-3">
         <div class="flex items-center justify-between">
           <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
             <ShoppingCartIcon class="w-5 h-5 text-blue-600" /> Kasir
           </h2>
-          <button class="text-xs font-medium text-slate-600 flex items-center gap-1 hover:text-blue-600 transition-colors" @click="showOpenBill = true">
+          <button class="text-xs font-medium text-slate-600 flex items-center gap-1 hover:text-blue-600 transition-colors" @click="refreshSavedBills(); showOpenBill = true">
             <ClipboardListIcon class="w-4 h-4" /> Open Bill
           </button>
         </div>
@@ -93,7 +93,7 @@
 
 
     <!-- === RIGHT COLUMN: Cart Panel (desktop/tablet only) === -->
-    <aside class="hidden md:flex flex-col w-[380px] lg:w-[420px] bg-white border-l border-slate-200 shrink-0">
+    <aside class="hidden md:flex flex-col w-[380px] lg:w-[420px] bg-white border-l border-slate-200 shrink-0 h-[calc(100vh-7.5rem)]">
       <!-- Cart Header -->
       <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-100 shrink-0">
         <ShoppingCartIcon class="w-4 h-4 text-blue-600" />
@@ -370,13 +370,32 @@
       </div>
     </Teleport>
 
-    <!-- Open Bill Modal (placeholder) -->
+    <!-- Open Bill Modal (loads from localStorage) -->
     <Teleport to="body">
       <div v-if="showOpenBill" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showOpenBill = false"></div>
-        <div class="relative bg-white rounded-2xl w-full max-w-sm p-6 text-center space-y-4">
-          <h3 class="text-base font-bold text-slate-800">Bill Tersimpan</h3>
-          <div class="py-8"><ClipboardListIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" /><p class="text-sm text-slate-500">Belum ada bill tersimpan</p></div>
+        <div class="relative bg-white rounded-2xl w-full max-w-sm p-6 space-y-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-base font-bold text-slate-800">Bill Tersimpan</h3>
+            <button class="p-1 hover:bg-slate-100 rounded-lg" @click="showOpenBill = false"><XIcon class="w-5 h-5 text-slate-500" /></button>
+          </div>
+          <div v-if="savedBills.length === 0" class="py-8 text-center">
+            <ClipboardListIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
+            <p class="text-sm text-slate-500">Belum ada bill tersimpan</p>
+          </div>
+          <div v-else class="space-y-2 max-h-60 overflow-y-auto">
+            <div v-for="bill in savedBills" :key="bill.id" class="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50">
+              <div>
+                <p class="text-sm font-semibold text-slate-800">{{ bill.id }}</p>
+                <p class="text-[10px] text-slate-500">{{ bill.items.length }} item · {{ formatRupiah(bill.items.reduce((s: number, i: any) => s + (i.subtotal || 0), 0)) }}</p>
+                <p v-if="bill.customerName" class="text-[10px] text-slate-400">{{ bill.customerName }}</p>
+              </div>
+              <div class="flex gap-1">
+                <button class="h-7 px-2 text-[10px] font-semibold bg-blue-50 text-blue-600 rounded hover:bg-blue-100" @click="loadBill(bill)">Buka</button>
+                <button class="h-7 px-2 text-[10px] font-semibold bg-red-50 text-red-500 rounded hover:bg-red-100" @click="deleteBill(bill.id)">Hapus</button>
+              </div>
+            </div>
+          </div>
           <button class="w-full h-10 bg-slate-100 text-slate-700 font-semibold rounded-lg" @click="showOpenBill = false">Tutup</button>
         </div>
       </div>
@@ -430,6 +449,7 @@ const showMobileCart = ref(false);
 const showPaymentModal = ref(false);
 const showOpenBill = ref(false);
 const scanInput = ref('');
+const savedBills = ref<any[]>([]);
 
 // Payment state
 const paymentMethod = ref('Tunai');
@@ -515,8 +535,8 @@ function handleBarcodeScan(sku: string) {
 function handleSaveBill() {
   if (cart.value.length === 0) return;
   const billId = 'BILL-' + Date.now().toString(36).toUpperCase();
-  const savedBills = JSON.parse(localStorage.getItem('ngalir_saved_bills') || '[]');
-  savedBills.push({
+  const bills = JSON.parse(localStorage.getItem('ngalir_saved_bills') || '[]');
+  bills.push({
     id: billId,
     items: cart.value.map(i => ({ ...i })),
     customerName: customerName.value,
@@ -524,12 +544,34 @@ function handleSaveBill() {
     trxDiscount: trxDiscount.value,
     savedAt: new Date().toISOString(),
   });
-  localStorage.setItem('ngalir_saved_bills', JSON.stringify(savedBills));
+  localStorage.setItem('ngalir_saved_bills', JSON.stringify(bills));
   showToast(`Bill ${billId} berhasil disimpan`, 'success');
   cart.value = [];
   customerName.value = '';
   customerPhone.value = '';
   trxDiscount.value = 0;
+}
+
+function refreshSavedBills() {
+  savedBills.value = JSON.parse(localStorage.getItem('ngalir_saved_bills') || '[]');
+}
+
+function loadBill(bill: any) {
+  cart.value = bill.items.map((i: any) => ({ ...i }));
+  customerName.value = bill.customerName || '';
+  customerPhone.value = bill.customerPhone || '';
+  trxDiscount.value = bill.trxDiscount || 0;
+  // Remove from saved bills
+  deleteBill(bill.id);
+  showOpenBill.value = false;
+  showToast(`Bill ${bill.id} dimuat ke keranjang`, 'info');
+}
+
+function deleteBill(billId: string) {
+  const bills = JSON.parse(localStorage.getItem('ngalir_saved_bills') || '[]');
+  const filtered = bills.filter((b: any) => b.id !== billId);
+  localStorage.setItem('ngalir_saved_bills', JSON.stringify(filtered));
+  savedBills.value = filtered;
 }
 
 
