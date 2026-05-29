@@ -1,6 +1,16 @@
 <template>
   <div class="flex flex-col md:flex-row min-h-[calc(100vh-7.5rem)]">
 
+    <!-- Toast Notification -->
+    <Transition name="toast">
+      <div v-if="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2 text-sm font-medium max-w-sm"
+        :class="{ 'bg-emerald-600 text-white': toast.type === 'success', 'bg-red-600 text-white': toast.type === 'error', 'bg-slate-800 text-white': toast.type === 'info' }">
+        <CheckIcon v-if="toast.type === 'success'" class="w-4 h-4 shrink-0" />
+        <XIcon v-if="toast.type === 'error'" class="w-4 h-4 shrink-0" />
+        <span>{{ toast.message }}</span>
+      </div>
+    </Transition>
+
     <!-- === LEFT COLUMN: Products (always visible) === -->
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
       <!-- Top: Header + Search + Scan + View Toggle -->
@@ -16,10 +26,10 @@
         <div class="flex items-center gap-2">
           <div class="relative flex-1">
             <SearchIcon class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input v-model="searchQuery" type="text" placeholder="Cari produk..." class="w-full bg-slate-100 rounded-lg py-2.5 pl-9 pr-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 border border-transparent outline-none transition-all" @input="debouncedSearch" />
+            <input v-model="searchQuery" type="text" placeholder="Cari nama / SKU produk..." class="w-full bg-slate-100 rounded-lg py-2.5 pl-9 pr-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 border border-transparent outline-none transition-all" @input="debouncedSearch" />
           </div>
           <button class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0" @click="showScanModal = true">
-            <CameraIcon class="w-5 h-5" />
+            <ScanBarcodeIcon class="w-5 h-5" />
           </button>
           <div class="hidden sm:flex rounded-lg border border-slate-200 overflow-hidden shrink-0">
             <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'grid'"><LayoutGridIcon class="w-4 h-4" /></button>
@@ -116,9 +126,19 @@
               </button>
             </div>
           </div>
+          <!-- Inline note input -->
+          <div v-if="item.showNote" class="mt-1.5">
+            <input v-model="item.note" type="text" placeholder="Catatan item..." class="w-full h-7 px-2 text-[10px] border border-slate-200 rounded bg-slate-50 focus:border-blue-400 outline-none" @blur="item.showNote = false" />
+          </div>
+          <!-- Inline discount input -->
+          <div v-if="item.showDiscount" class="mt-1.5 flex items-center gap-1.5">
+            <span class="text-[10px] text-slate-500">Diskon Rp:</span>
+            <input :value="item.discount" type="number" min="0" class="w-20 h-7 px-2 text-[10px] font-mono border border-slate-200 rounded bg-slate-50 text-right focus:border-blue-400 outline-none" @change="(e) => { item.discount = Math.min(Number((e.target as HTMLInputElement).value) || 0, item.price * item.quantity); Object.assign(item, recalcCartItem(item)); }" @blur="item.showDiscount = false" />
+          </div>
+          <!-- Action buttons -->
           <div class="flex items-center gap-3 mt-1.5">
-            <button class="text-[10px] text-slate-400 hover:text-slate-600 flex items-center gap-0.5"><EditIcon class="w-3 h-3" /> Catatan</button>
-            <button class="text-[10px] text-slate-400 hover:text-blue-600 flex items-center gap-0.5" @click="promptDiscount(item)"><TagIcon class="w-3 h-3" /> Diskon</button>
+            <button class="text-[10px] text-slate-400 hover:text-slate-600 flex items-center gap-0.5" @click="item.showNote = !item.showNote"><EditIcon class="w-3 h-3" /> Catatan</button>
+            <button class="text-[10px] text-slate-400 hover:text-blue-600 flex items-center gap-0.5" @click="item.showDiscount = !item.showDiscount"><TagIcon class="w-3 h-3" /> Diskon</button>
           </div>
         </div>
       </div>
@@ -131,7 +151,7 @@
             <UserIcon class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input v-model="customerName" type="text" placeholder="Nama pelanggan" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
           </div>
-          <div class="w-24 relative">
+          <div class="flex-1 relative">
             <PhoneIcon class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
             <input v-model="customerPhone" type="text" placeholder="No HP" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
           </div>
@@ -139,9 +159,18 @@
 
 
         <!-- Discount total trx -->
-        <button class="text-xs text-blue-600 font-medium flex items-center gap-1 hover:underline">
-          <TagIcon class="w-3.5 h-3.5" /> Tambah Diskon
-        </button>
+        <div>
+          <button v-if="!showTrxDiscount" class="text-xs text-blue-600 font-medium flex items-center gap-1 hover:underline" @click="showTrxDiscount = true">
+            <TagIcon class="w-3.5 h-3.5" /> Tambah Diskon
+          </button>
+          <div v-else class="flex items-center gap-2">
+            <span class="text-[10px] text-slate-500">Diskon Rp:</span>
+            <input v-model.number="trxDiscount" type="number" min="0" class="w-24 h-7 px-2 text-xs font-mono border border-slate-200 rounded bg-white text-right focus:border-blue-400 outline-none" />
+            <button class="text-[10px] text-red-400 hover:text-red-600" @click="trxDiscount = 0; showTrxDiscount = false">
+              <XIcon class="w-3 h-3" />
+            </button>
+          </div>
+        </div>
 
         <!-- Totals -->
         <div class="space-y-1">
@@ -149,15 +178,19 @@
             <span>Subtotal</span>
             <span class="font-mono">{{ formatRupiah(totalPrice) }}</span>
           </div>
+          <div v-if="trxDiscount > 0" class="flex justify-between text-xs text-red-500">
+            <span>Diskon</span>
+            <span class="font-mono">- {{ formatRupiah(trxDiscount) }}</span>
+          </div>
           <div class="flex justify-between text-base font-bold text-blue-600 pt-1 border-t border-slate-200">
             <span>Total</span>
-            <span class="font-mono">{{ formatRupiah(totalPrice) }}</span>
+            <span class="font-mono">{{ formatRupiah(grandTotal) }}</span>
           </div>
         </div>
 
         <!-- Action Buttons -->
         <div class="flex gap-2">
-          <button class="flex-1 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100 transition-colors">
+          <button class="flex-1 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100 transition-colors" @click="handleSaveBill">
             <SaveIcon class="w-4 h-4" /> Simpan Bill
           </button>
           <button
@@ -212,7 +245,7 @@
                 <UserIcon class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                 <input v-model="customerName" type="text" placeholder="Nama pelanggan" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
               </div>
-              <div class="w-20 relative">
+              <div class="flex-1 relative">
                 <PhoneIcon class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
                 <input v-model="customerPhone" type="text" placeholder="No HP" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
               </div>
@@ -225,7 +258,7 @@
               <span>Total</span><span class="font-mono">{{ formatRupiah(totalPrice) }}</span>
             </div>
             <div class="flex gap-2">
-              <button class="flex-1 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100"><SaveIcon class="w-4 h-4" /> Simpan Bill</button>
+              <button class="flex-1 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100" @click="handleSaveBill"><SaveIcon class="w-4 h-4" /> Simpan Bill</button>
               <button :disabled="cart.length === 0" class="flex-1 h-10 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-1.5 disabled:opacity-40" style="background-color: #2563eb;" @click="showMobileCart = false; showPaymentModal = true"><CreditCardIcon class="w-4 h-4" /> Bayar</button>
             </div>
           </div>
@@ -245,7 +278,7 @@
           <!-- Total -->
           <div class="bg-blue-50 rounded-xl p-4 text-center">
             <p class="text-xs text-blue-500 mb-1">Total Bayar</p>
-            <p class="text-2xl font-bold text-blue-700 font-mono">{{ formatRupiah(totalPrice) }}</p>
+            <p class="text-2xl font-bold text-blue-700 font-mono">{{ formatRupiah(grandTotal) }}</p>
           </div>
           <!-- Payment method -->
           <div>
@@ -260,7 +293,7 @@
             <input v-model.number="amountPaid" type="number" class="w-full h-12 px-4 text-lg font-mono font-bold text-center border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none" />
             <div class="grid grid-cols-4 gap-2 mt-2">
               <button v-for="n in [1000,2000,5000,10000,20000,50000,100000]" :key="n" class="h-8 rounded-lg border border-slate-200 text-[11px] font-semibold text-slate-600 hover:bg-slate-50" @click="amountPaid += n">{{ n >= 1000 ? (n/1000) + 'K' : n }}</button>
-              <button class="h-8 rounded-lg border-2 border-blue-200 text-[11px] font-semibold text-blue-600 hover:bg-blue-50" @click="amountPaid = totalPrice">Uang Pas</button>
+              <button class="h-8 rounded-lg border-2 border-blue-200 text-[11px] font-semibold text-blue-600 hover:bg-blue-50" @click="amountPaid = grandTotal">Uang Pas</button>
             </div>
             <button class="text-[10px] text-slate-400 mt-1 hover:text-slate-600" @click="amountPaid = 0">Reset</button>
           </div>
@@ -287,14 +320,20 @@
       </div>
     </Teleport>
 
-    <!-- Scan Modal -->
+    <!-- Scan Barcode Modal -->
     <Teleport to="body">
       <div v-if="showScanModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/60" @click="showScanModal = false"></div>
-        <div class="relative bg-white rounded-2xl w-full max-w-sm p-6 text-center space-y-4">
-          <h3 class="text-base font-bold text-slate-800">Scan Barcode</h3>
-          <div class="w-full aspect-square bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center"><CameraIcon class="w-12 h-12 text-slate-300" /></div>
-          <p class="text-xs text-slate-500">Arahkan kamera ke barcode produk</p>
+        <div class="relative bg-white rounded-2xl w-full max-w-sm p-6 space-y-4">
+          <h3 class="text-base font-bold text-slate-800 text-center">Scan / Ketik SKU</h3>
+          <div class="w-full aspect-[3/2] bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center">
+            <ScanBarcodeIcon class="w-12 h-12 text-slate-300" />
+          </div>
+          <p class="text-xs text-slate-500 text-center">Arahkan kamera ke barcode, atau ketik SKU manual:</p>
+          <form @submit.prevent="handleBarcodeScan(scanInput)" class="flex gap-2">
+            <input v-model="scanInput" type="text" placeholder="Ketik SKU lalu Enter..." autofocus class="flex-1 h-10 px-3 text-sm font-mono border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+            <button type="submit" class="h-10 px-4 bg-blue-600 text-white text-sm font-semibold rounded-lg hover:bg-blue-700">Cari</button>
+          </form>
           <button class="w-full h-10 bg-slate-100 text-slate-700 font-semibold rounded-lg" @click="showScanModal = false">Tutup</button>
         </div>
       </div>
@@ -319,7 +358,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import {
-  Search as SearchIcon, Camera as CameraIcon, LayoutGrid as LayoutGridIcon,
+  Search as SearchIcon, ScanBarcode as ScanBarcodeIcon, Camera as CameraIcon, LayoutGrid as LayoutGridIcon,
   List as ListIcon, Package as PackageIcon, PlusCircle as PlusCircleIcon,
   ShoppingCart as ShoppingCartIcon, Loader2 as Loader2Icon,
   X as XIcon, Minus as MinusIcon, Plus as PlusIcon,
@@ -343,16 +382,23 @@ const products = ref<POSProductDto[]>([]);
 const productsLoading = ref(false);
 
 // Cart state
-const cart = ref<CartItem[]>([]);
+const cart = ref<(CartItem & { showNote?: boolean; showDiscount?: boolean; note?: string })[]>([]);
 const customerName = ref('');
 const customerPhone = ref('');
 const customerNote = ref('');
+const trxDiscount = ref(0);
+const showTrxDiscount = ref(false);
+
+// Toast/notification state
+const toast = ref<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+let toastTimer: ReturnType<typeof setTimeout> | null = null;
 
 // UI state
 const showScanModal = ref(false);
 const showMobileCart = ref(false);
 const showPaymentModal = ref(false);
 const showOpenBill = ref(false);
+const scanInput = ref('');
 
 // Payment state
 const paymentMethod = ref('Tunai');
@@ -369,10 +415,11 @@ const filteredProducts = computed(() => {
 
 const totalItems = computed(() => cart.value.reduce((sum, i) => sum + i.quantity, 0));
 const totalPrice = computed(() => cart.value.reduce((sum, i) => sum + i.subtotal, 0));
-const change = computed(() => Math.max(0, (amountPaid.value || 0) - totalPrice.value));
+const grandTotal = computed(() => Math.max(0, totalPrice.value - trxDiscount.value));
+const change = computed(() => Math.max(0, (amountPaid.value || 0) - grandTotal.value));
 const canCheckout = computed(() => {
   if (cart.value.length === 0) return false;
-  if (paymentMethod.value === 'Tunai' && amountPaid.value < totalPrice.value) return false;
+  if (paymentMethod.value === 'Tunai' && amountPaid.value < grandTotal.value) return false;
   return true;
 });
 
@@ -413,6 +460,43 @@ function promptDiscount(item: CartItem) {
   const val = Math.min(Number(input) || 0, item.price * item.quantity);
   item.discount = val;
   Object.assign(item, recalcCartItem(item));
+}
+
+function showToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
+  toast.value = { message, type };
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { toast.value = null; }, 3000);
+}
+
+function handleBarcodeScan(sku: string) {
+  const product = products.value.find(p => p.sku.toLowerCase() === sku.toLowerCase());
+  if (product) {
+    addToCart(product);
+    showToast(`${product.name} (${product.sku}) ditambahkan ke keranjang`, 'success');
+  } else {
+    showToast(`SKU "${sku}" tidak ditemukan di produk terdaftar`, 'error');
+  }
+  showScanModal.value = false;
+}
+
+function handleSaveBill() {
+  if (cart.value.length === 0) return;
+  const billId = 'BILL-' + Date.now().toString(36).toUpperCase();
+  const savedBills = JSON.parse(localStorage.getItem('ngalir_saved_bills') || '[]');
+  savedBills.push({
+    id: billId,
+    items: cart.value.map(i => ({ ...i })),
+    customerName: customerName.value,
+    customerPhone: customerPhone.value,
+    trxDiscount: trxDiscount.value,
+    savedAt: new Date().toISOString(),
+  });
+  localStorage.setItem('ngalir_saved_bills', JSON.stringify(savedBills));
+  showToast(`Bill ${billId} berhasil disimpan`, 'success');
+  cart.value = [];
+  customerName.value = '';
+  customerPhone.value = '';
+  trxDiscount.value = 0;
 }
 
 
@@ -467,4 +551,8 @@ onMounted(fetchProducts);
 .cart-float-leave-to { opacity: 0; transform: translate(-50%, 20px) scale(0.9); }
 .animate-slide-up { animation: slideUp 0.3s ease-out; }
 @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.toast-enter-active { transition: all 0.3s ease; }
+.toast-leave-active { transition: all 0.2s ease; }
+.toast-enter-from { opacity: 0; transform: translate(-50%, -10px); }
+.toast-leave-to { opacity: 0; transform: translate(-50%, -10px); }
 </style>
