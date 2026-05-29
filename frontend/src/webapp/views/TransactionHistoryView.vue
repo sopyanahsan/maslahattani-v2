@@ -218,14 +218,20 @@ const meta = reactive({ total: 0, page: 1, totalPages: 1 });
 const showDetail = ref(false);
 const selectedTrx = ref<any>(null);
 
+const trxType = ref<'retail' | 'brilink'>('retail');
+
 const statusFilters = [
   { value: '', label: 'Semua' },
   { value: 'PENDING', label: 'Open Bill' },
   { value: 'COMPLETED', label: 'Lunas' },
+  { value: 'HUTANG', label: 'Hutang' },
   { value: 'VOIDED', label: 'Void' },
 ];
 
-const totalOmzet = computed(() => transactions.value.filter(t => t.status === 'COMPLETED').reduce((s, t) => s + t.totalPrice, 0));
+const totalOmzet = computed(() => {
+  if (trxType.value === 'retail') return transactions.value.filter(t => t.status === 'COMPLETED').reduce((s, t) => s + t.totalPrice, 0);
+  return transactions.value.reduce((s, t) => s + (t.total || t.amount || 0), 0);
+});
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 function debouncedFetch() { if (searchTimer) clearTimeout(searchTimer); searchTimer = setTimeout(fetchTransactions, 400); }
@@ -254,14 +260,29 @@ async function fetchTransactions() {
   if (!shopId) return;
   loading.value = true;
   try {
-    const params: any = { shopId, startDate: startDate.value, endDate: endDate.value, page: meta.page, limit: 20 };
-    if (search.value) params.search = search.value;
-    if (statusFilter.value) params.status = statusFilter.value;
-    if (kasirFilter.value) params.userId = kasirFilter.value;
-    const { data } = await api.get('/transactions', { params });
-    transactions.value = data.data || [];
-    meta.total = data.meta?.total || 0;
-    meta.totalPages = data.meta?.totalPages || 1;
+    if (trxType.value === 'retail') {
+      const params: any = { shopId, startDate: startDate.value, endDate: endDate.value, page: meta.page, limit: 20 };
+      if (search.value) params.search = search.value;
+      if (statusFilter.value) params.status = statusFilter.value;
+      if (kasirFilter.value) params.userId = kasirFilter.value;
+      const { data } = await api.get('/transactions', { params });
+      transactions.value = data.data || [];
+      meta.total = data.meta?.total || 0;
+      meta.totalPages = data.meta?.totalPages || 1;
+    } else {
+      // BRILink transactions
+      const params: any = { shopId, startDate: startDate.value, endDate: endDate.value, limit: 100 };
+      const { data } = await api.get('/brilink/transactions', { params }).catch(() => ({ data: { data: [] } }));
+      let list = data.data || [];
+      if (search.value) {
+        const s = search.value.toLowerCase();
+        list = list.filter((t: any) => (t.refNumber || '').toLowerCase().includes(s) || (t.customerName || '').toLowerCase().includes(s) || (t.destination || '').toLowerCase().includes(s));
+      }
+      if (kasirFilter.value) list = list.filter((t: any) => t.cashierId === kasirFilter.value);
+      transactions.value = list;
+      meta.total = list.length;
+      meta.totalPages = 1;
+    }
   } catch { transactions.value = []; }
   finally { loading.value = false; }
 }
@@ -280,7 +301,7 @@ function openDetail(trx: any) {
 
 async function handleVoid() {
   if (!selectedTrx.value) return;
-  const reason = prompt('Alasan void transaksi:');
+  const reason = prompt('Alasan batalkan transaksi:');
   if (!reason) return;
   try {
     await api.post(`/transactions/${selectedTrx.value.id}/void`, { reason, otp: '000000' });
@@ -288,8 +309,34 @@ async function handleVoid() {
     selectedTrx.value.voidReason = reason;
     await fetchTransactions();
   } catch (err: any) {
-    alert(err.response?.data?.message || 'Gagal void. Hubungi admin.');
+    alert(err.response?.data?.message || 'Gagal membatalkan. Hubungi admin.');
   }
+}
+
+function handlePrintReceipt() {
+  // Navigate to receipt or trigger thermal print
+  import('@/shared/services/thermal-print.service').then(async ({ thermalPrint }) => {
+    if (!selectedTrx.value) return;
+    try {
+      if (!thermalPrint.isConnected) await thermalPrint.connect();
+      await thermalPrint.printReceipt({
+        shopName: 'Ngalir', // TODO: from shop settings
+        trxNumber: selectedTrx.value.transactionNumber,
+        date: formatDateTime(selectedTrx.value.createdAt),
+        cashierName: selectedTrx.value.user?.username || '-',
+        items: (selectedTrx.value.items || []).map((i: any) => ({ name: i.product?.name || 'Produk', qty: i.quantity, price: i.unitPrice, subtotal: i.subtotal })),
+        subtotal: selectedTrx.value.totalPrice,
+        total: selectedTrx.value.totalPrice,
+        paid: selectedTrx.value.payments?.[0]?.amount || selectedTrx.value.totalPrice,
+        change: Math.max(0, (selectedTrx.value.payments?.[0]?.amount || 0) - selectedTrx.value.totalPrice),
+        method: selectedTrx.value.payments?.[0]?.method || 'CASH',
+      });
+      alert('Struk berhasil dicetak!');
+    } catch (err: any) {
+      if (err.message === 'cancelled') return;
+      alert(err.message || 'Gagal cetak.');
+    }
+  }).catch(() => { window.print(); });
 }
 
 onMounted(() => {
