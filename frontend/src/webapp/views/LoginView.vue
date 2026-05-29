@@ -162,6 +162,16 @@
         <p class="text-center text-xs text-slate-400 mt-6">
           Lupa PIN? Hubungi pemilik toko untuk reset.
         </p>
+        <p class="text-center mt-3">
+          <a
+            href="/admin/login"
+            class="inline-flex items-center gap-1 text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors"
+          >
+            <ShieldIcon class="w-3.5 h-3.5" />
+            Login sebagai Admin
+            <ArrowRightIcon class="w-3.5 h-3.5" />
+          </a>
+        </p>
       </div>
     </Transition>
 
@@ -180,6 +190,8 @@ import {
   Eye as EyeIcon,
   EyeOff as EyeOffIcon,
   LogIn as LogInIcon,
+  Shield as ShieldIcon,
+  ArrowRight as ArrowRightIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import authService from '@/shared/services/auth.service';
