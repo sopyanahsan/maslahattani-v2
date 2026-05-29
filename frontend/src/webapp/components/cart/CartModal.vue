@@ -1,11 +1,11 @@
 <template>
   <Teleport to="body">
-    <div class="fixed inset-0 z-50 flex items-end justify-center pb-20 px-4">
+    <div class="fixed inset-x-0 top-0 bottom-16 md:inset-0 z-50 flex items-end md:items-center justify-center md:p-4">
       <!-- Overlay -->
       <div class="absolute inset-0 bg-black/30 backdrop-blur-[2px]" @click="$emit('close')"></div>
 
-      <!-- Compact Floating Panel -->
-      <div class="relative bg-white/95 backdrop-blur-xl rounded-2xl max-h-[85vh] w-full max-w-[600px] md:max-w-[820px] flex flex-col animate-slide-up shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-white/60">
+      <!-- Panel: mobile full bottom sheet (above nav), desktop floating -->
+      <div class="relative bg-white/95 backdrop-blur-xl rounded-t-2xl md:rounded-2xl w-full md:max-w-[820px] max-h-full md:max-h-[85vh] flex flex-col animate-slide-up shadow-[0_20px_60px_rgba(0,0,0,0.15)] border border-white/60">
         <!-- Header -->
         <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
           <div class="flex items-center gap-2">
