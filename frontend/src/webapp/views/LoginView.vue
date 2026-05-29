@@ -1,13 +1,13 @@
 <template>
-  <div class="relative min-h-screen bg-gradient-to-br from-white to-violet-50/80 flex flex-col items-center justify-center p-4 font-sans overflow-hidden">
+  <div class="relative min-h-screen bg-gradient-to-br from-white to-blue-50/80 flex flex-col items-center justify-center p-4 font-sans overflow-hidden">
 
     <!-- Success Animation Overlay -->
     <Transition name="fade-in">
       <div v-if="step === 'success'" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm">
         <div class="morph-container relative w-20 h-20 mb-6">
-          <div class="ring absolute inset-0 border-4 border-violet-100 rounded-full"></div>
-          <div class="spinner absolute inset-0 border-4 border-violet-500 rounded-full border-t-transparent animate-spin"></div>
-          <svg class="success-check absolute inset-0 w-full h-full text-violet-500 scale-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+          <div class="ring absolute inset-0 border-4 border-blue-100 rounded-full"></div>
+          <div class="spinner absolute inset-0 border-4 border-blue-500 rounded-full border-t-transparent animate-spin"></div>
+          <svg class="success-check absolute inset-0 w-full h-full text-blue-500 scale-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
@@ -47,7 +47,7 @@
                 maxlength="6"
                 inputmode="numeric"
                 pattern="[0-9]*"
-                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all tracking-widest text-center text-lg"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all tracking-widest text-center text-lg"
                 placeholder="****"
               >
             </div>
@@ -61,15 +61,15 @@
                 maxlength="6"
                 inputmode="numeric"
                 pattern="[0-9]*"
-                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all tracking-widest text-center text-lg"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all tracking-widest text-center text-lg"
                 placeholder="****"
               >
             </div>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" v-model="showNewPin" class="rounded border-slate-300 text-violet-600 focus:ring-violet-500" />
+              <input type="checkbox" v-model="showNewPin" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
               <span class="text-xs text-slate-500">Tampilkan PIN</span>
             </label>
-            <button type="submit" :disabled="isLoading" class="w-full bg-violet-600 hover:bg-violet-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition-all flex justify-center items-center shadow-sm shadow-violet-200 disabled:opacity-50">
+            <button type="submit" :disabled="isLoading" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition-all flex justify-center items-center shadow-sm shadow-blue-200 disabled:opacity-50">
               <Loader2Icon v-if="isLoading" class="w-5 h-5 animate-spin" />
               <span v-else>Simpan PIN & Lanjutkan</span>
             </button>
@@ -82,7 +82,7 @@
         <div class="bg-white border border-slate-100 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <!-- Branding -->
           <div class="flex flex-col items-center mb-8">
-            <div class="w-16 h-16 bg-violet-50 rounded-2xl flex items-center justify-center mb-4 text-violet-600 shadow-sm border border-violet-100">
+            <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-4 text-blue-600 shadow-sm border border-blue-100">
               <DropletsIcon class="w-8 h-8" />
             </div>
             <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Ngalir</h1>
@@ -109,7 +109,7 @@
                 type="text"
                 required
                 autocomplete="username"
-                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all"
                 placeholder="username"
               >
             </div>
@@ -130,7 +130,7 @@
                   inputmode="numeric"
                   pattern="[0-9]*"
                   autocomplete="current-password"
-                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 pr-11 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all tracking-widest text-center text-lg"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 pr-11 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all tracking-widest text-center text-lg"
                   placeholder="4-6 digit"
                 >
                 <button
@@ -148,7 +148,7 @@
             <button
               type="submit"
               :disabled="isLoading"
-              class="w-full bg-violet-600 hover:bg-violet-700 active:scale-[0.98] text-white font-semibold py-3.5 rounded-xl transition-all flex justify-center items-center gap-2 mt-2 shadow-sm shadow-violet-200 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold py-3.5 rounded-xl transition-all flex justify-center items-center gap-2 mt-2 shadow-sm shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <Loader2Icon v-if="isLoading" class="w-5 h-5 animate-spin" />
               <template v-else>
@@ -165,7 +165,7 @@
         <p class="text-center mt-3">
           <a
             href="/admin/login"
-            class="inline-flex items-center gap-1 text-xs font-semibold text-violet-600 hover:text-violet-700 transition-colors"
+            class="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors"
           >
             <ShieldIcon class="w-3.5 h-3.5" />
             Login sebagai Admin

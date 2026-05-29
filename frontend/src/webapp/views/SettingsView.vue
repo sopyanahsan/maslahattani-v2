@@ -9,7 +9,7 @@
     <!-- Profile Card -->
     <div class="px-4">
       <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-14 h-14 bg-violet-100 rounded-full flex items-center justify-center text-violet-600 shrink-0">
+        <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 shrink-0">
           <UserIcon class="w-7 h-7" />
         </div>
         <div class="min-w-0">
@@ -44,7 +44,7 @@
       <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
         <button @click="showChangePinModal = true" class="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
           <div class="flex items-center gap-3">
-            <LockIcon class="w-5 h-5 text-violet-600" />
+            <LockIcon class="w-5 h-5 text-blue-600" />
             <span class="text-sm text-slate-700">Ganti PIN</span>
           </div>
           <ChevronRightIcon class="w-4 h-4 text-slate-400" />
@@ -91,19 +91,19 @@
           <form @submit.prevent="handleChangePin" class="space-y-3">
             <div>
               <label class="text-sm font-medium text-slate-700">PIN Lama</label>
-              <input v-model="pinForm.oldPin" type="password" inputmode="numeric" maxlength="6" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 mt-1 text-center tracking-widest focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none" placeholder="****">
+              <input v-model="pinForm.oldPin" type="password" inputmode="numeric" maxlength="6" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 mt-1 text-center tracking-widest focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none" placeholder="****">
             </div>
             <div>
               <label class="text-sm font-medium text-slate-700">PIN Baru</label>
-              <input v-model="pinForm.newPin" type="password" inputmode="numeric" maxlength="6" minlength="4" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 mt-1 text-center tracking-widest focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none" placeholder="****">
+              <input v-model="pinForm.newPin" type="password" inputmode="numeric" maxlength="6" minlength="4" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 mt-1 text-center tracking-widest focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none" placeholder="****">
             </div>
             <div>
               <label class="text-sm font-medium text-slate-700">Konfirmasi PIN Baru</label>
-              <input v-model="pinForm.confirmPin" type="password" inputmode="numeric" maxlength="6" minlength="4" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 mt-1 text-center tracking-widest focus:border-violet-500 focus:ring-2 focus:ring-violet-100 outline-none" placeholder="****">
+              <input v-model="pinForm.confirmPin" type="password" inputmode="numeric" maxlength="6" minlength="4" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 mt-1 text-center tracking-widest focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none" placeholder="****">
             </div>
             <div class="flex gap-3 pt-2">
               <button type="button" @click="showChangePinModal = false" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Batal</button>
-              <button type="submit" :disabled="pinLoading" class="flex-1 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-700 disabled:opacity-50">
+              <button type="submit" :disabled="pinLoading" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50">
                 <Loader2Icon v-if="pinLoading" class="w-4 h-4 animate-spin mx-auto" />
                 <span v-else>Simpan</span>
               </button>

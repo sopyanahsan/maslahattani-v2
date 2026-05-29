@@ -8,7 +8,7 @@
 
     <!-- Today Summary -->
     <div class="px-4">
-      <div class="bg-gradient-to-br from-violet-500 to-violet-700 rounded-xl p-5 text-white shadow-md">
+      <div class="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl p-5 text-white shadow-md">
         <p class="text-xs font-medium opacity-80 mb-1">Penjualan Hari Ini</p>
         <h2 class="text-2xl font-bold">{{ formatRupiah(todaySales) }}</h2>
         <p class="text-[11px] opacity-70 mt-1">{{ todayTrxCount }} transaksi</p>

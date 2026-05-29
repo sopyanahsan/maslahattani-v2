@@ -5,7 +5,7 @@
       class="sticky top-0 z-30 bg-white border-b border-slate-200 px-4 h-14 flex items-center justify-between"
     >
       <div class="flex items-center gap-2 min-w-0">
-        <div class="w-8 h-8 rounded-md bg-violet-600 flex items-center justify-center shrink-0">
+        <div class="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
           <component :is="DropletsIcon" class="w-4 h-4 text-white" />
         </div>
         <div class="min-w-0">
@@ -36,7 +36,7 @@
           </span>
           <span
             v-if="isSyncing"
-            class="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-violet-100 text-violet-700"
+            class="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700"
           >
             <component :is="Loader2Icon" class="w-2.5 h-2.5 animate-spin" />
             Sync
@@ -64,7 +64,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-violet-600' : 'text-slate-500 hover:text-slate-900',
+              isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900',
             ]"
             @click="(e) => navigate(e)"
           >
@@ -79,7 +79,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-violet-600' : 'text-slate-500 hover:text-slate-900',
+              isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900',
             ]"
             @click="(e) => navigate(e)"
           >
@@ -99,13 +99,13 @@
               :class="[
                 'absolute -top-5 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all',
                 isActive
-                  ? 'bg-violet-600 shadow-violet-200'
-                  : 'bg-violet-500 hover:bg-violet-600 shadow-violet-100',
+                  ? 'bg-blue-600 shadow-blue-200'
+                  : 'bg-blue-500 hover:bg-blue-600 shadow-blue-100',
               ]"
             >
               <component :is="ShoppingCartIcon" class="w-6 h-6 text-white" />
             </div>
-            <span class="mt-7" :class="isActive ? 'text-violet-600' : 'text-slate-500'">Kasir</span>
+            <span class="mt-7" :class="isActive ? 'text-blue-600' : 'text-slate-500'">Kasir</span>
           </a>
         </RouterLink>
 
@@ -115,7 +115,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-violet-600' : 'text-slate-500 hover:text-slate-900',
+              isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900',
             ]"
             @click="(e) => navigate(e)"
           >
@@ -130,7 +130,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-violet-600' : 'text-slate-500 hover:text-slate-900',
+              isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900',
             ]"
             @click="(e) => navigate(e)"
           >

@@ -7,7 +7,7 @@
       </div>
       <button
         type="button"
-        style="background-color: #7c3aed; color: white;"
+        style="background-color: #2563eb; color: white;"
         class="h-10 px-5 text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2 shrink-0 shadow-sm shadow-violet-200"
         @click="openCreateModal"
       >
