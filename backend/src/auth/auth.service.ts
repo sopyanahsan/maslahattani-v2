@@ -400,7 +400,7 @@ export class AuthService {
 
   async loginWithPin(dto: LoginPinDto, ipAddress?: string, userAgent?: string) {
     const user = await this.prisma.user.findFirst({
-      where: { username: dto.username },
+      where: { username: dto.username.toLowerCase().trim() },
     });
 
     if (!user) {
