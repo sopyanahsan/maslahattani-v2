@@ -822,3 +822,116 @@ ATAU verified:
 2. **Notifikasi shift report** (rekap harian dikirim ke email)
 3. **Audit & trust signal** (centang verifikasi di profil)
 4. **Future**: 2FA opsional untuk kasir (PIN + OTP email)
+
+
+
+---
+
+## 19. QRIS Payment — Foto QR di Admin, Tampil Saat Bayar (Sprint 3+)
+
+### 19.1 Konsep
+
+Toko bisa upload **foto QRIS** (gambar QR Code dari bank/e-wallet) di admin panel. Saat kasir pilih metode bayar "QRIS" di POS, gambar QR otomatis muncul di popup pembayaran supaya pelanggan bisa scan langsung dari layar.
+
+### 19.2 Flow Admin Panel — Upload QRIS
+
+1. Admin buka **Pengaturan > Metode Pembayaran**
+2. Section "QRIS":
+   - [Upload Gambar QR] → pilih file JPG/PNG
+   - Preview gambar yang sudah diupload
+   - Label: "QRIS Utama" (bisa custom)
+   - Bisa upload multiple QR (misal: QRIS BRI, QRIS Dana, QRIS ShopeePay)
+3. Simpan → gambar disimpan di Cloudinary / local storage
+
+### 19.3 Flow Kasir — Bayar dengan QRIS
+
+1. Di Payment Modal, kasir pilih metode **"QRIS"**
+2. Muncul section baru di bawah metode bayar:
+   ```
+   ┌─────────────────────────────────┐
+   │ Tampilkan QR ke pelanggan:      │
+   │                                  │
+   │      ┌───────────────┐          │
+   │      │               │          │
+   │      │   [QR CODE]   │          │
+   │      │   (gambar)    │          │
+   │      │               │          │
+   │      └───────────────┘          │
+   │      QRIS BRI - Toko ABC       │
+   │                                  │
+   │ Jika ada >1 QR: [QRIS BRI ▼]   │
+   └─────────────────────────────────┘
+   ```
+3. Kasir arahkan layar ke pelanggan → pelanggan scan dari HP
+4. Setelah pelanggan bayar, kasir klik "Konfirmasi Transaksi"
+5. (Future: auto-detect payment via webhook)
+
+### 19.4 Database Changes
+
+```prisma
+model QrisImage {
+  id          String    @id @default(cuid())
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId      String
+  label       String    // "QRIS BRI", "QRIS Dana", dll
+  imageUrl    String    // URL gambar (Cloudinary atau local)
+  isDefault   Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([shopId, isActive])
+  @@map("qris_images")
+}
+```
+
+### 19.5 API Endpoints
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| GET | `/api/shops/:id/qris` | List QRIS images untuk shop |
+| POST | `/api/shops/:id/qris` | Upload QRIS image (multipart) |
+| PATCH | `/api/shops/:id/qris/:qrisId` | Update label/default/active |
+| DELETE | `/api/shops/:id/qris/:qrisId` | Hapus QRIS image |
+
+### 19.6 Admin Panel UI
+
+```
+┌─────────────────────────────────────────┐
+│ Pengaturan > Metode Pembayaran          │
+│                                          │
+│ ── QRIS ──                              │
+│                                          │
+│ ┌─────────────┐  ┌─────────────┐       │
+│ │  [QR image] │  │  [QR image] │       │
+│ │  QRIS BRI   │  │  QRIS Dana  │       │
+│ │  ✅ Default │  │             │       │
+│ │  [Edit][Del]│  │  [Edit][Del]│       │
+│ └─────────────┘  └─────────────┘       │
+│                                          │
+│ [+ Tambah QRIS]                         │
+│                                          │
+│ ── Catatan ──                           │
+│ Upload gambar QR dari aplikasi bank.    │
+│ Gambar akan ditampilkan ke pelanggan    │
+│ saat kasir pilih metode QRIS.           │
+└─────────────────────────────────────────┘
+```
+
+### 19.7 Storage Options
+
+| Service | Free Tier | Ukuran Max | Recommended |
+|---------|-----------|-----------|-------------|
+| **Cloudinary** | 25GB + 25K transforms/bulan | 10MB/file | ⭐ Best for images |
+| **Local (server storage)** | Unlimited | Disk-bound | Dev only |
+| **Supabase Storage** | 1GB free | 50MB/file | Alternative |
+
+**Roadmap**: Pakai **Cloudinary** — sudah plan untuk product images juga, jadi 1 service untuk semua image upload.
+
+### 19.8 Keamanan
+
+- Hanya admin yang bisa upload/delete QRIS
+- Kasir hanya bisa GET (view) QRIS images
+- Image di-validate: hanya JPG/PNG, max 2MB
+- Tidak ada auto-confirm pembayaran (kasir manual konfirmasi setelah pelanggan bilang sudah bayar)
+- Future: webhook integration dengan payment gateway untuk auto-detect

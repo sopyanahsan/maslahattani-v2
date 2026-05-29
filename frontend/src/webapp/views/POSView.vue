@@ -31,7 +31,7 @@
           <button class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0" @click="showScanModal = true">
             <ScanBarcodeIcon class="w-5 h-5" />
           </button>
-          <div class="hidden sm:flex rounded-lg border border-slate-200 overflow-hidden shrink-0">
+          <div class="flex rounded-lg border border-slate-200 overflow-hidden shrink-0">
             <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'grid'"><LayoutGridIcon class="w-4 h-4" /></button>
             <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'list'"><ListIcon class="w-4 h-4" /></button>
           </div>
@@ -49,7 +49,7 @@
           <PackageIcon class="w-12 h-12 text-slate-300 mb-3" /><p class="text-sm text-slate-500">{{ searchQuery ? 'Produk tidak ditemukan' : 'Cari atau scan produk' }}</p>
         </div>
         <!-- Grid -->
-        <div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
+        <div v-else-if="viewMode === 'grid'" class="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
           <button v-for="product in filteredProducts" :key="product.id" :disabled="product.totalStock <= 0" class="bg-white border border-slate-200 rounded-xl p-2.5 text-left hover:border-blue-300 hover:shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed" @click="addToCart(product)">
             <div class="relative w-full aspect-[4/3] bg-slate-100 rounded-lg mb-2 overflow-hidden">
               <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />
@@ -224,6 +224,7 @@
                 <div class="flex-1 min-w-0">
                   <p class="text-sm font-semibold text-slate-800 truncate">{{ item.name }}</p>
                   <p class="text-[10px] text-slate-500">{{ formatRupiah(item.price) }} × {{ item.quantity }}</p>
+                  <p v-if="item.discount > 0" class="text-[10px] text-red-500">Diskon: -{{ formatRupiah(item.discount) }}</p>
                   <p class="text-xs font-bold text-blue-600">{{ formatRupiah(item.subtotal) }}</p>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
@@ -234,6 +235,20 @@
                   <span class="w-6 text-center text-xs font-bold">{{ item.quantity }}</span>
                   <button class="w-7 h-7 rounded-md bg-blue-50 flex items-center justify-center text-blue-600" @click="updateQty(item.productId, item.quantity + 1)"><PlusIcon class="w-3 h-3" /></button>
                 </div>
+              </div>
+              <!-- Inline note -->
+              <div v-if="item.showNote" class="mt-1.5">
+                <input v-model="item.note" type="text" placeholder="Catatan item..." class="w-full h-7 px-2 text-[10px] border border-slate-200 rounded bg-slate-50 focus:border-blue-400 outline-none" />
+              </div>
+              <!-- Inline discount -->
+              <div v-if="item.showDiscount" class="mt-1.5 flex items-center gap-1.5">
+                <span class="text-[10px] text-slate-500">Diskon Rp:</span>
+                <input :value="item.discount" type="number" min="0" class="w-20 h-7 px-2 text-[10px] font-mono border border-slate-200 rounded bg-slate-50 text-right focus:border-blue-400 outline-none" @change="(e) => { item.discount = Math.min(Number((e.target as HTMLInputElement).value) || 0, item.price * item.quantity); Object.assign(item, recalcCartItem(item)); }" />
+              </div>
+              <!-- Actions -->
+              <div class="flex items-center gap-3 mt-1">
+                <button class="text-[10px] text-slate-400 hover:text-slate-600 flex items-center gap-0.5" @click="item.showNote = !item.showNote"><EditIcon class="w-3 h-3" /> Catatan</button>
+                <button class="text-[10px] text-slate-400 hover:text-blue-600 flex items-center gap-0.5" @click="item.showDiscount = !item.showDiscount"><TagIcon class="w-3 h-3" /> Diskon</button>
               </div>
             </div>
           </div>
@@ -250,12 +265,22 @@
                 <input v-model="customerPhone" type="text" placeholder="No HP" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
               </div>
             </div>
-            <button class="text-xs text-blue-600 font-medium flex items-center gap-1"><TagIcon class="w-3.5 h-3.5" /> Tambah Diskon</button>
+            <div>
+              <button v-if="!showTrxDiscount" class="text-xs text-blue-600 font-medium flex items-center gap-1" @click="showTrxDiscount = true"><TagIcon class="w-3.5 h-3.5" /> Tambah Diskon</button>
+              <div v-else class="flex items-center gap-2">
+                <span class="text-[10px] text-slate-500">Diskon Rp:</span>
+                <input v-model.number="trxDiscount" type="number" min="0" class="w-20 h-7 px-2 text-xs font-mono border border-slate-200 rounded bg-white text-right focus:border-blue-400 outline-none" />
+                <button class="text-[10px] text-red-400" @click="trxDiscount = 0; showTrxDiscount = false"><XIcon class="w-3 h-3" /></button>
+              </div>
+            </div>
             <div class="flex justify-between text-xs text-slate-500">
               <span>Subtotal</span><span class="font-mono">{{ formatRupiah(totalPrice) }}</span>
             </div>
+            <div v-if="trxDiscount > 0" class="flex justify-between text-xs text-red-500">
+              <span>Diskon</span><span class="font-mono">- {{ formatRupiah(trxDiscount) }}</span>
+            </div>
             <div class="flex justify-between text-base font-bold text-blue-600 pt-1 border-t border-slate-200">
-              <span>Total</span><span class="font-mono">{{ formatRupiah(totalPrice) }}</span>
+              <span>Total</span><span class="font-mono">{{ formatRupiah(grandTotal) }}</span>
             </div>
             <div class="flex gap-2">
               <button class="flex-1 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100" @click="handleSaveBill"><SaveIcon class="w-4 h-4" /> Simpan Bill</button>
@@ -284,8 +309,15 @@
           <div>
             <p class="text-xs font-semibold text-slate-600 mb-2">Metode Pembayaran</p>
             <div class="grid grid-cols-3 gap-2">
-              <button v-for="m in ['Tunai','Transfer','QRIS']" :key="m" :class="['py-2.5 rounded-lg border-2 text-xs font-semibold transition-all', paymentMethod === m ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500']" @click="paymentMethod = m">{{ m }}</button>
+              <button v-for="m in ['Tunai','QRIS','Hutang']" :key="m" :class="['py-2.5 rounded-lg border-2 text-xs font-semibold transition-all', paymentMethod === m ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500']" @click="paymentMethod = m">{{ m }}</button>
             </div>
+          </div>
+          <!-- Kas Tujuan (only if multiple kas available) -->
+          <div v-if="kasOptions.length > 1">
+            <p class="text-xs font-semibold text-slate-600 mb-2">Kas Tujuan</p>
+            <select v-model="selectedKas" class="w-full h-10 px-3 text-sm border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none">
+              <option v-for="kas in kasOptions" :key="kas.id" :value="kas.id">{{ kas.label }}</option>
+            </select>
           </div>
           <!-- Amount -->
           <div>
@@ -300,8 +332,8 @@
 
           <!-- Customer info -->
           <div class="flex gap-2">
-            <input v-model="customerName" type="text" placeholder="Nama pelanggan" class="flex-1 h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
-            <input v-model="customerPhone" type="text" placeholder="No HP" class="w-20 h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+            <input v-model="customerName" type="text" placeholder="Nama pelanggan (opsional)" class="flex-1 h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+            <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="flex-1 h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
           </div>
           <input v-model="customerNote" type="text" placeholder="Catatan tambahan (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
           <!-- Kembalian -->
@@ -405,6 +437,8 @@ const paymentMethod = ref('Tunai');
 const amountPaid = ref(0);
 const checking = ref(false);
 const checkoutError = ref<string | null>(null);
+const selectedKas = ref('default');
+const kasOptions = ref([{ id: 'default', label: 'Kas Retail' }]);
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
