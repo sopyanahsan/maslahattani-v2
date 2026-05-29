@@ -13,7 +13,7 @@ import { UpdateShopDto } from './dto/update-shop.dto';
 
 interface AuthUser {
   id: string;
-  email: string;
+  email: string | null;
   username?: string | null;
   role: Role;
   shopId?: string | null;

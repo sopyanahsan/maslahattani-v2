@@ -922,7 +922,7 @@ export class DashboardService {
     const results: Array<{
       userId: string;
       name: string | null;
-      email: string;
+      email: string | null;
       transactionCount: bigint | string;
       revenue: bigint | string;
     }> = await this.prisma.$queryRawUnsafe(

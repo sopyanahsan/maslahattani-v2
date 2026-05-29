@@ -737,3 +737,88 @@ PRD ini mendefinisikan transformasi dari "Maslahat Tani v2" menjadi **Ngalir** �
 - **Siap jual**: Branding sendiri, tagline, design system konsisten
 
 *Rezeki ngalir, transaksi ngalir, operasional lancar.* 💧
+
+
+---
+
+## 18. Email Verification (Opsional, Sprint 3+)
+
+### 18.1 Filosofi
+Akun kasir di-create dengan **username + PIN saja**. Email **tidak wajib** karena:
+- Banyak kasir UMKM tidak punya email pribadi
+- Mempercepat onboarding (admin hanya perlu nama, username, PIN)
+- Privasi kasir tidak terganggu
+
+Email menjadi **opt-in** lewat halaman Profil kasir, dengan **OTP verification** untuk membuktikan kepemilikan email.
+
+### 18.2 State Email per Kasir
+
+| State | Indikator | Bisa Reset PIN via Email? |
+|-------|-----------|---------------------------|
+| Tidak ada email | "Belum ada email" | ❌ Harus ke admin |
+| Email belum verifikasi | "⚠ Belum verifikasi" | ❌ Harus verifikasi dulu |
+| Email terverifikasi | ✅ "Terverifikasi" | ✅ Bisa self-service |
+
+### 18.3 Database Changes (Future Migration)
+
+```prisma
+model User {
+  // existing...
+  email             String?   @unique  // sudah nullable di Sprint 1
+  emailVerified     Boolean   @default(false)
+  emailVerifiedAt   DateTime?
+}
+```
+
+### 18.4 API Endpoints
+
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| POST | `/api/profile/request-email-change` | Body: `{ email }` → kirim OTP |
+| POST | `/api/profile/verify-email-change` | Body: `{ email, otp }` → simpan + verified=true |
+| POST | `/api/profile/remove-email` | Hapus email (kalau kasir mau cabut) |
+
+### 18.5 Email Service Pilihan
+
+| Service | Free Tier | Setup | Catatan |
+|---------|-----------|-------|---------|
+| **Gmail SMTP (App Password)** | ~500/hari | Mudah | ⭐ Cocok untuk start |
+| **Resend** | 3,000/bulan | API key only | ⭐ Best DX, modern |
+| **Brevo** | 300/hari | Mudah | Alternatif |
+| **AWS SES** | $0.10/1000 | Komplex | Untuk skala besar |
+
+**Roadmap**:
+- Sprint 3: Implementasi pakai **Gmail SMTP** (gak perlu signup baru, manfaatkan akun pemilik)
+- Sprint 5+: Migrasi ke **Resend** kalau sudah scale
+
+### 18.6 UI Profil Kasir (Email Section)
+
+```
+┌────────────────────────────────────────┐
+│ 📧 Email                                │
+│ ─────────────────────────────────────  │
+│ Belum ada email                         │
+│ [+ Tambah Email]                        │
+└────────────────────────────────────────┘
+
+ATAU jika sudah ada (unverified):
+┌────────────────────────────────────────┐
+│ 📧 Email                                │
+│ kasir@gmail.com    [⚠ Belum verifikasi]│
+│ [✓ Verifikasi Sekarang]  [✏ Ubah]      │
+└────────────────────────────────────────┘
+
+ATAU verified:
+┌────────────────────────────────────────┐
+│ 📧 Email                                │
+│ kasir@gmail.com    ✅ Terverifikasi    │
+│ [✏ Ubah Email]                         │
+└────────────────────────────────────────┘
+```
+
+### 18.7 Use Cases yang Di-enable
+
+1. **Lupa PIN? Reset via Email** (kasir self-service, syarat: emailVerified=true)
+2. **Notifikasi shift report** (rekap harian dikirim ke email)
+3. **Audit & trust signal** (centang verifikasi di profil)
+4. **Future**: 2FA opsional untuk kasir (PIN + OTP email)

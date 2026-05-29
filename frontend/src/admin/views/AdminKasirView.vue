@@ -54,7 +54,8 @@
                   </div>
                   <div>
                     <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ kasir.username ?? '—' }}</p>
-                    <p class="text-[10px] text-slate-500 dark:text-slate-400">{{ kasir.email }}</p>
+                    <p v-if="hasRealEmail(kasir.email)" class="text-[10px] text-slate-500 dark:text-slate-400">{{ kasir.email }}</p>
+                    <p v-else class="text-[10px] text-slate-400 dark:text-slate-600 italic">Belum ada email</p>
                   </div>
                 </div>
               </td>
@@ -280,6 +281,14 @@ async function handleResetPin() {
 function initials(text: string): string {
   const parts = text.split(/[@\s._-]+/).filter(Boolean);
   return ((parts[0]?.[0] ?? '?') + (parts[1]?.[0] ?? '')).toUpperCase().slice(0, 2);
+}
+
+/** Email is "real" if it exists and is not a legacy placeholder */
+function hasRealEmail(email?: string | null): boolean {
+  if (!email) return false;
+  // Legacy placeholders from earlier code that auto-generated fake emails
+  if (email.endsWith('@ngalir.local')) return false;
+  return true;
 }
 function formatDateTime(iso: string): string { return new Date(iso).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
 

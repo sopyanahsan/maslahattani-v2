@@ -66,10 +66,11 @@ export class AdminService {
       12,
     );
 
-    // Create user
+    // Create user. Email is null if not provided — kasir can add later via
+    // profile page with OTP verification.
     const kasir = await this.prisma.user.create({
       data: {
-        email: dto.email?.toLowerCase() || `${dto.username.toLowerCase()}@ngalir.local`,
+        email: dto.email?.toLowerCase() || null,
         username: dto.username.toLowerCase(),
         passwordHash: placeholderPassword,
         pin: pinHash,
@@ -78,7 +79,7 @@ export class AdminService {
         status: UserStatus.ACTIVE,
         shopId: dto.shopId || null,
         mustChangePassword: false,
-        mustChangePin: true, // kasir harus ganti PIN saat login pertama
+        mustChangePin: true,
       },
       select: {
         id: true,

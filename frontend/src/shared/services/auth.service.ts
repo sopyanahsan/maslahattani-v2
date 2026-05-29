@@ -45,7 +45,7 @@ export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 
 export interface AuthUserDto {
   id: string;
-  email: string;
+  email?: string | null;
   username?: string | null;
   role: UserRole;
   status: UserStatus;

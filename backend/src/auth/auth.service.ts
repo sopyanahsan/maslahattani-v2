@@ -20,7 +20,7 @@ import { Role, UserStatus } from '@prisma/client';
 
 interface TokenPayload {
   sub: string;
-  email: string;
+  email: string | null;
   role: Role;
   shopId?: string;
 }
@@ -128,6 +128,11 @@ export class AuthService {
     // OTP step (admin/super-admin 2FA mandatory)
     // ============================================
     if (user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN) {
+      if (!user.email) {
+        throw new UnauthorizedException(
+          'Akun admin tidak memiliki email. Hubungi super-admin untuk fix.',
+        );
+      }
       if (!dto.otp) {
         const otp = this.otpService.generateOtp(user.email);
         await this.otpService.sendOtp(user.email, otp);

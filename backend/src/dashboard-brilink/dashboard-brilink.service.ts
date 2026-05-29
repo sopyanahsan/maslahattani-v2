@@ -519,7 +519,7 @@ export class DashboardBrilinkService {
     const results: Array<{
       userId: string;
       name: string | null;
-      email: string;
+      email: string | null;
       trx_count: bigint | string;
       total_fee: bigint | string;
       total_volume: bigint | string;

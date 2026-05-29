@@ -8,7 +8,7 @@ export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 
 export interface KasirDto {
   id: string;
-  email: string;
+  email?: string | null;
   username?: string | null;
   role: string;
   status: UserStatus;
