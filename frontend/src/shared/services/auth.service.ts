@@ -51,6 +51,7 @@ export interface AuthUserDto {
   status: UserStatus;
   shopId?: string | null;
   mustChangePassword?: boolean;
+  mustChangePin?: boolean;
 }
 
 export interface ShopDto {
@@ -174,6 +175,11 @@ const authService = {
 
   async changePin(oldPin: string, newPin: string): Promise<{ success: boolean; message: string }> {
     const { data } = await api.post('/auth/change-pin', { oldPin, newPin });
+    return data;
+  },
+
+  async setNewPin(newPin: string): Promise<{ success: boolean; message: string }> {
+    const { data } = await api.post('/auth/set-new-pin', { newPin });
     return data;
   },
 };

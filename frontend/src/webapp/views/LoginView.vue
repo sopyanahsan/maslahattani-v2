@@ -21,8 +21,64 @@
     </Transition>
 
     <Transition name="scale-down" mode="out-in">
-      <!-- Login Form -->
-      <div v-if="step === 'login'" class="w-full max-w-sm z-10" key="login">
+      <!-- Step: Change PIN (forced for new accounts) -->
+      <div v-if="step === 'change-pin'" class="w-full max-w-sm z-10" key="change-pin">
+        <div class="bg-white border border-slate-100 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <div class="flex flex-col items-center mb-6">
+            <div class="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center mb-4 text-amber-500 shadow-sm border border-amber-100">
+              <LockIcon class="w-7 h-7" />
+            </div>
+            <h1 class="text-xl font-bold text-slate-800 tracking-tight">Ganti PIN</h1>
+            <p class="text-slate-500 mt-1 text-sm text-center">Akun baru — wajib buat PIN pribadi sebelum mulai.</p>
+          </div>
+
+          <div v-if="errorMessage" class="mb-4 bg-red-50 border-l-4 border-red-500 rounded-md p-3">
+            <p class="text-xs text-red-800">{{ errorMessage }}</p>
+          </div>
+
+          <form @submit.prevent="handleSetNewPin" class="space-y-4">
+            <div class="space-y-1.5">
+              <label class="text-sm font-semibold text-slate-700">PIN Baru (4-6 digit)</label>
+              <input
+                v-model="newPin"
+                :type="showNewPin ? 'text' : 'password'"
+                required
+                minlength="4"
+                maxlength="6"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all tracking-widest text-center text-lg"
+                placeholder="****"
+              >
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-sm font-semibold text-slate-700">Konfirmasi PIN Baru</label>
+              <input
+                v-model="confirmPin"
+                :type="showNewPin ? 'text' : 'password'"
+                required
+                minlength="4"
+                maxlength="6"
+                inputmode="numeric"
+                pattern="[0-9]*"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all tracking-widest text-center text-lg"
+                placeholder="****"
+              >
+            </div>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input type="checkbox" v-model="showNewPin" class="rounded border-slate-300 text-violet-600 focus:ring-violet-500" />
+              <span class="text-xs text-slate-500">Tampilkan PIN</span>
+            </label>
+            <button type="submit" :disabled="isLoading" class="w-full bg-violet-600 hover:bg-violet-700 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition-all flex justify-center items-center shadow-sm shadow-violet-200 disabled:opacity-50">
+              <Loader2Icon v-if="isLoading" class="w-5 h-5 animate-spin" />
+              <span v-else>Simpan PIN & Lanjutkan</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Step: Login Form -->
+      <div v-else-if="step === 'login'" class="w-full max-w-sm z-10" key="login">
         <div class="bg-white border border-slate-100 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
           <!-- Branding -->
           <div class="flex flex-col items-center mb-8">
@@ -126,14 +182,18 @@ import {
   LogIn as LogInIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import authService from '@/shared/services/auth.service';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const step = ref<'login' | 'success'>('login');
+const step = ref<'login' | 'change-pin' | 'success'>('login');
 const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
 const showPin = ref(false);
+const showNewPin = ref(false);
+const newPin = ref('');
+const confirmPin = ref('');
 
 const form = reactive({
   username: '',
@@ -151,11 +211,45 @@ const handleLogin = async () => {
   try {
     const result = await authStore.loginWithPin(form.username, form.pin);
     if (result.status === 'success') {
+      // Check if kasir must change PIN (fresh account)
+      if (result.user?.mustChangePin) {
+        step.value = 'change-pin';
+        return;
+      }
       step.value = 'success';
       setTimeout(() => { router.push({ name: 'webapp-dashboard' }); }, 1500);
     }
   } catch (err: any) {
     errorMessage.value = err?.message || 'Login gagal. Periksa username dan PIN.';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handleSetNewPin = async () => {
+  errorMessage.value = null;
+
+  if (!/^\d{4,6}$/.test(newPin.value)) {
+    errorMessage.value = 'PIN harus 4-6 digit angka.';
+    return;
+  }
+  if (newPin.value !== confirmPin.value) {
+    errorMessage.value = 'Konfirmasi PIN tidak cocok.';
+    return;
+  }
+  // Prevent using same PIN as the temp one
+  if (newPin.value === form.pin) {
+    errorMessage.value = 'PIN baru tidak boleh sama dengan PIN lama.';
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    await authService.setNewPin(newPin.value);
+    step.value = 'success';
+    setTimeout(() => { router.push({ name: 'webapp-dashboard' }); }, 1500);
+  } catch (err: any) {
+    errorMessage.value = err?.response?.data?.message || err?.message || 'Gagal mengubah PIN.';
   } finally {
     isLoading.value = false;
   }

@@ -78,6 +78,7 @@ export class AdminService {
         status: UserStatus.ACTIVE,
         shopId: dto.shopId || null,
         mustChangePassword: false,
+        mustChangePin: true, // kasir harus ganti PIN saat login pertama
       },
       select: {
         id: true,

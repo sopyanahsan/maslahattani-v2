@@ -507,6 +507,7 @@ export class AuthService {
         role: user.role,
         status: user.status,
         shopId: user.shopId,
+        mustChangePin: user.mustChangePin,
       },
       shop,
     };
@@ -531,10 +532,37 @@ export class AuthService {
     const pinHash = await bcrypt.hash(dto.newPin, 12);
     await this.prisma.user.update({
       where: { id: userId },
-      data: { pin: pinHash, pinChangedAt: new Date() },
+      data: { pin: pinHash, pinChangedAt: new Date(), mustChangePin: false },
     });
 
     return { success: true, message: 'PIN berhasil diubah.' };
+  }
+
+  // ============================================
+  // SET NEW PIN (for mustChangePin flow — no old PIN required)
+  // ============================================
+
+  async setNewPin(userId: string, newPin: string) {
+    if (!/^\d{4,6}$/.test(newPin)) {
+      throw new BadRequestException('PIN harus 4-6 digit angka.');
+    }
+
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User tidak ditemukan.');
+
+    if (!user.mustChangePin) {
+      throw new BadRequestException(
+        'Akun tidak dalam mode wajib ganti PIN. Gunakan endpoint change-pin.',
+      );
+    }
+
+    const pinHash = await bcrypt.hash(newPin, 12);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { pin: pinHash, pinChangedAt: new Date(), mustChangePin: false },
+    });
+
+    return { success: true, message: 'PIN baru berhasil disimpan.' };
   }
 
   // ============================================

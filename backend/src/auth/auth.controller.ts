@@ -109,4 +109,13 @@ export class AuthController {
   async changePin(@Request() req: any, @Body() dto: ChangePinDto) {
     return this.authService.changePin(req.user.id, dto);
   }
+
+  @Post('set-new-pin')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Set PIN baru (untuk kasir fresh yang mustChangePin=true, tanpa verifikasi PIN lama)' })
+  async setNewPin(@Request() req: any, @Body() dto: { newPin: string }) {
+    return this.authService.setNewPin(req.user.id, dto.newPin);
+  }
 }

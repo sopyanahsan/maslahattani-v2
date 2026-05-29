@@ -38,6 +38,7 @@ model User {
   shopId              String?
   
   mustChangePassword  Boolean   @default(false)
+  mustChangePin       Boolean   @default(false)
   pin                 String?   // bcrypt hash of 4-6 digit PIN for kasir login
   pinChangedAt        DateTime? @map("pin_changed_at")
   pinAttempts         Int       @default(0) @map("pin_attempts")

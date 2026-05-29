@@ -468,7 +468,7 @@ const navGroups: NavGroup[] = [
     title: 'Operasional',
     items: [
       { to: '/admin/shifts', label: 'Shift', icon: ShiftIcon },
-      { to: '/admin/users', label: 'User & Akun', icon: UsersIcon },
+      { to: '/admin/users', label: 'Multi-User', icon: UsersIcon },
     ],
   },
   {
