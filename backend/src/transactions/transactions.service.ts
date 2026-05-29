@@ -197,10 +197,53 @@ export class TransactionsService {
 
     const change = dto.amountPaid ? dto.amountPaid - totalPrice : 0;
 
+    // ============================================
+    // AUTO-CREATE DEBT (Hutang flow)
+    // ============================================
+    let debtInfo: { id: string; amount: number } | null = null;
+
+    if (dto.paymentMethod === 'HUTANG') {
+      // Full hutang: entire amount is debt
+      if (!dto.customerName) {
+        throw new BadRequestException('Nama pelanggan wajib diisi untuk metode Hutang.');
+      }
+      await this.prisma.debt.create({
+        data: {
+          shopId,
+          transactionId: transaction.id,
+          customerName: dto.customerName,
+          customerPhone: dto.customerPhone || null,
+          totalAmount: totalPrice,
+          paidAmount: 0,
+          status: 'PENDING',
+        },
+      });
+      debtInfo = { id: transaction.id, amount: totalPrice };
+    } else if (dto.createDebtForRemainder && dto.amountPaid && dto.amountPaid < totalPrice) {
+      // Partial hutang: paid some, rest is debt
+      if (!dto.customerName) {
+        throw new BadRequestException('Nama pelanggan wajib untuk mencatat sisa sebagai hutang.');
+      }
+      const debtAmount = totalPrice - dto.amountPaid;
+      await this.prisma.debt.create({
+        data: {
+          shopId,
+          transactionId: transaction.id,
+          customerName: dto.customerName,
+          customerPhone: dto.customerPhone || null,
+          totalAmount: debtAmount,
+          paidAmount: 0,
+          status: 'PENDING',
+        },
+      });
+      debtInfo = { id: transaction.id, amount: debtAmount };
+    }
+
     return {
       success: true,
       idempotent: false,
       transaction,
+      debt: debtInfo,
       summary: {
         transactionNumber,
         totalPrice,

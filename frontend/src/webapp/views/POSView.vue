@@ -329,6 +329,28 @@
             </div>
             <button class="text-[10px] text-slate-400 mt-0.5 hover:text-slate-600" @click="amountPaid = 0">Reset</button>
           </div>
+          <!-- QRIS: show placeholder QR -->
+          <div v-if="paymentMethod === 'QRIS'" class="text-center py-3">
+            <div class="w-40 h-40 mx-auto bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center mb-2">
+              <QrCodeIcon class="w-12 h-12 text-slate-300" />
+            </div>
+            <p class="text-xs text-slate-500">Tunjukkan QR ke pelanggan untuk scan</p>
+            <p class="text-[10px] text-slate-400 mt-1">Admin perlu upload gambar QRIS di Pengaturan</p>
+          </div>
+          <!-- Hutang: info + mandatory fields -->
+          <div v-if="paymentMethod === 'Hutang'" class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
+            <p class="text-xs font-semibold text-amber-700">Seluruh transaksi {{ formatRupiah(grandTotal) }} akan dicatat sebagai hutang.</p>
+            <p class="text-[10px] text-amber-600">Nama & No HP pelanggan <strong>wajib</strong> diisi.</p>
+          </div>
+          <!-- Partial hutang detection (Tunai, paid < total) -->
+          <div v-if="paymentMethod === 'Tunai' && amountPaid > 0 && amountPaid < grandTotal" class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
+            <p class="text-xs text-amber-700">Kurang <strong>{{ formatRupiah(grandTotal - amountPaid) }}</strong></p>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input v-model="createDebtForRemainder" type="checkbox" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+              <span class="text-xs text-amber-800 font-medium">Catat sisa sebagai hutang?</span>
+            </label>
+            <p v-if="createDebtForRemainder" class="text-[10px] text-amber-600">Nama & No HP pelanggan <strong>wajib</strong> diisi.</p>
+          </div>
           <!-- Customer info (shared state with cart panel) -->
           <div class="grid grid-cols-2 gap-2">
             <input v-model="customerName" type="text" placeholder="Nama (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
@@ -345,7 +367,10 @@
           <!-- Confirm -->
           <button :disabled="!canCheckout || checking" class="w-full h-11 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40" style="background-color: #2563eb;" @click="handleCheckout">
             <Loader2Icon v-if="checking" class="w-5 h-5 animate-spin" />
-            <template v-else><CheckIcon class="w-5 h-5" /> Konfirmasi Transaksi</template>
+            <template v-else>
+              <CheckIcon class="w-5 h-5" />
+              {{ paymentMethod === 'Hutang' ? 'Konfirmasi — Catat Hutang' : paymentMethod === 'QRIS' ? 'Pelanggan Sudah Membayar' : 'Konfirmasi Transaksi' }}
+            </template>
           </button>
         </div>
       </div>
@@ -524,7 +549,7 @@ import {
   Save as SaveIcon, CreditCard as CreditCardIcon, Check as CheckIcon,
   ClipboardList as ClipboardListIcon, Download as DownloadIcon,
   Share2 as Share2Icon, Printer as PrinterIcon, AlertTriangle as AlertTriangleIcon,
-  Play as PlayIcon,
+  Play as PlayIcon, QrCode as QrCodeIcon,
 } from 'lucide-vue-next';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
@@ -588,6 +613,7 @@ const checking = ref(false);
 const checkoutError = ref<string | null>(null);
 const selectedKas = ref('default');
 const kasOptions = ref([{ id: 'default', label: 'Kas Retail' }]);
+const createDebtForRemainder = ref(false);
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -602,7 +628,13 @@ const grandTotal = computed(() => Math.max(0, totalPrice.value - trxDiscount.val
 const change = computed(() => Math.max(0, (amountPaid.value || 0) - grandTotal.value));
 const canCheckout = computed(() => {
   if (cart.value.length === 0) return false;
-  if (paymentMethod.value === 'Tunai' && amountPaid.value < grandTotal.value) return false;
+  if (paymentMethod.value === 'Tunai') {
+    if (amountPaid.value < grandTotal.value && !createDebtForRemainder.value) return false;
+  }
+  // Hutang requires customer name
+  if (paymentMethod.value === 'Hutang' && !customerName.value.trim()) return false;
+  // Partial debt requires customer name
+  if (createDebtForRemainder.value && !customerName.value.trim()) return false;
   return true;
 });
 
@@ -719,6 +751,9 @@ async function handleCheckout() {
     })),
     paymentMethod: methodMap[paymentMethod.value] || 'CASH',
     amountPaid: paymentMethod.value === 'Tunai' ? amountPaid.value || grandTotal.value : grandTotal.value,
+    customerName: customerName.value || undefined,
+    customerPhone: customerPhone.value || undefined,
+    createDebtForRemainder: createDebtForRemainder.value || undefined,
     idempotencyKey,
     clientCreatedAt: new Date().toISOString(),
   };
