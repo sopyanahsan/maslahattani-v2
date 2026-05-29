@@ -18,8 +18,8 @@
           </button>
         </div>
 
-        <!-- Content wrapper: column on mobile, row on desktop -->
-        <div class="flex-1 overflow-hidden flex flex-col md:flex-row">
+        <!-- Content wrapper: column on mobile (scrollable), row on desktop -->
+        <div class="flex-1 overflow-y-auto md:overflow-hidden flex flex-col md:flex-row">
 
         <!-- Cart Items (scrollable) — left side on desktop -->
         <div class="md:flex-1 overflow-y-auto px-4 py-2 space-y-1 min-h-[120px] md:border-r md:border-slate-100">
