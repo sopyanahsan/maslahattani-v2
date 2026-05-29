@@ -159,9 +159,10 @@ export class TransactionsService {
           },
         },
         include: {
-          items: { include: { product: { select: { name: true, sku: true } } } },
+          items: { include: { product: { select: { name: true, sku: true, price: true } } } },
           payments: true,
           user: { select: { id: true, email: true, username: true } },
+          shop: { select: { id: true, name: true, address: true, phone: true } },
         },
       });
 
@@ -425,6 +426,128 @@ export class TransactionsService {
       totalHutang: hutangStats._sum.amount || 0,
       jumlahHutang: hutangStats._count,
     };
+  }
+
+  // ============================================
+  // SAVE BILL (park transaction as PENDING)
+  // ============================================
+
+  async saveBill(
+    dto: CreateTransactionDto,
+    userId: string,
+    shopId: string,
+    customerName?: string,
+    customerPhone?: string,
+    tableNumber?: string,
+  ) {
+    const productIds = dto.items.map((item) => item.productId);
+    const products = await this.prisma.product.findMany({
+      where: { id: { in: productIds }, shopId, deletedAt: null },
+    });
+
+    if (products.length !== productIds.length) {
+      throw new BadRequestException('Satu atau lebih produk tidak ditemukan.');
+    }
+
+    let totalPrice = 0;
+    let totalCost = 0;
+    let totalDiscount = 0;
+
+    const transactionItems = dto.items.map((item) => {
+      const product = products.find((p) => p.id === item.productId)!;
+      const discount = item.discount ?? 0;
+      const subtotal = product.price * item.quantity - discount;
+      totalPrice += subtotal;
+      totalCost += product.cost * item.quantity;
+      totalDiscount += discount;
+      return { productId: item.productId, quantity: item.quantity, unitPrice: product.price, discount, subtotal };
+    });
+
+    const transactionNumber = await this.generateTransactionNumber(shopId);
+
+    const bill = await this.prisma.transaction.create({
+      data: {
+        shopId,
+        userId,
+        transactionNumber,
+        totalPrice,
+        totalCost,
+        totalDiscount,
+        status: TransactionStatus.PENDING,
+        idempotencyKey: dto.idempotencyKey,
+        clientCreatedAt: dto.clientCreatedAt ? new Date(dto.clientCreatedAt) : null,
+        items: { create: transactionItems },
+      },
+      include: {
+        items: { include: { product: { select: { name: true, sku: true } } } },
+      },
+    });
+
+    return {
+      success: true,
+      message: `Bill ${transactionNumber} tersimpan.`,
+      bill,
+    };
+  }
+
+  // ============================================
+  // LIST SAVED BILLS (status=PENDING for current user in current shift)
+  // ============================================
+
+  async listSavedBills(userId: string, shopId: string) {
+    const bills = await this.prisma.transaction.findMany({
+      where: {
+        shopId,
+        userId,
+        status: TransactionStatus.PENDING,
+      },
+      include: {
+        items: { include: { product: { select: { name: true, sku: true, price: true } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return { data: bills, total: bills.length };
+  }
+
+  // ============================================
+  // LOAD BILL (return items for cart restore)
+  // ============================================
+
+  async loadBill(billId: string, userId: string, shopId: string) {
+    const bill = await this.prisma.transaction.findFirst({
+      where: { id: billId, shopId, userId, status: TransactionStatus.PENDING },
+      include: {
+        items: { include: { product: { select: { id: true, name: true, sku: true, price: true } } } },
+      },
+    });
+
+    if (!bill) {
+      throw new NotFoundException('Bill tidak ditemukan atau sudah diproses.');
+    }
+
+    return { bill };
+  }
+
+  // ============================================
+  // DISCARD BILL (delete pending transaction)
+  // ============================================
+
+  async discardBill(billId: string, userId: string, shopId: string) {
+    const bill = await this.prisma.transaction.findFirst({
+      where: { id: billId, shopId, userId, status: TransactionStatus.PENDING },
+    });
+
+    if (!bill) {
+      throw new NotFoundException('Bill tidak ditemukan atau sudah diproses.');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.transactionItem.deleteMany({ where: { transactionId: billId } });
+      await tx.transaction.delete({ where: { id: billId } });
+    });
+
+    return { success: true, message: `Bill ${bill.transactionNumber} dihapus.` };
   }
 
   // ============================================
