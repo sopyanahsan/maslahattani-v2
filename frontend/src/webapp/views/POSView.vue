@@ -420,7 +420,7 @@
           <div v-else class="space-y-2 max-h-60 overflow-y-auto">
             <div v-for="bill in savedBills" :key="bill.id" class="flex items-center justify-between p-3 border border-slate-200 rounded-lg hover:bg-slate-50">
               <div>
-                <p class="text-sm font-semibold text-slate-800">{{ bill.id }}</p>
+                <p class="text-sm font-semibold text-slate-800">{{ bill.transactionNumber || bill.id }}</p>
                 <p class="text-[10px] text-slate-500">{{ bill.items.length }} item · {{ formatRupiah(bill.items.reduce((s: number, i: any) => s + (i.subtotal || 0), 0)) }}</p>
                 <p v-if="bill.customerName" class="text-[10px] text-slate-400">{{ bill.customerName }}</p>
               </div>
@@ -565,6 +565,7 @@ import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShiftStore } from '@/shared/stores/shift.store';
 import { useShopStore } from '@/shared/stores/shop.store';
 import posService, { type POSProductDto, type CartItem, createCartItem, recalcCartItem } from '@/shared/services/pos.service';
+import api from '@/shared/services/api';
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -707,46 +708,76 @@ function handleBarcodeScan(sku: string) {
   showScanModal.value = false;
 }
 
-function handleSaveBill() {
+async function handleSaveBill() {
   if (cart.value.length === 0) return;
-  const billId = 'BILL-' + Date.now().toString(36).toUpperCase();
-  const bills = JSON.parse(localStorage.getItem('ngalir_saved_bills') || '[]');
-  bills.push({
-    id: billId,
-    items: cart.value.map(i => ({ ...i })),
-    customerName: customerName.value,
-    customerPhone: customerPhone.value,
-    trxDiscount: trxDiscount.value,
-    savedAt: new Date().toISOString(),
-  });
-  localStorage.setItem('ngalir_saved_bills', JSON.stringify(bills));
-  showToast(`Bill ${billId} berhasil disimpan`, 'success');
-  cart.value = [];
-  customerName.value = '';
-  customerPhone.value = '';
-  trxDiscount.value = 0;
+  try {
+    const payload = {
+      items: cart.value.map(i => ({
+        productId: i.productId,
+        quantity: i.quantity,
+        discount: i.discount > 0 ? i.discount : undefined,
+      })),
+      paymentMethod: 'CASH' as const,
+      idempotencyKey: crypto.randomUUID(),
+      clientCreatedAt: new Date().toISOString(),
+    };
+    const { data } = await api.post('/transactions/save-bill', payload);
+    showToast(`Bill ${data.bill?.transactionNumber || ''} berhasil disimpan`, 'success');
+    cart.value = [];
+    customerName.value = '';
+    customerPhone.value = '';
+    trxDiscount.value = 0;
+  } catch (err: any) {
+    showToast(err?.response?.data?.message || 'Gagal menyimpan bill', 'error');
+  }
 }
 
-function refreshSavedBills() {
-  savedBills.value = JSON.parse(localStorage.getItem('ngalir_saved_bills') || '[]');
+async function refreshSavedBills() {
+  try {
+    const { data } = await api.get('/transactions/saved-bills');
+    savedBills.value = (data.data || []).map((b: any) => ({
+      id: b.id,
+      transactionNumber: b.transactionNumber,
+      items: b.items || [],
+      customerName: '',
+      savedAt: b.createdAt,
+    }));
+  } catch {
+    savedBills.value = [];
+  }
 }
 
-function loadBill(bill: any) {
-  cart.value = bill.items.map((i: any) => ({ ...i }));
-  customerName.value = bill.customerName || '';
-  customerPhone.value = bill.customerPhone || '';
-  trxDiscount.value = bill.trxDiscount || 0;
-  // Remove from saved bills
-  deleteBill(bill.id);
-  showOpenBill.value = false;
-  showToast(`Bill ${bill.id} dimuat ke keranjang`, 'info');
+async function loadBill(bill: any) {
+  try {
+    const { data } = await api.post(`/transactions/load-bill/${bill.id}`);
+    const billData = data.bill;
+    cart.value = (billData.items || []).map((i: any) => ({
+      productId: i.product?.id || i.productId,
+      name: i.product?.name || 'Produk',
+      sku: i.product?.sku || '',
+      price: i.unitPrice || i.product?.price || 0,
+      quantity: i.quantity,
+      discount: i.discount || 0,
+      subtotal: i.subtotal || (i.unitPrice * i.quantity - (i.discount || 0)),
+      maxStock: 999,
+    }));
+    // Delete the bill from backend (it's now in cart)
+    await api.post(`/transactions/discard-bill/${bill.id}`);
+    showOpenBill.value = false;
+    showToast(`Bill ${billData.transactionNumber} dimuat ke keranjang`, 'info');
+  } catch (err: any) {
+    showToast(err?.response?.data?.message || 'Gagal memuat bill', 'error');
+  }
 }
 
-function deleteBill(billId: string) {
-  const bills = JSON.parse(localStorage.getItem('ngalir_saved_bills') || '[]');
-  const filtered = bills.filter((b: any) => b.id !== billId);
-  localStorage.setItem('ngalir_saved_bills', JSON.stringify(filtered));
-  savedBills.value = filtered;
+async function deleteBill(billId: string) {
+  try {
+    await api.post(`/transactions/discard-bill/${billId}`);
+    savedBills.value = savedBills.value.filter((b: any) => b.id !== billId);
+    showToast('Bill dihapus', 'info');
+  } catch (err: any) {
+    showToast(err?.response?.data?.message || 'Gagal menghapus bill', 'error');
+  }
 }
 
 // Camera barcode scanning
@@ -880,7 +911,33 @@ function handleShareReceipt() {
 }
 
 function handlePrintReceipt() {
-  window.print();
+  // Try thermal print first, fallback to window.print
+  import('@/shared/services/thermal-print.service').then(async ({ thermalPrint }) => {
+    if (thermalPrint.isConnected && receiptData.value) {
+      try {
+        await thermalPrint.printReceipt({
+          shopName: receiptData.value.shopName,
+          trxNumber: receiptData.value.trxNumber,
+          date: receiptData.value.date,
+          cashierName: receiptData.value.cashierName,
+          items: receiptData.value.items,
+          subtotal: receiptData.value.total,
+          total: receiptData.value.total,
+          paid: receiptData.value.paid,
+          change: receiptData.value.change,
+          method: receiptData.value.method,
+        });
+        showToast('Struk dicetak ke printer thermal', 'success');
+        return;
+      } catch (err: any) {
+        showToast(err.message || 'Gagal cetak thermal', 'error');
+      }
+    }
+    // Fallback: browser print
+    window.print();
+  }).catch(() => {
+    window.print();
+  });
 }
 
 onMounted(async () => {

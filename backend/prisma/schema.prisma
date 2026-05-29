@@ -32,6 +32,10 @@ model User {
   email               String?   @unique
   username            String?   @unique
   passwordHash        String
+  fullName            String?
+  phone               String?
+  address             String?
+  avatarUrl           String?
   role                Role      @default(KASIR)
   status              UserStatus @default(ACTIVE)
   shop                Shop?     @relation("ShopUsers", fields: [shopId], references: [id])
@@ -126,6 +130,7 @@ model Shop {
   cashMutations       CashMutation[]
   shifts              Shift[]
   settings            ShopSetting?
+  productCategories   ProductCategory[]
   brilinkTransactions BrilinkTransaction[]
   brilinkFees         BrilinkFee[]
   brilinkAccounts     BrilinkAccount[]
@@ -213,6 +218,11 @@ model Product {
   price               Int       // in rupiah
   cost                Int       // in rupiah
   supplierId          String?   // future: Supplier model
+  category            ProductCategory? @relation(fields: [categoryId], references: [id])
+  categoryId          String?
+  imageUrl            String?   // Cloudinary URL
+  unit                String?   // satuan: pcs, kg, liter, dll
+  description         String?
   
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -227,7 +237,28 @@ model Product {
 
   @@unique([shopId, sku])
   @@index([shopId])
+  @@index([categoryId])
   @@map("products")
+}
+
+model ProductCategory {
+  id          String    @id @default(cuid())
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId      String
+  name        String    // "Makanan", "Minuman", "Sembako", dll
+  icon        String?   // emoji or Lucide icon name
+  color       String?   // Tailwind color
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  
+  products    Product[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([shopId, name])
+  @@index([shopId, isActive])
+  @@map("product_categories")
 }
 
 model Stock {

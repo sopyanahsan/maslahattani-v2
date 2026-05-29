@@ -150,9 +150,14 @@ export class ProductsService {
         price: dto.price ?? product.price,
         cost: dto.cost ?? product.cost,
         supplierId: dto.supplierId ?? product.supplierId,
+        imageUrl: dto.imageUrl !== undefined ? dto.imageUrl : product.imageUrl,
+        categoryId: dto.categoryId !== undefined ? dto.categoryId : product.categoryId,
+        unit: dto.unit !== undefined ? dto.unit : product.unit,
+        description: dto.description !== undefined ? dto.description : product.description,
       },
       include: {
         stocks: { select: { quantity: true, warehouse: true } },
+        category: { select: { id: true, name: true, icon: true } },
       },
     });
 

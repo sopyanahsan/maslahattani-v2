@@ -23,4 +23,24 @@ export class UpdateProductDto {
   @IsOptional()
   @IsString()
   supplierId?: string;
+
+  @ApiPropertyOptional({ example: 'https://res.cloudinary.com/xxx/image/upload/v1/product.jpg' })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
+  @ApiPropertyOptional({ example: 'category-id-123' })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @ApiPropertyOptional({ example: 'kg', description: 'Satuan produk' })
+  @IsOptional()
+  @IsString()
+  unit?: string;
+
+  @ApiPropertyOptional({ example: 'Beras premium kualitas terbaik' })
+  @IsOptional()
+  @IsString()
+  description?: string;
 }

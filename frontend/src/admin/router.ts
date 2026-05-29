@@ -134,6 +134,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'product-categories',
+        name: 'admin-product-categories',
+        component: () => import('@/admin/views/ProductCategoriesView.vue'),
+        meta: {
+          title: 'Kategori Produk',
+          description: 'Kelola kategori produk (Makanan, Minuman, Sembako, dll).',
+        },
+      },
+      {
         path: 'stock',
         name: 'admin-stock',
         component: () => import('@/admin/views/AdminStockView.vue'),

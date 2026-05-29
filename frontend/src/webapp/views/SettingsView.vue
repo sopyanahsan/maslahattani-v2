@@ -8,13 +8,35 @@
 
     <!-- Profile Card -->
     <div class="px-4">
-      <div class="bg-white rounded-xl border border-slate-200 p-5 flex items-center gap-4">
-        <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 shrink-0">
-          <UserIcon class="w-7 h-7" />
+      <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 shrink-0">
+            <UserIcon class="w-7 h-7" />
+          </div>
+          <div class="min-w-0">
+            <p class="font-bold text-slate-800 truncate">{{ profileData.fullName || userName }}</p>
+            <p class="text-xs text-slate-500">Kasir · {{ shopName }}</p>
+          </div>
         </div>
-        <div class="min-w-0">
-          <p class="font-bold text-slate-800 truncate">{{ userName }}</p>
-          <p class="text-xs text-slate-500">Kasir · {{ shopName }}</p>
+        <!-- Editable fields -->
+        <div class="space-y-3 border-t border-slate-100 pt-4">
+          <div>
+            <label class="text-[10px] text-slate-500 font-medium uppercase">Nama Lengkap</label>
+            <input v-model="profileData.fullName" type="text" placeholder="Belum diisi" class="w-full h-8 px-3 mt-1 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-500 font-medium uppercase">No HP</label>
+            <input v-model="profileData.phone" type="text" placeholder="08xxxxxxxxxx" class="w-full h-8 px-3 mt-1 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-500 font-medium uppercase">Alamat</label>
+            <input v-model="profileData.address" type="text" placeholder="Alamat lengkap" class="w-full h-8 px-3 mt-1 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+          </div>
+          <button :disabled="savingProfile" class="h-8 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5" @click="handleSaveProfile">
+            <Loader2Icon v-if="savingProfile" class="w-3.5 h-3.5 animate-spin" />
+            <span>{{ savingProfile ? 'Menyimpan...' : 'Simpan Profil' }}</span>
+          </button>
+          <p v-if="profileSuccess" class="text-[10px] text-emerald-600 font-medium">Profil berhasil disimpan!</p>
         </div>
       </div>
     </div>
@@ -159,6 +181,37 @@ const shiftDurationLabel = computed(() => {
 
 const shiftHistory = ref<Array<{ id: string; date: string; duration: string; status: string }>>([]);
 
+// Profile edit
+const profileData = reactive({ fullName: '', phone: '', address: '' });
+const savingProfile = ref(false);
+const profileSuccess = ref(false);
+
+async function handleSaveProfile() {
+  savingProfile.value = true;
+  profileSuccess.value = false;
+  try {
+    await api.patch('/profile', {
+      fullName: profileData.fullName || undefined,
+      phone: profileData.phone || undefined,
+      address: profileData.address || undefined,
+    });
+    profileSuccess.value = true;
+    setTimeout(() => { profileSuccess.value = false; }, 3000);
+  } catch { /* silent */ }
+  finally { savingProfile.value = false; }
+}
+
+async function fetchProfile() {
+  try {
+    const { data } = await api.get('/profile');
+    if (data.profile) {
+      profileData.fullName = data.profile.fullName || '';
+      profileData.phone = data.profile.phone || '';
+      profileData.address = data.profile.address || '';
+    }
+  } catch { /* silent */ }
+}
+
 // Change PIN
 const showChangePinModal = ref(false);
 const pinLoading = ref(false);
@@ -196,13 +249,6 @@ async function handleLogout() {
 
 onMounted(async () => {
   try { await shiftStore.fetchCurrentShift(); } catch {}
-  // Fetch shift history
-  try {
-    const { data } = await api.get('/transactions', {
-      params: { shopId: authStore.user?.shopId, limit: 5 },
-    });
-    // We don't have a shift history endpoint yet, so leave empty for now
-    // shiftHistory will be populated when backend has shift list endpoint for kasir
-  } catch {}
+  await fetchProfile();
 });
 </script>
