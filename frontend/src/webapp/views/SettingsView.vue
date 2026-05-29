@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-5 -mx-4 -mt-4">
+  <div class="space-y-5 p-4 max-w-3xl mx-auto overflow-y-auto h-full">
     <!-- Header -->
     <header class="px-4 pt-4 pb-3 bg-white border-b border-slate-100">
       <h1 class="font-bold text-lg text-slate-800">Pengaturan</h1>

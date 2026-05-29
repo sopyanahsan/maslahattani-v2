@@ -1,5 +1,5 @@
 <template>
-  <div class="h-[calc(100vh-4rem)] overflow-hidden -mx-4 -mt-4 flex flex-col md:flex-row">
+  <div class="h-[calc(100vh-7.5rem)] overflow-hidden flex flex-col md:flex-row">
 
     <!-- === LEFT COLUMN: Products (always visible) === -->
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden">

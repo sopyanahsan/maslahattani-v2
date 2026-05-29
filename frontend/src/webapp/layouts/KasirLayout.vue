@@ -46,10 +46,8 @@
     </header>
 
     <!-- Main content -->
-    <main class="flex-1 overflow-y-auto pb-20">
-      <div class="p-4 max-w-3xl mx-auto">
-        <RouterView />
-      </div>
+    <main class="flex-1 overflow-hidden pb-16">
+      <RouterView />
     </main>
 
     <!-- Bottom Nav (5 tabs with center FAB) -->
