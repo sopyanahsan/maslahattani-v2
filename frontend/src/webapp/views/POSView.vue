@@ -330,9 +330,9 @@
             <button class="text-[10px] text-slate-400 mt-0.5 hover:text-slate-600" @click="amountPaid = 0">Reset</button>
           </div>
           <!-- Customer info (shared state with cart panel) -->
-          <div class="flex gap-2">
-            <input v-model="customerName" type="text" placeholder="Nama pelanggan (opsional)" class="flex-1 h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
-            <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="flex-1 h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+          <div class="grid grid-cols-2 gap-2">
+            <input v-model="customerName" type="text" placeholder="Nama (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+            <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
           </div>
           <input v-model="customerNote" type="text" placeholder="Catatan tambahan (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
           <!-- Kembalian (only Tunai & change > 0) -->
