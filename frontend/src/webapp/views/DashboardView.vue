@@ -11,7 +11,7 @@
         <RouterLink
           v-if="!hasOpenShift"
           to="/retail/shift"
-          class="h-8 px-3 bg-blue-600 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 hover:bg-blue-700 transition-colors"
+          class="h-8 px-3 bg-violet-600 text-white text-xs font-semibold rounded-lg flex items-center gap-1.5 hover:bg-violet-700 transition-colors"
         >
           <PlayIcon class="w-3.5 h-3.5" />
           Buka Shift
@@ -28,7 +28,7 @@
     <!-- Revenue Cards (centered, 2 columns) -->
     <div class="px-4">
       <div class="grid grid-cols-2 gap-3">
-        <div class="rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 p-4 text-white shadow-md">
+        <div class="rounded-xl bg-gradient-to-br from-violet-500 to-violet-700 p-4 text-white shadow-md">
           <div class="flex items-center gap-2 mb-3 opacity-90">
             <ShoppingCartIcon class="w-4 h-4" />
             <span class="text-xs font-medium">Penjualan Retail</span>
@@ -70,7 +70,7 @@
       <h3 class="text-sm font-bold text-slate-800 mb-3">Aksi Cepat</h3>
       <div class="grid grid-cols-3 gap-3">
         <RouterLink to="/retail/pos" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm gap-2">
-          <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center"><ShoppingCartIcon class="w-5 h-5" /></div>
+          <div class="w-10 h-10 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center"><ShoppingCartIcon class="w-5 h-5" /></div>
           <span class="text-[11px] font-medium text-slate-600 text-center">Buka Kasir</span>
         </RouterLink>
         <RouterLink to="/brilink/transaction" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm gap-2">
@@ -107,7 +107,7 @@
       <ul v-else class="space-y-3">
         <li v-for="(trx, index) in recentTransactions" :key="index" class="flex items-center justify-between p-3 border border-slate-100 rounded-xl bg-white shadow-sm">
           <div class="flex items-center gap-3">
-            <div :class="['w-10 h-10 rounded-full flex items-center justify-center', trx.type === 'retail' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600']">
+            <div :class="['w-10 h-10 rounded-full flex items-center justify-center', trx.type === 'retail' ? 'bg-violet-50 text-violet-600' : 'bg-emerald-50 text-emerald-600']">
               <ShoppingCartIcon v-if="trx.type === 'retail'" class="w-5 h-5" />
               <LandmarkIcon v-else class="w-5 h-5" />
             </div>

@@ -413,10 +413,9 @@ router.beforeEach(async (to, _from, next) => {
   next();
 });
 
-// Update document title on route change
 router.afterEach((to) => {
   const explicit = getMeta<string>(to, 'title');
-  document.title = explicit ? `${explicit} — Maslahat Tani` : 'Maslahat Tani v2';
+  document.title = explicit ? `${explicit} — Ngalir Admin` : 'Ngalir Admin';
 });
 
 export default router;

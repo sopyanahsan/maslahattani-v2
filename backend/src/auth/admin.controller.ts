@@ -50,6 +50,13 @@ export class AdminController {
     return this.adminService.resetKasirPassword(id);
   }
 
+  @Post(':id/reset-pin')
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Reset PIN kasir (generate temp PIN 4 digit)' })
+  async resetKasirPin(@Param('id') id: string) {
+    return this.adminService.resetKasirPin(id);
+  }
+
   @Get('suggest-username')
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Suggest username berdasarkan email' })

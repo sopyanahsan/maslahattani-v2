@@ -1,72 +1,36 @@
 <template>
-  <div class="relative min-h-screen bg-gradient-to-br from-white to-blue-50/80 flex flex-col items-center justify-center p-4 font-sans overflow-hidden">
-    
-    <div v-if="step === 'success'" class="absolute inset-0 pointer-events-none z-0 overflow-hidden">
-      <div class="confetti-piece" v-for="n in 15" :key="n" :style="`--x: ${Math.random() * 100}vw; --delay: ${Math.random() * 0.5}s; --duration: ${1 + Math.random()}s; --color: ${['#3B82F6', '#10B981', '#F59E0B'][Math.floor(Math.random() * 3)]}`"></div>
-    </div>
+  <div class="relative min-h-screen bg-gradient-to-br from-white to-violet-50/80 flex flex-col items-center justify-center p-4 font-sans overflow-hidden">
 
+    <!-- Success Animation Overlay -->
     <Transition name="fade-in">
       <div v-if="step === 'success'" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm">
-        
         <div class="morph-container relative w-20 h-20 mb-6">
-          <div class="ring absolute inset-0 border-4 border-emerald-100 rounded-full"></div>
-          <div class="spinner absolute inset-0 border-4 border-emerald-500 rounded-full border-t-transparent animate-spin"></div>
-          <svg class="success-check absolute inset-0 w-full h-full text-emerald-500 scale-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+          <div class="ring absolute inset-0 border-4 border-violet-100 rounded-full"></div>
+          <div class="spinner absolute inset-0 border-4 border-violet-500 rounded-full border-t-transparent animate-spin"></div>
+          <svg class="success-check absolute inset-0 w-full h-full text-violet-500 scale-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
-
         <Transition name="slide-up" appear>
           <div class="text-center">
-            <h2 class="text-2xl font-bold text-slate-800 tracking-tight mb-2">Shift siap!</h2>
-            <p class="text-slate-600 font-medium">Selamat bekerja, {{ userName }}</p>
+            <h2 class="text-2xl font-bold text-slate-800 tracking-tight mb-2">Selamat datang!</h2>
+            <p class="text-slate-600 font-medium">Satu tap, semua beres.</p>
           </div>
         </Transition>
       </div>
     </Transition>
 
     <Transition name="scale-down" mode="out-in">
-      <!-- Change Password Form (for fresh accounts) -->
-      <div v-if="step === 'change-password'" class="w-full max-w-sm z-10" key="change-pw">
-        <div class="bg-white border border-slate-100 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-          <div class="flex flex-col items-center mb-6">
-            <div class="w-14 h-14 bg-amber-50 rounded-2xl flex items-center justify-center mb-4 text-amber-500 shadow-sm border border-amber-100">
-              <LockIcon class="w-7 h-7" />
-            </div>
-            <h1 class="text-xl font-bold text-slate-800 tracking-tight">Ubah Password</h1>
-            <p class="text-slate-500 mt-1 text-sm text-center">Akun baru — wajib ganti password sebelum mulai.</p>
-          </div>
-
-          <div v-if="errorMessage" class="mb-4 bg-red-50 border-l-4 border-red-500 rounded-md p-3">
-            <p class="text-xs text-red-800">{{ errorMessage }}</p>
-          </div>
-
-          <form @submit.prevent="handleChangePassword" class="space-y-4">
-            <div class="space-y-1.5">
-              <label class="text-sm font-semibold text-slate-700">Password Baru</label>
-              <input v-model="newPassword" type="password" required minlength="6" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all" placeholder="Minimal 6 karakter">
-            </div>
-            <div class="space-y-1.5">
-              <label class="text-sm font-semibold text-slate-700">Konfirmasi Password</label>
-              <input v-model="confirmPassword" type="password" required minlength="6" class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-all" placeholder="Ulangi password baru">
-            </div>
-            <button type="submit" :disabled="isLoading" class="w-full bg-amber-500 hover:bg-amber-600 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition-all flex justify-center items-center shadow-sm shadow-amber-200 disabled:opacity-50">
-              <Loader2Icon v-if="isLoading" class="w-5 h-5 animate-spin" />
-              <span v-else>Simpan & Lanjutkan</span>
-            </button>
-          </form>
-        </div>
-      </div>
-
       <!-- Login Form -->
-      <div v-else-if="step === 'login'" class="w-full max-w-sm z-10" key="login">
+      <div v-if="step === 'login'" class="w-full max-w-sm z-10" key="login">
         <div class="bg-white border border-slate-100 rounded-3xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+          <!-- Branding -->
           <div class="flex flex-col items-center mb-8">
-            <div class="w-14 h-14 bg-emerald-50 rounded-2xl flex items-center justify-center mb-5 text-emerald-500 shadow-sm border border-emerald-100">
-              <StoreIcon class="w-7 h-7" />
+            <div class="w-16 h-16 bg-violet-50 rounded-2xl flex items-center justify-center mb-4 text-violet-600 shadow-sm border border-violet-100">
+              <DropletsIcon class="w-8 h-8" />
             </div>
-            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Masuk ke Kasir</h1>
-            <p class="text-slate-500 mt-1 text-sm">Maslahat Tani — Sistem POS</p>
+            <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Ngalir</h1>
+            <p class="text-slate-500 mt-1 text-sm">Masuk untuk melanjutkan</p>
           </div>
 
           <!-- Error Alert -->
@@ -78,26 +42,69 @@
           </div>
 
           <form @submit.prevent="handleLogin" class="space-y-5">
+            <!-- Username -->
             <div class="space-y-1.5">
-              <label class="text-sm font-semibold text-slate-700">Email Kasir</label>
-              <input v-model="form.email" type="email" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="kasir@maslahattani.my.id">
-            </div>
-            
-            <div class="space-y-1.5">
-              <label class="text-sm font-semibold text-slate-700">Password</label>
-              <input v-model="form.password" type="password" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all" placeholder="••••••••">
+              <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
+                <UserIcon class="w-4 h-4 text-slate-400" />
+                Username
+              </label>
+              <input
+                v-model="form.username"
+                type="text"
+                required
+                autocomplete="username"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all"
+                placeholder="username"
+              >
             </div>
 
-            <button type="submit" :disabled="isLoading" class="w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[0.98] text-white font-semibold py-3 rounded-xl transition-all flex justify-center items-center mt-2 shadow-sm shadow-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed">
+            <!-- PIN -->
+            <div class="space-y-1.5">
+              <label class="flex items-center gap-1.5 text-sm font-semibold text-slate-700">
+                <LockIcon class="w-4 h-4 text-slate-400" />
+                PIN
+              </label>
+              <div class="relative">
+                <input
+                  v-model="form.pin"
+                  :type="showPin ? 'text' : 'password'"
+                  required
+                  minlength="4"
+                  maxlength="6"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  autocomplete="current-password"
+                  class="w-full bg-slate-50 border border-slate-200 rounded-xl py-3 px-4 pr-11 text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100 transition-all tracking-widest text-center text-lg"
+                  placeholder="4-6 digit"
+                >
+                <button
+                  type="button"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                  @click="showPin = !showPin"
+                >
+                  <EyeIcon v-if="!showPin" class="w-5 h-5" />
+                  <EyeOffIcon v-else class="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            <!-- Submit -->
+            <button
+              type="submit"
+              :disabled="isLoading"
+              class="w-full bg-violet-600 hover:bg-violet-700 active:scale-[0.98] text-white font-semibold py-3.5 rounded-xl transition-all flex justify-center items-center gap-2 mt-2 shadow-sm shadow-violet-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
               <Loader2Icon v-if="isLoading" class="w-5 h-5 animate-spin" />
-              <span v-else>Buka Shift</span>
+              <template v-else>
+                <LogInIcon class="w-5 h-5" />
+                <span>Masuk</span>
+              </template>
             </button>
           </form>
         </div>
 
-        <p class="text-center text-xs text-slate-400 mt-6">v2.0 • Maslahat Tani POS</p>
-        <p class="text-center mt-3">
-          <a href="/admin/login" class="text-xs text-blue-600 hover:underline font-medium">Login sebagai Admin →</a>
+        <p class="text-center text-xs text-slate-400 mt-6">
+          Lupa PIN? Hubungi pemilik toko untuk reset.
         </p>
       </div>
     </Transition>
@@ -106,62 +113,49 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
-import { Store as StoreIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon, Lock as LockIcon } from 'lucide-vue-next';
+import {
+  Droplets as DropletsIcon,
+  Loader2 as Loader2Icon,
+  AlertCircle as AlertCircleIcon,
+  Lock as LockIcon,
+  User as UserIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
+  LogIn as LogInIcon,
+} from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const step = ref<'login' | 'change-password' | 'success'>('login');
+const step = ref<'login' | 'success'>('login');
 const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
-const newPassword = ref('');
-const confirmPassword = ref('');
+const showPin = ref(false);
 
 const form = reactive({
-  email: '',
-  password: '',
-});
-
-const userName = computed(() => {
-  const u = authStore.user;
-  return u?.username || u?.email || 'Kasir';
+  username: '',
+  pin: '',
 });
 
 const handleLogin = async () => {
-  isLoading.value = true;
-  errorMessage.value = null;
-
-  try {
-    const result = await authStore.login({ identifier: form.email, password: form.password });
-    // Check if must change password
-    if (result.status === 'success' && result.user?.mustChangePassword) {
-      step.value = 'change-password';
-      return;
-    }
-    step.value = 'success';
-    setTimeout(() => { router.push({ name: 'webapp-dashboard' }); }, 2000);
-  } catch (err: any) {
-    errorMessage.value = err?.response?.data?.message || err?.message || 'Login gagal. Periksa email dan password.';
-  } finally {
-    isLoading.value = false;
+  if (form.pin.length < 4) {
+    errorMessage.value = 'PIN minimal 4 digit.';
+    return;
   }
-};
-
-const handleChangePassword = async () => {
-  if (newPassword.value.length < 6) { errorMessage.value = 'Password minimal 6 karakter.'; return; }
-  if (newPassword.value !== confirmPassword.value) { errorMessage.value = 'Konfirmasi password tidak cocok.'; return; }
   isLoading.value = true;
   errorMessage.value = null;
+
   try {
-    const authService = (await import('@/shared/services/auth.service')).default;
-    await authService.changePassword(newPassword.value);
-    step.value = 'success';
-    setTimeout(() => { router.push({ name: 'webapp-dashboard' }); }, 2000);
+    const result = await authStore.loginWithPin(form.username, form.pin);
+    if (result.status === 'success') {
+      step.value = 'success';
+      setTimeout(() => { router.push({ name: 'webapp-dashboard' }); }, 1500);
+    }
   } catch (err: any) {
-    errorMessage.value = err?.response?.data?.message || err?.message || 'Gagal mengubah password.';
+    errorMessage.value = err?.message || 'Login gagal. Periksa username dan PIN.';
   } finally {
     isLoading.value = false;
   }
@@ -169,7 +163,6 @@ const handleChangePassword = async () => {
 </script>
 
 <style scoped>
-/* Card Transitions */
 .scale-down-leave-active {
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -177,16 +170,12 @@ const handleChangePassword = async () => {
   opacity: 0;
   transform: scale(0.9) translateY(10px);
 }
-
-/* Background Transition */
 .fade-in-enter-active {
   transition: opacity 0.5s ease 0.2s;
 }
 .fade-in-enter-from {
   opacity: 0;
 }
-
-/* Morph Animation Container */
 .morph-container .spinner {
   animation: fade-out-spin 0.4s ease forwards 0.8s;
 }
@@ -194,41 +183,19 @@ const handleChangePassword = async () => {
   transform-origin: center;
   animation: pop-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards 1s;
 }
-
 @keyframes fade-out-spin {
   0% { transform: rotate(0deg); opacity: 1; }
   100% { transform: rotate(360deg); opacity: 0; }
 }
-
 @keyframes pop-in {
   0% { transform: scale(0); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
-
-/* Text Slide Up Transition */
 .slide-up-enter-active {
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) 1.2s;
 }
 .slide-up-enter-from {
   opacity: 0;
   transform: translateY(20px);
-}
-
-/* Simple CSS Confetti (Fall & Spin) */
-.confetti-piece {
-  position: absolute;
-  top: -10px;
-  left: var(--x);
-  width: 8px;
-  height: 16px;
-  background-color: var(--color);
-  border-radius: 4px;
-  animation: fall var(--duration) linear var(--delay) forwards;
-  opacity: 0;
-}
-
-@keyframes fall {
-  0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
 </style>

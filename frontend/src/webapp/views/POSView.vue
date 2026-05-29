@@ -10,16 +10,16 @@
         <div class="flex items-center gap-2">
           <div class="relative flex-1">
             <SearchIcon class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input v-model="searchQuery" type="text" placeholder="Cari produk..." class="w-full bg-slate-100 rounded-lg py-2.5 pl-9 pr-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 border border-transparent outline-none transition-all" @input="debouncedSearch" />
+            <input v-model="searchQuery" type="text" placeholder="Cari produk..." class="w-full bg-slate-100 rounded-lg py-2.5 pl-9 pr-3 text-sm focus:bg-white focus:border-violet-500 focus:ring-2 focus:ring-violet-100 border border-transparent outline-none transition-all" @input="debouncedSearch" />
           </div>
-          <button class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0" @click="showScanModal = true"><CameraIcon class="w-5 h-5" /></button>
+          <button class="w-10 h-10 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center shrink-0" @click="showScanModal = true"><CameraIcon class="w-5 h-5" /></button>
           <div class="flex rounded-lg border border-slate-200 overflow-hidden shrink-0">
-            <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'grid'"><LayoutGridIcon class="w-4 h-4" /></button>
-            <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'list'"><ListIcon class="w-4 h-4" /></button>
+            <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'grid' ? 'bg-violet-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'grid'"><LayoutGridIcon class="w-4 h-4" /></button>
+            <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'list' ? 'bg-violet-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'list'"><ListIcon class="w-4 h-4" /></button>
           </div>
         </div>
         <div class="flex overflow-x-auto gap-2 hide-scrollbar">
-          <button v-for="cat in categories" :key="cat" :class="['px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors', selectedCategory === cat ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200']" @click="selectCategory(cat)">{{ cat }}</button>
+          <button v-for="cat in categories" :key="cat" :class="['px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors', selectedCategory === cat ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200']" @click="selectCategory(cat)">{{ cat }}</button>
         </div>
       </div>
 
@@ -31,26 +31,26 @@
         </div>
         <!-- Grid -->
         <div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5">
-          <button v-for="product in filteredProducts" :key="product.id" :disabled="product.totalStock <= 0" class="bg-white border border-slate-200 rounded-xl p-2.5 text-left hover:border-blue-300 hover:shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed" @click="addToCart(product)">
+          <button v-for="product in filteredProducts" :key="product.id" :disabled="product.totalStock <= 0" class="bg-white border border-slate-200 rounded-xl p-2.5 text-left hover:border-violet-300 hover:shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed" @click="addToCart(product)">
             <div class="relative w-full aspect-[4/3] bg-slate-100 rounded-lg mb-2 overflow-hidden">
               <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />
               <PackageIcon v-else class="w-8 h-8 text-slate-300 absolute inset-0 m-auto" />
               <span class="absolute top-1.5 right-1.5 text-[9px] font-bold bg-white/90 text-slate-700 px-1.5 py-0.5 rounded shadow-sm">{{ product.totalStock }} {{ product.unit || 'pcs' }}</span>
             </div>
             <p class="text-xs font-semibold text-slate-800 line-clamp-2 leading-tight mb-1">{{ product.name }}</p>
-            <p class="text-xs font-mono font-bold text-blue-600">{{ formatRupiah(product.price) }}</p>
+            <p class="text-xs font-mono font-bold text-violet-600">{{ formatRupiah(product.price) }}</p>
           </button>
         </div>
         <!-- List -->
         <div v-else class="space-y-2">
-          <button v-for="product in filteredProducts" :key="product.id" :disabled="product.totalStock <= 0" class="w-full flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-3 text-left hover:border-blue-300 transition-all disabled:opacity-40" @click="addToCart(product)">
+          <button v-for="product in filteredProducts" :key="product.id" :disabled="product.totalStock <= 0" class="w-full flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-3 text-left hover:border-violet-300 transition-all disabled:opacity-40" @click="addToCart(product)">
             <div class="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
               <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />
               <PackageIcon v-else class="w-5 h-5 text-slate-300" />
             </div>
             <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">{{ product.name }}</p><p class="text-[10px] text-slate-500 font-mono">{{ product.sku }}</p></div>
-            <div class="text-right shrink-0"><p class="text-xs font-mono font-bold text-blue-600">{{ formatRupiah(product.price) }}</p><p class="text-[10px] text-slate-500">{{ product.totalStock }} {{ product.unit || 'pcs' }}</p></div>
-            <PlusCircleIcon class="w-5 h-5 text-blue-500 shrink-0" />
+            <div class="text-right shrink-0"><p class="text-xs font-mono font-bold text-violet-600">{{ formatRupiah(product.price) }}</p><p class="text-[10px] text-slate-500">{{ product.totalStock }} {{ product.unit || 'pcs' }}</p></div>
+            <PlusCircleIcon class="w-5 h-5 text-violet-500 shrink-0" />
           </button>
         </div>
       </div>
@@ -60,12 +60,12 @@
         <div v-if="cart.length > 0" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-[600px]">
           <button class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.16)] transition-all active:scale-[0.98]" @click="showCheckout = true">
             <div class="flex items-center gap-3">
-              <div class="relative"><ShoppingCartIcon class="w-5 h-5 text-blue-600" /><span class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{{ totalItems }}</span></div>
+              <div class="relative"><ShoppingCartIcon class="w-5 h-5 text-violet-600" /><span class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-violet-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{{ totalItems }}</span></div>
               <span class="text-sm font-semibold text-slate-700">{{ totalItems }} item</span>
             </div>
             <div class="flex items-center gap-3">
-              <span class="text-base font-bold text-blue-600 font-mono">{{ formatRupiah(totalPrice) }}</span>
-              <span class="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl">Bayar</span>
+              <span class="text-base font-bold text-violet-600 font-mono">{{ formatRupiah(totalPrice) }}</span>
+              <span class="bg-violet-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl">Bayar</span>
             </div>
           </button>
         </div>

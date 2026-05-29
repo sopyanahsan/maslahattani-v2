@@ -14,6 +14,7 @@ import { ShopsService } from '../shops/shops.service';
 import { OtpService } from './otp.service';
 import { RegisterKasirDto, VerifyOtpDto } from './dto/register.dto';
 import { LoginDto, RefreshTokenDto } from './dto/login.dto';
+import { LoginPinDto, ChangePinDto } from './dto/login-pin.dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
 import { Role, UserStatus } from '@prisma/client';
 
@@ -391,6 +392,149 @@ export class AuthService {
     });
 
     return { success: true, message: 'Password berhasil direset. Silakan login ulang.' };
+  }
+
+  // ============================================
+  // LOGIN WITH PIN (Kasir only)
+  // ============================================
+
+  async loginWithPin(dto: LoginPinDto, ipAddress?: string, userAgent?: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { username: dto.username },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Username atau PIN salah.');
+    }
+
+    if (user.status !== UserStatus.ACTIVE) {
+      throw new UnauthorizedException('Akun Anda dinonaktifkan. Hubungi admin.');
+    }
+
+    // Check if PIN is locked (brute-force protection)
+    if (user.pinLockedUntil && user.pinLockedUntil > new Date()) {
+      const remainingMs = user.pinLockedUntil.getTime() - Date.now();
+      const remainingMin = Math.ceil(remainingMs / 60000);
+      throw new UnauthorizedException(
+        `Terlalu banyak percobaan. Coba lagi dalam ${remainingMin} menit.`,
+      );
+    }
+
+    // Check user has PIN set
+    if (!user.pin) {
+      throw new UnauthorizedException(
+        'PIN belum diatur. Hubungi admin untuk setup PIN.',
+      );
+    }
+
+    // Verify PIN
+    const isPinValid = await bcrypt.compare(dto.pin, user.pin);
+    if (!isPinValid) {
+      // Increment attempt counter
+      const attempts = (user.pinAttempts || 0) + 1;
+      const updateData: any = { pinAttempts: attempts };
+
+      // Lock after 5 failed attempts (5 minutes)
+      if (attempts >= 5) {
+        updateData.pinLockedUntil = new Date(Date.now() + 5 * 60 * 1000);
+        updateData.pinAttempts = 0;
+      }
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: updateData,
+      });
+
+      const remaining = 5 - attempts;
+      throw new UnauthorizedException(
+        remaining > 0
+          ? `Username atau PIN salah. ${remaining} percobaan tersisa.`
+          : 'Terlalu banyak percobaan. Akun terkunci 5 menit.',
+      );
+    }
+
+    // PIN correct — reset attempts
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { pinAttempts: 0, pinLockedUntil: null },
+    });
+
+    // Kasir must have shopId
+    if (!user.shopId) {
+      throw new ForbiddenException(
+        'Akun Anda belum di-assign ke cabang. Hubungi admin untuk aktivasi.',
+      );
+    }
+
+    const shop = await this.prisma.shop.findUnique({
+      where: { id: user.shopId },
+      select: { id: true, name: true, address: true, phone: true },
+    });
+    if (!shop) {
+      throw new ForbiddenException(
+        'Cabang yang di-assign ke akun Anda tidak ditemukan. Hubungi admin.',
+      );
+    }
+
+    const tokens = await this.generateTokens({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+      shopId: user.shopId,
+    });
+
+    await this.createSession(
+      user.id,
+      tokens.accessToken,
+      tokens.refreshToken,
+      ipAddress,
+      userAgent,
+    );
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() },
+    });
+
+    return {
+      success: true,
+      token: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        role: user.role,
+        status: user.status,
+        shopId: user.shopId,
+      },
+      shop,
+    };
+  }
+
+  // ============================================
+  // CHANGE PIN
+  // ============================================
+
+  async changePin(userId: string, dto: ChangePinDto) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User tidak ditemukan.');
+    if (!user.pin) {
+      throw new BadRequestException('PIN belum diatur. Hubungi admin.');
+    }
+
+    const isOldPinValid = await bcrypt.compare(dto.oldPin, user.pin);
+    if (!isOldPinValid) {
+      throw new UnauthorizedException('PIN lama salah.');
+    }
+
+    const pinHash = await bcrypt.hash(dto.newPin, 12);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { pin: pinHash, pinChangedAt: new Date() },
+    });
+
+    return { success: true, message: 'PIN berhasil diubah.' };
   }
 
   // ============================================
