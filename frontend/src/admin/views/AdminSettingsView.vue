@@ -358,6 +358,13 @@
           </div>
         </form>
       </section>
+
+      <!-- ============================================ -->
+      <!-- TAB: Pengaturan Sistem (Toggles ON/OFF)     -->
+      <!-- ============================================ -->
+      <section v-if="activeTab === 'system'" class="space-y-5">
+        <SystemSettingsView />
+      </section>
     </template>
   </div>
 </template>
@@ -369,11 +376,13 @@ import {
   Globe as GlobeIcon,
   Printer as PrinterIcon,
   Bell as BellIcon,
+  Settings as SettingsIcon,
   Loader2 as Loader2Icon,
   AlertCircle as AlertCircleIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import settingsService from '@/shared/services/settings.service';
+import SystemSettingsView from '@/admin/views/SystemSettingsView.vue';
 import dashboardService from '@/shared/services/dashboard.service';
 
 const authStore = useAuthStore();
@@ -382,12 +391,13 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 
 // Tabs
-type TabValue = 'shop' | 'language' | 'receipt' | 'alerts';
+type TabValue = 'shop' | 'language' | 'receipt' | 'alerts' | 'system';
 const tabs: Array<{ value: TabValue; label: string; icon: Component }> = [
   { value: 'shop', label: 'Data Toko', icon: StoreIcon },
   { value: 'language', label: 'Bahasa', icon: GlobeIcon },
   { value: 'receipt', label: 'Struk', icon: PrinterIcon },
   { value: 'alerts', label: 'Notifikasi & Alert', icon: BellIcon },
+  { value: 'system', label: 'Pengaturan Sistem', icon: SettingsIcon },
 ];
 const activeTab = ref<TabValue>('shop');
 

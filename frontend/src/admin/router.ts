@@ -233,16 +233,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/admin/views/AdminSettingsView.vue'),
         meta: {
           title: 'Pengaturan',
-          description: 'Konfigurasi toko, struk, bahasa, dan preferensi sistem.',
-        },
-      },
-      {
-        path: 'system-settings',
-        name: 'admin-system-settings',
-        component: () => import('@/admin/views/SystemSettingsView.vue'),
-        meta: {
-          title: 'Pengaturan Sistem',
-          description: 'Toggle ON/OFF fitur webapp kasir: BRILink, shift, pembayaran, POS.',
+          description: 'Konfigurasi toko, struk, bahasa, sistem ON/OFF, dan preferensi.',
         },
       },
 

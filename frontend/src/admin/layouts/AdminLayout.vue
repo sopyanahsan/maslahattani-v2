@@ -484,7 +484,6 @@ const navGroups: NavGroup[] = [
 
 const bottomNav: NavItem[] = [
   { to: '/admin/settings', label: 'Pengaturan', icon: SettingsIcon },
-  { to: '/admin/system-settings', label: 'Pengaturan Sistem', icon: SettingsIcon },
   { to: '/admin/profil', label: 'Profil', icon: UserIcon },
 ];
 
