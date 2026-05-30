@@ -305,6 +305,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, ref, type Component } from 'vue';
+import api from '@/shared/services/api';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
@@ -394,6 +395,58 @@ async function handleSwitchShop(shopId: string) {
   }
 }
 
+/**
+ * Fetch pending counts and set badges on nav items.
+ * Uses individual API calls until a dedicated badge-counts endpoint exists.
+ */
+async function fetchBadgeCounts() {
+  const shopId = shopStore.currentShopId ?? authStore.user?.shopId;
+  if (!shopId) return;
+
+  try {
+    // Parallel: pending cash-out, overdue debts, pending transfers
+    const [cashFlowRes, debtsRes, transfersRes, shiftsRes] = await Promise.allSettled([
+      api.get('/cash-flows', { params: { shopId, status: 'PENDING', type: 'CASH_OUT', limit: 0 } }),
+      api.get('/debts', { params: { shopId, status: 'OVERDUE', limit: 0 } }),
+      api.get('/transfers', { params: { shopId, status: 'PENDING', limit: 0 } }),
+      api.get('/shifts', { params: { shopId, status: 'CLOSED', limit: 0 } }),
+    ]);
+
+    const getCount = (res: PromiseSettledResult<any>): number => {
+      if (res.status === 'fulfilled') {
+        const d = res.value?.data;
+        return d?.meta?.total ?? d?.total ?? (Array.isArray(d?.data) ? d.data.length : 0);
+      }
+      return 0;
+    };
+
+    const pendingCashOut = getCount(cashFlowRes);
+    const overdueDebts = getCount(debtsRes);
+    const pendingTransfers = getCount(transfersRes);
+    const unfinalizedShifts = getCount(shiftsRes);
+
+    // Set badges on the appropriate nav items
+    function setBadge(path: string, count: number, color?: string) {
+      if (count <= 0) return;
+      for (const group of navGroups.value) {
+        const item = group.items.find((i) => i.to === path);
+        if (item) {
+          item.badge = count;
+          if (color) item.badgeColor = color;
+          break;
+        }
+      }
+    }
+
+    setBadge('/admin/kas-retail', pendingCashOut, 'bg-red-500 text-white');
+    setBadge('/admin/debts', overdueDebts, 'bg-amber-500 text-white');
+    setBadge('/admin/transfers', pendingTransfers, 'bg-blue-500 text-white');
+    setBadge('/admin/shifts', unfinalizedShifts, 'bg-slate-500 text-white');
+  } catch {
+    /* silent — badges are optional enhancements */
+  }
+}
+
 onMounted(async () => {
   if (canSwitchShop.value && availableShops.value.length === 0) {
     try {
@@ -415,6 +468,9 @@ onMounted(async () => {
       }
     }
   }
+
+  // Fetch badge counts for sidebar notifications
+  await fetchBadgeCounts();
 });
 
 // ============================================
@@ -439,7 +495,7 @@ const topItems: NavItem[] = [
   { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
 ];
 
-const navGroups: NavGroup[] = [
+const navGroups = ref<NavGroup[]>([
   {
     title: 'Retail',
     items: [
@@ -480,7 +536,7 @@ const navGroups: NavGroup[] = [
       { to: '/admin/brilink/fee', label: 'Pengaturan Fee', icon: PercentIcon },
     ],
   },
-];
+]);
 
 const bottomNav: NavItem[] = [
   { to: '/admin/settings', label: 'Pengaturan', icon: SettingsIcon },
