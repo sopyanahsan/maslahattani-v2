@@ -2,7 +2,7 @@
  * Export Service — PDF & Excel generation for reports.
  *
  * Uses:
- * - xlsx (SheetJS) for Excel export
+ * - Simple HTML table → .xls for Excel export (no external dependency, works in all browsers)
  * - jspdf + jspdf-autotable for PDF export
  *
  * All exports are client-side (no backend endpoint needed).
@@ -41,6 +41,43 @@ function getFilenameDate(start?: string, end?: string): string {
   return `${s}_${e}`;
 }
 
+/**
+ * Generate an Excel file using HTML table approach.
+ * This creates a .xls file that Excel/Google Sheets/LibreOffice can open.
+ * No external library needed — works with Vite ESM without issues.
+ */
+function downloadAsExcel(filename: string, sheets: Array<{ name: string; html: string }>) {
+  let workbookHtml = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">';
+  workbookHtml += '<head><meta charset="utf-8"><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets>';
+  
+  sheets.forEach((sheet, i) => {
+    workbookHtml += `<x:ExcelWorksheet><x:Name>${sheet.name}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet>`;
+  });
+  
+  workbookHtml += '</x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body>';
+  
+  sheets.forEach((sheet) => {
+    workbookHtml += sheet.html;
+  });
+  
+  workbookHtml += '</body></html>';
+
+  const blob = new Blob(['\uFEFF' + workbookHtml], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+function tableRow(cells: (string | number)[], bold = false): string {
+  const tag = bold ? 'th' : 'td';
+  return '<tr>' + cells.map(c => `<${tag} style="border:1px solid #ccc;padding:4px 8px;">${c}</${tag}>`).join('') + '</tr>';
+}
+
 // ============================================
 // EXCEL EXPORT
 // ============================================
@@ -51,62 +88,51 @@ export async function exportSalesExcel(
   endDate?: string,
   shopName?: string,
 ): Promise<void> {
-  const XLSX = await import('xlsx');
+  // Sheet 1: Ringkasan
+  let sheet1 = '<table>';
+  sheet1 += `<tr><td colspan="2" style="font-size:16px;font-weight:bold;">LAPORAN PENJUALAN</td></tr>`;
+  sheet1 += `<tr><td colspan="2">Toko: ${shopName || '-'}</td></tr>`;
+  sheet1 += `<tr><td colspan="2">Periode: ${startDate ? fmtDate(startDate) : '-'} s/d ${endDate ? fmtDate(endDate) : '-'}</td></tr>`;
+  sheet1 += `<tr><td colspan="2">Dicetak: ${new Date().toLocaleString('id-ID')}</td></tr>`;
+  sheet1 += '<tr><td></td></tr>';
+  sheet1 += tableRow(['Metrik', 'Nilai'], true);
+  sheet1 += tableRow(['Omzet', report.summary.omzet]);
+  sheet1 += tableRow(['Modal', report.summary.modal]);
+  sheet1 += tableRow(['Profit', report.summary.profit]);
+  sheet1 += tableRow(['Diskon', report.summary.diskon]);
+  sheet1 += tableRow(['Total Transaksi', report.summary.totalTransactions]);
+  sheet1 += tableRow(['Transaksi Void', report.summary.totalVoided]);
+  sheet1 += tableRow(['Margin (%)', report.summary.marginPercent]);
+  sheet1 += '<tr><td></td></tr>';
+  sheet1 += `<tr><td colspan="3" style="font-weight:bold;">METODE PEMBAYARAN</td></tr>`;
+  sheet1 += tableRow(['Metode', 'Jumlah', 'Total'], true);
+  report.methodBreakdown.forEach(m => { sheet1 += tableRow([m.method, m.count, m.totalAmount]); });
+  sheet1 += '</table>';
 
-  const wb = XLSX.utils.book_new();
+  // Sheet 2: Top Produk
+  let sheet2 = '<table>';
+  sheet2 += `<tr><td colspan="5" style="font-size:14px;font-weight:bold;">TOP 10 PRODUK</td></tr>`;
+  sheet2 += '<tr><td></td></tr>';
+  sheet2 += tableRow(['#', 'Produk', 'SKU', 'Qty Terjual', 'Revenue'], true);
+  report.topProducts.forEach((p, i) => { sheet2 += tableRow([i + 1, p.productName, p.sku, p.totalQty, p.totalRevenue]); });
+  sheet2 += '</table>';
 
-  // --- Sheet 1: Ringkasan ---
-  const summaryData = [
-    ['LAPORAN PENJUALAN'],
-    [`Toko: ${shopName || '-'}`],
-    [`Periode: ${startDate ? fmtDate(startDate) : '-'} s/d ${endDate ? fmtDate(endDate) : '-'}`],
-    [`Dicetak: ${new Date().toLocaleString('id-ID')}`],
-    [],
-    ['Metrik', 'Nilai'],
-    ['Omzet', report.summary.omzet],
-    ['Modal', report.summary.modal],
-    ['Profit', report.summary.profit],
-    ['Diskon', report.summary.diskon],
-    ['Total Transaksi', report.summary.totalTransactions],
-    ['Transaksi Void', report.summary.totalVoided],
-    ['Margin (%)', report.summary.marginPercent],
-    [],
-    ['METODE PEMBAYARAN'],
-    ['Metode', 'Jumlah', 'Total'],
-    ...report.methodBreakdown.map(m => [m.method, m.count, m.totalAmount]),
-  ];
-  const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-  // Set column widths
-  wsSummary['!cols'] = [{ wch: 20 }, { wch: 18 }];
-  XLSX.utils.book_append_sheet(wb, wsSummary, 'Ringkasan');
+  // Sheet 3: Trend Harian
+  let sheet3 = '<table>';
+  sheet3 += `<tr><td colspan="4" style="font-size:14px;font-weight:bold;">TREND HARIAN</td></tr>`;
+  sheet3 += '<tr><td></td></tr>';
+  sheet3 += tableRow(['Tanggal', 'Omzet', 'Profit', 'Transaksi'], true);
+  report.dailyTrend.forEach(d => { sheet3 += tableRow([d.date, d.omzet, d.profit, d.transactions]); });
+  sheet3 += '</table>';
 
-  // --- Sheet 2: Top Produk ---
-  const topData = [
-    ['TOP 10 PRODUK'],
-    [`Periode: ${startDate ? fmtDate(startDate) : '-'} s/d ${endDate ? fmtDate(endDate) : '-'}`],
-    [],
-    ['#', 'Produk', 'SKU', 'Qty Terjual', 'Revenue'],
-    ...report.topProducts.map((p, i) => [i + 1, p.productName, p.sku, p.totalQty, p.totalRevenue]),
-  ];
-  const wsTop = XLSX.utils.aoa_to_sheet(topData);
-  wsTop['!cols'] = [{ wch: 4 }, { wch: 30 }, { wch: 15 }, { wch: 12 }, { wch: 16 }];
-  XLSX.utils.book_append_sheet(wb, wsTop, 'Top Produk');
-
-  // --- Sheet 3: Trend Harian ---
-  const trendData = [
-    ['TREND HARIAN'],
-    [`Periode: ${startDate ? fmtDate(startDate) : '-'} s/d ${endDate ? fmtDate(endDate) : '-'}`],
-    [],
-    ['Tanggal', 'Omzet', 'Profit', 'Transaksi'],
-    ...report.dailyTrend.map(d => [d.date, d.omzet, d.profit, d.transactions]),
-  ];
-  const wsTrend = XLSX.utils.aoa_to_sheet(trendData);
-  wsTrend['!cols'] = [{ wch: 14 }, { wch: 16 }, { wch: 16 }, { wch: 12 }];
-  XLSX.utils.book_append_sheet(wb, wsTrend, 'Trend Harian');
-
-  // Download
-  const filename = `Laporan_Penjualan_${getFilenameDate(startDate, endDate)}.xlsx`;
-  XLSX.writeFile(wb, filename);
+  downloadAsExcel(
+    `Laporan_Penjualan_${getFilenameDate(startDate, endDate)}.xls`,
+    [
+      { name: 'Ringkasan', html: sheet1 },
+      { name: 'Top Produk', html: sheet2 },
+      { name: 'Trend Harian', html: sheet3 },
+    ],
+  );
 }
 
 export async function exportBrilinkExcel(
@@ -115,33 +141,25 @@ export async function exportBrilinkExcel(
   endDate?: string,
   shopName?: string,
 ): Promise<void> {
-  const XLSX = await import('xlsx');
+  let html = '<table>';
+  html += `<tr><td colspan="4" style="font-size:16px;font-weight:bold;">LAPORAN BRILINK</td></tr>`;
+  html += `<tr><td colspan="4">Toko: ${shopName || '-'}</td></tr>`;
+  html += `<tr><td colspan="4">Periode: ${startDate ? fmtDate(startDate) : '-'} s/d ${endDate ? fmtDate(endDate) : '-'}</td></tr>`;
+  html += '<tr><td></td></tr>';
+  html += tableRow(['Total Transaksi', report.summary.totalTransactions, '', '']);
+  html += tableRow(['Volume', report.summary.volume, '', '']);
+  html += tableRow(['Pendapatan Fee', report.summary.feeEarnings, '', '']);
+  html += tableRow(['Rata-rata Fee', report.summary.avgFee, '', '']);
+  html += '<tr><td></td></tr>';
+  html += `<tr><td colspan="4" style="font-weight:bold;">PER KATEGORI</td></tr>`;
+  html += tableRow(['Kategori', 'Transaksi', 'Volume', 'Fee'], true);
+  report.categoryBreakdown.forEach(c => { html += tableRow([c.category, c.count, c.volume, c.fee]); });
+  html += '</table>';
 
-  const wb = XLSX.utils.book_new();
-
-  const data = [
-    ['LAPORAN BRILINK'],
-    [`Toko: ${shopName || '-'}`],
-    [`Periode: ${startDate ? fmtDate(startDate) : '-'} s/d ${endDate ? fmtDate(endDate) : '-'}`],
-    [`Dicetak: ${new Date().toLocaleString('id-ID')}`],
-    [],
-    ['RINGKASAN'],
-    ['Total Transaksi', report.summary.totalTransactions],
-    ['Volume', report.summary.volume],
-    ['Pendapatan Fee', report.summary.feeEarnings],
-    ['Rata-rata Fee', report.summary.avgFee],
-    [],
-    ['PER KATEGORI'],
-    ['Kategori', 'Transaksi', 'Volume', 'Fee'],
-    ...report.categoryBreakdown.map(c => [c.category, c.count, c.volume, c.fee]),
-  ];
-
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  ws['!cols'] = [{ wch: 20 }, { wch: 14 }, { wch: 16 }, { wch: 14 }];
-  XLSX.utils.book_append_sheet(wb, ws, 'BRILink');
-
-  const filename = `Laporan_BRILink_${getFilenameDate(startDate, endDate)}.xlsx`;
-  XLSX.writeFile(wb, filename);
+  downloadAsExcel(
+    `Laporan_BRILink_${getFilenameDate(startDate, endDate)}.xls`,
+    [{ name: 'BRILink', html }],
+  );
 }
 
 // ============================================
@@ -156,7 +174,7 @@ export async function exportSalesPDF(
 ): Promise<void> {
   const { jsPDF } = await import('jspdf');
   const autoTableModule = await import('jspdf-autotable');
-  const autoTable = autoTableModule.default || autoTableModule;
+  const autoTable = (autoTableModule as any).default || autoTableModule;
 
   const doc = new jsPDF('p', 'mm', 'a4');
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -224,9 +242,7 @@ export async function exportSalesPDF(
 
   // Top products
   if (report.topProducts.length > 0) {
-    // Check if we need a new page
     if (yPos > 220) { doc.addPage(); yPos = 15; }
-
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.text('Top 10 Produk', 14, yPos);
@@ -250,7 +266,6 @@ export async function exportSalesPDF(
   // Daily trend
   if (report.dailyTrend.length > 0) {
     if (yPos > 200) { doc.addPage(); yPos = 15; }
-
     doc.setFontSize(11);
     doc.setFont('helvetica', 'bold');
     doc.text('Trend Harian', 14, yPos);
@@ -284,9 +299,7 @@ export async function exportSalesPDF(
     );
   }
 
-  // Download
-  const filename = `Laporan_Penjualan_${getFilenameDate(startDate, endDate)}.pdf`;
-  doc.save(filename);
+  doc.save(`Laporan_Penjualan_${getFilenameDate(startDate, endDate)}.pdf`);
 }
 
 export async function exportBrilinkPDF(
@@ -297,12 +310,11 @@ export async function exportBrilinkPDF(
 ): Promise<void> {
   const { jsPDF } = await import('jspdf');
   const autoTableModule = await import('jspdf-autotable');
-  const autoTable = autoTableModule.default || autoTableModule;
+  const autoTable = (autoTableModule as any).default || autoTableModule;
 
   const doc = new jsPDF('p', 'mm', 'a4');
   const pageWidth = doc.internal.pageSize.getWidth();
 
-  // Header
   doc.setFontSize(16);
   doc.setFont('helvetica', 'bold');
   doc.text('LAPORAN BRILINK', pageWidth / 2, 15, { align: 'center' });
@@ -317,7 +329,6 @@ export async function exportBrilinkPDF(
   doc.setFontSize(8);
   doc.text(`Dicetak: ${new Date().toLocaleString('id-ID')}`, pageWidth / 2, 33, { align: 'center' });
 
-  // Summary
   let yPos = 40;
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
@@ -340,7 +351,6 @@ export async function exportBrilinkPDF(
     margin: { left: 14, right: 14 },
   });
 
-  // Category breakdown
   yPos = (doc as any).lastAutoTable.finalY + 8;
   doc.setFontSize(11);
   doc.setFont('helvetica', 'bold');
@@ -362,7 +372,6 @@ export async function exportBrilinkPDF(
     });
   }
 
-  // Footer
   doc.setFontSize(7);
   doc.text(
     `Halaman 1/1 — Generated by Ngalir`,
@@ -371,6 +380,5 @@ export async function exportBrilinkPDF(
     { align: 'center' },
   );
 
-  const filename = `Laporan_BRILink_${getFilenameDate(startDate, endDate)}.pdf`;
-  doc.save(filename);
+  doc.save(`Laporan_BRILink_${getFilenameDate(startDate, endDate)}.pdf`);
 }
