@@ -155,7 +155,8 @@
                 <thead>
                   <tr class="text-left text-[11px] text-slate-500 uppercase tracking-wide border-b border-slate-200">
                     <th class="pb-2 pr-3">Produk</th>
-                    <th class="pb-2 pr-3 text-right">Qty</th>
+                    <th class="pb-2 pr-3 text-right">Qty Order</th>
+                    <th class="pb-2 pr-3 text-right">Diterima</th>
                     <th class="pb-2 pr-3 text-right">Harga</th>
                     <th class="pb-2 text-right">Subtotal</th>
                   </tr>
@@ -167,6 +168,11 @@
                       <p class="text-[10px] text-slate-400">{{ item.productSku }}</p>
                     </td>
                     <td class="py-2 pr-3 text-right text-xs">{{ item.quantity }}</td>
+                    <td class="py-2 pr-3 text-right text-xs">
+                      <span :class="item.receivedQty >= item.quantity ? 'text-emerald-600 font-semibold' : item.receivedQty > 0 ? 'text-blue-600 font-semibold' : 'text-slate-400'">
+                        {{ item.receivedQty }} / {{ item.quantity }}
+                      </span>
+                    </td>
                     <td class="py-2 pr-3 text-right text-xs">{{ formatRupiah(item.unitCost) }}</td>
                     <td class="py-2 text-right text-xs font-semibold">{{ formatRupiah(item.subtotal) }}</td>
                   </tr>
@@ -180,7 +186,7 @@
               </table>
             </div>
           </div>
-          <div v-if="poDetail && (poDetail.status === 'DRAFT' || poDetail.status === 'ORDERED')" class="px-6 py-4 border-t border-slate-200 flex justify-between">
+          <div v-if="poDetail && (poDetail.status === 'DRAFT' || poDetail.status === 'ORDERED' || poDetail.status === 'PARTIAL')" class="px-6 py-4 border-t border-slate-200 flex justify-between">
             <button
               type="button"
               class="h-9 px-4 text-xs font-semibold text-red-600 border border-red-300 rounded-lg hover:bg-red-50"
@@ -194,11 +200,17 @@
                 @click="handleMarkOrdered"
               >Tandai Ordered</button>
               <button
-                v-if="poDetail.status === 'ORDERED'"
+                v-if="poDetail.status === 'ORDERED' || poDetail.status === 'PARTIAL'"
                 type="button"
                 class="h-9 px-4 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700"
                 @click="handleMarkReceived"
-              >Barang Diterima + Update Stok</button>
+              >Terima Semua Sisa Barang</button>
+              <button
+                v-if="poDetail.status === 'ORDERED' || poDetail.status === 'PARTIAL'"
+                type="button"
+                class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700"
+                @click="openPartialReceive"
+              >Terima Sebagian</button>
             </div>
           </div>
         </div>
@@ -238,6 +250,40 @@
               </button>
             </div>
           </form>
+        </div>
+      </div>
+    </teleport>
+    <!-- ============================================ -->
+    <!-- Partial Receive Modal                         -->
+    <!-- ============================================ -->
+    <teleport to="body">
+      <div v-if="showPartialReceive" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="showPartialReceive = false">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
+          <h2 class="text-base font-bold text-slate-900 mb-2">Terima Barang (Sebagian)</h2>
+          <p class="text-xs text-slate-500 mb-4">Masukkan qty yang diterima per item. Kosongkan atau 0 untuk skip.</p>
+          <div class="space-y-3">
+            <div v-for="item in partialReceiveItems" :key="item.itemId" class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-slate-800 truncate">{{ item.productName }}</p>
+                <p class="text-[10px] text-slate-500">Sisa: {{ item.remaining }} dari {{ item.orderQty }}</p>
+              </div>
+              <div class="shrink-0 w-20">
+                <input
+                  v-model.number="item.receivedQty"
+                  type="number"
+                  :min="0"
+                  :max="item.remaining"
+                  class="w-full h-8 px-2 text-sm font-mono text-center border border-slate-300 rounded-md focus:border-blue-500 outline-none"
+                />
+              </div>
+            </div>
+          </div>
+          <div class="flex justify-end gap-2 pt-4">
+            <button type="button" @click="showPartialReceive = false" class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50">Batal</button>
+            <button type="button" :disabled="receivingPartial" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50" @click="handlePartialReceive">
+              {{ receivingPartial ? 'Memproses...' : 'Konfirmasi Terima' }}
+            </button>
+          </div>
         </div>
       </div>
     </teleport>
@@ -282,6 +328,17 @@ const supplierForm = reactive({ name: '', phone: '', address: '', notes: '' });
 const showPODetail = ref(false);
 const poDetail = ref<PurchaseOrderDetailDto | null>(null);
 const poDetailLoading = ref(false);
+
+// Partial receive
+const showPartialReceive = ref(false);
+const receivingPartial = ref(false);
+const partialReceiveItems = ref<Array<{
+  itemId: string;
+  productName: string;
+  orderQty: number;
+  remaining: number;
+  receivedQty: number;
+}>>([]);
 
 // Create PO
 const showCreatePO = ref(false);
@@ -434,12 +491,45 @@ async function handleMarkOrdered() {
 
 async function handleMarkReceived() {
   if (!poDetail.value) return;
-  if (!confirm('Terima semua barang dan update stok?')) return;
+  if (!confirm('Terima SEMUA sisa barang dan update stok? (Full receive)')) return;
   try {
-    await supplierService.markReceived(poDetail.value.id);
+    const res = await supplierService.markReceived(poDetail.value.id);
+    alert(res.message || 'Berhasil!');
     showPODetail.value = false;
     await fetchPOs();
   } catch (err: any) { alert(err.response?.data?.message ?? 'Gagal.'); }
+}
+
+function openPartialReceive() {
+  if (!poDetail.value) return;
+  partialReceiveItems.value = poDetail.value.items
+    .filter((item) => item.receivedQty < item.quantity)
+    .map((item) => ({
+      itemId: item.id,
+      productName: item.productName,
+      orderQty: item.quantity,
+      remaining: item.quantity - item.receivedQty,
+      receivedQty: item.quantity - item.receivedQty, // default: terima semua sisa
+    }));
+  showPartialReceive.value = true;
+}
+
+async function handlePartialReceive() {
+  if (!poDetail.value) return;
+  const items = partialReceiveItems.value
+    .filter((i) => i.receivedQty > 0)
+    .map((i) => ({ itemId: i.itemId, receivedQty: i.receivedQty }));
+  if (items.length === 0) { alert('Tidak ada item yang diterima.'); return; }
+  receivingPartial.value = true;
+  try {
+    const res = await supplierService.markReceived(poDetail.value.id, items);
+    alert(res.message || 'Berhasil!');
+    showPartialReceive.value = false;
+    showPODetail.value = false;
+    await fetchPOs();
+  } catch (err: any) {
+    alert(err.response?.data?.message ?? 'Gagal menerima barang.');
+  } finally { receivingPartial.value = false; }
 }
 
 async function handleCancelPO() {

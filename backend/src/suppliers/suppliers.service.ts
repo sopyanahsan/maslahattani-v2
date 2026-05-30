@@ -227,7 +227,7 @@ export class SuppliersService {
     });
   }
 
-  async markReceived(id: string) {
+  async markReceived(id: string, receivedItems?: Array<{ itemId: string; receivedQty: number }>) {
     const po = await this.prisma.purchaseOrder.findUnique({
       where: { id },
       include: { items: true },
@@ -237,49 +237,99 @@ export class SuppliersService {
       throw new BadRequestException('PO sudah selesai atau dibatalkan.');
     }
 
-    // Update all items receivedQty = quantity
-    await this.prisma.purchaseOrderItem.updateMany({
-      where: { orderId: id },
-      data: { receivedQty: undefined }, // will set per-item below
-    });
-
-    // Update stock for each item
-    for (const item of po.items) {
-      // Update receivedQty
-      await this.prisma.purchaseOrderItem.update({
-        where: { id: item.id },
-        data: { receivedQty: item.quantity },
-      });
-
-      // Add stock
-      const stock = await this.prisma.stock.findFirst({
-        where: { shopId: po.shopId, productId: item.productId },
-      });
-
-      if (stock) {
-        await this.prisma.stock.update({
-          where: { id: stock.id },
-          data: { quantity: { increment: item.quantity } },
-        });
-
-        await this.prisma.stockHistory.create({
-          data: {
-            stockId: stock.id,
-            type: 'IN',
-            quantityBefore: stock.quantity,
-            quantityAfter: stock.quantity + item.quantity,
-            quantityChange: item.quantity,
-            reference: po.id,
-            notes: `PO ${po.orderNumber}: ${item.quantity} unit masuk`,
-          },
-        });
+    // Build receive map. If no receivedItems → full receive (all remaining qty)
+    const receiveMap = new Map<string, number>();
+    if (receivedItems && receivedItems.length > 0) {
+      for (const ri of receivedItems) {
+        receiveMap.set(ri.itemId, ri.receivedQty);
+      }
+    } else {
+      for (const item of po.items) {
+        receiveMap.set(item.id, item.quantity - item.receivedQty);
       }
     }
 
-    return this.prisma.purchaseOrder.update({
-      where: { id },
-      data: { status: 'RECEIVED', receivedAt: new Date() },
+    // Validate quantities
+    for (const item of po.items) {
+      const toReceive = receiveMap.get(item.id);
+      if (toReceive === undefined) continue;
+      const remaining = item.quantity - item.receivedQty;
+      if (toReceive > remaining) {
+        throw new BadRequestException(
+          `Qty terima (${toReceive}) melebihi sisa yang belum diterima (${remaining}).`,
+        );
+      }
+      if (toReceive < 0) {
+        throw new BadRequestException('Qty terima tidak boleh negatif.');
+      }
+    }
+
+    // Execute atomically
+    const result = await this.prisma.$transaction(async (tx) => {
+      for (const item of po.items) {
+        const toReceive = receiveMap.get(item.id) ?? 0;
+        if (toReceive <= 0) continue;
+
+        // Update PO item receivedQty
+        await tx.purchaseOrderItem.update({
+          where: { id: item.id },
+          data: { receivedQty: item.receivedQty + toReceive },
+        });
+
+        // Find or create stock record
+        let stock = await tx.stock.findFirst({
+          where: { shopId: po.shopId, productId: item.productId },
+        });
+        if (!stock) {
+          stock = await tx.stock.create({
+            data: { shopId: po.shopId, productId: item.productId, quantity: 0, warehouse: 'main' },
+          });
+        }
+
+        const qtyBefore = stock.quantity;
+        const qtyAfter = qtyBefore + toReceive;
+
+        await tx.stock.update({
+          where: { id: stock.id },
+          data: { quantity: qtyAfter },
+        });
+
+        await tx.stockHistory.create({
+          data: {
+            stockId: stock.id,
+            type: 'IN',
+            quantityBefore: qtyBefore,
+            quantityAfter: qtyAfter,
+            quantityChange: toReceive,
+            reference: po.id,
+            notes: `PO ${po.orderNumber}: terima ${toReceive} unit`,
+          },
+        });
+      }
+
+      // Determine final status
+      const updatedItems = await tx.purchaseOrderItem.findMany({ where: { orderId: id } });
+      const allFullyReceived = updatedItems.every((i) => i.receivedQty >= i.quantity);
+      const newStatus = allFullyReceived ? 'RECEIVED' : 'PARTIAL';
+
+      return tx.purchaseOrder.update({
+        where: { id },
+        data: {
+          status: newStatus,
+          ...(allFullyReceived ? { receivedAt: new Date() } : {}),
+        },
+        include: {
+          items: { include: { product: { select: { id: true, name: true, sku: true } } } },
+        },
+      });
     });
+
+    return {
+      purchaseOrder: result,
+      message: result.status === 'RECEIVED'
+        ? `PO ${po.orderNumber} selesai! Semua barang diterima & stok diupdate.`
+        : `PO ${po.orderNumber} diterima sebagian. Sisa bisa diterima nanti.`,
+    };
   }
 
   async cancelPO(id: string) {

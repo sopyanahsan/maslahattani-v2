@@ -159,8 +159,8 @@ const supplierService = {
     return data;
   },
 
-  async markReceived(id: string) {
-    const { data } = await api.post(`/suppliers/purchase-orders/${id}/receive`);
+  async markReceived(id: string, items?: Array<{ itemId: string; receivedQty: number }>) {
+    const { data } = await api.post(`/suppliers/purchase-orders/${id}/receive`, items ? { items } : {});
     return data;
   },
 
