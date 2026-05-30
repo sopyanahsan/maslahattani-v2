@@ -370,7 +370,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, reactive, type Component } from 'vue';
+import { onMounted, ref, reactive, computed, watch, type Component } from 'vue';
 import {
   Store as StoreIcon,
   Globe as GlobeIcon,
@@ -381,11 +381,24 @@ import {
   AlertCircle as AlertCircleIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import settingsService from '@/shared/services/settings.service';
 import SystemSettingsView from '@/admin/views/SystemSettingsView.vue';
 import dashboardService from '@/shared/services/dashboard.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
+
+/**
+ * Sumber shopId yang reliable:
+ * - shopStore.currentShopId di-hydrate sync dari localStorage saat store init,
+ *   jadi sudah tersedia ketika view ini mount.
+ * - authStore.user?.shopId di-set async (fetchUser/login) & untuk super-admin
+ *   nilainya null (currentShop yang dipakai). Dipakai sebagai fallback saja.
+ */
+const shopId = computed(
+  () => shopStore.currentShopId ?? authStore.user?.shopId ?? null,
+);
 
 const loading = ref(false);
 const error = ref<string | null>(null);
@@ -432,12 +445,14 @@ const alertSuccess = ref<string | null>(null);
 const alertError = ref<string | null>(null);
 
 async function fetchSettings() {
-  const shopId = authStore.user?.shopId;
-  if (!shopId) return;
+  if (!shopId.value) {
+    loading.value = false;
+    return;
+  }
   loading.value = true;
   error.value = null;
   try {
-    const data = await settingsService.getSettings(shopId);
+    const data = await settingsService.getSettings(shopId.value);
     shopForm.name = data.shop.name;
     shopForm.address = data.shop.address;
     shopForm.phone = data.shop.phone;
@@ -458,7 +473,7 @@ async function fetchSettings() {
 
     // Alert config (separate endpoint)
     try {
-      const alertCfg = await dashboardService.getAlertConfig(shopId);
+      const alertCfg = await dashboardService.getAlertConfig(shopId.value);
       alertForm.lowStockThreshold = alertCfg.lowStockThreshold;
       alertForm.shiftDurationWarningHours = alertCfg.shiftDurationWarningHours;
       alertForm.overdueDebtDaysBeforeNotice =
@@ -477,12 +492,11 @@ async function fetchSettings() {
 }
 
 async function handleSaveShop() {
-  const shopId = authStore.user?.shopId;
-  if (!shopId) return;
+  if (!shopId.value) return;
   savingShop.value = true;
   shopSuccess.value = null;
   try {
-    await settingsService.updateShop(shopId, {
+    await settingsService.updateShop(shopId.value, {
       name: shopForm.name,
       address: shopForm.address,
       phone: shopForm.phone,
@@ -499,13 +513,12 @@ async function handleSaveShop() {
 }
 
 async function handleSaveLanguage() {
-  const shopId = authStore.user?.shopId;
-  if (!shopId) return;
+  if (!shopId.value) return;
   savingLang.value = true;
   langSuccess.value = null;
   try {
     await settingsService.updateLanguage({
-      shopId,
+      shopId: shopId.value,
       language: languageForm.language,
     });
     langSuccess.value = 'Bahasa berhasil disimpan.';
@@ -520,13 +533,12 @@ async function handleSaveLanguage() {
 }
 
 async function handleSaveReceipt() {
-  const shopId = authStore.user?.shopId;
-  if (!shopId) return;
+  if (!shopId.value) return;
   savingReceipt.value = true;
   receiptSuccess.value = null;
   try {
     await settingsService.updateReceiptConfig({
-      shopId,
+      shopId: shopId.value,
       autoPrint: receiptForm.autoPrint,
       mergeReceipts: receiptForm.mergeReceipts,
       footerMessage: receiptForm.footerMessage,
@@ -543,13 +555,12 @@ async function handleSaveReceipt() {
 }
 
 async function handleSaveAlert() {
-  const shopId = authStore.user?.shopId;
-  if (!shopId) return;
+  if (!shopId.value) return;
   savingAlert.value = true;
   alertSuccess.value = null;
   alertError.value = null;
   try {
-    const updated = await dashboardService.updateAlertConfig(shopId, {
+    const updated = await dashboardService.updateAlertConfig(shopId.value, {
       lowStockThreshold: Number(alertForm.lowStockThreshold) || 0,
       shiftDurationWarningHours:
         Number(alertForm.shiftDurationWarningHours) || 0,
@@ -583,4 +594,10 @@ function resetAlertToDefault() {
 }
 
 onMounted(fetchSettings);
+
+// Refetch kalau shop aktif baru tersedia/berubah setelah mount (mis. fetchUser
+// async selesai atau super-admin ganti cabang).
+watch(shopId, (next, prev) => {
+  if (next && next !== prev) fetchSettings();
+});
 </script>
