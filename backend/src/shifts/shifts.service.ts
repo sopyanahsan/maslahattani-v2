@@ -70,6 +70,29 @@ export class ShiftsService {
       );
     }
 
+    // "Wajib Tutup Shift Saat Ganti Kasir" (Pengaturan Sistem):
+    // kalau toggle aktif, tolak buka shift selama ada shift kasir LAIN yang
+    // masih OPEN di toko ini — shift sebelumnya wajib ditutup dulu (handover).
+    const forceCloseSetting = await this.prisma.shopSetting.findUnique({
+      where: { shopId },
+      select: { shiftForceCloseOnSwitch: true },
+    });
+    if (forceCloseSetting?.shiftForceCloseOnSwitch ?? true) {
+      const otherOpenShift = await this.prisma.shift.findFirst({
+        where: { shopId, status: ShiftStatus.OPEN, userId: { not: userId } },
+        include: { user: { select: { username: true, email: true } } },
+      });
+      if (otherOpenShift) {
+        const owner =
+          otherOpenShift.user.username ||
+          otherOpenShift.user.email ||
+          'kasir lain';
+        throw new ConflictException(
+          `Shift atas nama "${owner}" masih terbuka. Sesuai pengaturan toko, shift tersebut harus ditutup dulu sebelum ganti kasir.`,
+        );
+      }
+    }
+
     // Ambil semua kategori aktif. Setiap shift baru wajib punya row untuk
     // semua kategori aktif (biar reporting & UI konsisten).
     const activeCategories = await this.prisma.cashBoxCategory.findMany({

@@ -43,6 +43,11 @@
         <input v-model="correction.notes" type="text" placeholder="Catatan koreksi (opsional)" class="w-full h-8 px-3 text-xs border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
       </div>
 
+      <!-- Open error (mis. shift kasir lain masih terbuka) -->
+      <div v-if="openError" class="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700">
+        {{ openError }}
+      </div>
+
       <button :disabled="opening || !defaultCategoryId" class="w-full h-12 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 disabled:opacity-50" style="background-color: #2563eb;" @click="handleOpenShift">
         <Loader2Icon v-if="opening" class="w-5 h-5 animate-spin" />
         <template v-else><PlayIcon class="w-5 h-5" /> Buka Shift Sekarang</template>
@@ -228,6 +233,7 @@ const closeCategoryId = computed(() => {
 
 const loading = ref(true);
 const opening = ref(false);
+const openError = ref<string | null>(null);
 const closing = ref(false);
 const showClosedSummary = ref(false);
 const showCashModal = ref<'CASH_IN' | 'CASH_OUT' | null>(null);
@@ -263,6 +269,7 @@ function formatRupiah(n: number): string { return 'Rp ' + n.toLocaleString('id-I
 async function handleOpenShift() {
   if (!defaultCategoryId.value) return;
   opening.value = true;
+  openError.value = null;
   try {
     // Hitung modal awal:
     // - RESET: dari input kasir (modal awal)
@@ -285,7 +292,9 @@ async function handleOpenShift() {
           ? correction.notes
           : undefined,
     });
-  } catch { /* error handled by store */ }
+  } catch (err: any) {
+    openError.value = err?.message || 'Gagal membuka shift.';
+  }
   finally { opening.value = false; }
 }
 
