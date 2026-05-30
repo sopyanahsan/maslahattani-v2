@@ -56,6 +56,7 @@ model User {
   activityLogs        ActivityLog[]
   transactions        Transaction[]
   shifts              Shift[]
+  cashFlows           CashFlow[]
   ownedShops          Shop[]    @relation("ShopOwner")
   brilinkTransactions BrilinkTransaction[] @relation("BrilinkCashier")
   brilinkMutations    BrilinkMutation[]    @relation("BrilinkMutationCreator")
@@ -131,6 +132,8 @@ model Shop {
   shifts              Shift[]
   settings            ShopSetting?
   productCategories   ProductCategory[]
+  cashFlowCategories  CashFlowCategory[]
+  cashFlows           CashFlow[]
   brilinkTransactions BrilinkTransaction[]
   brilinkFees         BrilinkFee[]
   brilinkAccounts     BrilinkAccount[]
@@ -147,19 +150,35 @@ model ShopSetting {
   id                  String    @id @default(cuid())
   shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId              String    @unique
-  language            String    @default("id") // "id", "en", "su", "jv"
-  receiptConfig       String?   // JSON config for receipt printing
-  /**
-   * Konfigurasi threshold alert untuk Dashboard Retail.
-   * JSON shape: {
-   *   lowStockThreshold: number,            // unit min sebelum stock dianggap menipis (default 5)
-   *   shiftDurationWarningHours: number,    // jam kerja shift sebelum warning (default 8)
-   *   overdueDebtDaysBeforeNotice: number,  // H- berapa hari sebelum dueDate mau di-warn (default 0 = exact)
-   * }
-   * Null = pakai default. Lihat DashboardService.DEFAULT_ALERT_CONFIG.
-   */
+  language            String    @default("id")
+  receiptConfig       String?
   alertConfig         Json?
   brilinkCategoryConfig Json?
+
+  // Module toggles
+  brilinkEnabled              Boolean @default(true)
+
+  // Shift settings
+  shiftMode                   String  @default("FLOWING") // FLOWING | RESET
+  shiftForceCloseOnSwitch     Boolean @default(true)
+  shiftCorrectionRequired     Boolean @default(true)
+  shiftPhysicalCountRequired  Boolean @default(true)
+  shiftGuardEnabled           Boolean @default(true)
+
+  // Kas
+  cashOutApprovalEnabled      Boolean @default(true)
+
+  // Payment methods
+  paymentCashEnabled          Boolean @default(true)
+  paymentQrisEnabled          Boolean @default(true)
+  paymentHutangEnabled        Boolean @default(true)
+
+  // POS features
+  saveBillEnabled             Boolean @default(true)
+  discountPerItemEnabled      Boolean @default(true)
+  discountTotalEnabled        Boolean @default(true)
+  notePerItemEnabled          Boolean @default(true)
+
   updatedAt           DateTime  @updatedAt
   
   @@map("shop_settings")
@@ -549,6 +568,7 @@ model Shift {
    *   input actualCash/QRIS, sistem hitung variance.
    */
   cashBoxes           ShiftCashBox[]
+  cashFlows           CashFlow[]
 
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -608,6 +628,59 @@ model ShiftCashBox {
   @@index([shiftId])
   @@index([categoryId])
   @@map("shift_cash_boxes")
+}
+
+// ============================================
+// CASH FLOW (Cash In / Cash Out)
+// ============================================
+
+model CashFlowCategory {
+  id          String    @id @default(cuid())
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId      String
+  name        String
+  type        String    // CASH_IN | CASH_OUT
+  icon        String?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+
+  cashFlows   CashFlow[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([shopId, name, type])
+  @@index([shopId, type, isActive])
+  @@map("cash_flow_categories")
+}
+
+model CashFlow {
+  id          String    @id @default(cuid())
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId      String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  shift       Shift?    @relation(fields: [shiftId], references: [id])
+  shiftId     String?
+  category    CashFlowCategory @relation(fields: [categoryId], references: [id])
+  categoryId  String
+
+  type        String    // CASH_IN | CASH_OUT
+  amount      Int
+  notes       String?
+
+  // Approval
+  status      String    @default("PENDING") // PENDING | VERIFIED | REJECTED
+  verifiedBy  String?
+  verifiedAt  DateTime?
+  rejectReason String?
+
+  createdAt   DateTime  @default(now())
+
+  @@index([shopId, createdAt])
+  @@index([shiftId])
+  @@index([status])
+  @@map("cash_flows")
 }
 
 // ============================================
