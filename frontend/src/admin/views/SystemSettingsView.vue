@@ -86,6 +86,17 @@
             </div>
           </div>
 
+          <!-- Target shop emphasis -->
+          <div class="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-lg p-3 flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <p class="text-xs text-blue-900 dark:text-blue-100">
+              <span class="font-semibold">Diterapkan ke cabang:</span>
+              <span class="font-bold ml-1">{{ shopStore.currentShopName || '—' }}</span>
+            </p>
+          </div>
+
           <!-- Changes list -->
           <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 max-h-60 overflow-y-auto">
             <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Perubahan yang akan diterapkan:</p>

@@ -72,7 +72,7 @@ const TOGGLE_LABELS: Record<string, string> = {
   notePerItemEnabled: 'Catatan Per-Item',
 };
 
-/** Polling interval: 10 seconds for responsive change detection. */
+/** Polling interval: 10 seconds. */
 const POLL_INTERVAL_MS = 10_000;
 
 export const useSettingsStore = defineStore('settings', () => {
@@ -83,6 +83,9 @@ export const useSettingsStore = defineStore('settings', () => {
   const settingsChanged = ref(false);
   const changedFields = ref<string[]>([]);
   const lastChangeTimestamp = ref<number | null>(null);
+
+  // Snapshot of last-known server values (for comparison on next poll)
+  const lastKnownSnapshot = ref<Record<string, any>>({});
 
   // Polling internals
   let pollTimer: ReturnType<typeof setInterval> | null = null;
@@ -108,24 +111,41 @@ export const useSettingsStore = defineStore('settings', () => {
     currentShopId = shopId;
     try {
       const { data } = await api.get(`/shops/${shopId}/settings`);
-      const newSettings: ShopSettings = { ...DEFAULT_SETTINGS, ...data };
 
-      // Detect changes (only if settings were already loaded once)
-      if (loaded.value) {
-        const changes = detectChanges(settings.value, newSettings);
+      // Extract only toggle values from server response
+      const serverToggles: Record<string, any> = {};
+      for (const key of TOGGLE_KEYS) {
+        serverToggles[key] = data[key];
+      }
+
+      console.log('[SettingsStore] Poll response toggles:', JSON.stringify(serverToggles));
+
+      // Detect changes: compare SNAPSHOT (last known state) vs SERVER (new state)
+      if (loaded.value && Object.keys(lastKnownSnapshot.value).length > 0) {
+        const changes = detectChanges(lastKnownSnapshot.value, serverToggles);
+        console.log('[SettingsStore] Comparing snapshot vs server. Changes:', changes);
         if (changes.length > 0) {
-          console.log('[SettingsStore] Perubahan terdeteksi dari admin:', changes);
+          console.log('[SettingsStore] 🔔 Perubahan terdeteksi dari admin:', changes);
           settingsChanged.value = true;
           changedFields.value = changes;
           lastChangeTimestamp.value = Date.now();
         }
       }
 
+      // Update settings (triggers UI reactivity)
+      const newSettings: ShopSettings = { ...DEFAULT_SETTINGS };
+      for (const key of TOGGLE_KEYS) {
+        if (data[key] !== undefined) {
+          (newSettings as any)[key] = data[key];
+        }
+      }
       settings.value = newSettings;
+
+      // Update snapshot to current server state
+      lastKnownSnapshot.value = { ...serverToggles };
       loaded.value = true;
     } catch (err) {
       console.warn('[SettingsStore] fetchSettings gagal:', err);
-      // Only set defaults if we never loaded successfully
       if (!loaded.value) {
         settings.value = { ...DEFAULT_SETTINGS };
         loaded.value = true;
@@ -134,18 +154,19 @@ export const useSettingsStore = defineStore('settings', () => {
   }
 
   /**
-   * Compare old and new settings, return list of human-readable labels
-   * for fields that changed.
+   * Compare old snapshot and new server values.
+   * Returns list of human-readable change descriptions.
    */
   function detectChanges(
-    oldSettings: ShopSettings,
-    newSettings: ShopSettings,
+    snapshot: Record<string, any>,
+    server: Record<string, any>,
   ): string[] {
     const changes: string[] = [];
     for (const key of TOGGLE_KEYS) {
-      if (oldSettings[key] !== newSettings[key]) {
+      const oldVal = snapshot[key];
+      const newVal = server[key];
+      if (oldVal !== newVal && newVal !== undefined) {
         const label = TOGGLE_LABELS[key] || key;
-        const newVal = newSettings[key];
         const status =
           typeof newVal === 'boolean'
             ? newVal
@@ -158,21 +179,14 @@ export const useSettingsStore = defineStore('settings', () => {
     return changes;
   }
 
-  /**
-   * Dismiss the change notification (kasir acknowledged).
-   */
   function dismissChange() {
     settingsChanged.value = false;
     changedFields.value = [];
   }
 
-  /**
-   * Start polling for settings changes. Call from KasirLayout mount.
-   * Silently re-fetches settings every POLL_INTERVAL_MS.
-   */
   function startPolling(shopId?: string) {
     if (shopId) currentShopId = shopId;
-    stopPolling(); // Clear any existing timer
+    stopPolling();
     if (!currentShopId) return;
 
     console.log('[SettingsStore] Polling dimulai — interval:', POLL_INTERVAL_MS, 'ms, shopId:', currentShopId);
@@ -183,9 +197,6 @@ export const useSettingsStore = defineStore('settings', () => {
     }, POLL_INTERVAL_MS);
   }
 
-  /**
-   * Stop polling. Call from KasirLayout unmount / logout.
-   */
   function stopPolling() {
     if (pollTimer) {
       clearInterval(pollTimer);
@@ -200,17 +211,16 @@ export const useSettingsStore = defineStore('settings', () => {
     settingsChanged.value = false;
     changedFields.value = [];
     lastChangeTimestamp.value = null;
+    lastKnownSnapshot.value = {};
     currentShopId = null;
   }
 
   return {
     settings,
     loaded,
-    // Change detection
     settingsChanged,
     changedFields,
     lastChangeTimestamp,
-    // Getters
     isBrilinkEnabled,
     isShiftGuardEnabled,
     isQrisEnabled,
@@ -219,7 +229,6 @@ export const useSettingsStore = defineStore('settings', () => {
     isDiscountPerItemEnabled,
     isDiscountTotalEnabled,
     isNotePerItemEnabled,
-    // Actions
     fetchSettings,
     dismissChange,
     startPolling,
