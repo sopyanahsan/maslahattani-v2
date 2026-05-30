@@ -6,26 +6,26 @@
       <h1 class="font-bold text-xl text-slate-900 mt-0.5">{{ userName }}</h1>
     </header>
 
-    <!-- Row 1: Penjualan Retail + BRILink (2 cols) -->
-    <div class="grid grid-cols-2 gap-3">
+    <!-- Row 1: Penjualan Retail + BRILink (2 cols or 1 col) -->
+    <div :class="settingsStore.isBrilinkEnabled ? 'grid grid-cols-2 gap-3' : ''">
       <div class="rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 p-4 text-white shadow-md">
         <p class="text-[11px] font-medium opacity-80 mb-1">Penjualan Retail</p>
         <h2 class="text-xl font-bold font-mono">{{ formatRupiah(retailOmzet) }}</h2>
         <p class="text-[10px] opacity-70 mt-1">{{ stats.retail }} transaksi</p>
       </div>
-      <div class="rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 p-4 text-white shadow-md">
+      <div v-if="settingsStore.isBrilinkEnabled" class="rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 p-4 text-white shadow-md">
         <p class="text-[11px] font-medium opacity-80 mb-1">Penjualan BRILink</p>
         <h2 class="text-xl font-bold font-mono">{{ formatRupiah(brilinkOmzet) }}</h2>
         <p class="text-[10px] opacity-70 mt-1">{{ stats.brilink }} transaksi</p>
       </div>
     </div>
 
-    <!-- Row 2: Total Trx, Profit Retail, Profit BRILink (3 cols) -->
-    <div class="grid grid-cols-3 gap-3">
+    <!-- Row 2: Total Trx, Profit Retail, Profit BRILink (conditional) -->
+    <div :class="settingsStore.isBrilinkEnabled ? 'grid grid-cols-3 gap-3' : 'grid grid-cols-2 gap-3'">
       <div class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm">
         <p class="text-[10px] font-medium text-slate-500 mb-0.5">Total Trx</p>
         <p class="text-lg font-bold font-mono text-slate-900">{{ stats.total }}</p>
-        <p class="text-[9px] text-slate-400">Retail + BRILink</p>
+        <p class="text-[9px] text-slate-400">{{ settingsStore.isBrilinkEnabled ? 'Retail + BRILink' : 'Retail' }}</p>
       </div>
       <div class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm">
         <div class="flex items-center gap-1 mb-0.5">
@@ -34,7 +34,7 @@
         </div>
         <p class="text-lg font-bold font-mono text-slate-900">{{ formatRupiah(profitRetail) }}</p>
       </div>
-      <div class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm">
+      <div v-if="settingsStore.isBrilinkEnabled" class="rounded-xl bg-white border border-slate-200 p-3 shadow-sm">
         <div class="flex items-center gap-1 mb-0.5">
           <TrendingUpIcon class="w-3 h-3 text-emerald-500" />
           <p class="text-[10px] font-medium text-emerald-600">Profit BRILink</p>
@@ -69,23 +69,23 @@
       </div>
     </div>
 
-    <!-- Akses Cepat (6 items, 3 cols) -->
+    <!-- Akses Cepat (conditional BRILink items) -->
     <div>
       <h3 class="text-sm font-bold text-slate-800 mb-3">Akses Cepat</h3>
-      <div class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+      <div :class="settingsStore.isBrilinkEnabled ? 'grid grid-cols-3 sm:grid-cols-6 gap-3' : 'grid grid-cols-3 gap-3'">
         <RouterLink to="/retail/pos" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm gap-2">
           <div class="w-10 h-10 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center"><ShoppingCartIcon class="w-5 h-5" /></div>
           <span class="text-[10px] font-medium text-slate-700 text-center">Kasir</span>
         </RouterLink>
-        <RouterLink to="/brilink/transaction" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm gap-2">
+        <RouterLink v-if="settingsStore.isBrilinkEnabled" to="/brilink/transaction" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm gap-2">
           <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><BanknoteIcon class="w-5 h-5" /></div>
           <span class="text-[10px] font-medium text-slate-700 text-center">Tarik Tunai</span>
         </RouterLink>
-        <RouterLink to="/brilink/transaction" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm gap-2">
+        <RouterLink v-if="settingsStore.isBrilinkEnabled" to="/brilink/transaction" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm gap-2">
           <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><ArrowLeftRightIcon class="w-5 h-5" /></div>
           <span class="text-[10px] font-medium text-slate-700 text-center">Transfer</span>
         </RouterLink>
-        <RouterLink to="/brilink/transaction" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm gap-2">
+        <RouterLink v-if="settingsStore.isBrilinkEnabled" to="/brilink/transaction" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm gap-2">
           <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center"><SmartphoneIcon class="w-5 h-5" /></div>
           <span class="text-[10px] font-medium text-slate-700 text-center">Top Up</span>
         </RouterLink>
@@ -106,8 +106,8 @@
         <h3 class="text-sm font-bold text-slate-800">Transaksi Terakhir</h3>
         <RouterLink to="/retail/history" class="text-xs font-semibold text-blue-600 hover:underline">Lihat Semua &gt;</RouterLink>
       </div>
-      <!-- Tab toggle -->
-      <div class="flex rounded-lg border border-slate-200 overflow-hidden mb-3 w-fit">
+      <!-- Tab toggle (only if BRILink enabled) -->
+      <div v-if="settingsStore.isBrilinkEnabled" class="flex rounded-lg border border-slate-200 overflow-hidden mb-3 w-fit">
         <button :class="['px-4 py-1.5 text-xs font-semibold transition-colors', trxTab === 'retail' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50']" @click="trxTab = 'retail'">Retail</button>
         <button :class="['px-4 py-1.5 text-xs font-semibold transition-colors', trxTab === 'brilink' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-500 hover:bg-slate-50']" @click="trxTab = 'brilink'">BRILink</button>
       </div>
@@ -150,10 +150,12 @@ import {
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShiftStore } from '@/shared/stores/shift.store';
+import { useSettingsStore } from '@/shared/stores/settings.store';
 import posService from '@/shared/services/pos.service';
 
 const authStore = useAuthStore();
 const shiftStore = useShiftStore();
+const settingsStore = useSettingsStore();
 
 const userName = computed(() => authStore.user?.username || 'Kasir');
 const currentDateLabel = computed(() =>

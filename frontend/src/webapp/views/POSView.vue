@@ -564,6 +564,7 @@ import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShiftStore } from '@/shared/stores/shift.store';
 import { useShopStore } from '@/shared/stores/shop.store';
+import { useSettingsStore } from '@/shared/stores/settings.store';
 import posService, { type POSProductDto, type CartItem, createCartItem, recalcCartItem } from '@/shared/services/pos.service';
 import api from '@/shared/services/api';
 
@@ -571,6 +572,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 const shiftStore = useShiftStore();
 const shopStore = useShopStore();
+const settingsStore = useSettingsStore();
 
 // Product state
 const searchQuery = ref('');
@@ -948,14 +950,16 @@ function handlePrintReceipt() {
 }
 
 onMounted(async () => {
-  // Shift guard: check if shift is open
-  try {
-    await shiftStore.fetchCurrentShift();
-    if (!shiftStore.hasOpenShift) {
+  // Shift guard: check if shift is open (only if setting enabled)
+  if (settingsStore.isShiftGuardEnabled) {
+    try {
+      await shiftStore.fetchCurrentShift();
+      if (!shiftStore.hasOpenShift) {
+        showShiftGuard.value = true;
+      }
+    } catch {
       showShiftGuard.value = true;
     }
-  } catch {
-    showShiftGuard.value = true;
   }
   fetchProducts();
 });

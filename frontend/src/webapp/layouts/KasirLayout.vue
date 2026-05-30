@@ -73,8 +73,8 @@
           </a>
         </RouterLink>
 
-        <!-- Tab 2: BRILink -->
-        <RouterLink to="/brilink/menu" custom v-slot="{ isActive, href, navigate }">
+        <!-- Tab 2: BRILink (if enabled) OR Riwayat (if disabled) -->
+        <RouterLink v-if="brilinkEnabled" to="/brilink/menu" custom v-slot="{ isActive, href, navigate }">
           <a
             :href="href"
             :class="[
@@ -85,6 +85,19 @@
           >
             <component :is="LandmarkIcon" class="w-5 h-5" />
             <span>BRILink</span>
+          </a>
+        </RouterLink>
+        <RouterLink v-else to="/retail/history" custom v-slot="{ isActive, href, navigate }">
+          <a
+            :href="href"
+            :class="[
+              'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
+              isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900',
+            ]"
+            @click="(e) => navigate(e)"
+          >
+            <component :is="HistoryIcon" class="w-5 h-5" />
+            <span>Riwayat</span>
           </a>
         </RouterLink>
 
@@ -147,6 +160,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
+import { useSettingsStore } from '@/shared/stores/settings.store';
 import { useSyncService } from '@/shared/services/sync.service';
 import {
   Droplets as DropletsIcon,
@@ -157,10 +171,12 @@ import {
   Settings as SettingsIcon,
   CloudOff as CloudOffIcon,
   Loader2 as Loader2Icon,
+  History as HistoryIcon,
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 const shopStore = useShopStore();
+const settingsStore = useSettingsStore();
 const { isSyncing, pendingCount, startAutoSync, stopAutoSync, refreshPendingCount } = useSyncService();
 
 const isOnline = ref(navigator.onLine);
@@ -172,6 +188,10 @@ onMounted(() => {
   window.addEventListener('offline', handleOnlineChange);
   startAutoSync();
   refreshPendingCount();
+  // Fetch settings for conditional rendering
+  if (authStore.user?.shopId) {
+    settingsStore.fetchSettings(authStore.user.shopId);
+  }
 });
 
 onUnmounted(() => {
@@ -182,4 +202,5 @@ onUnmounted(() => {
 
 const shopName = computed(() => shopStore.currentShopName);
 const userName = computed(() => authStore.user?.username || authStore.user?.email);
+const brilinkEnabled = computed(() => settingsStore.isBrilinkEnabled);
 </script>
