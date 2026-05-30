@@ -192,6 +192,9 @@
       >
         <div>
           <h2 class="text-lg font-bold text-slate-950 dark:text-slate-100">{{ pageTitle }}</h2>
+          <p class="text-[11px] text-slate-400 dark:text-slate-500">
+            {{ currentShopName || 'Ngalir' }} · {{ todayLabel }}
+          </p>
         </div>
         <div class="flex items-center gap-3">
           <!-- Shop selector -->
