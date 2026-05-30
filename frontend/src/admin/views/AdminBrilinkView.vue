@@ -4,12 +4,7 @@
     <!-- TOP BAR: Title + Period Selector + Refresh   -->
     <!-- ============================================ -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Dashboard BRILink</h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Monitoring layanan BRILink — transaksi, fee, saldo rekening.
-        </p>
-      </div>
+      <div></div>
 
       <div class="flex items-center gap-2">
         <!-- Period selector -->

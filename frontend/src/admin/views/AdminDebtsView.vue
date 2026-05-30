@@ -2,12 +2,7 @@
   <div class="space-y-5">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Hutang Pelanggan</h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Daftar hutang aktif, cicilan, jatuh tempo, dan riwayat pembayaran.
-        </p>
-      </div>
+      <div></div>
       <button
         type="button"
         class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg

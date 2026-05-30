@@ -1,10 +1,7 @@
 <template>
   <div class="space-y-5">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-bold text-slate-950">Cabang / Toko</h1>
-        <p class="text-xs text-slate-500 mt-0.5">Kelola cabang toko, lihat statistik, dan tambah cabang baru.</p>
-      </div>
+      <div></div>
       <button type="button" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5 shrink-0" @click="openCreateModal">
         <PlusIcon class="w-4 h-4" /> Tambah Cabang
       </button>

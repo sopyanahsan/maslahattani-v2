@@ -1,10 +1,7 @@
 <template>
   <div class="space-y-5">
     <!-- Header -->
-    <div>
-      <h1 class="text-xl font-bold text-slate-950">Transfer Stok Antar Cabang</h1>
-      <p class="text-xs text-slate-500 mt-0.5">Kelola transfer stok antar cabang dengan alur persetujuan.</p>
-    </div>
+    <div></div>
 
     <!-- Filters & Actions -->
     <div class="flex flex-wrap gap-3 items-center justify-between">

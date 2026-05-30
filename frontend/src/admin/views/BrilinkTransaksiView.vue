@@ -1,11 +1,6 @@
 <template>
   <div class="space-y-5">
-    <div>
-      <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Transaksi BRILink</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-        Daftar transaksi BRILink — transfer, tarik tunai, top-up, dan PLN.
-      </p>
-    </div>
+    <div></div>
 
     <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-8 text-center">
       <component :is="ReceiptIcon" class="w-12 h-12 mx-auto text-slate-300 dark:text-slate-600 mb-3" />

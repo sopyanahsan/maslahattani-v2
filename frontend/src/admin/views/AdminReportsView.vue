@@ -1,12 +1,6 @@
 <template>
   <div class="space-y-5">
-    <!-- Header -->
-    <div>
-      <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Laporan</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-        Laporan penjualan, BRILink, hutang — custom date range + export CSV.
-      </p>
-    </div>
+
 
     <!-- Date filter + Export buttons -->
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap">

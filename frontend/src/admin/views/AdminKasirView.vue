@@ -1,10 +1,7 @@
 <template>
   <div class="space-y-5">
     <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-      <div class="min-w-0">
-        <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Multi-User</h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Kelola akun kasir — buat user dengan username &amp; PIN, reset PIN, assign toko.</p>
-      </div>
+      <div class="min-w-0"></div>
       <button
         type="button"
         style="background-color: #2563eb; color: white;"

@@ -1,11 +1,6 @@
 <template>
   <div class="space-y-5">
-    <div>
-      <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Kas Retail</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-        Mutasi kas retail dan pengaturan metode kas (kategori cashbox).
-      </p>
-    </div>
+    <div></div>
 
     <!-- Tabs -->
     <div class="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-fit">

@@ -1,12 +1,7 @@
 <template>
   <div class="space-y-5">
     <!-- Header -->
-    <div>
-      <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Transaksi Retail</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-        Riwayat transaksi retail, filter, detail &amp; void.
-      </p>
-    </div>
+    <div></div>
 
     <!-- Stats cards -->
     <div v-if="stats" class="grid grid-cols-2 lg:grid-cols-4 gap-3">

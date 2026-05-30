@@ -1,10 +1,7 @@
 <template>
   <div class="space-y-5">
     <!-- Header -->
-    <div>
-      <h1 class="text-xl font-bold text-slate-950">Supplier & Purchase Order</h1>
-      <p class="text-xs text-slate-500 mt-0.5">Kelola supplier dan buat purchase order untuk restok.</p>
-    </div>
+    <div></div>
 
     <!-- Tabs -->
     <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">

@@ -2,12 +2,7 @@
   <div class="space-y-5">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-bold text-slate-950">Stok & Inventaris</h1>
-        <p class="text-xs text-slate-500 mt-0.5">
-          Overview stok, restok produk, opname, dan riwayat pergerakan.
-        </p>
-      </div>
+      <div></div>
       <div class="flex items-center gap-2">
         <button
           type="button"

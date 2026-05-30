@@ -2,12 +2,7 @@
   <div class="space-y-5">
     <!-- Header -->
     <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-xl font-bold text-slate-950">Stock Opname</h1>
-        <p class="text-xs text-slate-500 mt-0.5">
-          Verifikasi stok fisik vs sistem. Buat sesi, hitung, dan sesuaikan.
-        </p>
-      </div>
+      <div></div>
       <button
         type="button"
         class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg
