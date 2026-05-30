@@ -107,9 +107,13 @@ export const useDashboardRetailStore = defineStore('dashboardRetail', () => {
   // Section fetchers
   // ============================================
 
-  async function fetchSection(section: DashboardSection) {
+  async function fetchSection(section: DashboardSection, isRefresh = false) {
     if (!shopId.value) return;
-    loading.value[section] = true;
+    // Only show loading skeleton on FIRST load (when no data yet).
+    // During auto-refresh, skip loading state to avoid UI flicker.
+    if (!isRefresh) {
+      loading.value[section] = true;
+    }
     errors.value[section] = null;
 
     try {
@@ -180,12 +184,12 @@ export const useDashboardRetailStore = defineStore('dashboardRetail', () => {
   }
 
   /**
-   * Fetch semua section parallel. 1 section gagal tidak menggagalkan yang lain
-   * karena pakai `Promise.allSettled`.
+   * Fetch semua section parallel. 1 section gagal tidak menggagalkan yang lain.
+   * isRefresh=true → skip loading skeleton (no UI flicker).
    */
-  async function fetchAll() {
+  async function fetchAll(isRefresh = false) {
     if (!shopId.value) return;
-    await Promise.allSettled(ALL_SECTIONS.map((s) => fetchSection(s)));
+    await Promise.allSettled(ALL_SECTIONS.map((s) => fetchSection(s, isRefresh)));
   }
 
   // ============================================
@@ -197,7 +201,7 @@ export const useDashboardRetailStore = defineStore('dashboardRetail', () => {
     if (!autoRefresh.value) return;
     refreshTimer = setInterval(() => {
       if (autoRefresh.value && shopId.value) {
-        fetchAll();
+        fetchAll(true); // silent refresh — no loading skeleton
       }
     }, refreshIntervalMs.value);
     // tick "X seconds ago" indicator
