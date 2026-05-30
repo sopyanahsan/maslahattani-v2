@@ -36,6 +36,9 @@ export class ProductsService {
           price: dto.price,
           cost: dto.cost,
           supplierId: dto.supplierId || null,
+          imageUrl: dto.imageUrl || null,
+          categoryId: dto.categoryId || null,
+          unit: dto.unit || null,
         },
       });
 
@@ -95,6 +98,7 @@ export class ProductsService {
         where,
         include: {
           stocks: { select: { quantity: true, warehouse: true } },
+          category: { select: { id: true, name: true, icon: true } },
         },
         orderBy: { name: 'asc' },
         skip,
