@@ -157,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
 import { useSettingsStore } from '@/shared/stores/settings.store';
@@ -181,6 +181,14 @@ const { isSyncing, pendingCount, startAutoSync, stopAutoSync, refreshPendingCoun
 
 const isOnline = ref(navigator.onLine);
 
+/**
+ * shopId yang dipakai untuk fetch settings.
+ * Computed supaya reactive — kalau user async loaded / shop berubah, auto refetch.
+ */
+const activeShopId = computed(
+  () => shopStore.currentShopId ?? authStore.user?.shopId ?? null,
+);
+
 function handleOnlineChange() { isOnline.value = navigator.onLine; }
 
 onMounted(() => {
@@ -189,9 +197,16 @@ onMounted(() => {
   startAutoSync();
   refreshPendingCount();
   // Fetch settings for conditional rendering (toggle Pengaturan Sistem)
-  const settingsShopId = authStore.user?.shopId ?? shopStore.currentShopId;
-  if (settingsShopId) {
-    settingsStore.fetchSettings(settingsShopId);
+  if (activeShopId.value) {
+    settingsStore.fetchSettings(activeShopId.value);
+  }
+});
+
+// Kalau shopId baru tersedia setelah mount (mis. authStore.user async selesai),
+// atau admin ganti cabang, fetch ulang settings supaya toggle ter-apply.
+watch(activeShopId, (newId, oldId) => {
+  if (newId && newId !== oldId) {
+    settingsStore.fetchSettings(newId);
   }
 });
 
