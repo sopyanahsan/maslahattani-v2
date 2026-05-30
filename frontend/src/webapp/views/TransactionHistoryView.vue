@@ -7,6 +7,12 @@
       </h1>
     </header>
 
+    <!-- Switch Retail / BRILink -->
+    <div class="flex rounded-xl bg-slate-100 p-1">
+      <button :class="['flex-1 py-2 text-sm font-semibold rounded-lg transition-all', trxType === 'retail' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500']" @click="trxType = 'retail'; fetchTransactions()">Retail</button>
+      <button :class="['flex-1 py-2 text-sm font-semibold rounded-lg transition-all', trxType === 'brilink' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500']" @click="trxType = 'brilink'; fetchTransactions()">BRILink</button>
+    </div>
+
     <!-- Search -->
     <div class="relative">
       <SearchIcon class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -26,14 +32,14 @@
       </div>
     </div>
 
-    <!-- Filters Row -->
-    <div class="flex flex-wrap gap-2">
-      <!-- Status filter -->
-      <div class="flex rounded-lg border border-slate-200 overflow-hidden">
-        <button v-for="f in statusFilters" :key="f.value" :class="['px-3 py-1.5 text-[10px] font-semibold transition-colors', statusFilter === f.value ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50']" @click="statusFilter = f.value; fetchTransactions()">{{ f.label }}</button>
+    <!-- Filters: Status (left) | Kasir dropdown (right) — 1 row -->
+    <div class="flex items-center gap-2">
+      <!-- Status filter pills (left, flex-1) -->
+      <div class="flex rounded-lg border border-slate-200 overflow-hidden flex-1">
+        <button v-for="f in statusFilters" :key="f.value" :class="['flex-1 px-1 py-1.5 text-[10px] font-semibold transition-colors whitespace-nowrap', statusFilter === f.value ? 'bg-blue-600 text-white' : 'bg-white text-slate-600 hover:bg-slate-50']" @click="statusFilter = f.value; fetchTransactions()">{{ f.label }}</button>
       </div>
-      <!-- Kasir filter -->
-      <select v-model="kasirFilter" class="h-8 px-2 text-[10px] border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" @change="fetchTransactions">
+      <!-- Kasir dropdown (right) -->
+      <select v-model="kasirFilter" class="h-8 px-2 text-[10px] border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none shrink-0 min-w-[100px]" @change="fetchTransactions">
         <option value="">Semua Kasir</option>
         <option v-for="k in kasirList" :key="k.id" :value="k.id">{{ k.username || k.email }}</option>
       </select>
@@ -173,10 +179,15 @@
               </div>
             </div>
 
-            <!-- Void Button (only for COMPLETED) -->
-            <div v-if="selectedTrx.status === 'COMPLETED'" class="pt-2 border-t border-slate-200">
-              <button class="w-full h-10 border-2 border-red-200 text-red-600 font-semibold text-sm rounded-xl hover:bg-red-50 transition-colors flex items-center justify-center gap-2" @click="handleVoid">
-                <Trash2Icon class="w-4 h-4" /> Void Transaksi
+            <!-- Actions -->
+            <div class="pt-2 border-t border-slate-200 space-y-2">
+              <!-- Lihat & Cetak Struk -->
+              <button class="w-full h-10 rounded-xl text-white font-semibold text-sm flex items-center justify-center gap-2" style="background-color: #2563eb;" @click="handlePrintReceipt">
+                <ReceiptIcon class="w-4 h-4" /> Lihat & Cetak Struk
+              </button>
+              <!-- Batalkan Transaksi (only for COMPLETED) -->
+              <button v-if="selectedTrx.status === 'COMPLETED'" class="w-full h-10 border-2 border-red-200 text-red-600 font-semibold text-sm rounded-xl hover:bg-red-50 transition-colors flex items-center justify-center gap-2" @click="handleVoid">
+                <Trash2Icon class="w-4 h-4" /> Batalkan Transaksi
               </button>
             </div>
 
