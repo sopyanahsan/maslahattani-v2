@@ -137,8 +137,8 @@
           </div>
           <!-- Action buttons -->
           <div class="flex items-center gap-3 mt-1.5">
-            <button class="text-[10px] text-slate-400 hover:text-slate-600 flex items-center gap-0.5" @click="item.showNote = !item.showNote"><EditIcon class="w-3 h-3" /> Catatan</button>
-            <button class="text-[10px] text-slate-400 hover:text-blue-600 flex items-center gap-0.5" @click="item.showDiscount = !item.showDiscount"><TagIcon class="w-3 h-3" /> Diskon</button>
+            <button v-if="settingsStore.isNotePerItemEnabled" class="text-[10px] text-slate-400 hover:text-slate-600 flex items-center gap-0.5" @click="item.showNote = !item.showNote"><EditIcon class="w-3 h-3" /> Catatan</button>
+            <button v-if="settingsStore.isDiscountPerItemEnabled" class="text-[10px] text-slate-400 hover:text-blue-600 flex items-center gap-0.5" @click="item.showDiscount = !item.showDiscount"><TagIcon class="w-3 h-3" /> Diskon</button>
           </div>
         </div>
       </div>
@@ -159,7 +159,7 @@
 
 
         <!-- Discount total trx -->
-        <div>
+        <div v-if="settingsStore.isDiscountTotalEnabled">
           <button v-if="!showTrxDiscount" class="text-xs text-blue-600 font-medium flex items-center gap-1 hover:underline" @click="showTrxDiscount = true">
             <TagIcon class="w-3.5 h-3.5" /> Tambah Diskon
           </button>
@@ -190,7 +190,7 @@
 
         <!-- Action Buttons -->
         <div class="flex gap-2">
-          <button class="flex-1 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100 transition-colors" @click="handleSaveBill">
+          <button v-if="settingsStore.isSaveBillEnabled" class="flex-1 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100 transition-colors" @click="handleSaveBill">
             <SaveIcon class="w-4 h-4" /> Simpan Bill
           </button>
           <button
@@ -247,8 +247,8 @@
               </div>
               <!-- Actions -->
               <div class="flex items-center gap-3 mt-1">
-                <button class="text-[10px] text-slate-400 hover:text-slate-600 flex items-center gap-0.5" @click="item.showNote = !item.showNote"><EditIcon class="w-3 h-3" /> Catatan</button>
-                <button class="text-[10px] text-slate-400 hover:text-blue-600 flex items-center gap-0.5" @click="item.showDiscount = !item.showDiscount"><TagIcon class="w-3 h-3" /> Diskon</button>
+                <button v-if="settingsStore.isNotePerItemEnabled" class="text-[10px] text-slate-400 hover:text-slate-600 flex items-center gap-0.5" @click="item.showNote = !item.showNote"><EditIcon class="w-3 h-3" /> Catatan</button>
+                <button v-if="settingsStore.isDiscountPerItemEnabled" class="text-[10px] text-slate-400 hover:text-blue-600 flex items-center gap-0.5" @click="item.showDiscount = !item.showDiscount"><TagIcon class="w-3 h-3" /> Diskon</button>
               </div>
             </div>
           </div>
@@ -265,7 +265,7 @@
                 <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
               </div>
             </div>
-            <div>
+            <div v-if="settingsStore.isDiscountTotalEnabled">
               <button v-if="!showTrxDiscount" class="text-xs text-blue-600 font-medium flex items-center gap-1" @click="showTrxDiscount = true"><TagIcon class="w-3.5 h-3.5" /> Tambah Diskon</button>
               <div v-else class="flex items-center gap-2">
                 <span class="text-[10px] text-slate-500">Diskon Rp:</span>
@@ -283,7 +283,7 @@
               <span>Total</span><span class="font-mono">{{ formatRupiah(grandTotal) }}</span>
             </div>
             <div class="flex gap-2">
-              <button class="flex-1 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100" @click="handleSaveBill"><SaveIcon class="w-4 h-4" /> Simpan Bill</button>
+              <button v-if="settingsStore.isSaveBillEnabled" class="flex-1 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100" @click="handleSaveBill"><SaveIcon class="w-4 h-4" /> Simpan Bill</button>
               <button :disabled="cart.length === 0" class="flex-1 h-10 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-1.5 disabled:opacity-40" style="background-color: #2563eb;" @click="showMobileCart = false; showPaymentModal = true"><CreditCardIcon class="w-4 h-4" /> Bayar</button>
             </div>
           </div>
@@ -316,7 +316,7 @@
           <div>
             <p class="text-xs font-semibold text-slate-600 mb-1.5">Metode Pembayaran</p>
             <div class="grid grid-cols-3 gap-2">
-              <button v-for="m in ['Tunai','QRIS','Hutang']" :key="m" :class="['py-2 rounded-lg border-2 text-xs font-semibold transition-all', paymentMethod === m ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500']" @click="paymentMethod = m">{{ m }}</button>
+              <button v-for="m in availablePaymentMethods" :key="m" :class="['py-2 rounded-lg border-2 text-xs font-semibold transition-all', paymentMethod === m ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500']" @click="paymentMethod = m">{{ m }}</button>
             </div>
           </div>
           <!-- Amount (only for Tunai) -->
@@ -343,7 +343,7 @@
             <p class="text-[10px] text-amber-600">Nama & No HP pelanggan <strong>wajib</strong> diisi.</p>
           </div>
           <!-- Partial hutang detection (Tunai, paid < total) -->
-          <div v-if="paymentMethod === 'Tunai' && amountPaid > 0 && amountPaid < grandTotal" class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
+          <div v-if="paymentMethod === 'Tunai' && settingsStore.isHutangEnabled && amountPaid > 0 && amountPaid < grandTotal" class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
             <p class="text-xs text-amber-700">Kurang <strong>{{ formatRupiah(grandTotal - amountPaid) }}</strong></p>
             <label class="flex items-center gap-2 cursor-pointer">
               <input v-model="createDebtForRemainder" type="checkbox" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
@@ -548,7 +548,7 @@
 
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import {
   Search as SearchIcon, ScanBarcode as ScanBarcodeIcon, Camera as CameraIcon, LayoutGrid as LayoutGridIcon,
   List as ListIcon, Package as PackageIcon, PlusCircle as PlusCircleIcon,
@@ -653,6 +653,27 @@ const canCheckout = computed(() => {
   if (createDebtForRemainder.value && !customerName.value.trim()) return false;
   return true;
 });
+
+// Metode pembayaran yang aktif, mengikuti toggle Pengaturan Sistem (admin).
+const availablePaymentMethods = computed(() => {
+  const list: string[] = [];
+  if (settingsStore.settings.paymentCashEnabled) list.push('Tunai');
+  if (settingsStore.isQrisEnabled) list.push('QRIS');
+  if (settingsStore.isHutangEnabled) list.push('Hutang');
+  return list;
+});
+
+// Jaga agar metode terpilih selalu valid saat toggle berubah / modal dibuka.
+watch(
+  [availablePaymentMethods, showPaymentModal],
+  () => {
+    const list = availablePaymentMethods.value;
+    if (list.length > 0 && !list.includes(paymentMethod.value)) {
+      paymentMethod.value = list[0];
+    }
+  },
+  { immediate: true },
+);
 
 function formatRupiah(n: number): string { return 'Rp ' + n.toLocaleString('id-ID'); }
 function selectCategory(cat: string) { selectedCategory.value = cat; }

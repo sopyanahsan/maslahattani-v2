@@ -188,9 +188,10 @@ onMounted(() => {
   window.addEventListener('offline', handleOnlineChange);
   startAutoSync();
   refreshPendingCount();
-  // Fetch settings for conditional rendering
-  if (authStore.user?.shopId) {
-    settingsStore.fetchSettings(authStore.user.shopId);
+  // Fetch settings for conditional rendering (toggle Pengaturan Sistem)
+  const settingsShopId = authStore.user?.shopId ?? shopStore.currentShopId;
+  if (settingsShopId) {
+    settingsStore.fetchSettings(settingsShopId);
   }
 });
 

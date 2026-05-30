@@ -152,15 +152,21 @@
         <div class="absolute inset-0 bg-black/50" @click="showCloseShift = false"></div>
         <div class="relative bg-white rounded-2xl w-full max-w-sm p-5 space-y-4">
           <h3 class="text-base font-bold text-slate-800">Tutup Shift</h3>
-          <p class="text-xs text-slate-600">Hitung uang fisik di laci kas:</p>
-          <div>
-            <label class="text-xs font-semibold text-slate-600 mb-1 block">Kas Retail (Rp)</label>
-            <input v-model.number="closeForm.actualRetail" type="number" placeholder="0" class="w-full h-10 px-3 text-lg font-mono border border-slate-200 rounded-lg text-center focus:border-blue-500 outline-none" />
-          </div>
-          <div class="bg-slate-50 rounded-lg p-3 space-y-1 text-xs">
-            <div class="flex justify-between"><span class="text-slate-500">Expected</span><span class="font-mono">{{ formatRupiah(realtimeBalance.retail) }}</span></div>
-            <div class="flex justify-between"><span class="text-slate-500">Actual</span><span class="font-mono">{{ formatRupiah(closeForm.actualRetail || 0) }}</span></div>
-            <div class="flex justify-between font-semibold" :class="variance >= 0 ? 'text-emerald-600' : 'text-red-600'"><span>Selisih</span><span class="font-mono">{{ formatRupiah(variance) }}</span></div>
+          <template v-if="settingsStore.settings.shiftPhysicalCountRequired">
+            <p class="text-xs text-slate-600">Hitung uang fisik di laci kas:</p>
+            <div>
+              <label class="text-xs font-semibold text-slate-600 mb-1 block">Kas Retail (Rp)</label>
+              <input v-model.number="closeForm.actualRetail" type="number" placeholder="0" class="w-full h-10 px-3 text-lg font-mono border border-slate-200 rounded-lg text-center focus:border-blue-500 outline-none" />
+            </div>
+            <div class="bg-slate-50 rounded-lg p-3 space-y-1 text-xs">
+              <div class="flex justify-between"><span class="text-slate-500">Expected</span><span class="font-mono">{{ formatRupiah(realtimeBalance.retail) }}</span></div>
+              <div class="flex justify-between"><span class="text-slate-500">Actual</span><span class="font-mono">{{ formatRupiah(closeForm.actualRetail || 0) }}</span></div>
+              <div class="flex justify-between font-semibold" :class="variance >= 0 ? 'text-emerald-600' : 'text-red-600'"><span>Selisih</span><span class="font-mono">{{ formatRupiah(variance) }}</span></div>
+            </div>
+          </template>
+          <div v-else class="bg-slate-50 rounded-lg p-3 text-xs flex justify-between">
+            <span class="text-slate-500">Saldo sistem (hitung fisik dimatikan)</span>
+            <span class="font-mono font-semibold text-slate-800">{{ formatRupiah(realtimeBalance.retail) }}</span>
           </div>
           <input v-model="closeForm.notes" type="text" placeholder="Catatan (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
           <button :disabled="closing" class="w-full h-11 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2" style="background-color: #2563eb;" @click="handleCloseShift">
@@ -256,9 +262,13 @@ async function handleCashFlow() {
 async function handleCloseShift() {
   if (!shiftStore.currentShift) return;
   closing.value = true;
+  // Kalau hitung fisik dimatikan, anggap kas fisik = saldo sistem (selisih 0).
+  const actualCash = settingsStore.settings.shiftPhysicalCountRequired
+    ? closeForm.actualRetail || 0
+    : realtimeBalance.retail;
   try {
     await shiftStore.closeShift(shiftStore.currentShift.id, {
-      categories: [{ categoryId: 'default', actualCash: closeForm.actualRetail || 0 }],
+      categories: [{ categoryId: 'default', actualCash }],
       notes: closeForm.notes || undefined,
     });
     showCloseShift.value = false;
