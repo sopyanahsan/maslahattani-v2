@@ -268,25 +268,58 @@
                 </button>
               </div>
             </div>
+            <!-- Image URL (auto-filled after upload) -->
+            <div v-if="form.imageUrl" class="mt-2">
+              <label class="block text-[10px] font-medium text-slate-500 mb-0.5">URL Gambar</label>
+              <div class="flex items-center gap-1.5">
+                <input
+                  :value="form.imageUrl"
+                  type="text"
+                  readonly
+                  class="flex-1 h-7 px-2 text-[10px] font-mono text-slate-500 bg-slate-50 border border-slate-200 rounded select-all outline-none"
+                  @focus="($event.target as HTMLInputElement).select()"
+                />
+                <button
+                  type="button"
+                  class="shrink-0 h-7 px-2 text-[10px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded hover:bg-blue-100"
+                  @click="copyImageUrl"
+                >
+                  Copy
+                </button>
+              </div>
+            </div>
           </div>
 
-          <!-- 2. SKU -->
+          <!-- 2. SKU (auto-generated from nama + kategori) -->
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">
               SKU <span class="text-red-500">*</span>
             </label>
-            <input
-              v-model="form.sku"
-              type="text"
-              required
-              :disabled="!!editingProduct"
-              placeholder="BRS-5KG-001"
-              :class="[
-                'w-full h-9 px-3 text-sm font-mono border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none',
-                editingProduct ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed' : 'border-slate-300',
-              ]"
-            />
-            <p v-if="editingProduct" class="text-[10px] text-slate-400 mt-0.5">SKU tidak bisa diubah setelah dibuat.</p>
+            <div class="flex items-center gap-2">
+              <input
+                v-model="form.sku"
+                type="text"
+                required
+                :disabled="!!editingProduct"
+                placeholder="Otomatis dari nama & kategori"
+                :class="[
+                  'flex-1 h-9 px-3 text-sm font-mono border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none',
+                  editingProduct ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed' : 'border-slate-300',
+                ]"
+              />
+              <button
+                v-if="!editingProduct"
+                type="button"
+                class="shrink-0 h-9 px-3 text-[10px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100"
+                title="Generate ulang SKU"
+                @click="generateSku"
+              >
+                Generate
+              </button>
+            </div>
+            <p class="text-[10px] text-slate-400 mt-0.5">
+              {{ editingProduct ? 'SKU tidak bisa diubah setelah dibuat.' : 'Auto-generate saat nama & kategori diisi. Bisa diedit manual.' }}
+            </p>
           </div>
 
           <!-- 3. Nama Produk -->
@@ -301,6 +334,7 @@
               placeholder="Beras 5kg Premium"
               class="w-full h-9 px-3 text-sm border border-slate-300 rounded-md
                      focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              @blur="autoGenerateSku"
             />
           </div>
 
@@ -506,7 +540,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, reactive } from 'vue';
+import { onMounted, ref, reactive, watch } from 'vue';
 import {
   Plus as PlusIcon,
   Search as SearchIcon,
@@ -713,6 +747,66 @@ async function handleDelete() {
 }
 
 // ============================================
+// SKU Auto-Generate
+// ============================================
+
+/**
+ * Format SKU: KTG-NAMA-XXX
+ * - KTG = 3 huruf pertama kategori (uppercase), atau "GEN" kalau tanpa kategori
+ * - NAMA = singkatan nama produk (3 huruf pertama kata pertama + angka kalau ada)
+ * - XXX = 3 digit random untuk keunikan
+ *
+ * Contoh:
+ * - "Beras 5kg Premium" + kategori "Sembako" → SEM-BRS5K-482
+ * - "Pupuk Urea 50kg" + kategori "Pupuk"    → PUP-PPKU5-731
+ * - "Minyak Goreng 1L" + tanpa kategori     → GEN-MYNK1-159
+ */
+function generateSku() {
+  const name = form.name.trim();
+  if (!name) {
+    form.sku = '';
+    return;
+  }
+
+  // Category prefix (3 chars)
+  const cat = categoryList.value.find(c => c.id === form.categoryId);
+  const catPrefix = cat
+    ? cat.name.replace(/[^a-zA-Z]/g, '').substring(0, 3).toUpperCase()
+    : 'GEN';
+
+  // Name part: take consonants + numbers, max 5 chars
+  const nameClean = name.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  // Remove vowels to shorten, keep first 5
+  const vowels = /[AIUEO]/g;
+  let nameShort = nameClean.replace(vowels, '');
+  if (nameShort.length < 3) nameShort = nameClean; // fallback if too short
+  nameShort = nameShort.substring(0, 5);
+
+  // Random 3-digit suffix
+  const rand = String(Math.floor(Math.random() * 900) + 100);
+
+  form.sku = `${catPrefix || 'GEN'}-${nameShort || 'PRD'}-${rand}`;
+}
+
+/**
+ * Auto-generate SKU when name field loses focus (only if SKU is empty and creating new).
+ */
+function autoGenerateSku() {
+  if (editingProduct.value) return;
+  if (form.sku && form.sku.length > 0) return; // Don't overwrite manually typed SKU
+  generateSku();
+}
+
+// ============================================
+// Copy Image URL
+// ============================================
+
+function copyImageUrl() {
+  if (!form.imageUrl) return;
+  navigator.clipboard.writeText(form.imageUrl).catch(() => {});
+}
+
+// ============================================
 // Category Management (inline in product form)
 // ============================================
 
@@ -832,5 +926,12 @@ function getMarginPercent(product: ProductDto): string {
 onMounted(() => {
   fetchProducts();
   fetchCategories();
+});
+
+// Auto-regenerate SKU when category changes (only on create mode, only if name filled)
+watch(() => form.categoryId, () => {
+  if (editingProduct.value) return;
+  if (!form.name.trim()) return;
+  generateSku();
 });
 </script>
