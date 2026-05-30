@@ -192,7 +192,6 @@
       >
         <div>
           <h2 class="text-lg font-bold text-slate-950 dark:text-slate-100">{{ pageTitle }}</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">{{ pageSubtitle }}</p>
         </div>
         <div class="flex items-center gap-3">
           <!-- Shop selector -->

@@ -1,12 +1,9 @@
 <template>
   <div class="space-y-5">
-    <!-- Header -->
+    <!-- Action bar (no h1 — title already in topbar) -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-bold text-slate-950">Produk & Stok</h1>
-        <p class="text-xs text-slate-500 mt-0.5">
-          Master produk, harga jual & modal, stok per cabang.
-        </p>
+      <div class="flex items-center gap-2 text-xs text-slate-500">
+        <span v-if="meta">{{ meta.total }} produk</span>
       </div>
       <button
         type="button"
@@ -19,9 +16,9 @@
       </button>
     </div>
 
-    <!-- Search & filter bar -->
-    <div class="flex flex-col sm:flex-row gap-3">
-      <div class="relative flex-1">
+    <!-- Search, Category filter, Sort -->
+    <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
+      <div class="relative flex-1 min-w-[200px]">
         <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
           v-model="searchQuery"
@@ -32,9 +29,32 @@
           @input="debouncedSearch"
         />
       </div>
-      <div class="flex items-center gap-2 text-xs text-slate-500">
-        <span v-if="meta">{{ meta.total }} produk</span>
-      </div>
+      <!-- Category filter -->
+      <select
+        v-model="filterCategory"
+        class="h-9 px-3 text-sm border border-slate-300 rounded-lg
+               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+        @change="resetAndFetch"
+      >
+        <option value="">Semua Kategori</option>
+        <option v-for="cat in categoryList" :key="cat.id" :value="cat.id">
+          {{ cat.icon ? cat.icon + ' ' : '' }}{{ cat.name }}
+        </option>
+      </select>
+      <!-- Sort -->
+      <select
+        v-model="sortMode"
+        class="h-9 px-3 text-sm border border-slate-300 rounded-lg
+               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+        @change="resetAndFetch"
+      >
+        <option value="name-asc">A-Z (Nama)</option>
+        <option value="name-desc">Z-A (Nama)</option>
+        <option value="stock-low">Stok Terendah</option>
+        <option value="stock-high">Stok Tertinggi</option>
+        <option value="price-high">Harga Tertinggi</option>
+        <option value="price-low">Harga Terendah</option>
+      </select>
     </div>
 
     <!-- Loading -->
@@ -79,6 +99,9 @@
               <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                 SKU
               </th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                Kategori
+              </th>
               <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                 Harga Jual
               </th>
@@ -115,6 +138,15 @@
                 <code class="text-xs font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
                   {{ product.sku }}
                 </code>
+              </td>
+              <td class="px-4 py-3">
+                <span
+                  v-if="getCategoryName(product.categoryId)"
+                  class="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full"
+                >
+                  {{ getCategoryName(product.categoryId) }}
+                </span>
+                <span v-else class="text-[10px] text-slate-400">—</span>
               </td>
               <td class="px-4 py-3 text-right text-sm font-mono text-slate-900">
                 {{ formatRupiah(product.price) }}
@@ -571,6 +603,8 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 const searchQuery = ref('');
 const currentPage = ref(1);
+const filterCategory = ref('');
+const sortMode = ref('name-asc');
 
 // Modal state
 const showModal = ref(false);
@@ -623,13 +657,48 @@ async function fetchProducts() {
       page: currentPage.value,
       limit: 20,
     });
-    products.value = response.data;
+
+    let data = response.data;
+
+    // Client-side category filter (if backend doesn't support it)
+    if (filterCategory.value) {
+      data = data.filter(p => p.categoryId === filterCategory.value);
+    }
+
+    // Client-side sort
+    switch (sortMode.value) {
+      case 'name-asc':
+        data.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case 'name-desc':
+        data.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case 'stock-low':
+        data.sort((a, b) => getTotalStock(a) - getTotalStock(b));
+        break;
+      case 'stock-high':
+        data.sort((a, b) => getTotalStock(b) - getTotalStock(a));
+        break;
+      case 'price-high':
+        data.sort((a, b) => b.price - a.price);
+        break;
+      case 'price-low':
+        data.sort((a, b) => a.price - b.price);
+        break;
+    }
+
+    products.value = data;
     meta.value = response.meta;
   } catch (err: any) {
     error.value = err.response?.data?.message ?? err.message ?? 'Gagal memuat produk.';
   } finally {
     loading.value = false;
   }
+}
+
+function resetAndFetch() {
+  currentPage.value = 1;
+  fetchProducts();
 }
 
 function debouncedSearch() {
@@ -918,6 +987,12 @@ function getMarginPercent(product: ProductDto): string {
   if (product.cost === 0) return '∞';
   const pct = ((product.price - product.cost) / product.cost) * 100;
   return pct.toFixed(1);
+}
+
+function getCategoryName(categoryId?: string | null): string {
+  if (!categoryId) return '';
+  const cat = categoryList.value.find(c => c.id === categoryId);
+  return cat ? cat.name : '';
 }
 
 // ============================================
