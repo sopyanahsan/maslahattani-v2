@@ -277,7 +277,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
 
-      // === BRILink (Phase 2) ===
+      // === BRILink ===
       {
         path: 'brilink',
         name: 'admin-brilink',
@@ -285,61 +285,28 @@ const routes: RouteRecordRaw[] = [
         meta: {
           title: 'BRILink',
           description: 'Dashboard layanan BRILink — transfer, tarik tunai, top-up, dan mutasi.',
-          phase: 2,
         },
       },
+      // Redirects — sub-pages merged into consolidated views
       {
         path: 'brilink/transfer',
-        name: 'admin-brilink-transfer',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
-        meta: {
-          title: 'BRILink — Transfer',
-          description:
-            'Kirim dana antar rekening BRI dan ke bank lain dengan kalkulasi fee otomatis.',
-          phase: 2,
-        },
+        redirect: { name: 'admin-brilink-transaksi' },
       },
       {
         path: 'brilink/cash',
-        name: 'admin-brilink-cash',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
-        meta: {
-          title: 'BRILink — Tarik Tunai',
-          description: 'Layani penarikan tunai pelanggan dari rekening BRI.',
-          phase: 2,
-        },
+        redirect: { name: 'admin-brilink-transaksi' },
       },
       {
         path: 'brilink/topup',
-        name: 'admin-brilink-topup',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
-        meta: {
-          title: 'BRILink — Top Up & Pulsa',
-          description:
-            'Top-up e-wallet, pulsa, paket data, dan token PLN dalam satu antarmuka.',
-          phase: 2,
-        },
+        redirect: { name: 'admin-brilink-transaksi' },
       },
       {
         path: 'brilink/mutations',
-        name: 'admin-brilink-mutations',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
-        meta: {
-          title: 'BRILink — Mutasi',
-          description:
-            'Riwayat transaksi BRILink dengan filter per kategori dan rekonsiliasi saldo BRI.',
-          phase: 2,
-        },
+        redirect: { name: 'admin-kas-rekening-brilink' },
       },
       {
         path: 'brilink/fees',
-        name: 'admin-brilink-fees',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
-        meta: {
-          title: 'BRILink — Pengaturan Fee',
-          description: 'Atur margin fee per nominal dan jenis transaksi.',
-          phase: 2,
-        },
+        redirect: { name: 'admin-brilink-fee' },
       },
     ],
   },

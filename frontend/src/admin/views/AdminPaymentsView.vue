@@ -76,6 +76,123 @@
       </div>
     </div>
 
+    <!-- Tab switcher -->
+    <div class="border-b border-slate-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+      <nav class="flex gap-1">
+        <button
+          type="button"
+          :class="['px-3 py-2 text-xs font-semibold border-b-2 transition-colors',
+            activeTab === 'history'
+              ? 'border-blue-600 text-blue-700'
+              : 'border-transparent text-slate-600 hover:text-slate-900']"
+          @click="activeTab = 'history'"
+        >
+          Riwayat Pembayaran
+        </button>
+        <button
+          type="button"
+          :class="['px-3 py-2 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1.5',
+            activeTab === 'pending'
+              ? 'border-blue-600 text-blue-700'
+              : 'border-transparent text-slate-600 hover:text-slate-900']"
+          @click="activeTab = 'pending'; fetchPending()"
+        >
+          Persetujuan Pengeluaran
+          <span v-if="pendingCount > 0" class="inline-flex items-center justify-center w-5 h-5 text-[10px] font-bold text-white bg-red-500 rounded-full">{{ pendingCount }}</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- TAB: Pending Approvals                       -->
+    <!-- ============================================ -->
+    <template v-if="activeTab === 'pending'">
+      <div v-if="pendingLoading" class="flex items-center justify-center py-16">
+        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+        <span class="ml-2 text-sm text-slate-500">Memuat pengeluaran pending...</span>
+      </div>
+
+      <div v-else-if="pendingError" class="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">{{ pendingError }}</div>
+
+      <div v-else-if="pendingItems.length === 0" class="bg-white border border-dashed border-slate-300 rounded-xl p-10 text-center">
+        <ShieldCheckIcon class="w-10 h-10 text-emerald-300 mx-auto mb-3" />
+        <p class="text-sm font-semibold text-slate-700">Tidak ada pengeluaran yang menunggu persetujuan</p>
+        <p class="text-xs text-slate-400 mt-1">Semua cash-out sudah diverifikasi.</p>
+      </div>
+
+      <div v-else class="space-y-3">
+        <div
+          v-for="item in pendingItems"
+          :key="item.id"
+          class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3"
+        >
+          <!-- Info -->
+          <div class="flex-1 min-w-0 space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-100 text-amber-700">PENDING</span>
+              <span class="text-xs text-slate-500">{{ formatDateTime(item.createdAt) }}</span>
+            </div>
+            <p class="text-sm font-bold text-slate-900 font-mono">{{ formatRupiah(item.amount) }}</p>
+            <p class="text-xs text-slate-600">
+              Kasir: <strong>{{ item.user?.username ?? '—' }}</strong>
+              · Kategori: {{ item.category?.name ?? '—' }}
+            </p>
+            <p v-if="item.notes" class="text-xs text-slate-400 italic">{{ item.notes }}</p>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              :disabled="actionLoading === item.id"
+              class="h-9 px-3 text-xs font-semibold text-white bg-emerald-600 rounded-lg
+                     hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5"
+              @click="handleApprove(item.id)"
+            >
+              <Loader2Icon v-if="actionLoading === item.id" class="w-3.5 h-3.5 animate-spin" />
+              <ShieldCheckIcon v-else class="w-3.5 h-3.5" />
+              Setujui
+            </button>
+            <button
+              type="button"
+              :disabled="actionLoading === item.id"
+              class="h-9 px-3 text-xs font-semibold text-white bg-red-600 rounded-lg
+                     hover:bg-red-700 disabled:opacity-50 flex items-center gap-1.5"
+              @click="rejectModalId = item.id"
+            >
+              <XCircleIcon class="w-3.5 h-3.5" />
+              Tolak
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reject reason modal -->
+      <Teleport to="body">
+        <div v-if="rejectModalId" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div class="absolute inset-0 bg-black/40" @click="rejectModalId = null"></div>
+          <form class="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleReject(rejectModalId!)">
+            <h3 class="text-base font-bold text-slate-900">Alasan Penolakan</h3>
+            <input
+              v-model="rejectReason"
+              type="text"
+              placeholder="Contoh: Kategori salah, ajukan ulang"
+              class="w-full h-9 px-3 text-sm border border-slate-300 rounded-md focus:border-blue-500 outline-none"
+            />
+            <div class="flex justify-end gap-2">
+              <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="rejectModalId = null">Batal</button>
+              <button type="submit" :disabled="!!actionLoading" class="h-9 px-4 text-xs font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50">Tolak</button>
+            </div>
+          </form>
+        </div>
+      </Teleport>
+    </template>
+
+    <!-- ============================================ -->
+    <!-- TAB: Payment History (existing content)      -->
+    <!-- ============================================ -->
+    <template v-if="activeTab === 'history'">
+
     <!-- Filter bar -->
     <div class="flex flex-col sm:flex-row gap-3">
       <input
@@ -163,6 +280,11 @@
 
     <!-- ============================================ -->
     <!-- Cash Mutation Modal                          -->
+    <!-- ============================================ -->
+    </template><!-- end history tab -->
+
+    <!-- ============================================ -->
+    <!-- Cash Mutation Modal (always available)       -->
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showMutationModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -277,7 +399,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, reactive } from 'vue';
+import { onMounted, ref, reactive, computed } from 'vue';
 import {
   ArrowDown as ArrowDownIcon,
   ArrowUp as ArrowUpIcon,
@@ -285,8 +407,12 @@ import {
   Wallet as WalletIcon,
   Loader2 as Loader2Icon,
   AlertCircle as AlertCircleIcon,
+  ShieldCheck as ShieldCheckIcon,
+  XCircle as XCircleIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
+import api from '@/shared/services/api';
 import paymentsService, {
   type PaymentHistoryDto,
   type PaymentHistoryResponse,
@@ -297,6 +423,13 @@ import paymentsService, {
 } from '@/shared/services/payments.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
+
+// ============================================
+// Tabs
+// ============================================
+type TabValue = 'history' | 'pending';
+const activeTab = ref<TabValue>('history');
 
 // ============================================
 // State
@@ -306,6 +439,15 @@ const meta = ref<PaymentHistoryResponse['meta'] | null>(null);
 const kasSummary = ref<KasSummary | null>(null);
 const loading = ref(false);
 const error = ref<string | null>(null);
+
+// Pending cash-out approval
+const pendingItems = ref<any[]>([]);
+const pendingLoading = ref(false);
+const pendingError = ref<string | null>(null);
+const pendingCount = ref(0);
+const rejectModalId = ref<string | null>(null);
+const rejectReason = ref('');
+const actionLoading = ref<string | null>(null); // id of item being approved/rejected
 
 // Filters
 const filterStartDate = ref('');
@@ -332,7 +474,47 @@ const auditForm = reactive({ actualBalance: 0, notes: '' });
 // ============================================
 
 function getShopId(): string | undefined {
-  return authStore.user?.shopId || undefined;
+  return authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
+}
+
+async function fetchPending() {
+  const shopId = getShopId();
+  if (!shopId) return;
+  pendingLoading.value = true;
+  pendingError.value = null;
+  try {
+    const { data } = await api.get('/cash-flows', { params: { shopId, status: 'PENDING', type: 'CASH_OUT' } });
+    pendingItems.value = data.data ?? data ?? [];
+    pendingCount.value = pendingItems.value.length;
+  } catch (err: any) {
+    pendingError.value = err.response?.data?.message ?? 'Gagal memuat daftar pending.';
+    pendingItems.value = [];
+  } finally {
+    pendingLoading.value = false;
+  }
+}
+
+async function handleApprove(id: string) {
+  actionLoading.value = id;
+  try {
+    await api.patch(`/cash-flows/${id}/verify`);
+    pendingItems.value = pendingItems.value.filter((item) => item.id !== id);
+    pendingCount.value = pendingItems.value.length;
+    await fetchSummary();
+  } catch { /* silent */ }
+  finally { actionLoading.value = null; }
+}
+
+async function handleReject(id: string) {
+  actionLoading.value = id;
+  try {
+    await api.patch(`/cash-flows/${id}/reject`, { reason: rejectReason.value || 'Ditolak oleh admin' });
+    pendingItems.value = pendingItems.value.filter((item) => item.id !== id);
+    pendingCount.value = pendingItems.value.length;
+    rejectModalId.value = null;
+    rejectReason.value = '';
+  } catch { /* silent */ }
+  finally { actionLoading.value = null; }
 }
 
 async function fetchHistory() {
@@ -469,5 +651,6 @@ function methodBadge(method: string): string {
 onMounted(() => {
   fetchHistory();
   fetchSummary();
+  fetchPending();
 });
 </script>
