@@ -361,10 +361,9 @@ router.beforeEach(async (to, _from, next) => {
   const allowedRoles = getMeta<string[]>(to, 'roles');
   const allowMissingShop = !!getMeta<boolean>(to, 'allowMissingShop');
 
-  // Guest-only: redirect user yang sudah login ke dashboard
+  // Guest-only: redirect user yang sudah login ke home
   if (guestOnly && authStore.isAuthenticated) {
-    if (authStore.isAdmin) return next({ name: 'admin-dashboard' });
-    // User non-admin akses admin domain → ke home (atau bisa redirect ke webapp)
+    if (authStore.isAdmin) return next({ name: 'admin-home' });
     return next({ name: 'home' });
   }
 
