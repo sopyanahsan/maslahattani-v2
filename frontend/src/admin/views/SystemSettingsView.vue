@@ -68,13 +68,27 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref, reactive } from 'vue';
+import { onMounted, ref, reactive, computed, watch } from 'vue';
 import { Loader2 as Loader2Icon } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import api from '@/shared/services/api';
 import ToggleRow from '@/admin/components/ToggleRow.vue';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
+
+/**
+ * Sumber shopId yang reliable:
+ * - shopStore.currentShopId di-hydrate sync dari localStorage saat store init,
+ *   jadi sudah tersedia ketika komponen child ini mount.
+ * - authStore.user?.shopId di-set async (fetchUser/login) & untuk super-admin
+ *   nilainya null (currentShop yang dipakai). Dipakai sebagai fallback saja.
+ */
+const shopId = computed(
+  () => shopStore.currentShopId ?? authStore.user?.shopId ?? null,
+);
+
 const loading = ref(true);
 const saving = ref(false);
 const saveSuccess = ref(false);
@@ -97,23 +111,25 @@ const form = reactive({
 });
 
 async function fetchSettings() {
-  const shopId = authStore.user?.shopId;
-  if (!shopId) return;
+  if (!shopId.value) {
+    // Tidak ada shop aktif → jangan biarkan spinner muter selamanya.
+    loading.value = false;
+    return;
+  }
   loading.value = true;
   try {
-    const { data } = await api.get(`/shops/${shopId}/settings`);
+    const { data } = await api.get(`/shops/${shopId.value}/settings`);
     Object.assign(form, data);
   } catch { /* use defaults */ }
   finally { loading.value = false; }
 }
 
 async function handleSave() {
-  const shopId = authStore.user?.shopId;
-  if (!shopId) return;
+  if (!shopId.value) return;
   saving.value = true;
   saveSuccess.value = false;
   try {
-    await api.patch(`/shops/${shopId}/settings`, form);
+    await api.patch(`/shops/${shopId.value}/settings`, form);
     saveSuccess.value = true;
     setTimeout(() => { saveSuccess.value = false; }, 3000);
   } catch { /* silent */ }
@@ -121,4 +137,10 @@ async function handleSave() {
 }
 
 onMounted(fetchSettings);
+
+// Kalau shop aktif baru tersedia/berubah setelah mount (mis. fetchUser async
+// selesai atau super-admin ganti cabang), fetch ulang settings.
+watch(shopId, (next, prev) => {
+  if (next && next !== prev) fetchSettings();
+});
 </script>
