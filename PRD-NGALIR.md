@@ -1559,3 +1559,152 @@ model ShopSetting {
 14. Pengaturan kasir: section Printer
 15. Landing page / marketing site
 16. Documentation untuk buyer
+
+
+
+---
+
+## 29. Pengaturan Sistem — Toggle ON/OFF (Admin Panel)
+
+### 29.1 Konsep
+
+Setiap fitur bisa di-toggle ON/OFF dari admin panel. Ini membuat webapp **fleksibel** untuk dijual ke berbagai tipe toko — ada yang butuh BRILink, ada yang tidak. Ada yang mau shift ketat, ada yang santai.
+
+### 29.2 UI Admin: Pengaturan Sistem
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ ⚙️ Pengaturan Sistem                                     │
+│                                                           │
+│ ── Modul ──                                              │
+│ Modul BRILink                          [🟢 ON  /  OFF]   │
+│   (Menu BRILink, transaksi, fee, laporan BRILink)        │
+│   Jika OFF: bottom nav hanya 4 tab, dashboard retail only│
+│                                                           │
+│ ── Shift ──                                              │
+│ Mode Shift              [Saldo Mengalir ▼ / Shift Reset]  │
+│ Wajib Tutup Shift Saat Ganti Kasir     [🟢 ON  /  OFF]   │
+│ Wajib Koreksi Saldo Saat Buka Shift    [🟢 ON  /  OFF]   │
+│ Wajib Hitung Fisik Saat Tutup Shift    [🟢 ON  /  OFF]   │
+│ Shift Guard (Block POS tanpa shift)    [🟢 ON  /  OFF]   │
+│                                                           │
+│ ── Kas & Pengeluaran ──                                  │
+│ Approval Pengeluaran (Cash Out)        [🟢 ON  /  OFF]   │
+│   (Jika ON: kasir bisa cash out langsung, admin verify   │
+│    belakangan. Jika OFF: cash out tanpa approval)        │
+│                                                           │
+│ ── Metode Pembayaran ──                                  │
+│ Tunai                                  [🟢 ON  /  OFF]   │
+│ QRIS                                   [🟢 ON  /  OFF]   │
+│ Hutang                                 [🟢 ON  /  OFF]   │
+│                                                           │
+│ ── Fitur POS ──                                          │
+│ Simpan Bill (Open Bill)                [🟢 ON  /  OFF]   │
+│ Diskon Per Produk                      [🟢 ON  /  OFF]   │
+│ Diskon Total Transaksi                 [🟢 ON  /  OFF]   │
+│ Catatan Per Item                       [🟢 ON  /  OFF]   │
+└──────────────────────────────────────────────────────────┘
+```
+
+### 29.3 Dampak Toggle BRILink OFF
+
+Saat admin matikan modul BRILink:
+
+| Komponen | Behavior |
+|----------|----------|
+| Bottom nav | 4 tab saja: Beranda, **Kasir (tengah)**, Laporan, Pengaturan |
+| Dashboard | Hanya tampil Penjualan Retail, Profit Retail (tidak ada card BRILink) |
+| Laporan | Tidak ada tab switch "BRILink", hanya Retail |
+| Riwayat | Tidak ada switch "BRILink", hanya Retail |
+| Akses Cepat | Hanya: Kasir, Laporan, Riwayat (tidak ada Tarik Tunai, Transfer, Top Up) |
+
+### 29.4 Dampak Toggle Fitur POS OFF
+
+| Toggle | Jika OFF |
+|--------|----------|
+| Simpan Bill | Tombol "Simpan Bill" hilang di cart panel |
+| Diskon Per Produk | Tombol "Diskon" per item hilang |
+| Diskon Total Trx | Link "Tambah Diskon" hilang |
+| Catatan Per Item | Tombol "Catatan" per item hilang |
+| Metode QRIS | Button QRIS hilang di payment modal |
+| Metode Hutang | Button Hutang hilang di payment modal |
+| Shift Guard | POS bisa diakses tanpa buka shift |
+
+### 29.5 Database: ShopSetting Update
+
+```prisma
+model ShopSetting {
+  // existing fields...
+  
+  // Module toggles
+  brilinkEnabled            Boolean @default(true)
+  
+  // Shift settings  
+  shiftMode                 String  @default("FLOWING") // FLOWING | RESET
+  shiftForceCloseOnSwitch   Boolean @default(true)  // wajib tutup saat ganti kasir
+  shiftCorrectionRequired   Boolean @default(true)  // wajib koreksi saat buka
+  shiftPhysicalCountRequired Boolean @default(true) // wajib hitung saat tutup
+  shiftGuardEnabled         Boolean @default(true)  // block POS tanpa shift
+  
+  // Kas
+  cashOutApprovalEnabled    Boolean @default(true)  // perlu verifikasi admin
+  
+  // Payment methods
+  paymentCashEnabled        Boolean @default(true)
+  paymentQrisEnabled        Boolean @default(true)
+  paymentHutangEnabled      Boolean @default(true)
+  
+  // POS features
+  saveBillEnabled           Boolean @default(true)
+  discountPerItemEnabled    Boolean @default(true)
+  discountTotalEnabled      Boolean @default(true)
+  notePerItemEnabled        Boolean @default(true)
+}
+```
+
+### 29.6 Frontend: Settings Store
+
+Webapp kasir perlu fetch settings saat login dan cache:
+
+```typescript
+// settings.store.ts
+const settings = ref({
+  brilinkEnabled: true,
+  shiftGuardEnabled: true,
+  paymentQrisEnabled: true,
+  paymentHutangEnabled: true,
+  saveBillEnabled: true,
+  // ... etc
+});
+
+// Fetch saat login sukses
+async function fetchSettings(shopId: string) {
+  const { data } = await api.get(`/shops/${shopId}/settings`);
+  settings.value = data;
+}
+```
+
+Lalu di komponen:
+```vue
+<!-- Bottom nav: hide BRILink jika disabled -->
+<RouterLink v-if="settings.brilinkEnabled" to="/brilink/menu" ...>
+
+<!-- Payment modal: hide QRIS jika disabled -->
+<button v-if="settings.paymentQrisEnabled" ...>QRIS</button>
+
+<!-- Cart: hide Simpan Bill jika disabled -->
+<button v-if="settings.saveBillEnabled" ...>Simpan Bill</button>
+```
+
+### 29.7 Prioritas Implementasi
+
+```
+1. [Sprint 5] DB migration: tambah semua toggle fields ke ShopSetting
+2. [Sprint 5] Backend: GET/PATCH settings endpoint
+3. [Sprint 5] Frontend: settings.store.ts (fetch + cache)
+4. [Sprint 5] Admin panel: Pengaturan Sistem page (toggle UI)
+5. [Sprint 6] Frontend kasir: conditional rendering based on settings
+6. [Sprint 7] Bottom nav conditional (hide BRILink tab)
+```
+
+**Prinsip: Prioritas = Kasir POS. BRILink = modul tambahan (opsional).**
