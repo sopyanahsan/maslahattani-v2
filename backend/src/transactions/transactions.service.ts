@@ -76,6 +76,46 @@ export class TransactionsService {
     }
 
     // ============================================
+    // ENFORCE PENGATURAN SISTEM TOGGLES
+    // ============================================
+    const shopSettings = await this.prisma.shopSetting.findUnique({
+      where: { shopId },
+      select: {
+        paymentCashEnabled: true,
+        paymentQrisEnabled: true,
+        paymentHutangEnabled: true,
+        saveBillEnabled: true,
+        discountPerItemEnabled: true,
+        discountTotalEnabled: true,
+      },
+    });
+
+    if (shopSettings) {
+      // Payment method check
+      const methodMap: Record<string, boolean> = {
+        CASH: shopSettings.paymentCashEnabled,
+        QRIS: shopSettings.paymentQrisEnabled,
+        HUTANG: shopSettings.paymentHutangEnabled,
+      };
+      const methodAllowed = methodMap[dto.paymentMethod];
+      if (methodAllowed === false) {
+        throw new BadRequestException(
+          `Metode pembayaran "${dto.paymentMethod}" dinonaktifkan oleh admin.`,
+        );
+      }
+
+      // Discount enforcement
+      if (!shopSettings.discountPerItemEnabled) {
+        const hasItemDiscount = dto.items.some((i) => (i.discount ?? 0) > 0);
+        if (hasItemDiscount) {
+          throw new BadRequestException(
+            'Diskon per-item dinonaktifkan oleh admin.',
+          );
+        }
+      }
+    }
+
+    // ============================================
     // VALIDATE PRODUCTS + STOCK
     // ============================================
     const productIds = dto.items.map((item) => item.productId);
@@ -483,6 +523,17 @@ export class TransactionsService {
     customerPhone?: string,
     tableNumber?: string,
   ) {
+    // Enforce saveBillEnabled toggle
+    const settings = await this.prisma.shopSetting.findUnique({
+      where: { shopId },
+      select: { saveBillEnabled: true },
+    });
+    if (settings && !settings.saveBillEnabled) {
+      throw new BadRequestException(
+        'Fitur Simpan Bill dinonaktifkan oleh admin.',
+      );
+    }
+
     const productIds = dto.items.map((item) => item.productId);
     const products = await this.prisma.product.findMany({
       where: { id: { in: productIds }, shopId, deletedAt: null },

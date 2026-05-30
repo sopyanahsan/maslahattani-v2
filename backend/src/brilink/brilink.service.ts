@@ -89,6 +89,17 @@ export class BrilinkService {
     shopId: string,
     cashierId: string,
   ) {
+    // Enforce brilinkEnabled toggle
+    const shopSettings = await this.prisma.shopSetting.findUnique({
+      where: { shopId },
+      select: { brilinkEnabled: true },
+    });
+    if (shopSettings && !shopSettings.brilinkEnabled) {
+      throw new BadRequestException(
+        'Modul BRILink dinonaktifkan oleh admin. Hubungi admin untuk mengaktifkan.',
+      );
+    }
+
     // Calculate fee from matching fee rules (by category + nominal range)
     const feeRules = await this.prisma.brilinkFee.findMany({
       where: {
