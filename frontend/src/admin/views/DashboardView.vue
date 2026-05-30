@@ -104,30 +104,30 @@
       <QuickActions />
 
       <!-- ============================================ -->
-      <!-- ROW 3: SALES CHART + OPERATIONS              -->
+      <!-- ROW 3: SALES CHART (full width)              -->
       <!-- ============================================ -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div class="lg:col-span-2">
-          <SectionWrapper
-            :error="store.errors.salesChart"
-            @retry="store.fetchSection('salesChart')"
-          >
-            <SalesChart
-              :labels="store.salesChart?.labels ?? []"
-              :revenue="store.salesChart?.revenue ?? []"
-              :profit="store.salesChart?.profit ?? []"
-              :period="store.period"
-              :loading="store.loading.salesChart"
-            />
-          </SectionWrapper>
-        </div>
-        <SectionWrapper
-          :error="store.errors.operations"
-          @retry="store.fetchSection('operations')"
-        >
-          <OperationsPanel :data="store.operations" :loading="store.loading.operations" />
-        </SectionWrapper>
-      </div>
+      <SectionWrapper
+        :error="store.errors.salesChart"
+        @retry="store.fetchSection('salesChart')"
+      >
+        <SalesChart
+          :labels="store.salesChart?.labels ?? []"
+          :revenue="store.salesChart?.revenue ?? []"
+          :profit="store.salesChart?.profit ?? []"
+          :period="store.period"
+          :loading="store.loading.salesChart"
+        />
+      </SectionWrapper>
+
+      <!-- ============================================ -->
+      <!-- ROW 3b: OPERATIONS PANEL                     -->
+      <!-- ============================================ -->
+      <SectionWrapper
+        :error="store.errors.operations"
+        @retry="store.fetchSection('operations')"
+      >
+        <OperationsPanel :data="store.operations" :loading="store.loading.operations" />
+      </SectionWrapper>
 
       <!-- ============================================ -->
       <!-- ROW 4: TOP PRODUCTS + ACTIVITY + PAYMENT      -->
