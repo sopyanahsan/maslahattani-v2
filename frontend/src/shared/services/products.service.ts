@@ -16,6 +16,9 @@ export interface ProductDto {
   sku: string;
   price: number;
   cost: number;
+  imageUrl?: string | null;
+  unit?: string | null;
+  categoryId?: string | null;
   supplierId?: string | null;
   createdAt: string;
   updatedAt: string;
@@ -55,6 +58,7 @@ export interface CreateProductPayload {
   cost: number;
   supplierId?: string;
   initialStock?: number;
+  imageUrl?: string;
 }
 
 export interface UpdateProductPayload {
@@ -62,6 +66,7 @@ export interface UpdateProductPayload {
   price?: number;
   cost?: number;
   supplierId?: string;
+  imageUrl?: string;
 }
 
 export interface QueryProductParams {

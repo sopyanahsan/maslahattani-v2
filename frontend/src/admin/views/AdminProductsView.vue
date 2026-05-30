@@ -103,7 +103,13 @@
               class="hover:bg-slate-50 transition-colors"
             >
               <td class="px-4 py-3">
-                <p class="text-sm font-medium text-slate-900">{{ product.name }}</p>
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-md bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
+                    <img v-if="(product as any).imageUrl" :src="(product as any).imageUrl" :alt="product.name" class="w-full h-full object-cover" />
+                    <PackageIcon v-else class="w-4 h-4 text-slate-300" />
+                  </div>
+                  <p class="text-sm font-medium text-slate-900">{{ product.name }}</p>
+                </div>
               </td>
               <td class="px-4 py-3">
                 <code class="text-xs font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
@@ -291,6 +297,57 @@
             />
           </div>
 
+          <!-- Product Image Upload -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              Gambar Produk
+            </label>
+            <div class="flex items-start gap-3">
+              <!-- Preview -->
+              <div
+                class="w-20 h-20 rounded-lg border border-slate-200 bg-slate-50 overflow-hidden
+                       flex items-center justify-center shrink-0"
+              >
+                <img
+                  v-if="imagePreviewUrl"
+                  :src="imagePreviewUrl"
+                  alt="Preview"
+                  class="w-full h-full object-cover"
+                />
+                <ImageIcon v-else class="w-6 h-6 text-slate-300" />
+              </div>
+              <div class="flex-1 space-y-1.5">
+                <label
+                  class="block h-9 px-3 border border-dashed border-slate-300 rounded-md
+                         text-xs text-slate-600 font-medium cursor-pointer
+                         hover:border-blue-400 hover:bg-blue-50/50 transition-colors
+                         flex items-center justify-center gap-1.5"
+                >
+                  <UploadIcon class="w-3.5 h-3.5" />
+                  {{ imageUploading ? 'Mengupload...' : 'Pilih Gambar' }}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    class="hidden"
+                    :disabled="imageUploading"
+                    @change="handleImageUpload"
+                  />
+                </label>
+                <p class="text-[10px] text-slate-400">
+                  JPG/PNG, maks 2MB. Upload ke Cloudinary.
+                </p>
+                <button
+                  v-if="form.imageUrl"
+                  type="button"
+                  class="text-[10px] text-red-500 hover:underline"
+                  @click="removeImage"
+                >
+                  Hapus gambar
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Error -->
           <div
             v-if="formError"
@@ -387,8 +444,11 @@ import {
   Package as PackageIcon,
   Loader2 as Loader2Icon,
   AlertCircle as AlertCircleIcon,
+  Image as ImageIcon,
+  Upload as UploadIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { uploadToCloudinary } from '@/shared/services/upload.service';
 import productsService, {
   type ProductDto,
   type ProductListResponse,
@@ -418,7 +478,12 @@ const form = reactive({
   price: 0,
   cost: 0,
   initialStock: 0,
+  imageUrl: '' as string | null,
 });
+
+// Image upload state
+const imageUploading = ref(false);
+const imagePreviewUrl = ref<string | null>(null);
 
 // Delete state
 const showDeleteModal = ref(false);
@@ -473,6 +538,8 @@ function openCreateModal() {
   form.price = 0;
   form.cost = 0;
   form.initialStock = 0;
+  form.imageUrl = null;
+  imagePreviewUrl.value = null;
   formError.value = null;
   showModal.value = true;
 }
@@ -484,6 +551,8 @@ function openEditModal(product: ProductDto) {
   form.price = product.price;
   form.cost = product.cost;
   form.initialStock = 0;
+  form.imageUrl = (product as any).imageUrl || null;
+  imagePreviewUrl.value = (product as any).imageUrl || null;
   formError.value = null;
   showModal.value = true;
 }
@@ -503,6 +572,7 @@ async function handleSubmitForm() {
         name: form.name,
         price: form.price,
         cost: form.cost,
+        imageUrl: form.imageUrl ?? undefined,
       });
     } else {
       const shopId = authStore.user?.shopId;
@@ -517,6 +587,7 @@ async function handleSubmitForm() {
         price: form.price,
         cost: form.cost,
         initialStock: form.initialStock || undefined,
+        imageUrl: form.imageUrl ?? undefined,
       });
     }
     closeModal();
@@ -549,6 +620,44 @@ async function handleDelete() {
   } finally {
     deleting.value = false;
   }
+}
+
+// ============================================
+// Image Upload
+// ============================================
+
+async function handleImageUpload(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  // Validate size (max 2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    formError.value = 'Ukuran gambar maksimal 2MB.';
+    return;
+  }
+
+  // Show preview immediately
+  imagePreviewUrl.value = URL.createObjectURL(file);
+  imageUploading.value = true;
+  formError.value = null;
+
+  try {
+    const result = await uploadToCloudinary(file, 'ngalir/products');
+    form.imageUrl = result.url;
+  } catch (err: any) {
+    formError.value = err.message || 'Gagal upload gambar.';
+    imagePreviewUrl.value = form.imageUrl || null;
+  } finally {
+    imageUploading.value = false;
+    // Reset input so same file can be re-selected
+    input.value = '';
+  }
+}
+
+function removeImage() {
+  form.imageUrl = null;
+  imagePreviewUrl.value = null;
 }
 
 // ============================================
