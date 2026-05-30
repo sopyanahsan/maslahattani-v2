@@ -63,4 +63,20 @@ export class ShopsController {
   async selectShop(@Param('id') id: string, @Request() req: any) {
     return this.shopsService.selectShop(id, req.user);
   }
+
+  // === Shop Settings ===
+
+  @Get(':id/settings')
+  @ApiOperation({ summary: 'Get semua settings toko (termasuk toggles)' })
+  async getSettings(@Param('id') id: string) {
+    return this.shopsService.getSettings(id);
+  }
+
+  @Patch(':id/settings')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update settings toko (admin)' })
+  async updateSettings(@Param('id') id: string, @Body() dto: any) {
+    return this.shopsService.updateSettings(id, dto);
+  }
 }

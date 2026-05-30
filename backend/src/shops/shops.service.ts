@@ -268,4 +268,48 @@ export class ShopsService {
 
     return shop ? [shop] : [];
   }
+
+  // ============================================
+  // SHOP SETTINGS
+  // ============================================
+
+  async getSettings(shopId: string) {
+    let settings = await this.prisma.shopSetting.findUnique({ where: { shopId } });
+    if (!settings) {
+      // Auto-create default settings
+      settings = await this.prisma.shopSetting.create({ data: { shopId } });
+    }
+    return settings;
+  }
+
+  async updateSettings(shopId: string, dto: any) {
+    // Ensure settings exist
+    let settings = await this.prisma.shopSetting.findUnique({ where: { shopId } });
+    if (!settings) {
+      settings = await this.prisma.shopSetting.create({ data: { shopId } });
+    }
+
+    const updated = await this.prisma.shopSetting.update({
+      where: { shopId },
+      data: {
+        brilinkEnabled: dto.brilinkEnabled,
+        shiftMode: dto.shiftMode,
+        shiftForceCloseOnSwitch: dto.shiftForceCloseOnSwitch,
+        shiftCorrectionRequired: dto.shiftCorrectionRequired,
+        shiftPhysicalCountRequired: dto.shiftPhysicalCountRequired,
+        shiftGuardEnabled: dto.shiftGuardEnabled,
+        cashOutApprovalEnabled: dto.cashOutApprovalEnabled,
+        paymentCashEnabled: dto.paymentCashEnabled,
+        paymentQrisEnabled: dto.paymentQrisEnabled,
+        paymentHutangEnabled: dto.paymentHutangEnabled,
+        saveBillEnabled: dto.saveBillEnabled,
+        discountPerItemEnabled: dto.discountPerItemEnabled,
+        discountTotalEnabled: dto.discountTotalEnabled,
+        notePerItemEnabled: dto.notePerItemEnabled,
+        receiptConfig: dto.receiptConfig,
+        language: dto.language,
+      },
+    });
+    return { success: true, settings: updated };
+  }
 }

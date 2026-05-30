@@ -8,6 +8,7 @@ import { TransactionsModule } from './transactions/transactions.module';
 import { ProductsModule } from './products/products.module';
 import { ProductCategoriesModule } from './product-categories/product-categories.module';
 import { ProfileModule } from './profile/profile.module';
+import { CashFlowModule } from './cash-flow/cash-flow.module';
 import { StockModule } from './stock/stock.module';
 import { DebtsModule } from './debts/debts.module';
 import { PaymentsModule } from './payments/payments.module';
@@ -38,6 +39,7 @@ import { BrilinkAccountsModule } from './brilink-accounts/brilink-accounts.modul
     ProductsModule,
     ProductCategoriesModule,
     ProfileModule,
+    CashFlowModule,
     StockModule,
     DebtsModule,
     PaymentsModule,
