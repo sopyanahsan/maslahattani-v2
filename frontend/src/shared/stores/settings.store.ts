@@ -72,8 +72,8 @@ const TOGGLE_LABELS: Record<string, string> = {
   notePerItemEnabled: 'Catatan Per-Item',
 };
 
-/** Default polling interval: 30 seconds. */
-const POLL_INTERVAL_MS = 30_000;
+/** Polling interval: 10 seconds for responsive change detection. */
+const POLL_INTERVAL_MS = 10_000;
 
 export const useSettingsStore = defineStore('settings', () => {
   const settings = ref<ShopSettings>({ ...DEFAULT_SETTINGS });
@@ -114,6 +114,7 @@ export const useSettingsStore = defineStore('settings', () => {
       if (loaded.value) {
         const changes = detectChanges(settings.value, newSettings);
         if (changes.length > 0) {
+          console.log('[SettingsStore] Perubahan terdeteksi dari admin:', changes);
           settingsChanged.value = true;
           changedFields.value = changes;
           lastChangeTimestamp.value = Date.now();
@@ -122,7 +123,8 @@ export const useSettingsStore = defineStore('settings', () => {
 
       settings.value = newSettings;
       loaded.value = true;
-    } catch {
+    } catch (err) {
+      console.warn('[SettingsStore] fetchSettings gagal:', err);
       // Only set defaults if we never loaded successfully
       if (!loaded.value) {
         settings.value = { ...DEFAULT_SETTINGS };
@@ -173,6 +175,7 @@ export const useSettingsStore = defineStore('settings', () => {
     stopPolling(); // Clear any existing timer
     if (!currentShopId) return;
 
+    console.log('[SettingsStore] Polling dimulai — interval:', POLL_INTERVAL_MS, 'ms, shopId:', currentShopId);
     pollTimer = setInterval(async () => {
       if (currentShopId) {
         await fetchSettings(currentShopId);
