@@ -296,28 +296,7 @@
         </div>
       </header>
 
-      <!-- Active branch banner (super-admin / multi-shop only) — always visible
-           reminder of which branch is currently being managed. Prevents
-           accidentally editing wrong branch's data. -->
-      <div
-        v-if="canSwitchShop && currentShopName"
-        class="sticky top-0 z-10 bg-blue-50 dark:bg-blue-950/40 border-b border-blue-200 dark:border-blue-900/50 px-4 sm:px-6 lg:px-8 py-2 flex items-center justify-between gap-3"
-      >
-        <div class="flex items-center gap-2 min-w-0">
-          <Building2Icon class="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-          <p class="text-xs text-blue-900 dark:text-blue-100 min-w-0">
-            <span class="font-bold">SEDANG MENGELOLA:</span>
-            <span class="ml-1.5 font-semibold truncate">{{ currentShopName }}</span>
-          </p>
-        </div>
-        <button
-          type="button"
-          class="shrink-0 text-[11px] font-semibold text-blue-700 dark:text-blue-300 hover:underline"
-          @click="shopMenuOpen = true"
-        >
-          Ganti Cabang
-        </button>
-      </div>
+
 
       <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto text-slate-900 dark:text-slate-100">
         <RouterView />

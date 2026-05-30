@@ -26,38 +26,11 @@
         </button>
       </div>
 
-      <!-- Refresh controls -->
+      <!-- Last updated indicator -->
       <div class="flex items-center gap-2 flex-wrap">
         <span class="text-[11px] text-slate-500 dark:text-slate-400">
           {{ lastUpdatedLabel }}
         </span>
-
-        <button
-          type="button"
-          :disabled="!shopId || store.isAnyLoading"
-          class="h-8 inline-flex items-center gap-1.5 px-2.5 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed"
-          @click="handleManualRefresh"
-        >
-          <component
-            :is="RefreshIcon"
-            :class="['w-3.5 h-3.5', store.isAnyLoading && 'animate-spin']"
-          />
-          Refresh
-        </button>
-
-        <button
-          type="button"
-          :class="[
-            'h-8 inline-flex items-center gap-1.5 px-2.5 rounded-md border text-xs font-medium transition-colors',
-            store.autoRefresh
-              ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
-              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800',
-          ]"
-          @click="store.toggleAutoRefresh"
-        >
-          <component :is="store.autoRefresh ? PlayIcon : PauseIcon" class="w-3.5 h-3.5" />
-          Auto-refresh {{ store.autoRefresh ? 'ON' : 'OFF' }}
-        </button>
       </div>
     </div>
 
@@ -365,9 +338,6 @@ import {
   Receipt as ReceiptIcon,
   TrendingUp as TrendingUpIcon,
   Calculator as CalculatorIcon,
-  RefreshCw as RefreshIcon,
-  Play as PlayIcon,
-  Pause as PauseIcon,
   AlertTriangle as AlertTriangleIcon,
 } from 'lucide-vue-next';
 import { useShopStore } from '@/shared/stores/shop.store';
@@ -422,10 +392,6 @@ const lastUpdatedLabel = computed(() => {
   if (s < 60) return `Update ${s} detik lalu`;
   return `Update ${Math.floor(s / 60)} menit lalu`;
 });
-
-function handleManualRefresh() {
-  store.fetchAll();
-}
 
 function onSelectProduct(productId: string) {
   router.push({ path: '/admin/products', query: { id: productId } });
