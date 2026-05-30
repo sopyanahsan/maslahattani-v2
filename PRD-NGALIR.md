@@ -1142,3 +1142,420 @@ Selanjutnya Sprint 2:
 - Receipt Modal (popup struk: unduh JPG, bagikan, cetak)
 - Shift guard (block POS jika belum buka shift)
 - Backend: save bill endpoint (Transaction status=PENDING)
+
+
+
+---
+
+## 23. Sistem Shift — Model Hybrid (Reset + Mengalir)
+
+### 23.1 Filosofi
+
+Ngalir menyediakan **2 mode shift** yang bisa di-toggle dari admin panel:
+
+| Mode | Target User | Deskripsi |
+|------|-------------|-----------|
+| **Mode A: Shift Reset** | Toko besar, multi-kasir ketat | Setiap shift input modal awal, tutup = hitung selisih, saldo per-shift |
+| **Mode B: Saldo Mengalir** | Toko kecil, 1-2 kasir | Saldo terus jalan, shift = penanda siapa jaga + jam kerja |
+
+Admin pilih mode di **Pengaturan > Sistem Shift**. Default = Mode B (cocok UMKM).
+
+### 23.2 Mode B: Saldo Mengalir (Default)
+
+#### Buka Shift:
+1. Kasir login → klik "Buka Shift"
+2. Sistem tampilkan **saldo terakhir** dari DB (tidak input manual)
+3. Kasir **koreksi** jika ada selisih (misal: "Saldo sistem Rp 2.5jt, aktual Rp 2.4jt" → input koreksi -100rb dengan catatan)
+4. Shift dibuka → catat: userId, startTime, saldoAwal (from last shift or correction)
+
+#### Selama Shift:
+- Transaksi retail → + saldo kas retail
+- Fee BRILink → + saldo kas BRILink
+- Cash In → + saldo (kategori: setor modal, terima titipan, dll)
+- Cash Out → - saldo (kategori: keperluan rumah, beli stok, listrik, dll)
+- Semua tercatat real-time
+
+#### Tutup Shift:
+1. Kasir klik "Tutup Shift" (bisa kapan saja, fleksibel)
+2. **Wajib** input hitung uang fisik (per denominasi opsional)
+3. Sistem compare: expected vs actual
+4. Variance dicatat (lebih/kurang)
+5. Ringkasan: total trx, omzet, profit, cash in/out, saldo akhir
+
+#### Saldo Formula:
+```
+Saldo Akhir Shift = Saldo Awal
+                    + Total Penjualan Tunai
+                    + Total Fee BRILink (tunai)
+                    + Total Cash In
+                    - Total Cash Out
+```
+
+### 23.3 Mode A: Shift Reset (Opsi untuk Dijual)
+
+#### Buka Shift:
+1. Kasir login → klik "Buka Shift"
+2. Input **modal awal** manual (berapa uang di laci kas)
+3. Shift dibuka
+
+#### Tutup Shift:
+1. Hitung uang fisik (wajib)
+2. Expected = Modal Awal + Penjualan Tunai - Kembalian
+3. Variance = Actual - Expected
+
+#### Perbedaan dengan Mode B:
+- Saldo tidak "dibawa" antar shift
+- Setiap shift independent
+- Cocok untuk shift bergantian dengan serah terima formal
+
+### 23.4 Multi-Kasir
+
+**Setting di admin**: 
+- **Strict (default)**: 1 shift = 1 kasir. Gantian = kasir A tutup, kasir B buka.
+- **Relaxed**: 1 shift bisa di-share ke multiple kasir (field `sharedWith`). Semua transaksi tercatat siapa yang buat, tapi shift-nya 1.
+
+### 23.5 Cash In / Cash Out
+
+#### Kategori (configurable di admin panel):
+**Cash In:**
+- Setor Modal
+- Terima Titipan
+- Pendapatan Lain
+- Koreksi (+)
+
+**Cash Out:**
+- Keperluan Rumah/Pribadi
+- Beli Stok/Restock
+- Listrik/Air/Internet
+- Gaji Karyawan
+- Sewa Tempat
+- Transportasi
+- Lainnya
+- Koreksi (-)
+
+#### Flow Cash Out + Approval:
+```
+1. Kasir klik "Cash Out" → pilih kategori → input nominal → catatan → Submit
+2. Uang LANGSUNG bisa diambil (tidak perlu tunggu approval)
+3. Status: "Belum Diverifikasi" ⚠
+4. Admin panel: lihat list pengeluaran, klik "Verifikasi" ✅ atau "Tolak" ❌
+5. Jika ditolak: muncul notif ke kasir, tapi uang sudah keluar (perlu setor kembali)
+```
+
+**Kenapa tidak blocking?** Karena di lapangan kasir butuh cepat (bayar tukang galon, dll). Admin verify belakangan buat audit trail.
+
+### 23.6 UI Shift di Webapp Kasir
+
+#### Halaman Shift (`/retail/shift`):
+
+**Belum ada shift aktif:**
+```
+┌─────────────────────────────────────────┐
+│ 🕐 Shift                                │
+│                                          │
+│ Saldo Terakhir (dari shift sebelumnya): │
+│ Kas Retail:    Rp 2.350.000             │
+│ Kas BRILink:   Rp 5.200.000             │
+│                                          │
+│ ⚠ Koreksi saldo (jika ada selisih):    │
+│ Kas Retail: [______] (opsional)         │
+│ Catatan:    [______________________]    │
+│                                          │
+│ [▶ Buka Shift]                          │
+└─────────────────────────────────────────┘
+```
+
+**Shift aktif:**
+```
+┌─────────────────────────────────────────┐
+│ 🟢 Shift Aktif — 3j 20m                │
+│ Kasir: sopyanahsan                       │
+│ Mulai: 08:30                            │
+│                                          │
+│ Saldo Real-time:                         │
+│ Kas Retail:    Rp 2.700.000             │
+│ Kas BRILink:   Rp 5.245.000             │
+│                                          │
+│ Hari Ini:                                │
+│ + Penjualan      Rp 350.000             │
+│ + Fee BRILink    Rp 45.000              │
+│ + Cash In        Rp 0                   │
+│ - Cash Out       Rp 100.000             │
+│                                          │
+│ [💰 Cash In]  [💸 Cash Out]             │
+│                                          │
+│ [■ Tutup Shift]                         │
+└─────────────────────────────────────────┘
+```
+
+**Tutup shift:**
+```
+┌─────────────────────────────────────────┐
+│ Tutup Shift                              │
+│                                          │
+│ Hitung uang fisik di laci kas:          │
+│ Kas Retail:  [_________] Rp             │
+│ Kas BRILink: [_________] Rp             │
+│                                          │
+│ (Opsional) Breakdown denominasi:        │
+│ 100rb: [_] 50rb: [_] 20rb: [_]         │
+│ 10rb: [_] 5rb: [_] 2rb: [_] 1rb: [_]  │
+│                                          │
+│ Expected: Rp 2.700.000                  │
+│ Actual:   Rp 2.680.000                  │
+│ Selisih:  -Rp 20.000 ⚠                │
+│                                          │
+│ Catatan: [_________________________]    │
+│                                          │
+│ [✓ Konfirmasi Tutup Shift]              │
+└─────────────────────────────────────────┘
+```
+
+---
+
+## 24. Menu BRILink — Dashboard & Transaksi
+
+### 24.1 Halaman BRILink Menu (`/brilink/menu`)
+
+```
+┌─────────────────────────────────────────┐
+│ 🏦 BRILink                              │
+│                                          │
+│ Saldo Rekening BRI:                      │
+│ ┌─────────────────────────────────────┐ │
+│ │ BRI ****1234          Rp 5.200.000  │ │
+│ │ Saldo terakhir update: 08:30 hari ini│ │
+│ └─────────────────────────────────────┘ │
+│                                          │
+│ Layanan:                                 │
+│ ┌────────┐ ┌────────┐ ┌────────┐       │
+│ │Transfer│ │Transfer│ │ Tarik  │       │
+│ │  BRI   │ │Antar Bk│ │ Tunai  │       │
+│ └────────┘ └────────┘ └────────┘       │
+│ ┌────────┐ ┌────────┐ ┌────────┐       │
+│ │Top Up  │ │Top Up  │ │ Token  │       │
+│ │ Pulsa  │ │E-Wallet│ │  PLN   │       │
+│ └────────┘ └────────┘ └────────┘       │
+│                                          │
+│ Transaksi Terakhir (3):                  │
+│ TRF BRI Rp 500rb → 08123... 09:30      │
+│ Tarik   Rp 1jt   → Pak Ahmad   09:15   │
+│ Pulsa   Rp 50rb  → 08567...    08:45   │
+└─────────────────────────────────────────┘
+```
+
+### 24.2 Flow Transaksi BRILink:
+
+```
+1. Kasir pilih layanan (misal: Transfer BRI)
+2. Input: tujuan, nominal, nama penerima
+3. Sistem auto-hitung fee berdasarkan BrilinkFee config
+4. Tampil: Nominal + Fee = Total bayar pelanggan
+5. Konfirmasi → catat transaksi + kurangi saldo rekening BRI
+6. Cetak struk BRILink
+```
+
+### 24.3 Saldo Rekening BRI (BrilinkAccount)
+
+- Admin input saldo manual di awal
+- Setiap transaksi BRILink: saldo berkurang (transfer keluar, tarik tunai) atau bertambah (setor)
+- Mutasi tercatat di `BrilinkMutation`
+- Alert jika saldo di bawah threshold
+
+---
+
+## 25. Halaman Pengaturan — Lengkap
+
+### 25.1 Struktur Menu Pengaturan (`/settings`)
+
+```
+┌─────────────────────────────────────────┐
+│ ⚙️ Pengaturan                           │
+│                                          │
+│ ── Profil ──                             │
+│ [Foto] Nama: Sopyan                      │
+│        No HP: 08123456789                │
+│        Alamat: Jl. ...                   │
+│        [Simpan Profil]                   │
+│                                          │
+│ ── Email & Verifikasi ──                 │
+│ Belum ada email                          │
+│ [+ Tambah Email]                         │
+│                                          │
+│ ── Shift ──                              │
+│ Status: 🟢 Aktif (3j 20m)              │
+│ [Kelola Shift]                           │
+│ Riwayat shift terakhir (3 items)         │
+│                                          │
+│ ── Keamanan ──                           │
+│ [🔑 Ganti PIN]                          │
+│ [🔄 Minta Reset PIN ke Admin]           │
+│                                          │
+│ ── Printer ──                            │
+│ Status: Belum terhubung                  │
+│ [🖨 Hubungkan Printer Bluetooth]         │
+│ Printer terakhir: RPP02N                 │
+│                                          │
+│ ── Aplikasi ──                           │
+│ Versi: 1.0.0                            │
+│ [🚪 Logout]                             │
+└─────────────────────────────────────────┘
+```
+
+### 25.2 Section Printer (Baru)
+
+Kasir bisa pair printer Bluetooth dari halaman Pengaturan (bukan hanya saat cetak struk):
+- Pair sekali → nama printer tersimpan di localStorage
+- Saat cetak struk: auto-reconnect ke printer yang sudah di-pair
+- Jika printer berubah: bisa "Ganti Printer" dari pengaturan
+
+### 25.3 Section Sistem Shift (Admin Panel)
+
+Di admin panel, ada setting:
+```
+Pengaturan > Sistem Shift
+├── Mode Shift: [Saldo Mengalir ▼] / [Shift Reset]
+├── Multi-Kasir: [Strict (1 kasir/shift) ▼] / [Relaxed (shared)]
+├── Koreksi Saldo: [✓ Wajib saat buka shift]
+├── Hitung Fisik: [✓ Wajib saat tutup shift]
+└── Kategori Cash In/Out: [Kelola →]
+```
+
+### 25.4 Kategori Cash In/Out (Admin Panel CRUD)
+
+Admin bisa custom kategori pengeluaran/pemasukan:
+
+```
+Pengaturan > Kategori Kas
+┌────────────────────────────────────────┐
+│ Cash In:                                │
+│ • Setor Modal          [Edit] [Hapus]  │
+│ • Terima Titipan       [Edit] [Hapus]  │
+│ • [+ Tambah]                           │
+│                                         │
+│ Cash Out:                               │
+│ • Keperluan Rumah      [Edit] [Hapus]  │
+│ • Beli Stok            [Edit] [Hapus]  │
+│ • Listrik/Air          [Edit] [Hapus]  │
+│ • Gaji Karyawan        [Edit] [Hapus]  │
+│ • [+ Tambah]                           │
+└────────────────────────────────────────┘
+```
+
+---
+
+## 26. Database Changes untuk Shift + Cash Flow
+
+### 26.1 Tambahan Model
+
+```prisma
+model CashFlowCategory {
+  id          String    @id @default(cuid())
+  shop        Shop      @relation(fields: [shopId], references: [id])
+  shopId      String
+  name        String    // "Keperluan Rumah", "Beli Stok", dll
+  type        String    // "CASH_IN" | "CASH_OUT"
+  icon        String?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+
+  cashFlows   CashFlow[]
+
+  @@unique([shopId, name, type])
+  @@map("cash_flow_categories")
+}
+
+model CashFlow {
+  id          String    @id @default(cuid())
+  shop        Shop      @relation(fields: [shopId], references: [id])
+  shopId      String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  shift       Shift?    @relation(fields: [shiftId], references: [id])
+  shiftId     String?
+  category    CashFlowCategory @relation(fields: [categoryId], references: [id])
+  categoryId  String
+  
+  type        String    // "CASH_IN" | "CASH_OUT"
+  amount      Int
+  notes       String?
+  
+  // Approval
+  status      String    @default("PENDING") // PENDING, VERIFIED, REJECTED
+  verifiedBy  String?   // admin userId
+  verifiedAt  DateTime?
+  rejectReason String?
+  
+  createdAt   DateTime  @default(now())
+
+  @@index([shopId, createdAt])
+  @@index([shiftId])
+  @@map("cash_flows")
+}
+```
+
+### 26.2 Tambahan Field di ShopSetting:
+
+```prisma
+model ShopSetting {
+  // existing...
+  shiftMode         String  @default("FLOWING") // "FLOWING" | "RESET"
+  shiftMultiKasir   String  @default("STRICT")  // "STRICT" | "RELAXED"
+  shiftCorrectionRequired Boolean @default(true)
+  shiftPhysicalCountRequired Boolean @default(true)
+}
+```
+
+---
+
+## 27. API Endpoints Baru (Shift + Cash Flow)
+
+### Shift
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| GET | `/api/shifts/current` | Get shift aktif + saldo real-time |
+| POST | `/api/shifts/open` | Buka shift (dengan koreksi opsional) |
+| POST | `/api/shifts/:id/close` | Tutup shift (input actual cash) |
+| GET | `/api/shifts/last-balance` | Saldo terakhir (untuk tampil saat buka shift) |
+
+### Cash Flow
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| POST | `/api/cash-flows` | Catat Cash In/Out |
+| GET | `/api/cash-flows` | List cash flow (filter: shift, date, type) |
+| GET | `/api/cash-flows/categories` | List kategori cash flow |
+| POST | `/api/cash-flows/categories` | Buat kategori baru (admin) |
+| PATCH | `/api/cash-flows/:id/verify` | Admin verifikasi pengeluaran |
+| PATCH | `/api/cash-flows/:id/reject` | Admin tolak pengeluaran |
+
+### Admin Settings
+| Method | Endpoint | Deskripsi |
+|--------|----------|-----------|
+| GET | `/api/shops/:id/settings` | Get semua settings toko |
+| PATCH | `/api/shops/:id/settings` | Update settings (shift mode, dll) |
+
+---
+
+## 28. Prioritas Implementasi Berikutnya
+
+### Sprint 5: Shift + Cash Flow
+1. DB Migration (CashFlowCategory, CashFlow, ShopSetting fields)
+2. Backend: Cash Flow CRUD + categories
+3. Backend: Shift open/close with saldo mengalir
+4. Frontend: Halaman Shift redesign (buka/tutup/cash in/out)
+5. Frontend: Dashboard saldo real-time
+6. Admin: Kategori Cash In/Out CRUD
+7. Admin: Verifikasi pengeluaran
+
+### Sprint 6: BRILink Complete
+8. Frontend: BRILink menu + form transaksi
+9. Backend: BRILink transaction flow (auto fee calc)
+10. Frontend: Saldo rekening BRI display
+11. Frontend: Cetak struk BRILink
+
+### Sprint 7: Polish for Sale
+12. Admin: Setting mode shift (A/B toggle)
+13. Admin: Multi-kasir setting
+14. Pengaturan kasir: section Printer
+15. Landing page / marketing site
+16. Documentation untuk buyer
