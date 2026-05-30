@@ -47,6 +47,34 @@
 
     <!-- Main content -->
     <main class="flex-1 overflow-y-auto pb-20">
+      <!-- Settings changed notification banner -->
+      <div
+        v-if="settingsStore.settingsChanged"
+        class="sticky top-0 z-20 bg-amber-50 border-b border-amber-200 px-4 py-3 flex items-start gap-3"
+      >
+        <div class="shrink-0 w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center">
+          <svg class="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-semibold text-amber-900">Pengaturan sistem diperbarui oleh admin</p>
+          <ul class="mt-1 space-y-0.5">
+            <li v-for="field in settingsStore.changedFields" :key="field" class="text-xs text-amber-700">
+              &bull; {{ field }}
+            </li>
+          </ul>
+          <p class="text-[11px] text-amber-600 mt-1.5">Perubahan sudah diterapkan otomatis.</p>
+        </div>
+        <button
+          type="button"
+          class="shrink-0 px-3 py-1.5 text-xs font-semibold text-amber-700 border border-amber-300 rounded-lg hover:bg-amber-100 transition-colors"
+          @click="settingsStore.dismissChange()"
+        >
+          OK
+        </button>
+      </div>
+
       <div class="max-w-6xl mx-auto">
         <RouterView />
       </div>
@@ -196,9 +224,10 @@ onMounted(() => {
   window.addEventListener('offline', handleOnlineChange);
   startAutoSync();
   refreshPendingCount();
-  // Fetch settings for conditional rendering (toggle Pengaturan Sistem)
+  // Fetch settings + start polling for admin changes
   if (activeShopId.value) {
     settingsStore.fetchSettings(activeShopId.value);
+    settingsStore.startPolling(activeShopId.value);
   }
 });
 
@@ -207,6 +236,7 @@ onMounted(() => {
 watch(activeShopId, (newId, oldId) => {
   if (newId && newId !== oldId) {
     settingsStore.fetchSettings(newId);
+    settingsStore.startPolling(newId);
   }
 });
 
@@ -214,6 +244,7 @@ onUnmounted(() => {
   window.removeEventListener('online', handleOnlineChange);
   window.removeEventListener('offline', handleOnlineChange);
   stopAutoSync();
+  settingsStore.stopPolling();
 });
 
 const shopName = computed(() => shopStore.currentShopName);
