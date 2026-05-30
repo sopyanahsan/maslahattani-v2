@@ -104,20 +104,28 @@
       <QuickActions />
 
       <!-- ============================================ -->
-      <!-- ROW 3: SALES CHART (full width)              -->
+      <!-- ROW 3: SALES CHART + CATEGORY CHART          -->
       <!-- ============================================ -->
-      <SectionWrapper
-        :error="store.errors.salesChart"
-        @retry="store.fetchSection('salesChart')"
-      >
-        <SalesChart
-          :labels="store.salesChart?.labels ?? []"
-          :revenue="store.salesChart?.revenue ?? []"
-          :profit="store.salesChart?.profit ?? []"
-          :period="store.period"
-          :loading="store.loading.salesChart"
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div class="lg:col-span-2">
+          <SectionWrapper
+            :error="store.errors.salesChart"
+            @retry="store.fetchSection('salesChart')"
+          >
+            <SalesChart
+              :labels="store.salesChart?.labels ?? []"
+              :revenue="store.salesChart?.revenue ?? []"
+              :profit="store.salesChart?.profit ?? []"
+              :period="store.period"
+              :loading="store.loading.salesChart"
+            />
+          </SectionWrapper>
+        </div>
+        <CategorySalesChart
+          :categories="categorySalesData"
+          :loading="store.loading.topProducts"
         />
-      </SectionWrapper>
+      </div>
 
       <!-- ============================================ -->
       <!-- ROW 3b: OPERATIONS PANEL                     -->
@@ -351,6 +359,7 @@ import RecentActivityFeed from '@/admin/components/dashboard/RecentActivityFeed.
 import PaymentBreakdown from '@/admin/components/dashboard/PaymentBreakdown.vue';
 import AlertCard from '@/admin/components/dashboard/AlertCard.vue';
 import CashierLeaderboard from '@/admin/components/dashboard/CashierLeaderboard.vue';
+import CategorySalesChart from '@/admin/components/dashboard/CategorySalesChart.vue';
 import type { DashboardPeriod } from '@/shared/services/dashboard.service';
 
 const router = useRouter();
@@ -379,6 +388,21 @@ const comparisonTitle = computed(() => {
   if (store.period === 'today') return 'Hari Ini vs Kemarin';
   if (store.period === 'week') return '7 Hari Ini vs 7 Hari Sebelumnya';
   return '30 Hari Ini vs 30 Hari Sebelumnya';
+});
+
+/**
+ * Category sales data — derived from topProducts (which already has product info).
+ * Groups revenue by product category.
+ */
+const categorySalesData = computed(() => {
+  if (!store.topProducts || store.topProducts.length === 0) return [];
+  // Group by category (topProducts may have category field)
+  const catMap = new Map<string, number>();
+  for (const p of store.topProducts) {
+    const catName = (p as any).category || 'Lainnya';
+    catMap.set(catName, (catMap.get(catName) || 0) + ((p as any).totalRevenue || (p as any).revenue || 0));
+  }
+  return Array.from(catMap.entries()).map(([name, revenue]) => ({ name, revenue }));
 });
 
 // =====================================================
