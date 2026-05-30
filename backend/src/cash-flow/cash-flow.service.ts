@@ -59,6 +59,18 @@ export class CashFlowService {
     const category = await this.prisma.cashFlowCategory.findFirst({ where: { id: dto.categoryId, shopId } });
     if (!category) throw new BadRequestException('Kategori tidak valid.');
 
+    // Cash-out hanya butuh persetujuan admin kalau toggle "Approval Pengeluaran"
+    // aktif (Pengaturan Sistem). Cash-in selalu langsung VERIFIED.
+    let status: 'PENDING' | 'VERIFIED' = 'VERIFIED';
+    if (dto.type === 'CASH_OUT') {
+      const setting = await this.prisma.shopSetting.findUnique({
+        where: { shopId },
+        select: { cashOutApprovalEnabled: true },
+      });
+      const approvalRequired = setting?.cashOutApprovalEnabled ?? true;
+      status = approvalRequired ? 'PENDING' : 'VERIFIED';
+    }
+
     const cashFlow = await this.prisma.cashFlow.create({
       data: {
         shopId,
@@ -68,12 +80,12 @@ export class CashFlowService {
         type: dto.type,
         amount: dto.amount,
         notes: dto.notes || null,
-        status: 'PENDING',
+        status,
       },
       include: { category: true, user: { select: { id: true, username: true } } },
     });
 
-    return { success: true, cashFlow };
+    return { success: true, cashFlow, approvalRequired: status === 'PENDING' };
   }
 
   async list(shopId: string, query: { type?: string; status?: string; shiftId?: string; startDate?: string; endDate?: string; page?: number; limit?: number }) {

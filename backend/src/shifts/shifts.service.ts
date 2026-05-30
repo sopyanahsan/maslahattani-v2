@@ -219,7 +219,7 @@ export class ShiftsService {
       string,
       {
         actualCash: number;
-        actualQRIS: number;
+        actualQRIS?: number;
         denominations?: CashDenominations;
       }
     >(
@@ -261,30 +261,28 @@ export class ShiftsService {
     const updatedShift = await this.prisma.$transaction(async (tx) => {
       for (const cashBox of shift.cashBoxes) {
         const expected = expectedByCategory.get(cashBox.categoryId)!;
-        const actual = actualMap.get(cashBox.categoryId) ?? {
-          actualCash: 0,
-          actualQRIS: 0,
-          denominations: undefined,
-        };
+        const provided = actualMap.get(cashBox.categoryId);
+        const actualCash = provided?.actualCash ?? 0;
+        // QRIS bersifat elektronik → kalau kasir tidak input, rekonsiliasi
+        // otomatis ke nilai expected (variance QRIS = 0).
+        const actualQRIS = provided?.actualQRIS ?? expected.expectedQRIS;
+        const denominations = provided?.denominations;
 
         // variance = actual - (starting + expected)
-        // Kalau actual gak di-input (0 default), variance bisa negative besar.
         const varianceCash =
-          actual.actualCash - (cashBox.startingCash + expected.expectedCash);
-        const varianceQRIS = actual.actualQRIS - expected.expectedQRIS;
+          actualCash - (cashBox.startingCash + expected.expectedCash);
+        const varianceQRIS = actualQRIS - expected.expectedQRIS;
 
         await tx.shiftCashBox.update({
           where: { id: cashBox.id },
           data: {
             expectedCash: expected.expectedCash,
             expectedQRIS: expected.expectedQRIS,
-            actualCash: actual.actualCash,
-            actualQRIS: actual.actualQRIS,
+            actualCash,
+            actualQRIS,
             varianceCash,
             varianceQRIS,
-            cashDenominations: actual.denominations
-              ? (actual.denominations as any)
-              : null,
+            cashDenominations: denominations ? (denominations as any) : null,
           },
         });
       }
