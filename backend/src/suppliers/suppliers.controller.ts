@@ -20,7 +20,7 @@ import {
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
 
-@Controller('suppliers')
+@Controller('api/suppliers')
 @UseGuards(JwtAuthGuard)
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}

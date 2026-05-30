@@ -13,7 +13,7 @@ import { OpnameService } from './opname.service';
 import { CreateOpnameSessionDto, UpdateOpnameItemDto, QueryOpnameSessionsDto } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
 
-@Controller('opname')
+@Controller('api/opname')
 @UseGuards(JwtAuthGuard)
 export class OpnameController {
   constructor(private readonly opnameService: OpnameService) {}

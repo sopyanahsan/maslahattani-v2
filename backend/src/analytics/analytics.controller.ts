@@ -3,7 +3,7 @@ import { AnalyticsService } from './analytics.service';
 import { QueryAnalyticsDto, AnalyticsPeriod } from './dto/query-analytics.dto';
 import { JwtAuthGuard } from '../auth/guards';
 
-@Controller('analytics')
+@Controller('api/analytics')
 @UseGuards(JwtAuthGuard)
 export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
