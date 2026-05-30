@@ -53,6 +53,19 @@ export interface ReceiptData {
   customerName?: string;
 }
 
+export interface BrilinkReceiptData {
+  shopName: string;
+  refNumber: string;
+  date: string;
+  cashierName: string;
+  category: string;
+  customerName: string;
+  destination: string;
+  amount: number;
+  fee: number;
+  total: number;
+}
+
 class ThermalPrintService {
   private device: BluetoothDevice | null = null;
   private characteristic: BluetoothRemoteGATTCharacteristic | null = null;
@@ -220,6 +233,61 @@ class ThermalPrintService {
     // Footer
     bytes.push(...COMMANDS.ALIGN_CENTER);
     bytes.push(...this.line('Terima kasih atas kunjungan Anda!'));
+    bytes.push(...COMMANDS.LINE);
+
+    // Feed and cut
+    bytes.push(...COMMANDS.FEED_3);
+    bytes.push(...COMMANDS.CUT);
+
+    await this.sendBytes(bytes);
+  }
+
+  /**
+   * Print a BRILink transaction receipt.
+   */
+  async printBrilinkReceipt(data: BrilinkReceiptData): Promise<void> {
+    const bytes: number[] = [];
+
+    bytes.push(...COMMANDS.INIT);
+
+    // Shop name (center, bold, double)
+    bytes.push(...COMMANDS.ALIGN_CENTER);
+    bytes.push(...COMMANDS.BOLD_ON);
+    bytes.push(...COMMANDS.DOUBLE_HEIGHT);
+    bytes.push(...this.line(data.shopName));
+    bytes.push(...COMMANDS.NORMAL_SIZE);
+    bytes.push(...this.line('STRUK BRILINK'));
+    bytes.push(...COMMANDS.BOLD_OFF);
+    bytes.push(...COMMANDS.LINE);
+
+    bytes.push(...this.separator());
+
+    // Transaction info (left align)
+    bytes.push(...COMMANDS.ALIGN_LEFT);
+    bytes.push(...this.line(`Ref: ${data.refNumber}`));
+    bytes.push(...this.line(data.date));
+    bytes.push(...this.line(`Kasir: ${data.cashierName}`));
+
+    bytes.push(...this.separator());
+
+    bytes.push(...this.line(`Layanan: ${data.category}`));
+    bytes.push(...this.line(`Customer: ${data.customerName}`));
+    bytes.push(...this.line(`Tujuan: ${data.destination}`));
+
+    bytes.push(...this.separator());
+
+    // Totals
+    bytes.push(...this.lineRight('Nominal', this.fmtRp(data.amount)));
+    bytes.push(...this.lineRight('Fee', this.fmtRp(data.fee)));
+    bytes.push(...COMMANDS.BOLD_ON);
+    bytes.push(...this.lineRight('TOTAL BAYAR', this.fmtRp(data.total)));
+    bytes.push(...COMMANDS.BOLD_OFF);
+
+    bytes.push(...this.separator());
+
+    // Footer
+    bytes.push(...COMMANDS.ALIGN_CENTER);
+    bytes.push(...this.line('Terima kasih!'));
     bytes.push(...COMMANDS.LINE);
 
     // Feed and cut

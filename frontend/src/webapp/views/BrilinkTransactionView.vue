@@ -6,6 +6,34 @@
       <p class="text-xs text-slate-500 mt-0.5">Transaksi BRILink — pilih kategori &amp; isi form.</p>
     </div>
 
+    <!-- Saldo rekening BRI -->
+    <div
+      v-if="accountBalance !== null"
+      class="shrink-0 px-4 py-2.5 flex items-center justify-between border-b"
+      :class="accountBalance <= lowBalanceThreshold
+        ? 'bg-amber-50 border-amber-200'
+        : 'bg-emerald-50 border-emerald-100'"
+    >
+      <div class="flex items-center gap-2 min-w-0">
+        <WalletIcon
+          class="w-4 h-4 shrink-0"
+          :class="accountBalance <= lowBalanceThreshold ? 'text-amber-600' : 'text-emerald-600'"
+        />
+        <span class="text-xs text-slate-500 truncate">
+          Saldo BRI{{ accountLabel ? ` — ${accountLabel}` : '' }}
+        </span>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
+        <span
+          v-if="accountBalance <= lowBalanceThreshold"
+          class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700"
+        >
+          <AlertTriangleIcon class="w-3 h-3" /> Menipis
+        </span>
+        <span class="text-sm font-bold font-mono text-slate-900">{{ formatRupiah(accountBalance) }}</span>
+      </div>
+    </div>
+
     <!-- Main content -->
     <div class="flex-1 overflow-y-auto p-4 space-y-5">
       <!-- ============================================ -->
@@ -128,6 +156,18 @@
           </div>
         </div>
 
+        <!-- Insufficient balance warning -->
+        <div
+          v-if="insufficientBalance"
+          class="bg-amber-50 border border-amber-200 rounded-md p-2 flex items-start gap-2 text-xs text-amber-800"
+        >
+          <AlertTriangleIcon class="w-4 h-4 shrink-0 mt-0.5" />
+          <span>
+            Nominal melebihi saldo rekening BRI ({{ formatRupiah(accountBalance ?? 0) }}).
+            Lakukan setor saldo dulu sebelum transaksi.
+          </span>
+        </div>
+
         <!-- Error -->
         <div
           v-if="submitError"
@@ -139,7 +179,7 @@
         <!-- Submit -->
         <button
           type="submit"
-          :disabled="submitting"
+          :disabled="submitting || insufficientBalance"
           class="w-full h-11 bg-blue-600 text-white text-sm font-bold rounded-lg
                  hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
                  flex items-center justify-center gap-2"
@@ -204,14 +244,37 @@
             </div>
           </div>
 
-          <button
-            type="button"
-            class="w-full h-10 bg-blue-600 text-white text-sm font-semibold rounded-lg
-                   hover:bg-blue-700 transition-colors"
-            @click="closeReceipt"
+          <!-- Print status -->
+          <p
+            v-if="printMsg"
+            class="text-center text-xs"
+            :class="printMsg.includes('tercetak') ? 'text-emerald-600' : 'text-slate-500'"
           >
-            Transaksi Baru
-          </button>
+            {{ printMsg }}
+          </p>
+
+          <div class="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              :disabled="printing"
+              class="h-10 border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg
+                     hover:bg-slate-50 transition-colors disabled:opacity-50
+                     flex items-center justify-center gap-1.5"
+              @click="handlePrintBrilinkReceipt"
+            >
+              <Loader2Icon v-if="printing" class="w-4 h-4 animate-spin" />
+              <PrinterIcon v-else class="w-4 h-4" />
+              Cetak Struk
+            </button>
+            <button
+              type="button"
+              class="h-10 bg-blue-600 text-white text-sm font-semibold rounded-lg
+                     hover:bg-blue-700 transition-colors"
+              @click="closeReceipt"
+            >
+              Transaksi Baru
+            </button>
+          </div>
         </div>
       </div>
     </Teleport>
@@ -220,14 +283,19 @@
 
 
 <script setup lang="ts">
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import {
   Loader2 as Loader2Icon,
   Send as SendIcon,
   Wallet as WalletIcon,
   CheckCircle2 as CheckCircleIcon,
+  Printer as PrinterIcon,
+  AlertTriangle as AlertTriangleIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
+import brilinkAccountService from '@/shared/services/brilink-account.service';
 import brilinkService, {
   BRILINK_CATEGORY_LABELS,
   BRILINK_CATEGORIES,
@@ -237,6 +305,8 @@ import brilinkService, {
 } from '@/shared/services/brilink.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
+const route = useRoute();
 
 // ============================================
 // State
@@ -247,6 +317,15 @@ const calculatedFee = ref(0);
 const submitting = ref(false);
 const submitError = ref<string | null>(null);
 const showReceipt = ref(false);
+
+// BRI account (saldo) state
+const accountBalance = ref<number | null>(null);
+const accountLabel = ref('');
+const lowBalanceThreshold = ref(0);
+
+// Print state
+const printing = ref(false);
+const printMsg = ref<string | null>(null);
 
 const form = reactive({
   customerName: '',
@@ -263,8 +342,16 @@ interface ReceiptInfo {
   amount: number;
   fee: number;
   total: number;
+  date: string;
 }
 const receiptData = ref<ReceiptInfo | null>(null);
+
+const insufficientBalance = computed(
+  () =>
+    accountBalance.value !== null &&
+    form.amount > 0 &&
+    form.amount > accountBalance.value,
+);
 
 
 // ============================================
@@ -272,7 +359,7 @@ const receiptData = ref<ReceiptInfo | null>(null);
 // ============================================
 
 function getShopId(): string {
-  return authStore.user?.shopId ?? '';
+  return authStore.user?.shopId ?? shopStore.currentShopId ?? '';
 }
 
 function formatRupiah(amount: number): string {
@@ -400,12 +487,62 @@ async function handleSubmit() {
       amount: response.summary.amount,
       fee: response.summary.fee,
       total: response.summary.total,
+      date: new Date().toLocaleString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      }),
     };
+
+    // Reflect the debited BRI balance returned by the backend
+    if (response.account) {
+      accountBalance.value = response.account.balance;
+      lowBalanceThreshold.value = response.account.lowBalanceThreshold;
+      accountLabel.value = response.account.label;
+    }
+
+    printMsg.value = null;
     showReceipt.value = true;
   } catch (err: any) {
     submitError.value = err.response?.data?.message ?? err.message ?? 'Gagal memproses transaksi.';
   } finally {
     submitting.value = false;
+  }
+}
+
+async function handlePrintBrilinkReceipt() {
+  if (!receiptData.value) return;
+  printing.value = true;
+  printMsg.value = null;
+  try {
+    const { thermalPrint } = await import('@/shared/services/thermal-print.service');
+    if (!thermalPrint.isConnected) {
+      printMsg.value = 'Mencari printer Bluetooth...';
+      await thermalPrint.connect();
+    }
+    await thermalPrint.printBrilinkReceipt({
+      shopName: shopStore.currentShopName || 'Toko',
+      refNumber: receiptData.value.refNumber,
+      date: receiptData.value.date,
+      cashierName: authStore.user?.username || 'Kasir',
+      category: BRILINK_CATEGORY_LABELS[receiptData.value.category],
+      customerName: receiptData.value.customerName,
+      destination: receiptData.value.destination,
+      amount: receiptData.value.amount,
+      fee: receiptData.value.fee,
+      total: receiptData.value.total,
+    });
+    printMsg.value = `Struk tercetak ke ${thermalPrint.deviceName}`;
+  } catch (err: any) {
+    if (err?.message?.includes('cancelled') || err?.message?.includes('NotFound')) {
+      printMsg.value = 'Pairing printer dibatalkan.';
+    } else {
+      printMsg.value = err?.message || 'Gagal cetak. Pastikan printer menyala & gunakan Chrome/Edge.';
+    }
+  } finally {
+    printing.value = false;
   }
 }
 
@@ -418,5 +555,36 @@ function closeReceipt() {
   form.destination = '';
   form.amount = 0;
   calculatedFee.value = 0;
+  printing.value = false;
+  printMsg.value = null;
 }
+
+async function loadAccountBalance() {
+  const shopId = getShopId();
+  if (!shopId) return;
+  try {
+    const accounts = await brilinkAccountService.list(shopId);
+    const account =
+      accounts.find((a) => a.isDefault && a.isActive) ??
+      accounts.find((a) => a.isActive) ??
+      accounts[0];
+    if (account) {
+      accountBalance.value = account.balance;
+      lowBalanceThreshold.value = account.lowBalanceThreshold;
+      accountLabel.value = account.label;
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+onMounted(() => {
+  loadAccountBalance();
+
+  // Preselect category from ?cat= query param sent by the BRILink menu.
+  const cat = route.query.cat;
+  if (typeof cat === 'string' && (BRILINK_CATEGORIES as string[]).includes(cat)) {
+    selectCategory(cat as BrilinkCategory);
+  }
+});
 </script>
