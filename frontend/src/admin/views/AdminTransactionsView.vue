@@ -188,7 +188,7 @@
                   <button
                     class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:border-blue-200 dark:hover:border-blue-800 transition-colors"
                     title="Cetak Ulang Struk"
-                    @click="openDetail(trx)"
+                    @click="handlePrintReceipt(trx)"
                   >
                     <PrinterIcon class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
                   </button>
@@ -530,6 +530,51 @@ function debouncedFetch() {
 function openDetail(trx: TransactionDto) {
   detailTrx.value = trx;
   showDetailModal.value = true;
+}
+
+/**
+ * Cetak ulang struk via Bluetooth thermal printer.
+ * Jika printer belum connect → show pairing dialog.
+ * Fallback: download sebagai gambar (browser print).
+ */
+async function handlePrintReceipt(trx: TransactionDto) {
+  try {
+    const { thermalPrint } = await import('@/shared/services/thermal-print.service');
+
+    if (!thermalPrint.isConnected) {
+      await thermalPrint.connect();
+    }
+
+    const shopName = authStore.user?.shopId ? 'Toko' : 'Toko';
+    await thermalPrint.printReceipt({
+      shopName,
+      trxNumber: trx.transactionNumber,
+      date: formatDateTime(trx.createdAt),
+      cashierName: trx.user?.username ?? trx.user?.email ?? 'Kasir',
+      items: (trx.items || []).map((i: any) => ({
+        name: i.product?.name || 'Produk',
+        qty: i.quantity,
+        price: i.unitPrice,
+        subtotal: i.subtotal,
+      })),
+      subtotal: trx.totalPrice,
+      discount: trx.totalDiscount || 0,
+      total: trx.totalPrice,
+      paid: trx.payments?.[0]?.amount || trx.totalPrice,
+      change: Math.max(0, (trx.payments?.[0]?.amount || trx.totalPrice) - trx.totalPrice),
+      method: trx.payments?.[0]?.method || 'CASH',
+    });
+
+    alert(`Struk ${trx.transactionNumber} tercetak ke ${thermalPrint.deviceName}`);
+  } catch (err: any) {
+    if (err.message?.includes('cancelled') || err.message?.includes('NotFound')) {
+      // User cancelled pairing — silent
+    } else if (err.message?.includes('Web Bluetooth')) {
+      alert('Bluetooth tidak tersedia di browser ini. Gunakan Chrome/Edge.');
+    } else {
+      alert(err.message || 'Gagal cetak struk.');
+    }
+  }
 }
 
 function openVoidModal(trx: TransactionDto) {
