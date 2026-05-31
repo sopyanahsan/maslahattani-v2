@@ -186,9 +186,9 @@
 
     <!-- Main content -->
     <main class="lg:ml-64 min-h-screen">
-      <!-- Desktop topbar -->
+      <!-- Desktop + Tablet topbar -->
       <header
-        class="hidden lg:flex sticky top-0 z-20 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 items-center justify-between transition-colors"
+        class="hidden md:flex sticky top-0 z-20 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 lg:px-6 items-center justify-between transition-colors"
       >
         <div>
           <h2 class="text-lg font-bold text-slate-950 dark:text-slate-100">{{ pageTitle }}</h2>
