@@ -376,7 +376,7 @@
                         type="button"
                         class="w-6 h-6 text-xs border border-slate-200 dark:border-slate-700 rounded flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30"
                         :disabled="item.sortOrder <= 0"
-                        @click="moveCategory(key, -1)"
+                        @click="moveCategory(String(key), -1)"
                       >
                         ↑
                       </button>
@@ -384,7 +384,7 @@
                         type="button"
                         class="w-6 h-6 text-xs border border-slate-200 dark:border-slate-700 rounded flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30"
                         :disabled="item.sortOrder >= 6"
-                        @click="moveCategory(key, 1)"
+                        @click="moveCategory(String(key), 1)"
                       >
                         ↓
                       </button>
@@ -429,16 +429,21 @@
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Saldo Awal</label>
+              <input v-model.number="accountForm.balance" type="number" min="0" placeholder="0"
+                class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+            </div>
+            <div>
               <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Threshold Low Balance</label>
               <input v-model.number="accountForm.lowBalanceThreshold" type="number" min="0"
                 class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
             </div>
-            <div class="flex items-end pb-1">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input v-model="accountForm.isDefault" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500" />
-                <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Default</span>
-              </label>
-            </div>
+          </div>
+          <div class="flex items-end pb-1">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input v-model="accountForm.isDefault" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500" />
+              <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Default</span>
+            </label>
           </div>
 
 
@@ -613,6 +618,7 @@ const accountForm = reactive({
   label: '',
   accountNumber: '',
   accountHolder: '',
+  balance: 0,
   lowBalanceThreshold: 1000000,
   isDefault: false,
 });
@@ -711,12 +717,14 @@ function openAccountModal(account: BrilinkAccount | null) {
     accountForm.label = account.label;
     accountForm.accountNumber = account.accountNumber;
     accountForm.accountHolder = account.accountHolder || '';
+    accountForm.balance = account.balance;
     accountForm.lowBalanceThreshold = account.lowBalanceThreshold;
     accountForm.isDefault = account.isDefault;
   } else {
     accountForm.label = '';
     accountForm.accountNumber = '';
     accountForm.accountHolder = '';
+    accountForm.balance = 0;
     accountForm.lowBalanceThreshold = 1000000;
     accountForm.isDefault = false;
   }
@@ -743,6 +751,7 @@ async function handleSaveAccount() {
         label: accountForm.label,
         accountNumber: accountForm.accountNumber,
         accountHolder: accountForm.accountHolder || undefined,
+        balance: accountForm.balance || 0,
         lowBalanceThreshold: accountForm.lowBalanceThreshold,
         isDefault: accountForm.isDefault,
       });

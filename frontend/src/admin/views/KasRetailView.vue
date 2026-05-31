@@ -12,6 +12,7 @@
     </div>
 
 
+
     <!-- ============================================ -->
     <!-- TAB: Mutasi                                   -->
     <!-- ============================================ -->
@@ -19,14 +20,13 @@
       <!-- Kas Cards (like BRILink rekening style) -->
       <div class="flex items-center justify-between">
         <p class="text-xs text-slate-500 dark:text-slate-400">{{ (cashBox?.cashBoxes || []).length }} kas aktif</p>
-        <button
-          type="button"
+        <button type="button"
           class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5"
-          @click="openCategoryModal(null)"
-        >
+          @click="openCashBoxModal(null)">
           <PlusIcon class="w-3.5 h-3.5" /> Tambah Kas
         </button>
       </div>
+
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Total Card -->
@@ -37,11 +37,8 @@
         </div>
 
         <!-- Per-Kas Cards -->
-        <div
-          v-for="cb in cashBox?.cashBoxes || []"
-          :key="cb.id"
-          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col"
-        >
+        <div v-for="cb in cashBox?.cashBoxes || []" :key="cb.id"
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col">
           <div class="flex items-start justify-between mb-1">
             <div>
               <div class="flex items-center gap-2">
@@ -52,6 +49,7 @@
             </div>
           </div>
 
+
           <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-2">Saldo</p>
           <p class="text-xl font-bold font-mono mt-0.5" :class="cb.balance > 0 ? 'text-slate-900 dark:text-slate-100' : 'text-red-600 dark:text-red-400'">
             {{ formatRupiah(cb.balance) }}
@@ -60,24 +58,19 @@
 
           <!-- Action buttons per kas -->
           <div class="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <button
-              type="button"
+            <button type="button"
               class="flex-1 h-8 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
-              @click="openMutationModalForKas('CASH_IN', cb)"
-            >+ Setor</button>
-            <button
-              type="button"
+              @click="openMutationModalForKas('CASH_IN', cb)">+ Setor</button>
+            <button type="button"
               class="flex-1 h-8 text-[10px] font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40"
-              @click="openMutationModalForKas('CASH_OUT', cb)"
-            >- Tarik</button>
-            <button
-              type="button"
+              @click="openMutationModalForKas('CASH_OUT', cb)">- Tarik</button>
+            <button type="button"
               class="flex-1 h-8 text-[10px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
-              @click="filterByKas(cb)"
-            >Riwayat</button>
+              @click="filterByKas(cb)">Riwayat</button>
           </div>
         </div>
       </div>
+
 
       <!-- Filter -->
       <div class="flex flex-col sm:flex-row gap-3">
@@ -91,6 +84,7 @@
         <span v-if="historyMeta" class="text-xs text-slate-500 dark:text-slate-400 self-center">{{ historyMeta.total }} mutasi</span>
       </div>
 
+
       <!-- Loading -->
       <div v-if="historyLoading" class="flex items-center justify-center py-16">
         <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
@@ -99,7 +93,7 @@
       <!-- Empty -->
       <div v-else-if="historyData.length === 0" class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center">
         <WalletIcon class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada riwayat pembayaran</p>
+        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada riwayat mutasi</p>
       </div>
 
       <!-- Table -->
@@ -115,6 +109,7 @@
                 <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Catatan</th>
               </tr>
             </thead>
+
             <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
               <tr v-for="item in historyData" :key="item.id" class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                 <td class="px-4 py-3 text-xs font-mono text-slate-600 dark:text-slate-400">{{ formatDateTime(item.createdAt) }}</td>
@@ -137,56 +132,82 @@
     </template>
 
 
+
     <!-- ============================================ -->
-    <!-- TAB: Metode Kas                              -->
+    <!-- TAB: Kelola Kas (Card per kas — like BRILink)-->
     <!-- ============================================ -->
-    <template v-if="activeTab === 'metode'">
+    <template v-if="activeTab === 'kelola'">
+      <!-- Actions bar -->
       <div class="flex items-center justify-between">
-        <p class="text-sm text-slate-600 dark:text-slate-400">Tambah atau kelola kas terpisah. Setiap kas punya saldo sendiri.</p>
-        <button type="button" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center gap-1.5" @click="openCategoryModal(null)">
-          <PlusIcon class="w-3.5 h-3.5" /> Tambah Kas Baru
+        <p class="text-sm text-slate-600 dark:text-slate-400">Kelola kas retail. Setiap kas punya saldo sendiri.</p>
+        <button type="button"
+          class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+          @click="openCashBoxModal(null)">
+          <PlusIcon class="w-3.5 h-3.5" /> Tambah Kas
         </button>
       </div>
 
-      <div v-if="categoriesLoading" class="flex items-center justify-center py-16"><Loader2Icon class="w-5 h-5 animate-spin text-slate-400" /></div>
-
-      <div v-else-if="categories.length === 0" class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center">
-        <BoxesIcon class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada kategori</p>
+      <!-- Loading -->
+      <div v-if="kelolaLoading" class="flex items-center justify-center py-16">
+        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+        <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat kas...</span>
       </div>
 
-      <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-          <table class="w-full min-w-[600px]">
-            <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-              <tr>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase w-12">#</th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Code</th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Nama</th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Default</th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Aktif</th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Aksi</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="cat in categories" :key="cat.id" class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td class="px-4 py-3 text-center text-xs text-slate-400 font-mono">{{ cat.sortOrder }}</td>
-                <td class="px-4 py-3"><code class="text-[10px] font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300">{{ cat.code }}</code></td>
-                <td class="px-4 py-3 text-xs font-semibold text-slate-800 dark:text-slate-200">{{ cat.name }}</td>
-                <td class="px-4 py-3 text-center"><span v-if="cat.isDefault" class="text-[10px] font-bold text-blue-600 dark:text-blue-400">Default</span><span v-else class="text-[10px] text-slate-400">—</span></td>
-                <td class="px-4 py-3 text-center"><span :class="['w-2 h-2 rounded-full inline-block', cat.isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600']"></span></td>
-                <td class="px-4 py-3 text-center">
-                  <div class="flex items-center justify-center gap-1">
-                    <button class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800" @click="openCategoryModal(cat)"><PencilIcon class="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" /></button>
-                    <button v-if="!cat.isDefault" class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/30" @click="handleDeleteCategory(cat)"><Trash2Icon class="w-3.5 h-3.5 text-red-500" /></button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      <!-- Empty -->
+      <div v-else-if="kelolaKasList.length === 0" class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center">
+        <BoxesIcon class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada kas</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Tambahkan kas retail untuk mulai tracking saldo.</p>
+      </div>
+
+
+      <!-- Kas Cards -->
+      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div v-for="kas in kelolaKasList" :key="kas.id"
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-5">
+          <div class="flex items-start justify-between mb-3">
+            <div>
+              <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ kas.label }}</h4>
+            </div>
+            <div class="flex items-center gap-1">
+              <button
+                class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"
+                title="Edit" @click="openCashBoxModal(kas)">
+                <PencilIcon class="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+              </button>
+              <button
+                class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/30"
+                title="Hapus" @click="handleDeleteCashBox(kas)">
+                <Trash2Icon class="w-3.5 h-3.5 text-red-500" />
+              </button>
+            </div>
+          </div>
+
+          <!-- Balance -->
+          <div class="mb-3">
+            <p class="text-[10px] text-slate-500 dark:text-slate-400">Saldo</p>
+            <p class="text-lg font-bold font-mono" :class="kas.balance > 0 ? 'text-slate-900 dark:text-slate-100' : 'text-red-600 dark:text-red-400'">
+              {{ formatRupiah(kas.balance) }}
+            </p>
+          </div>
+
+
+          <!-- Setor / Tarik / Riwayat buttons -->
+          <div class="flex items-center gap-2">
+            <button type="button"
+              class="flex-1 h-8 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
+              @click="openMutationModalForKas('CASH_IN', kas)">+ Setor</button>
+            <button type="button"
+              class="flex-1 h-8 text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40"
+              @click="openMutationModalForKas('CASH_OUT', kas)">- Tarik</button>
+            <button type="button"
+              class="flex-1 h-8 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"
+              @click="filterByKas(kas)">Riwayat</button>
+          </div>
         </div>
       </div>
     </template>
+
 
 
     <!-- Mutation Modal -->
@@ -213,37 +234,35 @@
       </div>
     </Teleport>
 
-    <!-- Category Modal -->
+
+    <!-- Tambah / Edit Kas Modal -->
     <Teleport to="body">
-      <div v-if="showCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40" @click="showCategoryModal = false"></div>
-        <form class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleSaveCategory">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ editingCategory ? 'Edit Kas' : 'Tambah Kas Baru' }}</h3>
-          <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Code *</label><input v-model="categoryForm.code" type="text" required :disabled="!!editingCategory" placeholder="RETAIL" class="w-full h-9 px-3 text-sm font-mono uppercase border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed" /></div>
-          <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama *</label><input v-model="categoryForm.name" type="text" required placeholder="Kas Retail" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none" /></div>
-          <div class="grid grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Warna</label><input v-model="categoryForm.color" type="text" placeholder="blue" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none" /></div>
-            <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Icon</label><input v-model="categoryForm.icon" type="text" placeholder="shopping-cart" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none" /></div>
+      <div v-if="showCashBoxModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showCashBoxModal = false"></div>
+        <form class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleSaveCashBox">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ editingCashBox ? 'Edit Kas' : 'Tambah Kas Baru' }}</h3>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Kas <span class="text-red-500">*</span></label>
+            <input v-model="cashBoxForm.label" type="text" required placeholder="Kas Retail"
+              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
           </div>
-          <div v-if="!editingCategory">
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Saldo Awal (Rp)</label>
-            <input v-model.number="categoryForm.initialBalance" type="number" min="0" placeholder="0" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none" />
-            <p class="text-[10px] text-slate-400 mt-0.5">Saldo kas saat ini. Bisa 0 kalau baru.</p>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">{{ editingCashBox ? 'Saldo (update manual)' : 'Saldo Awal (Rp)' }}</label>
+            <input v-model.number="cashBoxForm.balance" type="number" min="0" placeholder="0"
+              class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+            <p class="text-[10px] text-slate-400 mt-0.5">{{ editingCashBox ? 'Ubah saldo akan tercatat sebagai mutasi penyesuaian.' : 'Saldo kas saat ini. Bisa 0 kalau baru.' }}</p>
           </div>
-          <div class="flex items-center gap-4">
-            <label class="flex items-center gap-2"><input v-model="categoryForm.isDefault" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-300 rounded" /><span class="text-xs text-slate-700 dark:text-slate-300">Default</span></label>
-            <label class="flex items-center gap-2"><input v-model="categoryForm.isActive" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-300 rounded" /><span class="text-xs text-slate-700 dark:text-slate-300">Aktif</span></label>
-          </div>
-          <div v-if="categoryError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ categoryError }}</div>
+          <div v-if="cashBoxError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ cashBoxError }}</div>
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-md" @click="showCategoryModal = false">Batal</button>
-            <button type="submit" :disabled="categorySaving" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">{{ editingCategory ? 'Simpan' : 'Tambah' }}</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-md" @click="showCashBoxModal = false">Batal</button>
+            <button type="submit" :disabled="cashBoxSaving" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">{{ editingCashBox ? 'Simpan' : 'Tambah' }}</button>
           </div>
         </form>
       </div>
     </Teleport>
   </div>
 </template>
+
 
 
 <script setup lang="ts">
@@ -253,19 +272,22 @@ import { Wallet as WalletIcon, Boxes as BoxesIcon, Plus as PlusIcon, Pencil as P
 import { useAuthStore } from '@/shared/stores/auth.store';
 import kasRetailService, { type CashBoxResponse, type PaymentHistoryItem, type PaymentHistoryResponse } from '@/shared/services/kas-retail.service';
 import cashBoxCategoryService, { type CashBoxCategoryDto } from '@/shared/services/cashbox-category.service';
+import cashBoxService, { type CashBoxItem } from '@/shared/services/cash-box.service';
 
 const authStore = useAuthStore();
-type TabKey = 'mutasi' | 'metode';
-const tabs: { key: TabKey; label: string }[] = [{ key: 'mutasi', label: 'Mutasi' }, { key: 'metode', label: 'Kelola Kas' }];
+type TabKey = 'mutasi' | 'kelola';
+const tabs: { key: TabKey; label: string }[] = [{ key: 'mutasi', label: 'Mutasi' }, { key: 'kelola', label: 'Kelola Kas' }];
 const activeTab = ref<TabKey>('mutasi');
 
 function getShopId(): string | undefined { return authStore.user?.shopId || undefined; }
 function formatRupiah(n: number): string { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n); }
 function formatDate(iso: string): string { return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); }
 function formatDateTime(iso: string): string { return new Date(iso).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
-function methodBadge(m: string): string { const map: Record<string, string> = { CASH: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', QRIS: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300', TRANSFER: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300', HUTANG: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' }; return map[m] || 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'; }
 
-// Mutasi state
+
+// ============================================
+// Mutasi Tab State
+// ============================================
 const cashBox = ref<CashBoxResponse | null>(null);
 const historyData = ref<PaymentHistoryItem[]>([]);
 const historyMeta = ref<PaymentHistoryResponse['meta'] | null>(null);
@@ -282,20 +304,24 @@ const mutationCategories = ref<CashBoxCategoryDto[]>([]);
 const mutationError = ref<string | null>(null);
 const mutationSaving = ref(false);
 
-// Metode state
-const categories = ref<CashBoxCategoryDto[]>([]);
-const categoriesLoading = ref(false);
-const showCategoryModal = ref(false);
-const editingCategory = ref<CashBoxCategoryDto | null>(null);
-const categorySaving = ref(false);
-const categoryError = ref<string | null>(null);
-const categoryForm = reactive({ code: '', name: '', color: '', icon: '', isDefault: false, isActive: true, initialBalance: 0 });
+// ============================================
+// Kelola Kas Tab State (direct CashBox CRUD)
+// ============================================
+const kelolaKasList = ref<CashBoxItem[]>([]);
+const kelolaLoading = ref(false);
+const showCashBoxModal = ref(false);
+const editingCashBox = ref<CashBoxItem | null>(null);
+const cashBoxSaving = ref(false);
+const cashBoxError = ref<string | null>(null);
+const cashBoxForm = reactive({ label: '', balance: 0 });
 
+
+// ============================================
+// Mutasi Tab Methods
+// ============================================
 async function fetchCashBox() { const s = getShopId(); if (!s) return; try { cashBox.value = await kasRetailService.getCashBox(s); } catch { /* */ } }
 async function fetchHistory() { const s = getShopId(); if (!s) return; historyLoading.value = true; try { const res = await kasRetailService.getHistory({ shopId: s, categoryId: mutasiCategoryFilter.value || undefined, startDate: mutasiStartDate.value || undefined, endDate: mutasiEndDate.value || undefined, page: 1, limit: 20 }); historyData.value = res.data; historyMeta.value = res.meta; } catch { historyData.value = []; } finally { historyLoading.value = false; } }
 async function fetchHistoryPage(p: number) { const s = getShopId(); if (!s) return; historyLoading.value = true; try { const res = await kasRetailService.getHistory({ shopId: s, categoryId: mutasiCategoryFilter.value || undefined, startDate: mutasiStartDate.value || undefined, endDate: mutasiEndDate.value || undefined, page: p, limit: 20 }); historyData.value = res.data; historyMeta.value = res.meta; } catch { /* */ } finally { historyLoading.value = false; } }
-
-function openMutationModal(type: 'CASH_IN' | 'CASH_OUT') { mutationType.value = type; mutationAmount.value = 0; mutationNotes.value = ''; mutationCategoryId.value = ''; mutationError.value = null; showMutationModal.value = true; if (mutationCategories.value.length === 0) { fetchMutationCategories(); } }
 
 function openMutationModalForKas(type: 'CASH_IN' | 'CASH_OUT', cb: any) {
   mutationType.value = type;
@@ -308,25 +334,94 @@ function openMutationModalForKas(type: 'CASH_IN' | 'CASH_OUT', cb: any) {
 }
 
 function filterByKas(cb: any) {
+  activeTab.value = 'mutasi';
   mutasiCategoryFilter.value = cb.categoryId || cb.id || '';
   fetchHistory();
 }
+
 async function fetchMutationCategories() { try { const res = await cashBoxCategoryService.list(false); mutationCategories.value = res.data; } catch { /* */ } }
-async function handleMutation() { const s = getShopId(); if (!s) return; if (!mutationCategoryId.value) { mutationError.value = 'Pilih kas/kategori terlebih dahulu.'; return; } mutationSaving.value = true; mutationError.value = null; try { await kasRetailService.createMutation({ shopId: s, type: mutationType.value, amount: mutationAmount.value, categoryId: mutationCategoryId.value, notes: mutationNotes.value || undefined }); showMutationModal.value = false; await fetchCashBox(); await fetchHistory(); } catch (e: any) { mutationError.value = e?.response?.data?.message || e?.message || 'Gagal.'; } finally { mutationSaving.value = false; } }
 
-async function fetchCategories() { categoriesLoading.value = true; try { const res = await cashBoxCategoryService.list(true); categories.value = res.data; } catch { categories.value = []; } finally { categoriesLoading.value = false; } }
-function openCategoryModal(cat: CashBoxCategoryDto | null) { editingCategory.value = cat; categoryError.value = null; if (cat) { Object.assign(categoryForm, { code: cat.code, name: cat.name, color: cat.color || '', icon: cat.icon || '', isDefault: cat.isDefault, isActive: cat.isActive, initialBalance: 0 }); } else { Object.assign(categoryForm, { code: '', name: '', color: '', icon: '', isDefault: false, isActive: true, initialBalance: 0 }); } showCategoryModal.value = true; }
-async function handleSaveCategory() { categorySaving.value = true; categoryError.value = null; try { if (editingCategory.value) { await cashBoxCategoryService.update(editingCategory.value.id, { name: categoryForm.name, color: categoryForm.color || undefined, icon: categoryForm.icon || undefined, isDefault: categoryForm.isDefault, isActive: categoryForm.isActive }); } else { const created = await cashBoxCategoryService.create({ code: categoryForm.code.toUpperCase(), name: categoryForm.name, color: categoryForm.color || undefined, icon: categoryForm.icon || undefined, isDefault: categoryForm.isDefault, isActive: categoryForm.isActive }); // Set initial balance via Cash In if > 0
-      if (categoryForm.initialBalance > 0 && created?.category?.id) {
-        const shopId = getShopId();
-        if (shopId) {
-          await kasRetailService.createMutation({ shopId, type: 'CASH_IN', amount: categoryForm.initialBalance, categoryId: created.category.id, notes: 'Saldo awal kas' });
-        }
-      }
-    } showCategoryModal.value = false; await fetchCategories(); await fetchCashBox(); await fetchMutationCategories(); } catch (e: any) { categoryError.value = e?.response?.data?.message || e?.message || 'Gagal.'; } finally { categorySaving.value = false; } }
-async function handleDeleteCategory(cat: CashBoxCategoryDto) { if (!confirm(`Hapus kategori "${cat.name}"?`)) return; try { await cashBoxCategoryService.remove(cat.id); await fetchCategories(); } catch { /* */ } }
 
-function handleTabChange(tab: TabKey) { activeTab.value = tab; if (tab === 'metode' && categories.value.length === 0) fetchCategories(); }
+async function handleMutation() {
+  const s = getShopId(); if (!s) return;
+  if (!mutationCategoryId.value) { mutationError.value = 'Pilih kas/kategori terlebih dahulu.'; return; }
+  mutationSaving.value = true; mutationError.value = null;
+  try {
+    await kasRetailService.createMutation({ shopId: s, type: mutationType.value, amount: mutationAmount.value, categoryId: mutationCategoryId.value, notes: mutationNotes.value || undefined });
+    showMutationModal.value = false;
+    await fetchCashBox(); await fetchHistory(); await fetchKelolaKas();
+  } catch (e: any) { mutationError.value = e?.response?.data?.message || e?.message || 'Gagal.'; }
+  finally { mutationSaving.value = false; }
+}
+
+// ============================================
+// Kelola Kas Methods (direct CashBox CRUD)
+// ============================================
+async function fetchKelolaKas() {
+  const s = getShopId(); if (!s) return;
+  kelolaLoading.value = true;
+  try { kelolaKasList.value = await cashBoxService.list(s); }
+  catch { kelolaKasList.value = []; }
+  finally { kelolaLoading.value = false; }
+}
+
+function openCashBoxModal(kas: CashBoxItem | null) {
+  editingCashBox.value = kas;
+  cashBoxError.value = null;
+  if (kas) {
+    cashBoxForm.label = kas.label;
+    cashBoxForm.balance = kas.balance;
+  } else {
+    cashBoxForm.label = '';
+    cashBoxForm.balance = 0;
+  }
+  showCashBoxModal.value = true;
+}
+
+
+async function handleSaveCashBox() {
+  const s = getShopId(); if (!s) return;
+  cashBoxSaving.value = true; cashBoxError.value = null;
+  try {
+    if (editingCashBox.value) {
+      await cashBoxService.update(editingCashBox.value.id, {
+        label: cashBoxForm.label,
+        balance: cashBoxForm.balance,
+      });
+    } else {
+      await cashBoxService.create({
+        shopId: s,
+        label: cashBoxForm.label,
+        balance: cashBoxForm.balance || 0,
+      });
+    }
+    showCashBoxModal.value = false;
+    await fetchKelolaKas();
+    await fetchCashBox();
+  } catch (e: any) {
+    cashBoxError.value = e?.response?.data?.message || e?.message || 'Gagal menyimpan.';
+  } finally { cashBoxSaving.value = false; }
+}
+
+async function handleDeleteCashBox(kas: CashBoxItem) {
+  if (!confirm(`Hapus kas "${kas.label}"?`)) return;
+  try {
+    await cashBoxService.remove(kas.id);
+    await fetchKelolaKas();
+    await fetchCashBox();
+  } catch (e: any) {
+    alert(e?.response?.data?.message || e?.message || 'Gagal menghapus.');
+  }
+}
+
+
+// ============================================
+// Tab change & lifecycle
+// ============================================
+function handleTabChange(tab: TabKey) {
+  activeTab.value = tab;
+  if (tab === 'kelola' && kelolaKasList.value.length === 0) fetchKelolaKas();
+}
 
 onMounted(() => { fetchCashBox(); fetchHistory(); fetchMutationCategories(); });
 
