@@ -337,10 +337,14 @@
             <p class="text-xs text-slate-500">Tunjukkan QR ke pelanggan untuk scan</p>
             <p class="text-[10px] text-slate-400 mt-1">Admin perlu upload gambar QRIS di Pengaturan</p>
           </div>
-          <!-- Hutang: info + mandatory fields -->
+          <!-- Hutang: info + mandatory fields + jatuh tempo -->
           <div v-if="paymentMethod === 'Hutang'" class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
             <p class="text-xs font-semibold text-amber-700">Seluruh transaksi {{ formatRupiah(grandTotal) }} akan dicatat sebagai hutang.</p>
             <p class="text-[10px] text-amber-600">Nama & No HP pelanggan <strong>wajib</strong> diisi.</p>
+            <div class="flex items-center gap-2 pt-1">
+              <label class="text-[10px] text-amber-700 font-medium shrink-0">Jatuh tempo:</label>
+              <input v-model="debtDueDate" type="date" class="flex-1 h-7 px-2 text-[11px] border border-amber-300 rounded bg-white focus:border-amber-500 outline-none" />
+            </div>
           </div>
           <!-- Partial hutang detection (Tunai, paid < total) -->
           <div v-if="paymentMethod === 'Tunai' && settingsStore.isHutangEnabled && amountPaid > 0 && amountPaid < grandTotal" class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
@@ -630,6 +634,7 @@ const checkoutError = ref<string | null>(null);
 const selectedKas = ref('default');
 const kasOptions = ref([{ id: 'default', label: 'Kas Retail' }]);
 const createDebtForRemainder = ref(false);
+const debtDueDate = ref('');
 
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -864,6 +869,7 @@ async function handleCheckout() {
     customerName: customerName.value || undefined,
     customerPhone: customerPhone.value || undefined,
     createDebtForRemainder: createDebtForRemainder.value || undefined,
+    debtDueDate: debtDueDate.value || undefined,
     idempotencyKey,
     clientCreatedAt: new Date().toISOString(),
   };
@@ -893,6 +899,7 @@ async function handleCheckout() {
     amountPaid.value = 0;
     trxDiscount.value = 0;
     showTrxDiscount.value = false;
+    debtDueDate.value = '';
   } catch (err: any) {
     checkoutError.value = err?.response?.data?.message || err?.message || 'Gagal memproses pembayaran.';
   } finally {

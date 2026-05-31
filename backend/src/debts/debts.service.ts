@@ -6,6 +6,7 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDebtDto } from './dto/create-debt.dto';
 import { PayDebtDto } from './dto/pay-debt.dto';
+import { UpdateDebtDto } from './dto/update-debt.dto';
 import { QueryDebtDto, DebtSortBy } from './dto/query-debt.dto';
 import { DebtStatus } from '@prisma/client';
 
@@ -122,6 +123,30 @@ export class DebtsService {
 
   // ============================================
   // PAY DEBT (Cicilan / Lunas)
+  // ============================================
+  // UPDATE DEBT (jatuh tempo, notes, customer info)
+  // ============================================
+
+  async updateDebt(debtId: string, dto: UpdateDebtDto) {
+    const debt = await this.prisma.debt.findUnique({ where: { id: debtId } });
+    if (!debt) throw new NotFoundException('Data hutang tidak ditemukan.');
+
+    const data: any = {};
+    if (dto.dueDate !== undefined) data.dueDate = dto.dueDate ? new Date(dto.dueDate) : null;
+    if (dto.notes !== undefined) data.notes = dto.notes;
+    if (dto.customerName !== undefined) data.customerName = dto.customerName;
+    if (dto.customerPhone !== undefined) data.customerPhone = dto.customerPhone;
+
+    const updated = await this.prisma.debt.update({
+      where: { id: debtId },
+      data,
+    });
+
+    return { success: true, debt: updated };
+  }
+
+  // ============================================
+  // PAY DEBT
   // ============================================
 
   async payDebt(debtId: string, dto: PayDebtDto) {

@@ -155,6 +155,14 @@
                   <button class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800" title="Detail" @click="openDetailModal(debt)">
                     <EyeIcon class="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
                   </button>
+                  <button
+                    v-if="debt.status !== 'PAID' && debt.status !== 'CANCELLED'"
+                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"
+                    title="Edit (jatuh tempo, catatan)"
+                    @click="openEditModal(debt)"
+                  >
+                    <PencilIcon class="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                  </button>
                   <a
                     v-if="debt.customerPhone && debt.status !== 'PAID'"
                     :href="getWaReminderLink(debt)"
@@ -299,6 +307,43 @@
         </form>
       </div>
     </Teleport>
+    <!-- Edit Debt Modal (jatuh tempo, catatan) -->
+    <Teleport to="body">
+      <div v-if="showEditModal && editingDebt" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showEditModal = false"></div>
+        <form class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleEdit">
+          <h2 class="text-base font-bold text-slate-950 dark:text-slate-100">Edit Hutang</h2>
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-md px-3 py-2">
+            <p class="text-xs font-medium text-slate-900 dark:text-slate-100">{{ editingDebt.customerName }}</p>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400">Sisa: {{ formatRupiah(editingDebt.totalAmount - editingDebt.paidAmount) }}</p>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Jatuh Tempo</label>
+            <input v-model="editForm.dueDate" type="date" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Pelanggan</label>
+            <input v-model="editForm.customerName" type="text" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">No. HP</label>
+            <input v-model="editForm.customerPhone" type="text" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan</label>
+            <input v-model="editForm.notes" type="text" placeholder="Bayar akhir bulan" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+          </div>
+          <div v-if="editError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ editError }}</div>
+          <div class="flex items-center justify-end gap-2 pt-2">
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700" @click="showEditModal = false">Batal</button>
+            <button type="submit" :disabled="editing" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
+              <Loader2Icon v-if="editing" class="w-3.5 h-3.5 animate-spin" />
+              Simpan
+            </button>
+          </div>
+        </form>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -306,7 +351,7 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed } from 'vue';
 import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
-import { Plus as PlusIcon, Search as SearchIcon, HandCoins as HandCoinsIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon, Eye as EyeIcon, MessageCircle as MessageCircleIcon } from 'lucide-vue-next';
+import { Plus as PlusIcon, Search as SearchIcon, HandCoins as HandCoinsIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon, Eye as EyeIcon, MessageCircle as MessageCircleIcon, Pencil as PencilIcon } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import debtsService, { type DebtDto, type DebtListResponse, type DebtStatus, type PaymentMethod, type ManualDebtItem } from '@/shared/services/debts.service';
 
@@ -332,6 +377,13 @@ const payingDebt = ref<DebtDto | null>(null);
 const paying = ref(false);
 const payError = ref<string | null>(null);
 const payForm = reactive({ amount: 0, method: 'CASH' as string, notes: '' });
+
+// Edit modal
+const showEditModal = ref(false);
+const editingDebt = ref<DebtDto | null>(null);
+const editing = ref(false);
+const editError = ref<string | null>(null);
+const editForm = reactive({ dueDate: '', customerName: '', customerPhone: '', notes: '' });
 
 function getShopId(): string | undefined { return authStore.user?.shopId || undefined; }
 function formatRupiah(n: number): string { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n); }
@@ -384,6 +436,33 @@ function debouncedSearch() { if (searchTimeout) clearTimeout(searchTimeout); sea
 function openDetailModal(debt: DebtDto) { detailDebt.value = debt; showDetailModal.value = true; }
 function openCreateModal() { createError.value = null; Object.assign(createForm, { customerName: '', customerPhone: '', items: [{ name: '', qty: 1, price: 0 }], downPayment: 0, dueDate: '', notes: '' }); showCreateModal.value = true; }
 function openPayModal(debt: DebtDto) { payingDebt.value = debt; payError.value = null; payForm.amount = debt.totalAmount - debt.paidAmount; payForm.method = 'CASH'; payForm.notes = ''; showPayModal.value = true; }
+
+function openEditModal(debt: DebtDto) {
+  editingDebt.value = debt;
+  editError.value = null;
+  editForm.dueDate = debt.dueDate ? debt.dueDate.slice(0, 10) : '';
+  editForm.customerName = debt.customerName;
+  editForm.customerPhone = debt.customerPhone || '';
+  editForm.notes = debt.notes || '';
+  showEditModal.value = true;
+}
+
+async function handleEdit() {
+  if (!editingDebt.value) return;
+  editing.value = true; editError.value = null;
+  try {
+    await debtsService.update(editingDebt.value.id, {
+      dueDate: editForm.dueDate || undefined,
+      customerName: editForm.customerName || undefined,
+      customerPhone: editForm.customerPhone || undefined,
+      notes: editForm.notes || undefined,
+    });
+    showEditModal.value = false;
+    await fetchDebts();
+  } catch (err: any) {
+    editError.value = err?.response?.data?.message || err?.message || 'Gagal menyimpan.';
+  } finally { editing.value = false; }
+}
 
 async function handleCreate() {
   const shopId = getShopId(); if (!shopId) return; creating.value = true; createError.value = null;
