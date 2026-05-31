@@ -16,34 +16,62 @@ export class PaymentsService {
   // ============================================
 
   async getCashBox(shopId: string) {
-    // Get all cash boxes for this shop
+    // Get all active categories
+    const activeCategories = await this.prisma.cashBoxCategory.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: 'asc' },
+    });
+
+    // Get existing cash boxes for this shop
+    const existingCashBoxes = await this.prisma.cashBox.findMany({
+      where: { shopId },
+    });
+
+    // Auto-create CashBox for categories that don't have one yet
+    const existingCategoryIds = new Set(existingCashBoxes.map(cb => cb.categoryId));
+    for (const cat of activeCategories) {
+      if (!existingCategoryIds.has(cat.id)) {
+        await this.prisma.cashBox.create({
+          data: {
+            shopId,
+            categoryId: cat.id,
+            label: cat.name,
+            balance: 0,
+          },
+        });
+      }
+    }
+
+    // Also ensure there's a default cashbox if no categories exist
+    if (activeCategories.length === 0 && existingCashBoxes.length === 0) {
+      await this.prisma.cashBox.create({
+        data: { shopId, categoryId: null, label: 'Kas Utama', balance: 0 },
+      });
+    }
+
+    // Re-fetch all (including newly created)
     const cashBoxes = await this.prisma.cashBox.findMany({
       where: { shopId },
       orderBy: { label: 'asc' },
     });
 
-    // Auto-create default cash box if none exist
-    if (cashBoxes.length === 0) {
-      const created = await this.prisma.cashBox.create({
-        data: { shopId, categoryId: null, label: 'Kas Utama', balance: 0 },
-      });
-      return {
-        shopId,
-        balance: created.balance,
-        lastAudit: created.lastAudit,
-        lastAuditBalance: created.lastAuditBalance,
-        cashBoxes: [created],
-      };
-    }
-
     const totalBalance = cashBoxes.reduce((sum, cb) => sum + cb.balance, 0);
+
+    // Enrich with category info
+    const categoryMap = new Map(activeCategories.map(c => [c.id, c]));
+    const enriched = cashBoxes.map(cb => ({
+      ...cb,
+      code: cb.categoryId ? categoryMap.get(cb.categoryId)?.code || '' : 'DEFAULT',
+      isDefault: cb.categoryId ? (categoryMap.get(cb.categoryId)?.isDefault ?? false) : true,
+      lastAudit: cb.lastAudit?.toISOString() || null,
+    }));
 
     return {
       shopId,
       balance: totalBalance,
-      lastAudit: cashBoxes[0]?.lastAudit,
+      lastAudit: cashBoxes[0]?.lastAudit?.toISOString() || null,
       lastAuditBalance: null,
-      cashBoxes,
+      cashBoxes: enriched,
     };
   }
 
