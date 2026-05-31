@@ -17,6 +17,17 @@
     <!-- ============================================ -->
     <template v-if="activeTab === 'mutasi'">
       <!-- Kas Cards (like BRILink rekening style) -->
+      <div class="flex items-center justify-between">
+        <p class="text-xs text-slate-500 dark:text-slate-400">{{ (cashBox?.cashBoxes || []).length }} kas aktif</p>
+        <button
+          type="button"
+          class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5"
+          @click="openCategoryModal(null)"
+        >
+          <PlusIcon class="w-3.5 h-3.5" /> Tambah Kas
+        </button>
+      </div>
+
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Total Card -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
@@ -300,7 +311,7 @@ async function handleMutation() { const s = getShopId(); if (!s) return; if (!mu
 
 async function fetchCategories() { categoriesLoading.value = true; try { const res = await cashBoxCategoryService.list(true); categories.value = res.data; } catch { categories.value = []; } finally { categoriesLoading.value = false; } }
 function openCategoryModal(cat: CashBoxCategoryDto | null) { editingCategory.value = cat; categoryError.value = null; if (cat) { Object.assign(categoryForm, { code: cat.code, name: cat.name, color: cat.color || '', icon: cat.icon || '', isDefault: cat.isDefault, isActive: cat.isActive }); } else { Object.assign(categoryForm, { code: '', name: '', color: '', icon: '', isDefault: false, isActive: true }); } showCategoryModal.value = true; }
-async function handleSaveCategory() { categorySaving.value = true; categoryError.value = null; try { if (editingCategory.value) { await cashBoxCategoryService.update(editingCategory.value.id, { name: categoryForm.name, color: categoryForm.color || undefined, icon: categoryForm.icon || undefined, isDefault: categoryForm.isDefault, isActive: categoryForm.isActive }); } else { await cashBoxCategoryService.create({ code: categoryForm.code.toUpperCase(), name: categoryForm.name, color: categoryForm.color || undefined, icon: categoryForm.icon || undefined, isDefault: categoryForm.isDefault, isActive: categoryForm.isActive }); } showCategoryModal.value = false; await fetchCategories(); } catch (e: any) { categoryError.value = e?.response?.data?.message || e?.message || 'Gagal.'; } finally { categorySaving.value = false; } }
+async function handleSaveCategory() { categorySaving.value = true; categoryError.value = null; try { if (editingCategory.value) { await cashBoxCategoryService.update(editingCategory.value.id, { name: categoryForm.name, color: categoryForm.color || undefined, icon: categoryForm.icon || undefined, isDefault: categoryForm.isDefault, isActive: categoryForm.isActive }); } else { await cashBoxCategoryService.create({ code: categoryForm.code.toUpperCase(), name: categoryForm.name, color: categoryForm.color || undefined, icon: categoryForm.icon || undefined, isDefault: categoryForm.isDefault, isActive: categoryForm.isActive }); } showCategoryModal.value = false; await fetchCategories(); await fetchCashBox(); await fetchMutationCategories(); } catch (e: any) { categoryError.value = e?.response?.data?.message || e?.message || 'Gagal.'; } finally { categorySaving.value = false; } }
 async function handleDeleteCategory(cat: CashBoxCategoryDto) { if (!confirm(`Hapus kategori "${cat.name}"?`)) return; try { await cashBoxCategoryService.remove(cat.id); await fetchCategories(); } catch { /* */ } }
 
 function handleTabChange(tab: TabKey) { activeTab.value = tab; if (tab === 'metode' && categories.value.length === 0) fetchCategories(); }
