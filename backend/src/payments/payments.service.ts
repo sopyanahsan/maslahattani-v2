@@ -42,11 +42,19 @@ export class PaymentsService {
       }
     }
 
-    // Also ensure there's a default cashbox if no categories exist
+    // Only create default if absolutely no categories exist AND no cashboxes
     if (activeCategories.length === 0 && existingCashBoxes.length === 0) {
       await this.prisma.cashBox.create({
         data: { shopId, categoryId: null, label: 'Kas Utama', balance: 0 },
       });
+    }
+
+    // Clean up: remove "Kas Utama" (categoryId=null) if real categories exist
+    if (activeCategories.length > 0) {
+      const orphans = existingCashBoxes.filter(cb => !cb.categoryId && cb.balance === 0);
+      for (const orphan of orphans) {
+        await this.prisma.cashBox.delete({ where: { id: orphan.id } }).catch(() => {});
+      }
     }
 
     // Re-fetch all (including newly created)
