@@ -1,9 +1,11 @@
 import { IsString, IsInt, IsEnum, IsOptional, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentMethod } from '@prisma/client';
 
 export class PayDebtDto {
   @ApiProperty({ example: 25000, description: 'Jumlah pembayaran (Rp)' })
+  @Type(() => Number)
   @IsInt()
   @Min(1)
   amount: number;

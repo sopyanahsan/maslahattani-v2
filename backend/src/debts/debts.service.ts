@@ -143,21 +143,26 @@ export class DebtsService {
     }
 
     const remaining = debt.totalAmount - debt.paidAmount;
+    const payAmount = Number(dto.amount);
 
-    if (dto.amount > remaining) {
+    if (isNaN(payAmount) || payAmount <= 0) {
+      throw new BadRequestException('Jumlah pembayaran tidak valid.');
+    }
+
+    if (payAmount > remaining) {
       throw new BadRequestException(
         `Pembayaran melebihi sisa hutang. Sisa: Rp ${remaining.toLocaleString('id-ID')}`,
       );
     }
 
-    const newPaidAmount = debt.paidAmount + dto.amount;
+    const newPaidAmount = debt.paidAmount + payAmount;
     const isFullyPaid = newPaidAmount >= debt.totalAmount;
 
     const updated = await this.prisma.$transaction(async (tx) => {
       const updatedDebt = await tx.debt.update({
         where: { id: debtId },
         data: {
-          paidAmount: newPaidAmount,
+          paidAmount: { increment: payAmount },
           status: isFullyPaid ? DebtStatus.PAID : DebtStatus.PARTIALLY_PAID,
         },
         include: {
@@ -169,7 +174,7 @@ export class DebtsService {
       await tx.debtPayment.create({
         data: {
           debtId,
-          amount: dto.amount,
+          amount: payAmount,
           method: dto.method,
           reference: dto.reference || null,
           notes: dto.notes || null,
@@ -183,7 +188,7 @@ export class DebtsService {
       success: true,
       message: isFullyPaid
         ? `Hutang "${debt.customerName}" LUNAS!`
-        : `Pembayaran Rp ${dto.amount.toLocaleString('id-ID')} berhasil dicatat.`,
+        : `Pembayaran Rp ${payAmount.toLocaleString('id-ID')} berhasil dicatat.`,
       debt: updated,
       summary: {
         totalAmount: debt.totalAmount,
