@@ -131,9 +131,9 @@
     <!-- ============================================ -->
     <template v-if="activeTab === 'metode'">
       <div class="flex items-center justify-between">
-        <p class="text-sm text-slate-600 dark:text-slate-400">Kategori kas untuk shift & POS.</p>
+        <p class="text-sm text-slate-600 dark:text-slate-400">Tambah atau kelola kas terpisah. Setiap kas punya saldo sendiri.</p>
         <button type="button" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center gap-1.5" @click="openCategoryModal(null)">
-          <PlusIcon class="w-3.5 h-3.5" /> Tambah Kategori
+          <PlusIcon class="w-3.5 h-3.5" /> Tambah Kas Baru
         </button>
       </div>
 
@@ -207,7 +207,7 @@
       <div v-if="showCategoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showCategoryModal = false"></div>
         <form class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleSaveCategory">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ editingCategory ? 'Edit Kategori' : 'Tambah Kategori' }}</h3>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ editingCategory ? 'Edit Kas' : 'Tambah Kas Baru' }}</h3>
           <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Code *</label><input v-model="categoryForm.code" type="text" required :disabled="!!editingCategory" placeholder="RETAIL" class="w-full h-9 px-3 text-sm font-mono uppercase border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none disabled:bg-slate-100 dark:disabled:bg-slate-800 disabled:cursor-not-allowed" /></div>
           <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama *</label><input v-model="categoryForm.name" type="text" required placeholder="Kas Retail" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none" /></div>
           <div class="grid grid-cols-2 gap-3">
@@ -240,7 +240,7 @@ import cashBoxCategoryService, { type CashBoxCategoryDto } from '@/shared/servic
 
 const authStore = useAuthStore();
 type TabKey = 'mutasi' | 'metode';
-const tabs: { key: TabKey; label: string }[] = [{ key: 'mutasi', label: 'Mutasi' }, { key: 'metode', label: 'Metode Kas' }];
+const tabs: { key: TabKey; label: string }[] = [{ key: 'mutasi', label: 'Mutasi' }, { key: 'metode', label: 'Kelola Kas' }];
 const activeTab = ref<TabKey>('mutasi');
 
 function getShopId(): string | undefined { return authStore.user?.shopId || undefined; }
