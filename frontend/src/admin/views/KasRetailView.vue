@@ -225,6 +225,11 @@
             <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Warna</label><input v-model="categoryForm.color" type="text" placeholder="blue" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none" /></div>
             <div><label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Icon</label><input v-model="categoryForm.icon" type="text" placeholder="shopping-cart" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none" /></div>
           </div>
+          <div v-if="!editingCategory">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Saldo Awal (Rp)</label>
+            <input v-model.number="categoryForm.initialBalance" type="number" min="0" placeholder="0" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none" />
+            <p class="text-[10px] text-slate-400 mt-0.5">Saldo kas saat ini. Bisa 0 kalau baru.</p>
+          </div>
           <div class="flex items-center gap-4">
             <label class="flex items-center gap-2"><input v-model="categoryForm.isDefault" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-300 rounded" /><span class="text-xs text-slate-700 dark:text-slate-300">Default</span></label>
             <label class="flex items-center gap-2"><input v-model="categoryForm.isActive" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-300 rounded" /><span class="text-xs text-slate-700 dark:text-slate-300">Aktif</span></label>
@@ -284,7 +289,7 @@ const showCategoryModal = ref(false);
 const editingCategory = ref<CashBoxCategoryDto | null>(null);
 const categorySaving = ref(false);
 const categoryError = ref<string | null>(null);
-const categoryForm = reactive({ code: '', name: '', color: '', icon: '', isDefault: false, isActive: true });
+const categoryForm = reactive({ code: '', name: '', color: '', icon: '', isDefault: false, isActive: true, initialBalance: 0 });
 
 async function fetchCashBox() { const s = getShopId(); if (!s) return; try { cashBox.value = await kasRetailService.getCashBox(s); } catch { /* */ } }
 async function fetchHistory() { const s = getShopId(); if (!s) return; historyLoading.value = true; try { const res = await kasRetailService.getHistory({ shopId: s, categoryId: mutasiCategoryFilter.value || undefined, startDate: mutasiStartDate.value || undefined, endDate: mutasiEndDate.value || undefined, page: 1, limit: 20 }); historyData.value = res.data; historyMeta.value = res.meta; } catch { historyData.value = []; } finally { historyLoading.value = false; } }
@@ -310,8 +315,15 @@ async function fetchMutationCategories() { try { const res = await cashBoxCatego
 async function handleMutation() { const s = getShopId(); if (!s) return; if (!mutationCategoryId.value) { mutationError.value = 'Pilih kas/kategori terlebih dahulu.'; return; } mutationSaving.value = true; mutationError.value = null; try { await kasRetailService.createMutation({ shopId: s, type: mutationType.value, amount: mutationAmount.value, categoryId: mutationCategoryId.value, notes: mutationNotes.value || undefined }); showMutationModal.value = false; await fetchCashBox(); await fetchHistory(); } catch (e: any) { mutationError.value = e?.response?.data?.message || e?.message || 'Gagal.'; } finally { mutationSaving.value = false; } }
 
 async function fetchCategories() { categoriesLoading.value = true; try { const res = await cashBoxCategoryService.list(true); categories.value = res.data; } catch { categories.value = []; } finally { categoriesLoading.value = false; } }
-function openCategoryModal(cat: CashBoxCategoryDto | null) { editingCategory.value = cat; categoryError.value = null; if (cat) { Object.assign(categoryForm, { code: cat.code, name: cat.name, color: cat.color || '', icon: cat.icon || '', isDefault: cat.isDefault, isActive: cat.isActive }); } else { Object.assign(categoryForm, { code: '', name: '', color: '', icon: '', isDefault: false, isActive: true }); } showCategoryModal.value = true; }
-async function handleSaveCategory() { categorySaving.value = true; categoryError.value = null; try { if (editingCategory.value) { await cashBoxCategoryService.update(editingCategory.value.id, { name: categoryForm.name, color: categoryForm.color || undefined, icon: categoryForm.icon || undefined, isDefault: categoryForm.isDefault, isActive: categoryForm.isActive }); } else { await cashBoxCategoryService.create({ code: categoryForm.code.toUpperCase(), name: categoryForm.name, color: categoryForm.color || undefined, icon: categoryForm.icon || undefined, isDefault: categoryForm.isDefault, isActive: categoryForm.isActive }); } showCategoryModal.value = false; await fetchCategories(); await fetchCashBox(); await fetchMutationCategories(); } catch (e: any) { categoryError.value = e?.response?.data?.message || e?.message || 'Gagal.'; } finally { categorySaving.value = false; } }
+function openCategoryModal(cat: CashBoxCategoryDto | null) { editingCategory.value = cat; categoryError.value = null; if (cat) { Object.assign(categoryForm, { code: cat.code, name: cat.name, color: cat.color || '', icon: cat.icon || '', isDefault: cat.isDefault, isActive: cat.isActive, initialBalance: 0 }); } else { Object.assign(categoryForm, { code: '', name: '', color: '', icon: '', isDefault: false, isActive: true, initialBalance: 0 }); } showCategoryModal.value = true; }
+async function handleSaveCategory() { categorySaving.value = true; categoryError.value = null; try { if (editingCategory.value) { await cashBoxCategoryService.update(editingCategory.value.id, { name: categoryForm.name, color: categoryForm.color || undefined, icon: categoryForm.icon || undefined, isDefault: categoryForm.isDefault, isActive: categoryForm.isActive }); } else { const created = await cashBoxCategoryService.create({ code: categoryForm.code.toUpperCase(), name: categoryForm.name, color: categoryForm.color || undefined, icon: categoryForm.icon || undefined, isDefault: categoryForm.isDefault, isActive: categoryForm.isActive }); // Set initial balance via Cash In if > 0
+      if (categoryForm.initialBalance > 0 && created?.category?.id) {
+        const shopId = getShopId();
+        if (shopId) {
+          await kasRetailService.createMutation({ shopId, type: 'CASH_IN', amount: categoryForm.initialBalance, categoryId: created.category.id, notes: 'Saldo awal kas' });
+        }
+      }
+    } showCategoryModal.value = false; await fetchCategories(); await fetchCashBox(); await fetchMutationCategories(); } catch (e: any) { categoryError.value = e?.response?.data?.message || e?.message || 'Gagal.'; } finally { categorySaving.value = false; } }
 async function handleDeleteCategory(cat: CashBoxCategoryDto) { if (!confirm(`Hapus kategori "${cat.name}"?`)) return; try { await cashBoxCategoryService.remove(cat.id); await fetchCategories(); } catch { /* */ } }
 
 function handleTabChange(tab: TabKey) { activeTab.value = tab; if (tab === 'metode' && categories.value.length === 0) fetchCategories(); }
