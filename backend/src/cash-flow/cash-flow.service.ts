@@ -89,8 +89,8 @@ export class CashFlowService {
   }
 
   async list(shopId: string, query: { type?: string; status?: string; shiftId?: string; startDate?: string; endDate?: string; page?: number; limit?: number }) {
-    const page = query.page || 1;
-    const limit = query.limit || 50;
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 50;
     const where: any = { shopId };
     if (query.type) where.type = query.type;
     if (query.status) where.status = query.status;
