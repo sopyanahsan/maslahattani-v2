@@ -16,25 +16,56 @@
     <!-- TAB: Mutasi                                   -->
     <!-- ============================================ -->
     <template v-if="activeTab === 'mutasi'">
-      <!-- Balance per Kas + Actions -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-        <!-- Total -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Total Semua Kas</p>
-          <p class="text-lg font-bold font-mono text-slate-950 dark:text-slate-100 mt-1">{{ formatRupiah(cashBox?.balance ?? 0) }}</p>
+      <!-- Kas Cards (like BRILink rekening style) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Total Card -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+          <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Semua Kas</p>
+          <p class="text-2xl font-bold font-mono text-slate-950 dark:text-slate-100 mt-2">{{ formatRupiah(cashBox?.balance ?? 0) }}</p>
+          <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">{{ (cashBox?.cashBoxes || []).length }} kas aktif</p>
         </div>
-        <!-- Per Category -->
-        <div v-for="cb in cashBox?.cashBoxes || []" :key="cb.id" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ cb.label }}</p>
-          <p class="text-lg font-bold font-mono text-slate-950 dark:text-slate-100 mt-1">{{ formatRupiah(cb.balance) }}</p>
-          <p v-if="cb.lastAudit" class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Audit: {{ formatDate(cb.lastAudit) }}</p>
-        </div>
-      </div>
 
-      <!-- Action Buttons -->
-      <div class="flex items-center gap-2">
-        <button type="button" class="h-9 px-4 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40" @click="openMutationModal('CASH_IN')">+ Cash In</button>
-        <button type="button" class="h-9 px-4 text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40" @click="openMutationModal('CASH_OUT')">- Cash Out</button>
+        <!-- Per-Kas Cards -->
+        <div
+          v-for="cb in cashBox?.cashBoxes || []"
+          :key="cb.id"
+          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col"
+        >
+          <div class="flex items-start justify-between mb-1">
+            <div>
+              <div class="flex items-center gap-2">
+                <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ cb.label }}</p>
+                <span v-if="cb.isDefault" class="text-[9px] font-bold uppercase bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded">Default</span>
+              </div>
+              <p v-if="cb.code" class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{{ cb.code }}</p>
+            </div>
+          </div>
+
+          <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-2">Saldo</p>
+          <p class="text-xl font-bold font-mono mt-0.5" :class="cb.balance > 0 ? 'text-slate-900 dark:text-slate-100' : 'text-red-600 dark:text-red-400'">
+            {{ formatRupiah(cb.balance) }}
+          </p>
+          <p v-if="cb.lastAudit" class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Audit terakhir: {{ formatDate(cb.lastAudit) }}</p>
+
+          <!-- Action buttons per kas -->
+          <div class="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <button
+              type="button"
+              class="flex-1 h-8 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
+              @click="openMutationModalForKas('CASH_IN', cb)"
+            >+ Setor</button>
+            <button
+              type="button"
+              class="flex-1 h-8 text-[10px] font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40"
+              @click="openMutationModalForKas('CASH_OUT', cb)"
+            >- Tarik</button>
+            <button
+              type="button"
+              class="flex-1 h-8 text-[10px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+              @click="filterByKas(cb)"
+            >Riwayat</button>
+          </div>
+        </div>
       </div>
 
       <!-- Filter -->
@@ -249,6 +280,21 @@ async function fetchHistory() { const s = getShopId(); if (!s) return; historyLo
 async function fetchHistoryPage(p: number) { const s = getShopId(); if (!s) return; historyLoading.value = true; try { const res = await kasRetailService.getHistory({ shopId: s, categoryId: mutasiCategoryFilter.value || undefined, startDate: mutasiStartDate.value || undefined, endDate: mutasiEndDate.value || undefined, page: p, limit: 20 }); historyData.value = res.data; historyMeta.value = res.meta; } catch { /* */ } finally { historyLoading.value = false; } }
 
 function openMutationModal(type: 'CASH_IN' | 'CASH_OUT') { mutationType.value = type; mutationAmount.value = 0; mutationNotes.value = ''; mutationCategoryId.value = ''; mutationError.value = null; showMutationModal.value = true; if (mutationCategories.value.length === 0) { fetchMutationCategories(); } }
+
+function openMutationModalForKas(type: 'CASH_IN' | 'CASH_OUT', cb: any) {
+  mutationType.value = type;
+  mutationAmount.value = 0;
+  mutationNotes.value = '';
+  mutationCategoryId.value = cb.categoryId || cb.id || '';
+  mutationError.value = null;
+  showMutationModal.value = true;
+  if (mutationCategories.value.length === 0) { fetchMutationCategories(); }
+}
+
+function filterByKas(cb: any) {
+  mutasiCategoryFilter.value = cb.categoryId || cb.id || '';
+  fetchHistory();
+}
 async function fetchMutationCategories() { try { const res = await cashBoxCategoryService.list(false); mutationCategories.value = res.data; } catch { /* */ } }
 async function handleMutation() { const s = getShopId(); if (!s) return; if (!mutationCategoryId.value) { mutationError.value = 'Pilih kas/kategori terlebih dahulu.'; return; } mutationSaving.value = true; mutationError.value = null; try { await kasRetailService.createMutation({ shopId: s, type: mutationType.value, amount: mutationAmount.value, categoryId: mutationCategoryId.value, notes: mutationNotes.value || undefined }); showMutationModal.value = false; await fetchCashBox(); await fetchHistory(); } catch (e: any) { mutationError.value = e?.response?.data?.message || e?.message || 'Gagal.'; } finally { mutationSaving.value = false; } }
 
