@@ -14,10 +14,13 @@
           <component :is="MenuIcon" class="w-5 h-5" />
         </button>
         <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center">
+          <div class="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
             <component :is="StoreIcon" class="w-4 h-4 text-white" />
           </div>
-          <h1 class="text-sm font-bold text-slate-950 dark:text-slate-100">Maslahat Tani</h1>
+          <div class="min-w-0">
+            <h1 class="text-sm font-bold text-slate-950 dark:text-slate-100 leading-tight truncate">{{ currentShopName || 'Maslahat Tani' }}</h1>
+            <p class="text-[9px] text-slate-400 dark:text-slate-500 leading-tight">{{ todayLabel }}</p>
+          </div>
         </div>
       </div>
       <div class="flex items-center gap-1">
