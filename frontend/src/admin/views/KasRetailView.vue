@@ -28,45 +28,28 @@
       </div>
 
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <!-- Total Card -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Total Semua Kas</p>
-          <p class="text-2xl font-bold font-mono text-slate-950 dark:text-slate-100 mt-2">{{ formatRupiah(cashBox?.balance ?? 0) }}</p>
-          <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">{{ (cashBox?.cashBoxes || []).length }} kas aktif</p>
-        </div>
-
-        <!-- Per-Kas Cards -->
-        <div v-for="cb in cashBox?.cashBoxes || []" :key="cb.id"
-          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 flex flex-col">
-          <div class="flex items-start justify-between mb-1">
-            <div>
-              <div class="flex items-center gap-2">
-                <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ cb.label }}</p>
-                <span v-if="cb.isDefault" class="text-[9px] font-bold uppercase bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded">Default</span>
-              </div>
-              <p v-if="cb.code" class="text-[10px] text-slate-500 dark:text-slate-400 font-mono">{{ cb.code }}</p>
-            </div>
+      <!-- Compact Kas Strip (1 baris, tidak bertumpuk) -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+        <div class="flex items-center divide-x divide-slate-200 dark:divide-slate-800 overflow-x-auto">
+          <!-- Total -->
+          <div class="px-4 py-3 shrink-0">
+            <p class="text-[9px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">Total</p>
+            <p class="text-base font-bold font-mono text-slate-900 dark:text-slate-100 whitespace-nowrap">{{ formatRupiah(cashBox?.balance ?? 0) }}</p>
           </div>
-
-
-          <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-2">Saldo</p>
-          <p class="text-xl font-bold font-mono mt-0.5" :class="cb.balance > 0 ? 'text-slate-900 dark:text-slate-100' : 'text-red-600 dark:text-red-400'">
-            {{ formatRupiah(cb.balance) }}
-          </p>
-          <p v-if="cb.lastAudit" class="text-[9px] text-slate-400 dark:text-slate-500 mt-1">Audit terakhir: {{ formatDate(cb.lastAudit) }}</p>
-
-          <!-- Action buttons per kas -->
-          <div class="flex items-center gap-2 mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-            <button type="button"
-              class="flex-1 h-8 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
-              @click="openMutationModalForKas('CASH_IN', cb)">+ Setor</button>
-            <button type="button"
-              class="flex-1 h-8 text-[10px] font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/40"
-              @click="openMutationModalForKas('CASH_OUT', cb)">- Tarik</button>
-            <button type="button"
-              class="flex-1 h-8 text-[10px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
-              @click="filterByKas(cb)">Riwayat</button>
+          <!-- Per-Kas inline -->
+          <div v-for="cb in cashBox?.cashBoxes || []" :key="cb.id" class="px-4 py-3 shrink-0 flex items-center gap-3">
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5">
+                <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{{ cb.label }}</p>
+                <span v-if="cb.isDefault" class="text-[8px] font-bold uppercase bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-1 py-0.5 rounded leading-none">D</span>
+              </div>
+              <p class="text-sm font-bold font-mono whitespace-nowrap" :class="cb.balance > 0 ? 'text-slate-900 dark:text-slate-100' : 'text-red-600 dark:text-red-400'">{{ formatRupiah(cb.balance) }}</p>
+            </div>
+            <div class="flex items-center gap-1 shrink-0">
+              <button type="button" class="h-6 px-2 text-[9px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/40" @click="openMutationModalForKas('CASH_IN', cb)">+</button>
+              <button type="button" class="h-6 px-2 text-[9px] font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded hover:bg-red-100 dark:hover:bg-red-900/40" @click="openMutationModalForKas('CASH_OUT', cb)">−</button>
+              <button type="button" class="h-6 px-2 text-[9px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-100 dark:hover:bg-slate-700" @click="filterByKas(cb)">⟳</button>
+            </div>
           </div>
         </div>
       </div>
