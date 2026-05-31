@@ -15,19 +15,27 @@
     </div>
 
 
-    <!-- Summary cards -->
-    <div v-if="summary" class="grid grid-cols-2 lg:grid-cols-3 gap-3">
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Total Piutang Aktif</p>
-        <p class="text-lg font-bold font-mono text-slate-950 dark:text-slate-100 mt-1">{{ formatRupiah(summary.totalOutstanding) }}</p>
+    <!-- Summary cards (5 KPI) -->
+    <div v-if="summary" class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">Piutang Aktif</p>
+        <p class="text-base font-bold font-mono text-slate-950 dark:text-slate-100 mt-0.5">{{ formatRupiah(summary.totalOutstanding) }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Pelanggan Berhutang</p>
-        <p class="text-lg font-bold font-mono text-slate-950 dark:text-slate-100 mt-1">{{ summary.totalDebtors }}</p>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">Sudah Dibayar</p>
+        <p class="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">{{ formatRupiah(summary.totalPaid ?? 0) }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Jatuh Tempo / Overdue</p>
-        <p class="text-lg font-bold font-mono text-red-600 dark:text-red-400 mt-1">{{ summary.overdue }}</p>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">Pelanggan</p>
+        <p class="text-base font-bold font-mono text-slate-950 dark:text-slate-100 mt-0.5">{{ summary.totalDebtors }}</p>
+      </div>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">Overdue</p>
+        <p class="text-base font-bold font-mono text-red-600 dark:text-red-400 mt-0.5">{{ summary.overdue }}</p>
+      </div>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">Rata-rata Umur</p>
+        <p class="text-base font-bold font-mono text-amber-600 dark:text-amber-400 mt-0.5">{{ summary.avgAgeDays ?? 0 }} hari</p>
       </div>
     </div>
 
@@ -82,6 +90,7 @@
               <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Pelanggan</th>
               <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Produk</th>
               <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Progress</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Umur</th>
               <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Jatuh Tempo</th>
               <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Status</th>
               <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Aksi</th>
@@ -126,6 +135,11 @@
                 </div>
               </td>
               <td class="px-4 py-3 text-center">
+                <span class="text-xs font-mono" :class="getAgeDays(debt.createdAt) > 30 ? 'text-red-600 dark:text-red-400 font-bold' : 'text-slate-600 dark:text-slate-400'">
+                  {{ getAgeDays(debt.createdAt) }}h
+                </span>
+              </td>
+              <td class="px-4 py-3 text-center">
                 <span v-if="debt.dueDate" :class="['text-xs font-mono', isOverdue(debt.dueDate) ? 'text-red-600 dark:text-red-400 font-bold' : 'text-slate-600 dark:text-slate-400']">
                   {{ formatDate(debt.dueDate) }}
                 </span>
@@ -141,6 +155,15 @@
                   <button class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800" title="Detail" @click="openDetailModal(debt)">
                     <EyeIcon class="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
                   </button>
+                  <a
+                    v-if="debt.customerPhone && debt.status !== 'PAID'"
+                    :href="getWaReminderLink(debt)"
+                    target="_blank"
+                    class="w-7 h-7 rounded-md border border-emerald-200 dark:border-emerald-800 flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                    title="WA Reminder"
+                  >
+                    <MessageCircleIcon class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  </a>
                   <button v-if="debt.status !== 'PAID' && debt.status !== 'CANCELLED'"
                     class="h-7 px-2 text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
                     @click="openPayModal(debt)">Bayar</button>
@@ -283,7 +306,7 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed } from 'vue';
 import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
-import { Plus as PlusIcon, Search as SearchIcon, HandCoins as HandCoinsIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon, Eye as EyeIcon } from 'lucide-vue-next';
+import { Plus as PlusIcon, Search as SearchIcon, HandCoins as HandCoinsIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon, Eye as EyeIcon, MessageCircle as MessageCircleIcon } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import debtsService, { type DebtDto, type DebtListResponse, type DebtStatus, type PaymentMethod, type ManualDebtItem } from '@/shared/services/debts.service';
 
@@ -315,6 +338,21 @@ function formatRupiah(n: number): string { return new Intl.NumberFormat('id-ID',
 function formatDate(iso: string): string { return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); }
 function formatDateTime(iso: string): string { return new Date(iso).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
 function isOverdue(dueDate: string): boolean { return new Date(dueDate) < new Date(); }
+
+function getAgeDays(createdAt: string): number {
+  const created = new Date(createdAt);
+  const now = new Date();
+  return Math.floor((now.getTime() - created.getTime()) / (1000 * 60 * 60 * 24));
+}
+
+function getWaReminderLink(debt: DebtDto): string {
+  const phone = (debt.customerPhone || '').replace(/^0/, '62').replace(/[^0-9]/g, '');
+  const sisa = formatRupiah(debt.totalAmount - debt.paidAmount);
+  const text = encodeURIComponent(
+    `Halo ${debt.customerName}, ini reminder dari toko kami.\n\nAnda masih memiliki hutang sebesar ${sisa}.\n${debt.dueDate ? `Jatuh tempo: ${formatDate(debt.dueDate)}\n` : ''}Mohon segera dilunasi. Terima kasih! 🙏`
+  );
+  return `https://wa.me/${phone}?text=${text}`;
+}
 
 function debtStatusBadge(status: string): string {
   switch (status) {
