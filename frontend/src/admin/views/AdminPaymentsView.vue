@@ -395,6 +395,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import {
   ArrowDown as ArrowDownIcon,
   ArrowUp as ArrowUpIcon,
@@ -648,4 +649,6 @@ onMounted(() => {
   fetchSummary();
   fetchPending();
 });
+
+useAutoRefresh(() => { fetchHistory(); fetchSummary(); });
 </script>

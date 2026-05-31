@@ -201,6 +201,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { Wallet as WalletIcon, Boxes as BoxesIcon, Plus as PlusIcon, Pencil as PencilIcon, Trash2 as Trash2Icon, Loader2 as Loader2Icon } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import kasRetailService, { type CashBoxResponse, type PaymentHistoryItem, type PaymentHistoryResponse } from '@/shared/services/kas-retail.service';
@@ -259,4 +260,6 @@ async function handleDeleteCategory(cat: CashBoxCategoryDto) { if (!confirm(`Hap
 function handleTabChange(tab: TabKey) { activeTab.value = tab; if (tab === 'metode' && categories.value.length === 0) fetchCategories(); }
 
 onMounted(() => { fetchCashBox(); fetchHistory(); fetchMutationCategories(); });
+
+useAutoRefresh(() => { fetchCashBox(); fetchHistory(); });
 </script>

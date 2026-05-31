@@ -573,6 +573,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive, watch } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import {
   Plus as PlusIcon,
   Search as SearchIcon,
@@ -1002,6 +1003,8 @@ onMounted(() => {
   fetchProducts();
   fetchCategories();
 });
+
+useAutoRefresh(fetchProducts);
 
 // Auto-regenerate SKU when category changes (only on create mode, only if name filled)
 watch(() => form.categoryId, () => {

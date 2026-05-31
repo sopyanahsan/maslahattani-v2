@@ -352,6 +352,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { useShopStore } from '@/shared/stores/shop.store';
 import analyticsService, {
   type AnalyticsPeriod,
@@ -563,4 +564,6 @@ watch([selectedPeriod, shopId], () => {
 onMounted(() => {
   fetchAll();
 });
+
+useAutoRefresh(fetchAll);
 </script>

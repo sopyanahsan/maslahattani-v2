@@ -136,6 +136,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import {
   Plus as PlusIcon, Store as StoreIcon, Pencil as PencilIcon,
   MapPin as MapPinIcon, Phone as PhoneIcon,
@@ -187,4 +188,6 @@ async function handleSubmit() {
 }
 
 onMounted(fetchShops);
+
+useAutoRefresh(fetchShops);
 </script>

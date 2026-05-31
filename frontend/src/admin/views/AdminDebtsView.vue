@@ -282,6 +282,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { Plus as PlusIcon, Search as SearchIcon, HandCoins as HandCoinsIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon, Eye as EyeIcon } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import debtsService, { type DebtDto, type DebtListResponse, type DebtStatus, type PaymentMethod, type ManualDebtItem } from '@/shared/services/debts.service';
@@ -380,4 +381,6 @@ function getDebtItemLabel(debt: DebtDto): string {
 }
 
 onMounted(fetchDebts);
+
+useAutoRefresh(fetchDebts);
 </script>

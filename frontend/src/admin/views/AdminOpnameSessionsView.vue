@@ -237,6 +237,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import opnameService, {
   type OpnameSessionDto,
@@ -424,4 +425,6 @@ async function handleCancel() {
 onMounted(() => {
   fetchSessions();
 });
+
+useAutoRefresh(fetchSessions);
 </script>

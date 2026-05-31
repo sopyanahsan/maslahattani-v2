@@ -289,6 +289,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import supplierService, {
   type SupplierDto,
@@ -548,4 +549,6 @@ watch(activeTab, (tab) => {
 });
 
 onMounted(() => { fetchSuppliers(); });
+
+useAutoRefresh(fetchSuppliers);
 </script>

@@ -181,6 +181,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import {
   UserPlus as UserPlusIcon, Users as UsersIcon, UserX as UserXIcon,
   UserCheck as UserCheckIcon, Key as KeyIcon, Loader2 as Loader2Icon,
@@ -303,4 +304,6 @@ function statusBadge(status: UserStatus): string {
 }
 
 onMounted(fetchKasir);
+
+useAutoRefresh(fetchKasir);
 </script>

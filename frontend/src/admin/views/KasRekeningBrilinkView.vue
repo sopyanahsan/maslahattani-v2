@@ -570,6 +570,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed, watch } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import {
   Loader2 as Loader2Icon,
   Plus as PlusIcon,
@@ -989,4 +990,6 @@ watch(activeTab, (tab) => {
 onMounted(() => {
   fetchAccounts();
 });
+
+useAutoRefresh(fetchAccounts);
 </script>

@@ -469,6 +469,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive, watch } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import {
   PackagePlus as PackagePlusIcon,
   ClipboardCheck as ClipboardCheckIcon,
@@ -686,4 +687,6 @@ function historyTypeBadge(type: string): string {
 // Lifecycle
 // ============================================
 onMounted(fetchStock);
+
+useAutoRefresh(fetchStock);
 </script>

@@ -336,6 +336,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import {
   Loader2 as Loader2Icon,
   AlertCircle as AlertCircleIcon,
@@ -541,4 +542,6 @@ onMounted(() => {
   fetchTransactions();
   fetchStats();
 });
+
+useAutoRefresh(() => { fetchTransactions(); fetchStats(); });
 </script>

@@ -71,6 +71,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { Plus as PlusIcon, Tag as TagIcon, Edit3 as Edit3Icon, Trash2 as Trash2Icon, Loader2 as Loader2Icon } from 'lucide-vue-next';
 import api from '@/shared/services/api';
 
@@ -130,4 +131,6 @@ async function handleDelete(cat: any) {
 }
 
 onMounted(fetchCategories);
+
+useAutoRefresh(fetchCategories);
 </script>
