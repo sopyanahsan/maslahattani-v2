@@ -7,7 +7,7 @@
         Aktivitas Terkini
       </h3>
       <p class="text-[11px] text-slate-500 dark:text-slate-400">
-        Retail, BRILink, inventori, finance
+        Retail, inventori, finance
       </p>
     </div>
 

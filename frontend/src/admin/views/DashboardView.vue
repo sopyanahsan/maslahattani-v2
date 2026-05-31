@@ -128,51 +128,7 @@
       </div>
 
       <!-- ============================================ -->
-      <!-- ROW 3b: OPERATIONS PANEL                     -->
-      <!-- ============================================ -->
-      <SectionWrapper
-        :error="store.errors.operations"
-        @retry="store.fetchSection('operations')"
-      >
-        <OperationsPanel :data="store.operations" :loading="store.loading.operations" />
-      </SectionWrapper>
-
-      <!-- ============================================ -->
-      <!-- ROW 4: TOP PRODUCTS + ACTIVITY + PAYMENT      -->
-      <!-- ============================================ -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <SectionWrapper
-          :error="store.errors.topProducts"
-          @retry="store.fetchSection('topProducts')"
-        >
-          <TopProductsTable
-            :products="store.topProducts"
-            :loading="store.loading.topProducts"
-            @select="onSelectProduct"
-          />
-        </SectionWrapper>
-        <SectionWrapper
-          :error="store.errors.recentActivity"
-          @retry="store.fetchSection('recentActivity')"
-        >
-          <RecentActivityFeed
-            :activities="store.recentActivity"
-            :loading="store.loading.recentActivity"
-          />
-        </SectionWrapper>
-        <SectionWrapper
-          :error="store.errors.paymentBreakdown"
-          @retry="store.fetchSection('paymentBreakdown')"
-        >
-          <PaymentBreakdown
-            :data="store.paymentBreakdown"
-            :loading="store.loading.paymentBreakdown"
-          />
-        </SectionWrapper>
-      </div>
-
-      <!-- ============================================ -->
-      <!-- ROW 5: ALERTS                                 -->
+      <!-- ROW 4: ALERTS                                 -->
       <!-- ============================================ -->
       <SectionWrapper :error="store.errors.alerts" @retry="store.fetchSection('alerts')">
         <div v-if="store.alerts?.allClear" class="grid grid-cols-1">
@@ -273,67 +229,6 @@
         </div>
       </SectionWrapper>
 
-      <!-- ============================================ -->
-      <!-- ROW 6: COMPARISON + LEADERBOARD              -->
-      <!-- ============================================ -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <SectionWrapper
-          :error="store.errors.overview"
-          @retry="store.fetchSection('overview')"
-        >
-          <div
-            class="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden h-full"
-          >
-            <div class="px-4 sm:px-5 py-3 border-b border-slate-200 dark:border-slate-800">
-              <h3 class="text-sm font-bold text-slate-950 dark:text-slate-100">
-                {{ comparisonTitle }}
-              </h3>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400">
-                Perbandingan periode ini vs sebelumnya
-              </p>
-            </div>
-            <div class="p-4 sm:p-5 space-y-3">
-              <ComparisonRow
-                label="Omzet"
-                :current="store.overview?.kpi.revenue.value ?? 0"
-                :previous="store.overview?.kpi.revenue.previousValue ?? 0"
-                :change-percent="store.overview?.kpi.revenue.changePercent ?? 0"
-                color="bg-blue-500"
-                format="rupiah"
-                :loading="store.loading.overview"
-              />
-              <ComparisonRow
-                label="Profit"
-                :current="store.overview?.kpi.profit.value ?? 0"
-                :previous="store.overview?.kpi.profit.previousValue ?? 0"
-                :change-percent="store.overview?.kpi.profit.changePercent ?? 0"
-                color="bg-emerald-500"
-                format="rupiah"
-                :loading="store.loading.overview"
-              />
-              <ComparisonRow
-                label="Transaksi"
-                :current="store.overview?.kpi.transactions.value ?? 0"
-                :previous="store.overview?.kpi.transactions.previousValue ?? 0"
-                :change-percent="store.overview?.kpi.transactions.changePercent ?? 0"
-                color="bg-indigo-500"
-                format="number"
-                :loading="store.loading.overview"
-              />
-            </div>
-          </div>
-        </SectionWrapper>
-
-        <SectionWrapper
-          :error="store.errors.cashierLeaderboard"
-          @retry="store.fetchSection('cashierLeaderboard')"
-        >
-          <CashierLeaderboard
-            :entries="store.cashierLeaderboard"
-            :loading="store.loading.cashierLeaderboard"
-          />
-        </SectionWrapper>
-      </div>
     </template>
   </div>
 </template>
