@@ -28,28 +28,27 @@
       </div>
 
 
-      <!-- Compact Kas Strip (1 baris, tidak bertumpuk) -->
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-        <div class="flex items-center divide-x divide-slate-200 dark:divide-slate-800 overflow-x-auto">
-          <!-- Total -->
-          <div class="px-4 py-3 shrink-0">
-            <p class="text-[9px] font-bold uppercase tracking-wide text-slate-400 dark:text-slate-500">Total</p>
-            <p class="text-base font-bold font-mono text-slate-900 dark:text-slate-100 whitespace-nowrap">{{ formatRupiah(cashBox?.balance ?? 0) }}</p>
+      <!-- Saldo Kas Strip -->
+      <div class="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
+        <!-- Total Pill -->
+        <div class="shrink-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/80 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl px-5 py-3 shadow-sm">
+          <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">Total Kas</p>
+          <p class="text-lg font-bold font-mono text-slate-900 dark:text-slate-100 whitespace-nowrap leading-tight">{{ formatRupiah(cashBox?.balance ?? 0) }}</p>
+        </div>
+        <!-- Per-Kas Pill -->
+        <div v-for="cb in cashBox?.cashBoxes || []" :key="cb.id"
+          class="shrink-0 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow flex items-center gap-3 group">
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <p class="text-[11px] font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[120px]">{{ cb.label }}</p>
+              <span v-if="cb.isDefault" class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" title="Default"></span>
+            </div>
+            <p class="text-sm font-bold font-mono whitespace-nowrap leading-tight" :class="cb.balance > 0 ? 'text-slate-900 dark:text-slate-100' : 'text-red-500 dark:text-red-400'">{{ formatRupiah(cb.balance) }}</p>
           </div>
-          <!-- Per-Kas inline -->
-          <div v-for="cb in cashBox?.cashBoxes || []" :key="cb.id" class="px-4 py-3 shrink-0 flex items-center gap-3">
-            <div class="min-w-0">
-              <div class="flex items-center gap-1.5">
-                <p class="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate">{{ cb.label }}</p>
-                <span v-if="cb.isDefault" class="text-[8px] font-bold uppercase bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-300 px-1 py-0.5 rounded leading-none">D</span>
-              </div>
-              <p class="text-sm font-bold font-mono whitespace-nowrap" :class="cb.balance > 0 ? 'text-slate-900 dark:text-slate-100' : 'text-red-600 dark:text-red-400'">{{ formatRupiah(cb.balance) }}</p>
-            </div>
-            <div class="flex items-center gap-1 shrink-0">
-              <button type="button" class="h-6 px-2 text-[9px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded hover:bg-emerald-100 dark:hover:bg-emerald-900/40" @click="openMutationModalForKas('CASH_IN', cb)">+</button>
-              <button type="button" class="h-6 px-2 text-[9px] font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded hover:bg-red-100 dark:hover:bg-red-900/40" @click="openMutationModalForKas('CASH_OUT', cb)">−</button>
-              <button type="button" class="h-6 px-2 text-[9px] font-semibold text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded hover:bg-slate-100 dark:hover:bg-slate-700" @click="filterByKas(cb)">⟳</button>
-            </div>
+          <div class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity shrink-0">
+            <button type="button" class="w-6 h-6 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" @click="openMutationModalForKas('CASH_IN', cb)" title="Setor">+</button>
+            <button type="button" class="w-6 h-6 rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[10px] font-bold flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors" @click="openMutationModalForKas('CASH_OUT', cb)" title="Tarik">−</button>
+            <button type="button" class="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 text-[10px] flex items-center justify-center hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors" @click="filterByKas(cb)" title="Riwayat">↗</button>
           </div>
         </div>
       </div>
@@ -145,46 +144,39 @@
 
 
       <!-- Kas Cards -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <div v-for="kas in kelolaKasList" :key="kas.id"
-          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-5">
-          <div class="flex items-start justify-between mb-3">
-            <div>
-              <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ kas.label }}</h4>
-            </div>
-            <div class="flex items-center gap-1">
-              <button
-                class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"
+          class="relative bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 truncate pr-2">{{ kas.label }}</h4>
+            <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="w-6 h-6 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 title="Edit" @click="openCashBoxModal(kas)">
-                <PencilIcon class="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                <PencilIcon class="w-3 h-3 text-slate-500 dark:text-slate-400" />
               </button>
-              <button
-                class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/30"
+              <button class="w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
                 title="Hapus" @click="handleDeleteCashBox(kas)">
-                <Trash2Icon class="w-3.5 h-3.5 text-red-500" />
+                <Trash2Icon class="w-3 h-3 text-red-400" />
               </button>
             </div>
           </div>
 
           <!-- Balance -->
-          <div class="mb-3">
-            <p class="text-[10px] text-slate-500 dark:text-slate-400">Saldo</p>
-            <p class="text-lg font-bold font-mono" :class="kas.balance > 0 ? 'text-slate-900 dark:text-slate-100' : 'text-red-600 dark:text-red-400'">
-              {{ formatRupiah(kas.balance) }}
-            </p>
-          </div>
+          <p class="text-lg font-bold font-mono leading-tight mb-3" :class="kas.balance > 0 ? 'text-slate-900 dark:text-slate-100' : 'text-red-500 dark:text-red-400'">
+            {{ formatRupiah(kas.balance) }}
+          </p>
 
-
-          <!-- Setor / Tarik / Riwayat buttons -->
-          <div class="flex items-center gap-2">
+          <!-- Action row -->
+          <div class="flex items-center gap-1.5">
             <button type="button"
-              class="flex-1 h-8 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
+              class="flex-1 h-7 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50/80 dark:bg-emerald-950/30 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
               @click="openMutationModalForKas('CASH_IN', kas)">+ Setor</button>
             <button type="button"
-              class="flex-1 h-8 text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40"
-              @click="openMutationModalForKas('CASH_OUT', kas)">- Tarik</button>
+              class="flex-1 h-7 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-red-50/80 dark:bg-red-950/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+              @click="openMutationModalForKas('CASH_OUT', kas)">− Tarik</button>
             <button type="button"
-              class="flex-1 h-8 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"
+              class="flex-1 h-7 text-[10px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
               @click="filterByKas(kas)">Riwayat</button>
           </div>
         </div>

@@ -58,84 +58,48 @@
       </div>
 
       <!-- Account cards -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <div
           v-for="account in accounts"
           :key="account.id"
-          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-5"
+          class="relative bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all group"
         >
-          <div class="flex items-start justify-between mb-3">
-            <div>
-              <div class="flex items-center gap-2">
-                <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ account.label }}</h4>
-                <span
-                  v-if="account.isDefault"
-                  class="text-[9px] font-bold uppercase bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-1.5 py-0.5 rounded"
-                >Default</span>
-              </div>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400 font-mono mt-0.5">{{ account.accountNumber }}</p>
-              <p v-if="account.accountHolder" class="text-[11px] text-slate-500 dark:text-slate-400">{{ account.accountHolder }}</p>
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-1.5">
+            <div class="flex items-center gap-1.5 min-w-0">
+              <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 truncate">{{ account.label }}</h4>
+              <span v-if="account.isDefault" class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" title="Default"></span>
             </div>
-            <div class="flex items-center gap-1">
-              <button
-                class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800"
-                title="Edit"
-                @click="openAccountModal(account)"
-              >
-                <PencilIcon class="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+            <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+              <button class="w-6 h-6 rounded-full flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" title="Edit" @click="openAccountModal(account)">
+                <PencilIcon class="w-3 h-3 text-slate-500 dark:text-slate-400" />
               </button>
-              <button
-                class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/30"
-                title="Hapus"
-                @click="handleDeleteAccount(account)"
-              >
-                <Trash2Icon class="w-3.5 h-3.5 text-red-500" />
+              <button class="w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors" title="Hapus" @click="handleDeleteAccount(account)">
+                <Trash2Icon class="w-3 h-3 text-red-400" />
               </button>
             </div>
           </div>
 
+          <!-- Account info -->
+          <p class="text-[10px] text-slate-500 dark:text-slate-400 font-mono mb-2">{{ account.accountNumber }}<span v-if="account.accountHolder"> · {{ account.accountHolder }}</span></p>
 
           <!-- Balance -->
-          <div class="mb-3">
-            <p class="text-[10px] text-slate-500 dark:text-slate-400">Saldo</p>
-            <p
-              :class="[
-                'text-lg font-bold font-mono',
-                account.balance < account.lowBalanceThreshold
-                  ? 'text-red-600 dark:text-red-400'
-                  : 'text-slate-900 dark:text-slate-100',
-              ]"
-            >
-              {{ formatRupiah(account.balance) }}
-            </p>
-            <p v-if="account.balance < account.lowBalanceThreshold" class="text-[10px] text-red-500 dark:text-red-400">
-              ⚠ Di bawah threshold ({{ formatRupiah(account.lowBalanceThreshold) }})
-            </p>
-          </div>
+          <p :class="['text-lg font-bold font-mono leading-tight mb-3', account.balance < account.lowBalanceThreshold ? 'text-red-500 dark:text-red-400' : 'text-slate-900 dark:text-slate-100']">
+            {{ formatRupiah(account.balance) }}
+          </p>
+          <p v-if="account.balance < account.lowBalanceThreshold" class="text-[9px] text-red-500 dark:text-red-400 -mt-2 mb-2">⚠ Di bawah {{ formatRupiah(account.lowBalanceThreshold) }}</p>
 
-          <!-- Setor / Tarik buttons -->
-          <div class="flex items-center gap-2">
-            <button
-              type="button"
-              class="flex-1 h-8 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
-              @click="openMutationModal(account, 'setor')"
-            >
-              + Setor
-            </button>
-            <button
-              type="button"
-              class="flex-1 h-8 text-xs font-semibold text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40"
-              @click="openMutationModal(account, 'tarik')"
-            >
-              - Tarik
-            </button>
-            <button
-              type="button"
-              class="flex-1 h-8 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700"
-              @click="openMutationsHistory(account)"
-            >
-              Riwayat
-            </button>
+          <!-- Action row -->
+          <div class="flex items-center gap-1.5">
+            <button type="button"
+              class="flex-1 h-7 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50/80 dark:bg-emerald-950/30 rounded-lg hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
+              @click="openMutationModal(account, 'setor')">+ Setor</button>
+            <button type="button"
+              class="flex-1 h-7 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-red-50/80 dark:bg-red-950/30 rounded-lg hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors"
+              @click="openMutationModal(account, 'tarik')">− Tarik</button>
+            <button type="button"
+              class="flex-1 h-7 text-[10px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/80 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              @click="openMutationsHistory(account)">Riwayat</button>
           </div>
         </div>
       </div>
