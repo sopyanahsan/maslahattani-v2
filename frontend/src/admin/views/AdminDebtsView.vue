@@ -403,7 +403,15 @@ async function handleCreate() {
   } catch (err: any) { createError.value = err?.response?.data?.message || err?.message || 'Gagal.'; } finally { creating.value = false; }
 }
 async function handlePay() {
-  if (!payingDebt.value) return; paying.value = true; payError.value = null;
+  if (!payingDebt.value) return;
+  const remaining = payingDebt.value.totalAmount - payingDebt.value.paidAmount;
+  if (payForm.amount <= 0) { payError.value = 'Jumlah bayar harus lebih dari 0.'; return; }
+  if (payForm.amount > remaining) {
+    payError.value = `Melebihi sisa hutang. Maksimal: ${formatRupiah(remaining)}`;
+    payForm.amount = remaining;
+    return;
+  }
+  paying.value = true; payError.value = null;
   try { await debtsService.pay(payingDebt.value.id, { amount: payForm.amount, method: payForm.method as PaymentMethod, notes: payForm.notes || undefined }); showPayModal.value = false; await fetchDebts(); } catch (err: any) { payError.value = err?.response?.data?.message || err?.message || 'Gagal.'; } finally { paying.value = false; }
 }
 
