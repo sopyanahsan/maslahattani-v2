@@ -17,7 +17,6 @@
       </div>
     </div>
 
-
     <!-- Racks Table -->
     <div v-if="loading" class="text-center py-10 text-slate-400 text-sm">Memuat rak...</div>
     <div v-else-if="racks.length === 0" class="bg-white border border-dashed border-slate-300 rounded-xl p-10 text-center">
@@ -58,7 +57,6 @@
       </div>
     </div>
 
-
     <!-- Zones List (collapsible) -->
     <details class="bg-white border border-slate-200 rounded-xl p-4">
       <summary class="text-sm font-bold text-slate-900 cursor-pointer select-none">Kelola Zona ({{ zones.length }})</summary>
@@ -77,7 +75,6 @@
         <div v-if="zones.length === 0" class="text-center py-3 text-xs text-slate-400">Belum ada zona. Klik "+ Zona" untuk membuat.</div>
       </div>
     </details>
-
 
     <!-- Zone Modal -->
     <teleport to="body">
@@ -105,7 +102,6 @@
         </div>
       </div>
     </teleport>
-
 
     <!-- Rack Modal -->
     <teleport to="body">
@@ -141,8 +137,7 @@
       </div>
     </teleport>
 
-
-    <!-- Print Area (hidden, visible on print) -->
+    <!-- Print Area: Label No.103 layout (32×64mm, 3 col × 4 row = 12/A4) -->
     <div id="print-rack-labels" class="rack-print-container">
       <div class="rack-labels-grid">
         <div v-for="r in selectedRacks" :key="'lbl-'+r.id" class="rack-label-item">
@@ -155,7 +150,6 @@
     </div>
   </div>
 </template>
-
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted, nextTick } from 'vue';
@@ -190,7 +184,6 @@ const editingRack = ref<RackDto | null>(null);
 const rackForm = reactive({ zoneId: '', code: '', name: '' });
 const savingRack = ref(false);
 
-
 // ============================================
 // Computed
 // ============================================
@@ -207,21 +200,18 @@ function getShopId(): string | undefined {
 async function fetchZones() {
   const shopId = getShopId();
   if (!shopId) return;
-  try {
-    zones.value = await rackService.listZones(shopId);
-  } catch { zones.value = []; }
+  try { zones.value = await rackService.listZones(shopId); }
+  catch { zones.value = []; }
 }
 
 async function fetchRacks() {
   const shopId = getShopId();
   if (!shopId) return;
   loading.value = true;
-  try {
-    racks.value = await rackService.listRacks(shopId, filterZoneId.value || undefined);
-  } catch { racks.value = []; }
+  try { racks.value = await rackService.listRacks(shopId, filterZoneId.value || undefined); }
+  catch { racks.value = []; }
   finally { loading.value = false; }
 }
-
 
 // ============================================
 // Selection
@@ -248,49 +238,30 @@ function openZoneModal(zone?: RackZoneDto) {
 
 async function submitZone() {
   const shopId = getShopId();
-  if (!shopId || !zoneForm.name.trim()) {
-    toast.warning('Nama zona wajib diisi.');
-    return;
-  }
+  if (!shopId || !zoneForm.name.trim()) { toast.warning('Nama zona wajib diisi.'); return; }
   savingZone.value = true;
   try {
     if (editingZone.value) {
-      await rackService.updateZone(editingZone.value.id, {
-        name: zoneForm.name.trim(),
-        description: zoneForm.description.trim() || undefined,
-      });
+      await rackService.updateZone(editingZone.value.id, { name: zoneForm.name.trim(), description: zoneForm.description.trim() || undefined });
       toast.success('Zona berhasil diperbarui.');
     } else {
-      await rackService.createZone({
-        shopId,
-        name: zoneForm.name.trim(),
-        description: zoneForm.description.trim() || undefined,
-      });
+      await rackService.createZone({ shopId, name: zoneForm.name.trim(), description: zoneForm.description.trim() || undefined });
       toast.success('Zona berhasil ditambahkan.');
     }
     showZoneModal.value = false;
     await fetchZones();
-  } catch (err: any) {
-    toast.error(err.response?.data?.message ?? 'Gagal menyimpan zona.');
-  } finally { savingZone.value = false; }
+  } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal menyimpan zona.'); }
+  finally { savingZone.value = false; }
 }
 
-
 async function handleDeleteZone(zone: RackZoneDto) {
-  const ok = await ask({
-    title: 'Hapus Zona?',
-    message: `Zona "${zone.name}" dan semua rak di dalamnya akan dihapus. Produk di rak tersebut akan di-unassign.`,
-    confirmLabel: 'Hapus',
-    variant: 'danger',
-  });
+  const ok = await ask({ title: 'Hapus Zona?', message: `Zona "${zone.name}" dan semua rak di dalamnya akan dihapus.`, confirmLabel: 'Hapus', variant: 'danger' });
   if (!ok) return;
   try {
     await rackService.deleteZone(zone.id);
     toast.success(`Zona "${zone.name}" berhasil dihapus.`);
     await Promise.all([fetchZones(), fetchRacks()]);
-  } catch (err: any) {
-    toast.error(err.response?.data?.message ?? 'Gagal menghapus zona.');
-  }
+  } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal menghapus zona.'); }
 }
 
 // ============================================
@@ -306,71 +277,49 @@ function openRackModal(rack?: RackDto) {
 
 async function submitRack() {
   const shopId = getShopId();
-  if (!shopId || !rackForm.zoneId || !rackForm.code.trim()) {
-    toast.warning('Zona dan kode rak wajib diisi.');
-    return;
-  }
+  if (!shopId || !rackForm.zoneId || !rackForm.code.trim()) { toast.warning('Zona dan kode rak wajib diisi.'); return; }
   savingRack.value = true;
   try {
     if (editingRack.value) {
-      await rackService.updateRack(editingRack.value.id, {
-        zoneId: rackForm.zoneId,
-        code: rackForm.code.trim(),
-        name: rackForm.name.trim() || undefined,
-      });
+      await rackService.updateRack(editingRack.value.id, { zoneId: rackForm.zoneId, code: rackForm.code.trim(), name: rackForm.name.trim() || undefined });
       toast.success('Rak berhasil diperbarui.');
     } else {
-      await rackService.createRack({
-        shopId,
-        zoneId: rackForm.zoneId,
-        code: rackForm.code.trim(),
-        name: rackForm.name.trim() || undefined,
-      });
+      await rackService.createRack({ shopId, zoneId: rackForm.zoneId, code: rackForm.code.trim(), name: rackForm.name.trim() || undefined });
       toast.success('Rak berhasil ditambahkan.');
     }
     showRackModal.value = false;
     await Promise.all([fetchZones(), fetchRacks()]);
-  } catch (err: any) {
-    toast.error(err.response?.data?.message ?? 'Gagal menyimpan rak.');
-  } finally { savingRack.value = false; }
+  } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal menyimpan rak.'); }
+  finally { savingRack.value = false; }
 }
 
-
 async function handleDeleteRack(rack: RackDto) {
-  const ok = await ask({
-    title: 'Hapus Rak?',
-    message: `Rak "${rack.code}" akan dihapus. Produk yang terdaftar di rak ini akan di-unassign.`,
-    confirmLabel: 'Hapus',
-    variant: 'danger',
-  });
+  const ok = await ask({ title: 'Hapus Rak?', message: `Rak "${rack.code}" akan dihapus.`, confirmLabel: 'Hapus', variant: 'danger' });
   if (!ok) return;
   try {
     await rackService.deleteRack(rack.id);
     toast.success(`Rak "${rack.code}" berhasil dihapus.`);
     await Promise.all([fetchZones(), fetchRacks()]);
-  } catch (err: any) {
-    toast.error(err.response?.data?.message ?? 'Gagal menghapus rak.');
-  }
+  } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal menghapus rak.'); }
 }
 
 // ============================================
-// Print QR Labels
+// Print QR Labels — Layout No.103 (32×64mm)
 // ============================================
 async function handlePrintLabels() {
   if (selectedRackIds.value.length === 0) return;
   await nextTick();
 
-  // Generate QR codes into canvases
   for (const r of selectedRacks.value) {
     const canvas = document.getElementById('qr-' + r.id) as HTMLCanvasElement | null;
     if (canvas) {
       try {
         await QRCode.toCanvas(canvas, `RACK:${r.code}`, {
-          width: 80,
+          width: 64,
           margin: 1,
           color: { dark: '#000000', light: '#ffffff' },
         });
-      } catch { /* skip invalid */ }
+      } catch { /* skip */ }
     }
   }
 
@@ -381,12 +330,8 @@ async function handlePrintLabels() {
 // ============================================
 // Lifecycle
 // ============================================
-onMounted(() => {
-  fetchZones();
-  fetchRacks();
-});
+onMounted(() => { fetchZones(); fetchRacks(); });
 </script>
-
 
 <style>
 /* Screen: hide print area */
@@ -397,6 +342,13 @@ onMounted(() => {
   visibility: hidden;
 }
 
+/* =============================================
+   Print: Label No.103 — 32×64mm
+   A4 (210×297mm) minus margin (~6mm each side)
+   Usable: ~198×285mm
+   Grid: 3 col (64mm) × 4 row (32mm) = 12 labels/page
+   Column gap: ~3mm, Row gap: ~2mm
+   ============================================= */
 @media print {
   body * { visibility: hidden !important; }
   #print-rack-labels, #print-rack-labels * { visibility: visible !important; }
@@ -408,56 +360,68 @@ onMounted(() => {
     height: 297mm !important;
     visibility: visible !important;
     margin: 0 !important;
-    padding: 5mm !important;
+    padding: 4mm 5mm !important;
     box-sizing: border-box;
   }
 
   .rack-labels-grid {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 4mm;
+    grid-template-columns: repeat(3, 64mm);
+    grid-auto-rows: 32mm;
+    gap: 2mm 3mm;
+    justify-content: center;
   }
 
   .rack-label-item {
-    border: 0.5px solid #ccc;
-    border-radius: 2mm;
-    padding: 3mm;
+    width: 64mm;
+    height: 32mm;
+    border: 0.3px dashed #bbb;
+    border-radius: 1.5mm;
+    padding: 2mm 3mm;
     text-align: center;
     page-break-inside: avoid;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 35mm;
+    overflow: hidden;
+    box-sizing: border-box;
   }
 
   .rack-label-zone {
-    font-size: 8pt;
-    font-weight: 600;
-    color: #555;
+    font-size: 7pt;
+    font-weight: 700;
+    color: #444;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 1mm;
+    letter-spacing: 0.8px;
+    margin-bottom: 0.5mm;
+    line-height: 1.2;
   }
 
   .rack-label-code {
-    font-size: 18pt;
+    font-size: 22pt;
     font-weight: 900;
-    color: #111;
-    letter-spacing: 1px;
-    margin-bottom: 2mm;
-    font-family: monospace;
+    color: #000;
+    letter-spacing: 1.5px;
+    font-family: 'Courier New', monospace;
+    line-height: 1;
+    margin-bottom: 1mm;
   }
 
   .rack-qr-canvas {
-    width: 20mm !important;
-    height: 20mm !important;
+    width: 16mm !important;
+    height: 16mm !important;
   }
 
   .rack-label-name {
-    font-size: 7pt;
+    font-size: 6.5pt;
     color: #666;
-    margin-top: 1mm;
+    margin-top: 0.5mm;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
 }
 </style>
