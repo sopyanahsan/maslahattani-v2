@@ -39,15 +39,15 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr v-for="r in racks" :key="r.id" class="hover:bg-slate-50">
-              <td class="px-3 py-2.5 text-center">
+            <tr v-for="r in racks" :key="r.id" class="hover:bg-slate-50 cursor-pointer" @click="openRackDetail(r)">
+              <td class="px-3 py-2.5 text-center" @click.stop>
                 <input type="checkbox" :checked="selectedRackIds.includes(r.id)" class="w-4 h-4 text-blue-600 border-slate-300 rounded" @change="toggleSelect(r.id)" />
               </td>
               <td class="px-3 py-2.5 text-sm font-bold text-slate-900 font-mono">{{ r.code }}</td>
               <td class="px-3 py-2.5 text-sm text-slate-700">{{ r.name || '—' }}</td>
               <td class="px-3 py-2.5"><span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-semibold">{{ r.zoneName }}</span></td>
               <td class="px-3 py-2.5 text-right text-sm text-slate-600">{{ r.productCount }}</td>
-              <td class="px-3 py-2.5 text-center">
+              <td class="px-3 py-2.5 text-center" @click.stop>
                 <button class="text-xs text-blue-600 hover:underline mr-2" @click="openRackModal(r)">Edit</button>
                 <button class="text-xs text-red-600 hover:underline" @click="handleDeleteRack(r)">Hapus</button>
               </td>
@@ -137,6 +137,88 @@
       </div>
     </teleport>
 
+    <!-- Rack Detail Modal (products in rack + add/remove) -->
+    <teleport to="body">
+      <div v-if="showRackDetail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="showRackDetail = false">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+          <!-- Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Rak {{ detailRack?.code }}</h2>
+              <p class="text-xs text-slate-500">{{ detailRack?.zoneName }}{{ detailRack?.name ? ' — ' + detailRack.name : '' }}</p>
+            </div>
+            <button @click="showRackDetail = false" class="text-slate-400 hover:text-slate-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
+          </div>
+
+          <!-- Body -->
+          <div class="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            <!-- Search & Add -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">+ Tambah Produk ke Rak</label>
+              <input
+                v-model="searchUnassigned"
+                type="text"
+                placeholder="Cari produk (nama / SKU)..."
+                class="w-full h-9 px-3 text-sm border border-slate-300 rounded-lg focus:border-blue-500 outline-none"
+                @input="debouncedSearchUnassigned"
+              />
+              <!-- Search Results -->
+              <div v-if="searchUnassigned.trim() && unassignedProducts.length > 0" class="mt-2 border border-slate-200 rounded-lg max-h-40 overflow-y-auto">
+                <div
+                  v-for="p in unassignedProducts"
+                  :key="p.stockId"
+                  class="flex items-center justify-between px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-slate-100 last:border-0"
+                  @click="handleAssignProduct(p.stockId)"
+                >
+                  <div>
+                    <p class="text-xs font-medium text-slate-800">{{ p.productName }}</p>
+                    <p class="text-[10px] text-slate-400">{{ p.productSku }} &middot; Stok: {{ p.quantity }}</p>
+                  </div>
+                  <span class="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">+ Tambah</span>
+                </div>
+              </div>
+              <p v-else-if="searchUnassigned.trim() && !searchingUnassigned && unassignedProducts.length === 0" class="text-[11px] text-slate-400 mt-1">
+                Tidak ditemukan produk tanpa rak yang cocok.
+              </p>
+              <p v-if="searchingUnassigned" class="text-[11px] text-slate-400 mt-1">Mencari...</p>
+            </div>
+
+            <!-- Current Products in Rack -->
+            <div>
+              <h3 class="text-xs font-semibold text-slate-700 mb-2">Produk di Rak Ini ({{ rackProducts.length }})</h3>
+              <div v-if="loadingRackProducts" class="text-center py-4 text-xs text-slate-400">Memuat...</div>
+              <div v-else-if="rackProducts.length === 0" class="text-center py-6 bg-slate-50 rounded-lg">
+                <p class="text-xs text-slate-400">Belum ada produk di rak ini.</p>
+                <p class="text-[11px] text-slate-400 mt-1">Gunakan pencarian di atas untuk menambahkan.</p>
+              </div>
+              <div v-else class="space-y-1">
+                <div
+                  v-for="p in rackProducts"
+                  :key="p.stockId"
+                  class="flex items-center justify-between px-3 py-2.5 bg-slate-50 rounded-lg"
+                >
+                  <div>
+                    <p class="text-xs font-medium text-slate-800">{{ p.productName }}</p>
+                    <p class="text-[10px] text-slate-400">{{ p.productSku }} &middot; Stok: {{ p.quantity }}</p>
+                  </div>
+                  <button
+                    class="text-[10px] font-semibold text-red-600 hover:text-red-700 bg-red-50 px-2 py-0.5 rounded hover:bg-red-100 transition-colors"
+                    @click="handleRemoveProduct(p.stockId)"
+                  >
+                    Lepas
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
     <!-- Print Area: Label No.103 layout (32×64mm, 3 col × 4 row = 12/A4) -->
     <div id="print-rack-labels" class="rack-print-container">
       <div class="rack-labels-grid">
@@ -157,7 +239,7 @@ import QRCode from 'qrcode';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useConfirm } from '@/shared/composables/useConfirm';
 import { useToast } from '@/shared/composables/useToast';
-import rackService, { type RackZoneDto, type RackDto } from '@/shared/services/rack.service';
+import rackService, { type RackZoneDto, type RackDto, type RackProductDto } from '@/shared/services/rack.service';
 
 const authStore = useAuthStore();
 const { ask } = useConfirm();
@@ -183,6 +265,16 @@ const showRackModal = ref(false);
 const editingRack = ref<RackDto | null>(null);
 const rackForm = reactive({ zoneId: '', code: '', name: '' });
 const savingRack = ref(false);
+
+// Rack detail modal
+const showRackDetail = ref(false);
+const detailRack = ref<RackDto | null>(null);
+const rackProducts = ref<RackProductDto[]>([]);
+const loadingRackProducts = ref(false);
+const unassignedProducts = ref<RackProductDto[]>([]);
+const searchUnassigned = ref('');
+const searchingUnassigned = ref(false);
+let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 // ============================================
 // Computed
@@ -301,6 +393,64 @@ async function handleDeleteRack(rack: RackDto) {
     toast.success(`Rak "${rack.code}" berhasil dihapus.`);
     await Promise.all([fetchZones(), fetchRacks()]);
   } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal menghapus rak.'); }
+}
+
+// ============================================
+// Rack Detail (products in rack)
+// ============================================
+async function openRackDetail(rack: RackDto) {
+  detailRack.value = rack;
+  showRackDetail.value = true;
+  searchUnassigned.value = '';
+  unassignedProducts.value = [];
+  await fetchRackProducts(rack.id);
+}
+
+async function fetchRackProducts(rackId: string) {
+  loadingRackProducts.value = true;
+  try {
+    const res = await rackService.getProductsByRack(rackId);
+    rackProducts.value = res.products;
+  } catch { rackProducts.value = []; }
+  finally { loadingRackProducts.value = false; }
+}
+
+function debouncedSearchUnassigned() {
+  if (searchTimeout) clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => doSearchUnassigned(), 300);
+}
+
+async function doSearchUnassigned() {
+  const shopId = getShopId();
+  const q = searchUnassigned.value.trim();
+  if (!shopId || !q) { unassignedProducts.value = []; return; }
+  searchingUnassigned.value = true;
+  try {
+    unassignedProducts.value = await rackService.getUnassignedProducts(shopId, q);
+  } catch { unassignedProducts.value = []; }
+  finally { searchingUnassigned.value = false; }
+}
+
+async function handleAssignProduct(stockId: string) {
+  if (!detailRack.value) return;
+  try {
+    await rackService.assignProductToRack(stockId, detailRack.value.id);
+    toast.success('Produk berhasil ditambahkan ke rak.');
+    // Refresh both lists
+    await fetchRackProducts(detailRack.value.id);
+    await doSearchUnassigned();
+    await fetchRacks(); // update productCount in table
+  } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal menambahkan produk.'); }
+}
+
+async function handleRemoveProduct(stockId: string) {
+  if (!detailRack.value) return;
+  try {
+    await rackService.assignProductToRack(stockId, null);
+    toast.success('Produk dilepas dari rak.');
+    await fetchRackProducts(detailRack.value.id);
+    await fetchRacks();
+  } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal melepas produk.'); }
 }
 
 // ============================================

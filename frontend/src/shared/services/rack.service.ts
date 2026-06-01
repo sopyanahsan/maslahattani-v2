@@ -123,6 +123,13 @@ const rackService = {
     return data;
   },
 
+  async getUnassignedProducts(shopId: string, search?: string): Promise<RackProductDto[]> {
+    const { data } = await api.get<RackProductDto[]>('/racks/unassigned-products', {
+      params: { shopId, ...(search ? { search } : {}) },
+    });
+    return data;
+  },
+
   // --- Assign product to rack ---
 
   async assignProductToRack(stockId: string, rackId: string | null): Promise<{ message: string }> {

@@ -60,6 +60,14 @@ export class RacksController {
     return this.racksService.listRacks(shopId, zoneId);
   }
 
+  @Get('unassigned-products')
+  async getUnassignedProducts(
+    @Query('shopId') shopId: string,
+    @Query('search') search?: string,
+  ) {
+    return this.racksService.getUnassignedProducts(shopId, search);
+  }
+
   @Post()
   async createRack(@Body() dto: CreateRackDto) {
     return this.racksService.createRack(dto);

@@ -255,6 +255,44 @@ export class RacksService {
   // ASSIGN / UNASSIGN PRODUCT TO RACK
   // ============================================
 
+  /**
+   * List produk yang belum di-assign ke rak manapun di shop ini.
+   * Opsional filter by search (nama / SKU).
+   */
+  async getUnassignedProducts(shopId: string, search?: string) {
+    const where: any = { shopId, rackId: null };
+
+    if (search && search.trim()) {
+      where.product = {
+        OR: [
+          { name: { contains: search.trim(), mode: 'insensitive' } },
+          { sku: { contains: search.trim(), mode: 'insensitive' } },
+        ],
+        deletedAt: null,
+      };
+    } else {
+      where.product = { deletedAt: null };
+    }
+
+    const stocks = await this.prisma.stock.findMany({
+      where,
+      include: {
+        product: { select: { id: true, name: true, sku: true, price: true } },
+      },
+      orderBy: { product: { name: 'asc' } },
+      take: 50, // limit for performance
+    });
+
+    return stocks.map((s) => ({
+      stockId: s.id,
+      productId: s.product.id,
+      productName: s.product.name,
+      productSku: s.product.sku,
+      productPrice: s.product.price,
+      quantity: s.quantity,
+    }));
+  }
+
   async assignProductToRack(stockId: string, rackId: string | null) {
     const stock = await this.prisma.stock.findUnique({ where: { id: stockId } });
     if (!stock) throw new NotFoundException('Stok tidak ditemukan.');
