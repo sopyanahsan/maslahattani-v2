@@ -740,6 +740,7 @@ import {
   History as HistoryIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useConfirm } from '@/shared/composables/useConfirm';
 import { uploadToCloudinary } from '@/shared/services/upload.service';
 import api from '@/shared/services/api';
 import productsService, {
@@ -748,6 +749,7 @@ import productsService, {
 } from '@/shared/services/products.service';
 
 const authStore = useAuthStore();
+const { ask } = useConfirm();
 
 // ============================================
 // State
@@ -1206,7 +1208,8 @@ async function handleAddCategory() {
 async function handleDeleteCategory() {
   if (!form.categoryId) return;
   const cat = categoryList.value.find(c => c.id === form.categoryId);
-  if (!confirm(`Hapus kategori "${cat?.name || ''}"? Produk terkait akan menjadi tanpa kategori.`)) return;
+  const confirmed = await ask({ title: 'Hapus Kategori?', message: `Hapus kategori "${cat?.name || ''}"? Produk terkait akan menjadi tanpa kategori.`, confirmLabel: 'Hapus', variant: 'danger' });
+  if (!confirmed) return;
   try {
     await api.delete(`/product-categories/${form.categoryId}`);
     form.categoryId = '';

@@ -459,31 +459,33 @@ async function handleShip() {
     showDetailModal.value = false;
     await fetchTransfers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal.');
+    toast.error(err.response?.data?.message ?? 'Gagal.');
   }
 }
 
 async function handleReceive() {
   if (!detail.value) return;
-  if (!confirm('Terima barang dan update stok kedua cabang?')) return;
+  const confirmed = await ask({ title: 'Terima Barang?', message: 'Terima barang dan update stok kedua cabang?', confirmLabel: 'Terima', variant: 'danger' });
+  if (!confirmed) return;
   try {
     await transferService.receiveTransfer(detail.value.id);
     showDetailModal.value = false;
     await fetchTransfers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal menerima.');
+    toast.error(err.response?.data?.message ?? 'Gagal menerima.');
   }
 }
 
 async function handleCancel() {
   if (!detail.value) return;
-  if (!confirm('Batalkan transfer ini?')) return;
+  const confirmed = await ask({ title: 'Batalkan Transfer?', message: 'Batalkan transfer ini?', confirmLabel: 'Batalkan', variant: 'danger' });
+  if (!confirmed) return;
   try {
     await transferService.cancelTransfer(detail.value.id);
     showDetailModal.value = false;
     await fetchTransfers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal membatalkan.');
+    toast.error(err.response?.data?.message ?? 'Gagal membatalkan.');
   }
 }
 

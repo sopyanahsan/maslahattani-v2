@@ -73,7 +73,12 @@
 import { onMounted, ref, reactive } from 'vue';
 import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { Plus as PlusIcon, Tag as TagIcon, Edit3 as Edit3Icon, Trash2 as Trash2Icon, Loader2 as Loader2Icon } from 'lucide-vue-next';
+import { useConfirm } from '@/shared/composables/useConfirm';
+import { useToast } from '@/shared/composables/useToast';
 import api from '@/shared/services/api';
+
+const { ask } = useConfirm();
+const toast = useToast();
 
 const loading = ref(false);
 const categories = ref<any[]>([]);
@@ -123,11 +128,12 @@ async function handleSubmit() {
 }
 
 async function handleDelete(cat: any) {
-  if (!confirm(`Hapus kategori "${cat.name}"? Produk yang terkait akan menjadi tanpa kategori.`)) return;
+  const confirmed = await ask({ title: 'Hapus Kategori?', message: `Hapus kategori "${cat.name}"? Produk yang terkait akan menjadi tanpa kategori.`, confirmLabel: 'Hapus', variant: 'danger' });
+  if (!confirmed) return;
   try {
     await api.delete(`/product-categories/${cat.id}`);
     await fetchCategories();
-  } catch (err: any) { alert(err.response?.data?.message || 'Gagal menghapus.'); }
+  } catch (err: any) { toast.error(err.response?.data?.message || 'Gagal menghapus.'); }
 }
 
 onMounted(fetchCategories);

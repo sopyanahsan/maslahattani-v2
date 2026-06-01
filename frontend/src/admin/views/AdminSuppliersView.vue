@@ -488,7 +488,7 @@ async function handleMarkOrdered() {
     await supplierService.markOrdered(poDetail.value.id);
     showPODetail.value = false;
     await fetchPOs();
-  } catch (err: any) { alert(err.response?.data?.message ?? 'Gagal.'); }
+  } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal.'); }
 }
 
 async function handleMarkReceived() {
@@ -500,7 +500,7 @@ async function handleMarkReceived() {
     toast.success(res.message || 'Berhasil!');
     showPODetail.value = false;
     await fetchPOs();
-  } catch (err: any) { alert(err.response?.data?.message ?? 'Gagal.'); }
+  } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal.'); }
 }
 
 function openPartialReceive() {
@@ -522,27 +522,28 @@ async function handlePartialReceive() {
   const items = partialReceiveItems.value
     .filter((i) => i.receivedQty > 0)
     .map((i) => ({ itemId: i.itemId, receivedQty: i.receivedQty }));
-  if (items.length === 0) { alert('Tidak ada item yang diterima.'); return; }
+  if (items.length === 0) { toast.warning('Tidak ada item yang diterima.'); return; }
   receivingPartial.value = true;
   try {
     const res = await supplierService.markReceived(poDetail.value.id, items);
-    alert(res.message || 'Berhasil!');
+    toast.success(res.message || 'Berhasil!');
     showPartialReceive.value = false;
     showPODetail.value = false;
     await fetchPOs();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal menerima barang.');
+    toast.error(err.response?.data?.message ?? 'Gagal menerima barang.');
   } finally { receivingPartial.value = false; }
 }
 
 async function handleCancelPO() {
   if (!poDetail.value) return;
-  if (!confirm('Batalkan PO ini?')) return;
+  const confirmed = await ask({ title: 'Batalkan PO?', message: 'Batalkan PO ini?', confirmLabel: 'Batalkan', variant: 'danger' });
+  if (!confirmed) return;
   try {
     await supplierService.cancelPO(poDetail.value.id);
     showPODetail.value = false;
     await fetchPOs();
-  } catch (err: any) { alert(err.response?.data?.message ?? 'Gagal.'); }
+  } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal.'); }
 }
 
 // ============================================

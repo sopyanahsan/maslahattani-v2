@@ -188,12 +188,14 @@ import {
   AlertCircle as AlertCircleIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useToast } from '@/shared/composables/useToast';
 import kasirService, {
   type KasirDto, type CreateKasirResponse, type ResetPinResponse, type UserStatus,
 } from '@/shared/services/kasir.service';
 import shopsService, { type ShopDto } from '@/shared/services/shops.service';
 
 const authStore = useAuthStore();
+const toast = useToast();
 
 const kasirList = ref<KasirDto[]>([]);
 const loading = ref(false);
@@ -261,7 +263,7 @@ async function handleCreate() {
 async function toggleStatus(kasir: KasirDto) {
   const newStatus: UserStatus = kasir.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE';
   try { await kasirService.update(kasir.id, { status: newStatus }); kasir.status = newStatus; }
-  catch (err: any) { alert(err.response?.data?.message ?? 'Gagal update status.'); }
+  catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal update status.'); }
 }
 
 function confirmResetPin(kasir: KasirDto) {

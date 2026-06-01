@@ -443,6 +443,7 @@ import {
   Boxes as BoxesIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useConfirm } from '@/shared/composables/useConfirm';
 import brilinkAccountService, {
   type BrilinkAccount,
   type BrilinkMutationItem,
@@ -452,6 +453,7 @@ import settingsService from '@/shared/services/settings.service';
 
 
 const authStore = useAuthStore();
+const { ask } = useConfirm();
 
 // Tabs
 type TabKey = 'rekening' | 'metode';
@@ -628,7 +630,8 @@ async function handleSaveAccount() {
 
 
 async function handleDeleteAccount(account: BrilinkAccount) {
-  if (!confirm(`Hapus rekening "${account.label}"?`)) return;
+  const confirmed = await ask({ title: 'Hapus Rekening?', message: `Hapus rekening "${account.label}"?`, confirmLabel: 'Hapus', variant: 'danger' });
+  if (!confirmed) return;
   try {
     await brilinkAccountService.remove(account.id);
     await fetchAccounts();
