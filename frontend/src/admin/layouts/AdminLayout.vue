@@ -196,7 +196,7 @@
         <div>
           <h2 class="text-lg font-bold text-slate-950 dark:text-slate-100">{{ pageTitle }}</h2>
           <p class="text-[11px] text-slate-400 dark:text-slate-500">
-            {{ currentShopName || 'Ngalir' }} · {{ todayLabel }}
+            {{ todayLabel }}
           </p>
         </div>
         <div class="flex items-center gap-3">
@@ -303,10 +303,71 @@
 
 
 
+      <!-- Branch Context Banner -->
+      <div class="sticky top-16 z-10 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 dark:from-blue-900 dark:via-blue-900 dark:to-blue-950 px-4 lg:px-6 py-2 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" title="Aktif"></div>
+          <div class="min-w-0">
+            <p class="text-xs font-bold text-white truncate">{{ currentShopName || 'Belum dipilih' }}</p>
+            <p class="text-[10px] text-blue-200 dark:text-blue-300 truncate">{{ currentShopAddress }}</p>
+          </div>
+        </div>
+        <button
+          v-if="canSwitchShop"
+          type="button"
+          class="shrink-0 h-7 px-3 text-[10px] font-semibold text-blue-100 bg-white/10 border border-white/20 rounded-md hover:bg-white/20 transition-colors"
+          @click="openSwitchModal"
+        >
+          Ganti Cabang
+        </button>
+      </div>
+
       <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto text-slate-900 dark:text-slate-100">
         <RouterView />
       </div>
     </main>
+
+    <!-- ============================================ -->
+    <!-- Branch Picker Modal (Full list)              -->
+    <!-- ============================================ -->
+    <Teleport to="body">
+      <div v-if="showBranchPickerModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" @click="showBranchPickerModal = false"></div>
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+          <div class="px-6 pt-5 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Ganti Cabang Aktif</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pilih cabang yang ingin dikelola. Semua data akan mengikuti konteks cabang terpilih.</p>
+          </div>
+          <div class="max-h-80 overflow-y-auto p-3 space-y-2">
+            <button
+              v-for="shop in availableShops"
+              :key="shop.id"
+              type="button"
+              :disabled="switchingShop"
+              :class="[
+                'w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left',
+                currentShopId === shop.id
+                  ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-slate-50 dark:hover:bg-slate-800',
+              ]"
+              @click="handleSwitchShop(shop.id)"
+            >
+              <div :class="['w-10 h-10 rounded-xl flex items-center justify-center shrink-0', currentShopId === shop.id ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400']">
+                <component :is="currentShopId === shop.id ? CheckIcon : StoreIcon" class="w-5 h-5" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p :class="['text-sm font-semibold truncate', currentShopId === shop.id ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-slate-100']">{{ shop.name }}</p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">{{ shop.address }}</p>
+              </div>
+              <span v-if="currentShopId === shop.id" class="text-[9px] font-bold uppercase text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded-full shrink-0">Aktif</span>
+            </button>
+          </div>
+          <div class="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+            <button type="button" class="w-full h-9 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200" @click="showBranchPickerModal = false">Batal</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- ============================================ -->
     <!-- Switch Branch Confirmation Modal             -->
@@ -415,6 +476,7 @@ const { resolved: themeResolved, mode: themeMode, toggle: cycleTheme } = useThem
 
 const sidebarOpen = ref(false);
 const shopMenuOpen = ref(false);
+const showBranchPickerModal = ref(false);
 const switchingShop = ref(false);
 const switchError = ref('');
 
@@ -440,6 +502,10 @@ function toggleTheme() {
 // === Shop selector ===
 const currentShopName = computed(() => shopStore.currentShopName);
 const currentShopId = computed(() => shopStore.currentShopId);
+const currentShopAddress = computed(() => {
+  const shop = availableShops.value.find(s => s.id === currentShopId.value);
+  return shop?.address || '';
+});
 const availableShops = computed(() => shopStore.availableShops);
 
 const canSwitchShop = computed(
@@ -449,16 +515,19 @@ const canSwitchShop = computed(
 async function handleSwitchShop(shopId: string) {
   if (shopId === currentShopId.value) {
     shopMenuOpen.value = false;
+    showBranchPickerModal.value = false;
     return;
   }
-  // Show confirmation modal first — super-admin must explicitly confirm
-  // which branch they want to manage. Prevents accidentally editing wrong
-  // branch's data (e.g. settings, products, prices).
   pendingSwitchShopId.value = shopId;
   pendingSwitchShopName.value =
     availableShops.value.find((s) => s.id === shopId)?.name ?? 'cabang ini';
   shopMenuOpen.value = false;
+  showBranchPickerModal.value = false;
   showSwitchConfirmation.value = true;
+}
+
+function openSwitchModal() {
+  showBranchPickerModal.value = true;
 }
 
 async function confirmSwitchShop() {
