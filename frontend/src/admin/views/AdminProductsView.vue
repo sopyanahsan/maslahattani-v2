@@ -112,6 +112,7 @@
               <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Satuan</th>
               <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Harga Jual</th>
               <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Harga Beli</th>
+              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Margin</th>
               <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Aksi</th>
             </tr>
           </thead>
@@ -143,6 +144,9 @@
               <td class="px-3 py-2.5 text-center text-xs text-slate-500">{{ product.unit || 'pcs' }}</td>
               <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-900">{{ formatRupiah(product.price) }}</td>
               <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-600">{{ formatRupiah(product.cost) }}</td>
+              <td class="px-3 py-2.5 text-right">
+                <span :class="['text-xs font-mono font-semibold', getMargin(product) > 0 ? 'text-emerald-600' : 'text-red-600']">{{ getMarginPercent(product) }}%</span>
+              </td>
               <td class="px-4 py-3 text-center">
                 <div class="flex items-center justify-center gap-1">
                   <button
