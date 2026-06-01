@@ -235,20 +235,30 @@
             >
               <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
                 <p class="text-xs font-bold text-slate-900 dark:text-slate-100">Notifikasi</p>
-                <span v-if="alertCount > 0" class="text-[10px] font-semibold text-red-600 dark:text-red-400">{{ alertCount }} aktif</span>
+                <button
+                  v-if="alertCount > 0"
+                  type="button"
+                  class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                  @click="markAllRead"
+                >
+                  Tandai baca semua
+                </button>
               </div>
               <div class="max-h-80 overflow-y-auto">
                 <div v-if="alertsLoading" class="py-8 text-center">
                   <Loader2Icon class="w-4 h-4 animate-spin text-slate-400 mx-auto" />
                 </div>
                 <div v-else-if="alertItems.length === 0" class="py-8 text-center">
+                  <BellIcon class="w-6 h-6 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
                   <p class="text-xs text-slate-400 dark:text-slate-500">Semua aman, tidak ada alert.</p>
                 </div>
                 <div v-else>
-                  <div
+                  <button
                     v-for="alert in alertItems.slice(0, 15)"
                     :key="alert.id"
-                    class="px-4 py-2.5 border-b border-slate-50 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    type="button"
+                    class="w-full px-4 py-2.5 border-b border-slate-50 dark:border-slate-800 last:border-0 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors text-left"
+                    @click="handleAlertClick(alert)"
                   >
                     <div class="flex items-start gap-2.5">
                       <div :class="['w-2 h-2 rounded-full shrink-0 mt-1.5', alertDotColor(alert.severity)]"></div>
@@ -258,11 +268,11 @@
                       </div>
                       <span :class="['shrink-0 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded', alertTypeBadge(alert.type)]">{{ alertTypeShort(alert.type) }}</span>
                     </div>
-                  </div>
+                  </button>
                 </div>
               </div>
-              <div class="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-                <p class="text-[9px] text-slate-400 dark:text-slate-500 text-center">Auto-refresh tiap 60 detik</p>
+              <div v-if="alertItems.length > 0" class="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-center">
+                <p class="text-[9px] text-slate-400 dark:text-slate-500">Klik untuk langsung ke halaman terkait</p>
               </div>
             </div>
           </div>
@@ -665,14 +675,27 @@ function stopNotifPolling() {
   if (notifTimer) { clearInterval(notifTimer); notifTimer = null; }
 }
 
-// Close notif dropdown on outside click
-function handleClickOutsideNotif(e: MouseEvent) {
-  if (notifOpen.value) {
-    const target = e.target as HTMLElement;
-    if (!target.closest('[data-notif-panel]')) {
-      // notifOpen.value = false; // handled by click away
-    }
-  }
+function handleAlertClick(alert: any) {
+  notifOpen.value = false;
+  // Navigate to relevant page based on alert type
+  const routeMap: Record<string, string> = {
+    LOW_STOCK: '/admin/products',
+    BRILINK_LOW: '/admin/brilink',
+    NO_SHIFT: '/admin/shifts',
+    DEBT_OVERDUE: '/admin/debts',
+  };
+  const target = routeMap[alert.type] || '/admin/dashboard';
+  router.push(target);
+}
+
+function markAllRead() {
+  // Dismiss all alerts visually (reset badge to 0, clear items)
+  alertItems.value = [];
+  alertCount.value = 0;
+  prevAlertCount = 0;
+  notifOpen.value = false;
+  // Persist dismissed state until next poll brings new ones
+  localStorage.setItem('alerts_dismissed_at', new Date().toISOString());
 }
 
 onMounted(async () => {
