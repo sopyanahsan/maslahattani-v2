@@ -18,6 +18,7 @@ export interface ProductDto {
   cost: number;
   imageUrl?: string | null;
   unit?: string | null;
+  description?: string | null;
   categoryId?: string | null;
   supplierId?: string | null;
   createdAt: string;
@@ -59,6 +60,8 @@ export interface CreateProductPayload {
   supplierId?: string;
   initialStock?: number;
   imageUrl?: string;
+  categoryId?: string;
+  unit?: string;
 }
 
 export interface UpdateProductPayload {
@@ -67,11 +70,16 @@ export interface UpdateProductPayload {
   cost?: number;
   supplierId?: string;
   imageUrl?: string;
+  categoryId?: string;
+  unit?: string;
+  description?: string;
 }
 
 export interface QueryProductParams {
   shopId?: string;
   search?: string;
+  categoryId?: string;
+  sortBy?: string;
   page?: number;
   limit?: number;
 }

@@ -2,11 +2,13 @@ import {
   Injectable,
   NotFoundException,
   ConflictException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
+import * as XLSX from 'xlsx';
 
 @Injectable()
 export class ProductsService {
@@ -85,12 +87,36 @@ export class ProductsService {
     const where: any = { deletedAt: null };
 
     if (query.shopId) where.shopId = query.shopId;
+    if (query.categoryId) where.categoryId = query.categoryId;
 
     if (query.search) {
       where.OR = [
         { name: { contains: query.search, mode: 'insensitive' } },
         { sku: { contains: query.search, mode: 'insensitive' } },
       ];
+    }
+
+    // Determine orderBy from sortBy param
+    let orderBy: any = { name: 'asc' };
+    switch (query.sortBy) {
+      case 'name-desc':
+        orderBy = { name: 'desc' };
+        break;
+      case 'price-high':
+        orderBy = { price: 'desc' };
+        break;
+      case 'price-low':
+        orderBy = { price: 'asc' };
+        break;
+      case 'stock-low':
+      case 'stock-high':
+        // Stock sort handled after query (since it's a relation aggregate)
+        orderBy = { name: 'asc' };
+        break;
+      case 'name-asc':
+      default:
+        orderBy = { name: 'asc' };
+        break;
     }
 
     const [products, total] = await Promise.all([
@@ -100,15 +126,31 @@ export class ProductsService {
           stocks: { select: { quantity: true, warehouse: true } },
           category: { select: { id: true, name: true, icon: true } },
         },
-        orderBy: { name: 'asc' },
+        orderBy,
         skip,
         take: limit,
       }),
       this.prisma.product.count({ where }),
     ]);
 
+    // Sort by stock if needed (post-query since stock is aggregated)
+    let sortedProducts = products;
+    if (query.sortBy === 'stock-low') {
+      sortedProducts = [...products].sort((a, b) => {
+        const stockA = a.stocks.reduce((sum, s) => sum + s.quantity, 0);
+        const stockB = b.stocks.reduce((sum, s) => sum + s.quantity, 0);
+        return stockA - stockB;
+      });
+    } else if (query.sortBy === 'stock-high') {
+      sortedProducts = [...products].sort((a, b) => {
+        const stockA = a.stocks.reduce((sum, s) => sum + s.quantity, 0);
+        const stockB = b.stocks.reduce((sum, s) => sum + s.quantity, 0);
+        return stockB - stockA;
+      });
+    }
+
     return {
-      data: products,
+      data: sortedProducts,
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
@@ -185,5 +227,183 @@ export class ProductsService {
     });
 
     return { success: true, message: `Produk "${product.name}" berhasil dihapus.` };
+  }
+
+  // ============================================
+  // BULK UPLOAD (from Excel/CSV)
+  // ============================================
+
+  async bulkUpload(shopId: string, fileBuffer: Buffer) {
+    // Parse file
+    const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    if (!sheetName) {
+      throw new BadRequestException('File Excel kosong atau format tidak valid.');
+    }
+
+    const sheet = workbook.Sheets[sheetName];
+    const rows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+    if (rows.length === 0) {
+      throw new BadRequestException('Tidak ada data produk di file.');
+    }
+
+    if (rows.length > 500) {
+      throw new BadRequestException('Maksimal 500 produk per upload.');
+    }
+
+    // Validate & transform rows
+    const results: { success: number; skipped: number; errors: string[] } = {
+      success: 0,
+      skipped: 0,
+      errors: [],
+    };
+
+    // Get existing SKUs for this shop to check duplicates
+    const existingProducts = await this.prisma.product.findMany({
+      where: { shopId, deletedAt: null },
+      select: { sku: true },
+    });
+    const existingSKUs = new Set(existingProducts.map(p => p.sku.toUpperCase()));
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const rowNum = i + 2; // Excel row (1-indexed + header)
+
+      // Map columns (support both Indonesian & English headers)
+      const name = String(row['Nama Produk'] || row['nama'] || row['name'] || '').trim();
+      const sku = String(row['SKU'] || row['sku'] || '').trim().toUpperCase();
+      const priceRaw = row['Harga Jual'] || row['harga_jual'] || row['price'] || 0;
+      const costRaw = row['Modal'] || row['harga_modal'] || row['cost'] || 0;
+      const stockRaw = row['Stok Awal'] || row['stok'] || row['stock'] || 0;
+      const unit = String(row['Satuan'] || row['unit'] || 'pcs').trim();
+      const categoryName = String(row['Kategori'] || row['category'] || '').trim();
+      const description = String(row['Deskripsi'] || row['description'] || '').trim();
+
+      // Validate required fields
+      if (!name) {
+        results.errors.push(`Baris ${rowNum}: Nama produk kosong.`);
+        results.skipped++;
+        continue;
+      }
+      if (!sku) {
+        results.errors.push(`Baris ${rowNum}: SKU kosong.`);
+        results.skipped++;
+        continue;
+      }
+
+      const price = Math.round(Number(priceRaw) || 0);
+      const cost = Math.round(Number(costRaw) || 0);
+      const initialStock = Math.round(Number(stockRaw) || 0);
+
+      if (price <= 0) {
+        results.errors.push(`Baris ${rowNum} (${name}): Harga jual harus > 0.`);
+        results.skipped++;
+        continue;
+      }
+
+      // Check duplicate SKU
+      if (existingSKUs.has(sku)) {
+        results.errors.push(`Baris ${rowNum} (${name}): SKU "${sku}" sudah ada.`);
+        results.skipped++;
+        continue;
+      }
+
+      // Resolve category (find or create)
+      let categoryId: string | null = null;
+      if (categoryName) {
+        const existingCat = await this.prisma.productCategory.findFirst({
+          where: { shopId, name: { equals: categoryName, mode: 'insensitive' } },
+        });
+        if (existingCat) {
+          categoryId = existingCat.id;
+        } else {
+          const newCat = await this.prisma.productCategory.create({
+            data: { shopId, name: categoryName },
+          });
+          categoryId = newCat.id;
+        }
+      }
+
+      // Create product + stock in transaction
+      try {
+        await this.prisma.$transaction(async (tx) => {
+          const prod = await tx.product.create({
+            data: {
+              shopId,
+              name,
+              sku,
+              price,
+              cost,
+              unit: unit || null,
+              categoryId,
+              description: description || null,
+            },
+          });
+
+          const stock = await tx.stock.create({
+            data: {
+              shopId,
+              productId: prod.id,
+              quantity: initialStock,
+              warehouse: 'main',
+            },
+          });
+
+          if (initialStock > 0) {
+            await tx.stockHistory.create({
+              data: {
+                stockId: stock.id,
+                type: 'IN',
+                quantityBefore: 0,
+                quantityAfter: initialStock,
+                quantityChange: initialStock,
+                notes: 'Stok awal (bulk upload)',
+              },
+            });
+          }
+        });
+
+        existingSKUs.add(sku);
+        results.success++;
+      } catch (err: any) {
+        results.errors.push(`Baris ${rowNum} (${name}): ${err.message || 'Gagal menyimpan.'}`);
+        results.skipped++;
+      }
+    }
+
+    return {
+      success: true,
+      message: `Upload selesai: ${results.success} berhasil, ${results.skipped} dilewati.`,
+      totalRows: rows.length,
+      imported: results.success,
+      skipped: results.skipped,
+      errors: results.errors,
+    };
+  }
+
+  // ============================================
+  // DOWNLOAD TEMPLATE
+  // ============================================
+
+  generateTemplate(): Buffer {
+    const headers = [
+      'Nama Produk', 'SKU', 'Harga Jual', 'Modal', 'Stok Awal', 'Satuan', 'Kategori', 'Deskripsi',
+    ];
+    const exampleRow = [
+      'Beras Premium 5kg', 'BRS-5KG-001', 80000, 65000, 50, 'pcs', 'Sembako', 'Beras kualitas premium',
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, exampleRow]);
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 25 }, { wch: 15 }, { wch: 12 }, { wch: 12 },
+      { wch: 10 }, { wch: 8 }, { wch: 15 }, { wch: 30 },
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Produk');
+
+    return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
   }
 }

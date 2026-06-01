@@ -5,15 +5,26 @@
       <div class="flex items-center gap-2 text-xs text-slate-500">
         <span v-if="meta">{{ meta.total }} produk</span>
       </div>
-      <button
-        type="button"
-        class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg
-               hover:bg-blue-700 transition-colors flex items-center gap-1.5 shrink-0"
-        @click="openCreateModal"
-      >
-        <PlusIcon class="w-4 h-4" />
-        Tambah Produk
-      </button>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg
+                 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shrink-0"
+          @click="showBulkModal = true"
+        >
+          <UploadIcon class="w-3.5 h-3.5" />
+          Upload Excel
+        </button>
+        <button
+          type="button"
+          class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg
+                 hover:bg-blue-700 transition-colors flex items-center gap-1.5 shrink-0"
+          @click="openCreateModal"
+        >
+          <PlusIcon class="w-4 h-4" />
+          Tambah Produk
+        </button>
+      </div>
     </div>
 
     <!-- Search, Category filter, Sort -->
@@ -115,6 +126,9 @@
                 Stok
               </th>
               <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                Satuan
+              </th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                 Aksi
               </th>
             </tr>
@@ -177,6 +191,9 @@
                 >
                   {{ getTotalStock(product) }}
                 </span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span class="text-xs text-slate-500">{{ product.unit || 'pcs' }}</span>
               </td>
               <td class="px-4 py-3 text-center">
                 <div class="flex items-center justify-center gap-1">
@@ -485,6 +502,20 @@
             </div>
           </div>
 
+          <!-- 7. Deskripsi -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              Deskripsi
+            </label>
+            <textarea
+              v-model="form.description"
+              rows="2"
+              placeholder="Keterangan produk (opsional)"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md
+                     focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+            ></textarea>
+          </div>
+
           <!-- Error -->
           <div
             v-if="formError"
@@ -568,6 +599,89 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- ============================================ -->
+    <!-- Bulk Upload Modal                            -->
+    <!-- ============================================ -->
+    <Teleport to="body">
+      <div v-if="showBulkModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="closeBulkModal"></div>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
+          <h2 class="text-base font-bold text-slate-950">Upload Massal Produk (Excel)</h2>
+          <p class="text-xs text-slate-500">
+            Upload file <strong>.xlsx</strong> atau <strong>.csv</strong> untuk menambah banyak produk sekaligus. Maksimal 500 produk per upload.
+          </p>
+
+          <!-- Download Template -->
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-blue-800">Download Template</p>
+              <p class="text-[10px] text-blue-600 mt-0.5">Gunakan template ini agar format kolom sesuai.</p>
+            </div>
+            <a
+              :href="templateUrl"
+              download="template-produk.xlsx"
+              class="h-8 px-3 text-[10px] font-semibold text-blue-700 bg-white border border-blue-300 rounded-md
+                     hover:bg-blue-100 transition-colors flex items-center gap-1 shrink-0"
+            >
+              <DownloadIcon class="w-3 h-3" /> Download
+            </a>
+          </div>
+
+          <!-- File Input -->
+          <div>
+            <label
+              class="block w-full border-2 border-dashed border-slate-300 rounded-lg p-6 text-center cursor-pointer
+                     hover:border-blue-400 hover:bg-blue-50/30 transition-colors"
+              :class="bulkFile ? 'border-emerald-400 bg-emerald-50/30' : ''"
+            >
+              <UploadIcon class="w-6 h-6 mx-auto mb-2" :class="bulkFile ? 'text-emerald-500' : 'text-slate-400'" />
+              <p v-if="bulkFile" class="text-xs font-semibold text-emerald-700">{{ bulkFile.name }}</p>
+              <p v-else class="text-xs text-slate-500">Klik atau drag file Excel (.xlsx, .csv) ke sini</p>
+              <input
+                type="file"
+                accept=".xlsx,.xls,.csv"
+                class="hidden"
+                @change="handleBulkFileSelect"
+              />
+            </label>
+          </div>
+
+          <!-- Upload Result -->
+          <div v-if="bulkResult" class="rounded-lg p-3 text-xs space-y-1" :class="bulkResult.success ? 'bg-emerald-50 border border-emerald-200' : 'bg-red-50 border border-red-200'">
+            <p class="font-semibold" :class="bulkResult.success ? 'text-emerald-800' : 'text-red-800'">{{ bulkResult.message }}</p>
+            <p v-if="bulkResult.imported" class="text-emerald-700">{{ bulkResult.imported }} produk berhasil diimport</p>
+            <p v-if="bulkResult.skipped" class="text-amber-700">{{ bulkResult.skipped }} dilewati</p>
+            <div v-if="bulkResult.errors && bulkResult.errors.length > 0" class="mt-2 max-h-24 overflow-y-auto">
+              <p v-for="(err, i) in bulkResult.errors.slice(0, 10)" :key="i" class="text-red-600 text-[10px]">{{ err }}</p>
+              <p v-if="bulkResult.errors.length > 10" class="text-red-500 text-[10px] mt-1">...dan {{ bulkResult.errors.length - 10 }} error lainnya</p>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div v-if="bulkError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">
+            {{ bulkError }}
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-2 pt-2">
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors" @click="closeBulkModal">
+              {{ bulkResult ? 'Tutup' : 'Batal' }}
+            </button>
+            <button
+              v-if="!bulkResult"
+              type="button"
+              :disabled="!bulkFile || bulkUploading"
+              class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+              @click="handleBulkUpload"
+            >
+              <Loader2Icon v-if="bulkUploading" class="w-3.5 h-3.5 animate-spin" />
+              Upload & Import
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -584,6 +698,7 @@ import {
   AlertCircle as AlertCircleIcon,
   Image as ImageIcon,
   Upload as UploadIcon,
+  Download as DownloadIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { uploadToCloudinary } from '@/shared/services/upload.service';
@@ -622,6 +737,7 @@ const form = reactive({
   imageUrl: '' as string | null,
   categoryId: '' as string,
   unit: 'pcs',
+  description: '',
 });
 
 // Image upload state
@@ -640,6 +756,14 @@ const deletingProduct = ref<ProductDto | null>(null);
 const deleting = ref(false);
 const deleteError = ref<string | null>(null);
 
+// Bulk upload state
+const showBulkModal = ref(false);
+const bulkFile = ref<File | null>(null);
+const bulkUploading = ref(false);
+const bulkError = ref<string | null>(null);
+const bulkResult = ref<{ success: boolean; message: string; imported?: number; skipped?: number; errors?: string[] } | null>(null);
+const templateUrl = '/api/products/bulk-template';
+
 // Debounce timer
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -655,40 +779,13 @@ async function fetchProducts() {
     const response = await productsService.list({
       shopId: shopId || undefined,
       search: searchQuery.value || undefined,
+      categoryId: filterCategory.value || undefined,
+      sortBy: sortMode.value || undefined,
       page: currentPage.value,
       limit: 20,
     });
 
-    let data = response.data;
-
-    // Client-side category filter (if backend doesn't support it)
-    if (filterCategory.value) {
-      data = data.filter(p => p.categoryId === filterCategory.value);
-    }
-
-    // Client-side sort
-    switch (sortMode.value) {
-      case 'name-asc':
-        data.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case 'name-desc':
-        data.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case 'stock-low':
-        data.sort((a, b) => getTotalStock(a) - getTotalStock(b));
-        break;
-      case 'stock-high':
-        data.sort((a, b) => getTotalStock(b) - getTotalStock(a));
-        break;
-      case 'price-high':
-        data.sort((a, b) => b.price - a.price);
-        break;
-      case 'price-low':
-        data.sort((a, b) => a.price - b.price);
-        break;
-    }
-
-    products.value = data;
+    products.value = response.data;
     meta.value = response.meta;
   } catch (err: any) {
     error.value = err.response?.data?.message ?? err.message ?? 'Gagal memuat produk.';
@@ -725,6 +822,7 @@ function openCreateModal() {
   form.imageUrl = null;
   form.categoryId = '';
   form.unit = 'pcs';
+  form.description = '';
   imagePreviewUrl.value = null;
   showCategoryInline.value = false;
   formError.value = null;
@@ -741,6 +839,7 @@ function openEditModal(product: ProductDto) {
   form.imageUrl = product.imageUrl || null;
   form.categoryId = product.categoryId || '';
   form.unit = product.unit || 'pcs';
+  form.description = (product as any).description || '';
   imagePreviewUrl.value = product.imageUrl || null;
   showCategoryInline.value = false;
   formError.value = null;
@@ -765,7 +864,8 @@ async function handleSubmitForm() {
         imageUrl: form.imageUrl ?? undefined,
         categoryId: form.categoryId || undefined,
         unit: form.unit || undefined,
-      } as any);
+        description: form.description || undefined,
+      });
     } else {
       const shopId = authStore.user?.shopId;
       if (!shopId) {
@@ -782,7 +882,7 @@ async function handleSubmitForm() {
         imageUrl: form.imageUrl ?? undefined,
         categoryId: form.categoryId || undefined,
         unit: form.unit || undefined,
-      } as any);
+      });
     }
     closeModal();
     await fetchProducts();
@@ -814,6 +914,57 @@ async function handleDelete() {
   } finally {
     deleting.value = false;
   }
+}
+
+// ============================================
+// Bulk Upload Methods
+// ============================================
+
+function handleBulkFileSelect(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+  bulkFile.value = file;
+  bulkError.value = null;
+  bulkResult.value = null;
+}
+
+async function handleBulkUpload() {
+  if (!bulkFile.value) return;
+  const shopId = authStore.user?.shopId;
+  if (!shopId) {
+    bulkError.value = 'Tidak ada cabang aktif.';
+    return;
+  }
+
+  bulkUploading.value = true;
+  bulkError.value = null;
+  bulkResult.value = null;
+
+  try {
+    const formData = new FormData();
+    formData.append('file', bulkFile.value);
+    formData.append('shopId', shopId);
+
+    const { data } = await api.post('/products/bulk-upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    bulkResult.value = data;
+    // Refresh product list
+    await fetchProducts();
+    await fetchCategories();
+  } catch (err: any) {
+    bulkError.value = err.response?.data?.message ?? err.message ?? 'Gagal upload.';
+  } finally {
+    bulkUploading.value = false;
+  }
+}
+
+function closeBulkModal() {
+  showBulkModal.value = false;
+  bulkFile.value = null;
+  bulkError.value = null;
+  bulkResult.value = null;
 }
 
 // ============================================

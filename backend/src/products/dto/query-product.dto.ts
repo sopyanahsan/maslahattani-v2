@@ -13,6 +13,19 @@ export class QueryProductDto {
   @IsString()
   search?: string;
 
+  @ApiPropertyOptional({ example: 'category-id-123', description: 'Filter by categoryId' })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @ApiPropertyOptional({
+    example: 'name-asc',
+    description: 'Sort: name-asc, name-desc, stock-low, stock-high, price-high, price-low',
+  })
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
   @ApiPropertyOptional({ example: 1 })
   @IsOptional()
   @Type(() => Number)
