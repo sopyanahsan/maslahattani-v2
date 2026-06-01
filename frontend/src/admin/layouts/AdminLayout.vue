@@ -211,6 +211,62 @@
             <component :is="themeIcon" class="w-4 h-4" />
           </button>
 
+          <!-- Notification Bell -->
+          <div class="relative">
+            <button
+              type="button"
+              class="h-9 w-9 flex items-center justify-center rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors relative"
+              title="Notifikasi"
+              @click="notifOpen = !notifOpen"
+            >
+              <BellIcon class="w-4 h-4" />
+              <span
+                v-if="alertCount > 0"
+                class="absolute -top-1 -right-1 w-4.5 h-4.5 min-w-[18px] px-1 flex items-center justify-center rounded-full text-[9px] font-bold text-white bg-red-500 border-2 border-white dark:border-slate-800 leading-none"
+              >
+                {{ alertCount > 99 ? '99+' : alertCount }}
+              </span>
+            </button>
+
+            <!-- Notification Dropdown -->
+            <div
+              v-if="notifOpen"
+              class="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-40 overflow-hidden"
+            >
+              <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
+                <p class="text-xs font-bold text-slate-900 dark:text-slate-100">Notifikasi</p>
+                <span v-if="alertCount > 0" class="text-[10px] font-semibold text-red-600 dark:text-red-400">{{ alertCount }} aktif</span>
+              </div>
+              <div class="max-h-80 overflow-y-auto">
+                <div v-if="alertsLoading" class="py-8 text-center">
+                  <Loader2Icon class="w-4 h-4 animate-spin text-slate-400 mx-auto" />
+                </div>
+                <div v-else-if="alertItems.length === 0" class="py-8 text-center">
+                  <p class="text-xs text-slate-400 dark:text-slate-500">Semua aman, tidak ada alert.</p>
+                </div>
+                <div v-else>
+                  <div
+                    v-for="alert in alertItems.slice(0, 15)"
+                    :key="alert.id"
+                    class="px-4 py-2.5 border-b border-slate-50 dark:border-slate-800 last:border-0 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  >
+                    <div class="flex items-start gap-2.5">
+                      <div :class="['w-2 h-2 rounded-full shrink-0 mt-1.5', alertDotColor(alert.severity)]"></div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-[11px] font-semibold text-slate-800 dark:text-slate-200 truncate">{{ alert.title }}</p>
+                        <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">{{ alert.shopName }} · {{ alert.description }}</p>
+                      </div>
+                      <span :class="['shrink-0 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded', alertTypeBadge(alert.type)]">{{ alertTypeShort(alert.type) }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+                <p class="text-[9px] text-slate-400 dark:text-slate-500 text-center">Auto-refresh tiap 60 detik</p>
+              </div>
+            </div>
+          </div>
+
           <span class="text-xs text-slate-500 dark:text-slate-400 hidden xl:inline">
             {{ todayLabel }}
           </span>
@@ -359,7 +415,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, type Component } from 'vue';
+import { computed, onMounted, onUnmounted, ref, type Component } from 'vue';
 import api from '@/shared/services/api';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
@@ -394,6 +450,7 @@ import {
   Sun as SunIcon,
   Moon as MoonIcon,
   Monitor as MonitorIcon,
+  Bell as BellIcon,
 } from 'lucide-vue-next';
 
 const router = useRouter();
@@ -537,7 +594,89 @@ async function fetchBadgeCounts() {
   }
 }
 
+// ============================================
+// NOTIFICATION SYSTEM (Bell icon + sound)
+// ============================================
+const notifOpen = ref(false);
+const alertItems = ref<Array<{ id: string; type: string; severity: string; title: string; description: string; shopId: string; shopName: string }>>([]);
+const alertCount = ref(0);
+const alertsLoading = ref(false);
+let prevAlertCount = 0;
+let notifTimer: ReturnType<typeof setInterval> | null = null;
+
+// Sound tones (short base64-encoded beep sounds)
+const SOUND_TONES: Record<string, string> = {
+  chime: 'data:audio/wav;base64,UklGRl4FAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToFAAAAAAD//wEAAQD+/wIA/v8CAAAA//8BAAEA/v8DAAAA/f8DAP//AAABAP//AQAAAP//AgD//wEA//8BAAAAAQBzdHJpbmcA',
+  beep: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVYGAACAf3+AgICAgICBgYGCgoKDg4SEhYWGh4eIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7/Dx8vP09fb3+Pn6+/z9/v8A',
+  bell: 'data:audio/wav;base64,UklGRl4FAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToFAAAAAPz/BQD7/wQAAAD+/wMAAAD9/wQA/f8DAP//AgD//wIA//8BAAAAAAEAAAABAAEA//8BAP//AgD//w==',
+};
+
+function alertDotColor(severity: string): string {
+  if (severity === 'critical') return 'bg-red-500';
+  if (severity === 'warning') return 'bg-amber-500';
+  return 'bg-blue-400';
+}
+function alertTypeBadge(type: string): string {
+  const m: Record<string, string> = { LOW_STOCK: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', BRILINK_LOW: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', NO_SHIFT: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', DEBT_OVERDUE: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' };
+  return m[type] || 'bg-slate-100 text-slate-600';
+}
+function alertTypeShort(type: string): string {
+  const m: Record<string, string> = { LOW_STOCK: 'Stok', BRILINK_LOW: 'BRI', NO_SHIFT: 'Shift', DEBT_OVERDUE: 'Hutang' };
+  return m[type] || type;
+}
+
+async function fetchAlerts() {
+  alertsLoading.value = alertItems.value.length === 0;
+  try {
+    const { data } = await api.get('/dashboard/retail/alerts/all');
+    alertItems.value = data.alerts || [];
+    alertCount.value = data.summary?.total || 0;
+
+    // Play sound if new alerts appeared
+    if (alertCount.value > prevAlertCount && prevAlertCount > 0) {
+      playNotifSound();
+    }
+    prevAlertCount = alertCount.value;
+  } catch {
+    // Silent — non-super-admin might get 403
+  } finally {
+    alertsLoading.value = false;
+  }
+}
+
+function playNotifSound() {
+  try {
+    const tone = localStorage.getItem('notif_sound_tone') || 'chime';
+    const enabled = localStorage.getItem('notif_sound_enabled') !== 'false';
+    if (!enabled || tone === 'silent') return;
+
+    const src = SOUND_TONES[tone] || SOUND_TONES.chime;
+    const audio = new Audio(src);
+    audio.volume = 0.5;
+    audio.play().catch(() => {}); // Ignore autoplay restrictions
+  } catch { /* silent */ }
+}
+
+function startNotifPolling() {
+  fetchAlerts();
+  notifTimer = setInterval(fetchAlerts, 60_000); // 60s
+}
+function stopNotifPolling() {
+  if (notifTimer) { clearInterval(notifTimer); notifTimer = null; }
+}
+
+// Close notif dropdown on outside click
+function handleClickOutsideNotif(e: MouseEvent) {
+  if (notifOpen.value) {
+    const target = e.target as HTMLElement;
+    if (!target.closest('[data-notif-panel]')) {
+      // notifOpen.value = false; // handled by click away
+    }
+  }
+}
+
 onMounted(async () => {
+  startNotifPolling();
   if (canSwitchShop.value && availableShops.value.length === 0) {
     try {
       await shopStore.fetchShops();
@@ -561,6 +700,10 @@ onMounted(async () => {
 
   // Fetch badge counts for sidebar notifications
   await fetchBadgeCounts();
+});
+
+onUnmounted(() => {
+  stopNotifPolling();
 });
 
 // ============================================

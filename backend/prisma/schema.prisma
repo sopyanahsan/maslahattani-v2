@@ -180,6 +180,10 @@ model ShopSetting {
   discountTotalEnabled        Boolean @default(true)
   notePerItemEnabled          Boolean @default(true)
 
+  // Notification settings
+  notifSoundEnabled           Boolean @default(true)
+  notifSoundTone              String  @default("chime") // chime | beep | bell | silent
+
   updatedAt           DateTime  @updatedAt
   
   @@map("shop_settings")

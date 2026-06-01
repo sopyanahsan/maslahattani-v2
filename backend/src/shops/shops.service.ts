@@ -429,6 +429,8 @@ export class ShopsService {
         discountPerItemEnabled: dto.discountPerItemEnabled,
         discountTotalEnabled: dto.discountTotalEnabled,
         notePerItemEnabled: dto.notePerItemEnabled,
+        notifSoundEnabled: dto.notifSoundEnabled,
+        notifSoundTone: dto.notifSoundTone,
         receiptConfig: dto.receiptConfig,
         language: dto.language,
       },

@@ -357,6 +357,45 @@
             </button>
           </div>
         </form>
+
+        <!-- Notification Sound Settings -->
+        <div class="border-t border-slate-200 dark:border-slate-700 pt-5 mt-5">
+          <h4 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3">Suara Notifikasi</h4>
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">Aktifkan suara notifikasi</p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Bunyi saat ada alert baru (stok rendah, hutang jatuh tempo, dll)</p>
+              </div>
+              <button
+                type="button"
+                :class="['w-10 h-5 rounded-full relative transition-colors', notifSoundEnabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600']"
+                @click="toggleNotifSound"
+              >
+                <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform', notifSoundEnabled ? 'left-[22px]' : 'left-0.5']" />
+              </button>
+            </div>
+
+            <div v-if="notifSoundEnabled">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-2">Pilih Tone</label>
+              <div class="flex flex-wrap gap-2">
+                <button
+                  v-for="tone in toneOptions"
+                  :key="tone.value"
+                  type="button"
+                  :class="['h-8 px-3 text-xs font-semibold rounded-lg border transition-colors flex items-center gap-1.5',
+                    notifSoundTone === tone.value
+                      ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-300 dark:border-blue-700 text-blue-700 dark:text-blue-300'
+                      : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-blue-200 dark:hover:border-blue-800']"
+                  @click="selectTone(tone.value)"
+                >
+                  {{ tone.icon }} {{ tone.label }}
+                </button>
+              </div>
+              <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-2">Klik untuk preview & select.</p>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ============================================ -->
@@ -440,6 +479,39 @@ const alertForm = reactive({
   overdueDebtDaysBeforeNotice: 0,
   brilinkFailedTransactionThreshold: 5,
 });
+
+// Notification sound settings
+const notifSoundEnabled = ref(localStorage.getItem('notif_sound_enabled') !== 'false');
+const notifSoundTone = ref(localStorage.getItem('notif_sound_tone') || 'chime');
+const toneOptions = [
+  { value: 'chime', label: 'Chime', icon: '🔔' },
+  { value: 'beep', label: 'Beep', icon: '📢' },
+  { value: 'bell', label: 'Bell', icon: '🛎️' },
+  { value: 'silent', label: 'Silent', icon: '🔇' },
+];
+
+function toggleNotifSound() {
+  notifSoundEnabled.value = !notifSoundEnabled.value;
+  localStorage.setItem('notif_sound_enabled', String(notifSoundEnabled.value));
+}
+
+function selectTone(tone: string) {
+  notifSoundTone.value = tone;
+  localStorage.setItem('notif_sound_tone', tone);
+  if (tone !== 'silent') {
+    try {
+      const TONES: Record<string, string> = {
+        chime: 'data:audio/wav;base64,UklGRl4FAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToFAAAAAAD//wEAAQD+/wIA/v8CAAAA//8BAAEA/v8DAAAA/f8DAP//AAABAP//AQAAAP//AgD//wEA//8BAAAAAQBzdHJpbmcA',
+        beep: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVYGAACAf3+AgICAgICBgYGCgoKDg4SEhYWGh4eIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7/Dx8vP09fb3+Pn6+/z9/v8A',
+        bell: 'data:audio/wav;base64,UklGRl4FAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToFAAAAAPz/BQD7/wQAAAD+/wMAAAD9/wQA/f8DAP//AgD//wIA//8BAAAAAAEAAAABAAEA//8BAP//AgD//w==',
+      };
+      const audio = new Audio(TONES[tone]);
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
+    } catch { /* silent */ }
+  }
+}
+
 const savingAlert = ref(false);
 const alertSuccess = ref<string | null>(null);
 const alertError = ref<string | null>(null);
