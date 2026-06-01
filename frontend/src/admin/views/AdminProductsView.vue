@@ -104,33 +104,15 @@
         <table class="w-full min-w-[700px]">
           <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
-                Produk
-              </th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
-                SKU
-              </th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
-                Kategori
-              </th>
-              <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">
-                Harga Jual
-              </th>
-              <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">
-                Modal
-              </th>
-              <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">
-                Margin
-              </th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
-                Stok
-              </th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
-                Satuan
-              </th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
-                Aksi
-              </th>
+              <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide w-12">Img</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">SKU</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">Nama Barang</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">Kategori</th>
+              <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Stok</th>
+              <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Satuan</th>
+              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Harga Jual</th>
+              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Harga Beli</th>
+              <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
@@ -139,62 +121,28 @@
               :key="product.id"
               class="hover:bg-slate-50 transition-colors"
             >
-              <td class="px-4 py-3">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-md bg-slate-100 border border-slate-200 overflow-hidden shrink-0 flex items-center justify-center">
-                    <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />
-                    <PackageIcon v-else class="w-4 h-4 text-slate-300" />
-                  </div>
-                  <p class="text-sm font-medium text-slate-900">{{ product.name }}</p>
+              <td class="px-3 py-2.5 text-center">
+                <div class="w-8 h-8 rounded-md bg-slate-100 border border-slate-200 overflow-hidden mx-auto flex items-center justify-center">
+                  <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />
+                  <PackageIcon v-else class="w-3.5 h-3.5 text-slate-300" />
                 </div>
               </td>
-              <td class="px-4 py-3">
-                <code class="text-xs font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">
-                  {{ product.sku }}
-                </code>
+              <td class="px-3 py-2.5">
+                <code class="text-[10px] font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">{{ product.sku }}</code>
               </td>
-              <td class="px-4 py-3">
-                <span
-                  v-if="getCategoryName(product.categoryId)"
-                  class="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full"
-                >
-                  {{ getCategoryName(product.categoryId) }}
-                </span>
+              <td class="px-3 py-2.5">
+                <p class="text-sm font-medium text-slate-900">{{ product.name }}</p>
+              </td>
+              <td class="px-3 py-2.5">
+                <span v-if="getCategoryName(product.categoryId)" class="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">{{ getCategoryName(product.categoryId) }}</span>
                 <span v-else class="text-[10px] text-slate-400">—</span>
               </td>
-              <td class="px-4 py-3 text-right text-sm font-mono text-slate-900">
-                {{ formatRupiah(product.price) }}
+              <td class="px-3 py-2.5 text-center">
+                <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold', getTotalStock(product) === 0 ? 'bg-red-100 text-red-700' : getTotalStock(product) <= 5 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700']">{{ getTotalStock(product) }}</span>
               </td>
-              <td class="px-4 py-3 text-right text-sm font-mono text-slate-600">
-                {{ formatRupiah(product.cost) }}
-              </td>
-              <td class="px-4 py-3 text-right">
-                <span
-                  :class="[
-                    'text-xs font-mono font-semibold',
-                    getMargin(product) > 0 ? 'text-emerald-600' : 'text-red-600',
-                  ]"
-                >
-                  {{ getMarginPercent(product) }}%
-                </span>
-              </td>
-              <td class="px-4 py-3 text-center">
-                <span
-                  :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold',
-                    getTotalStock(product) === 0
-                      ? 'bg-red-100 text-red-700'
-                      : getTotalStock(product) <= 5
-                        ? 'bg-amber-100 text-amber-700'
-                        : 'bg-emerald-100 text-emerald-700',
-                  ]"
-                >
-                  {{ getTotalStock(product) }}
-                </span>
-              </td>
-              <td class="px-4 py-3 text-center">
-                <span class="text-xs text-slate-500">{{ product.unit || 'pcs' }}</span>
-              </td>
+              <td class="px-3 py-2.5 text-center text-xs text-slate-500">{{ product.unit || 'pcs' }}</td>
+              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-900">{{ formatRupiah(product.price) }}</td>
+              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-600">{{ formatRupiah(product.cost) }}</td>
               <td class="px-4 py-3 text-center">
                 <div class="flex items-center justify-center gap-1">
                   <button

@@ -284,10 +284,11 @@ export class ProductsService {
       const rowNum = i + 2; // Excel row (1-indexed + header)
 
       // Map columns (support both Indonesian & English headers)
+      const imageUrl = String(row['URL Gambar'] || row['imageUrl'] || row['image_url'] || '').trim();
       const name = String(row['Nama Produk'] || row['nama'] || row['name'] || '').trim();
       const sku = String(row['SKU'] || row['sku'] || '').trim().toUpperCase();
       const priceRaw = row['Harga Jual'] || row['harga_jual'] || row['price'] || 0;
-      const costRaw = row['Modal'] || row['harga_modal'] || row['cost'] || 0;
+      const costRaw = row['Harga Beli'] || row['Modal'] || row['harga_modal'] || row['harga_beli'] || row['cost'] || 0;
       const stockRaw = row['Stok Awal'] || row['stok'] || row['stock'] || 0;
       const unit = String(row['Satuan'] || row['unit'] || 'pcs').trim();
       const categoryName = String(row['Kategori'] || row['category'] || '').trim();
@@ -351,6 +352,7 @@ export class ProductsService {
               unit: unit || null,
               categoryId,
               description: description || null,
+              imageUrl: imageUrl || null,
             },
           });
 
@@ -407,17 +409,17 @@ export class ProductsService {
     }
 
     const headers = [
-      'Nama Produk', 'SKU', 'Harga Jual', 'Modal', 'Stok Awal', 'Satuan', 'Kategori', 'Deskripsi',
+      'URL Gambar', 'SKU', 'Nama Produk', 'Kategori', 'Stok Awal', 'Satuan', 'Harga Jual', 'Harga Beli', 'Deskripsi',
     ];
     const exampleRow = [
-      'Beras Premium 5kg', 'BRS-5KG-001', 80000, 65000, 50, 'pcs', 'Sembako', 'Beras kualitas premium',
+      '', 'BRS-5KG-001', 'Beras Premium 5kg', 'Sembako', 50, 'pcs', 80000, 65000, 'Beras kualitas premium',
     ];
 
     const ws = XLSX.utils.aoa_to_sheet([headers, exampleRow]);
     // Set column widths
     ws['!cols'] = [
-      { wch: 25 }, { wch: 15 }, { wch: 12 }, { wch: 12 },
-      { wch: 10 }, { wch: 8 }, { wch: 15 }, { wch: 30 },
+      { wch: 40 }, { wch: 15 }, { wch: 25 }, { wch: 15 },
+      { wch: 10 }, { wch: 8 }, { wch: 12 }, { wch: 12 }, { wch: 30 },
     ];
 
     const wb = XLSX.utils.book_new();
