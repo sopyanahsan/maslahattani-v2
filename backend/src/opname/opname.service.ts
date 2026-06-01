@@ -31,7 +31,8 @@ export class OpnameService {
       this.prisma.opnameSession.findMany({
         where,
         include: {
-          conductor: { select: { id: true, username: true, email: true } },
+          conductor: { select: { id: true, username: true, email: true, fullName: true } },
+          assignee: { select: { id: true, username: true, email: true, fullName: true } },
           _count: { select: { items: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -48,7 +49,11 @@ export class OpnameService {
         status: s.status,
         notes: s.notes,
         conductorId: s.conductorId,
-        conductorName: s.conductor?.username || s.conductor?.email || '-',
+        conductorName: s.conductor?.fullName || s.conductor?.username || s.conductor?.email || '-',
+        assigneeId: s.assigneeId,
+        assigneeName: s.assignee
+          ? s.assignee.fullName || s.assignee.username || s.assignee.email || '-'
+          : null,
         shopId: s.shopId,
         totalProducts: s.totalProducts,
         totalMatched: s.totalMatched,
@@ -71,7 +76,8 @@ export class OpnameService {
     const session = await this.prisma.opnameSession.findUnique({
       where: { id },
       include: {
-        conductor: { select: { id: true, username: true, email: true } },
+        conductor: { select: { id: true, username: true, email: true, fullName: true } },
+        assignee: { select: { id: true, username: true, email: true, fullName: true } },
         items: {
           include: {
             product: { select: { id: true, name: true, sku: true, price: true } },
@@ -89,7 +95,11 @@ export class OpnameService {
       status: session.status,
       notes: session.notes,
       conductorId: session.conductorId,
-      conductorName: session.conductor?.username || session.conductor?.email || '-',
+      conductorName: session.conductor?.fullName || session.conductor?.username || session.conductor?.email || '-',
+      assigneeId: session.assigneeId,
+      assigneeName: session.assignee
+        ? session.assignee.fullName || session.assignee.username || session.assignee.email || '-'
+        : null,
       shopId: session.shopId,
       totalProducts: session.totalProducts,
       totalMatched: session.totalMatched,
@@ -133,10 +143,22 @@ export class OpnameService {
       throw new BadRequestException('Tidak ada produk dengan stok di toko ini.');
     }
 
+    // Validate assignee (if provided) belongs to this shop
+    if (dto.assigneeId) {
+      const assignee = await this.prisma.user.findFirst({
+        where: { id: dto.assigneeId, shopId: dto.shopId },
+        select: { id: true },
+      });
+      if (!assignee) {
+        throw new BadRequestException('Petugas yang dipilih tidak ditemukan di cabang ini.');
+      }
+    }
+
     const session = await this.prisma.opnameSession.create({
       data: {
         shopId: dto.shopId,
         conductorId,
+        assigneeId: dto.assigneeId || null,
         sessionNumber,
         status: 'IN_PROGRESS',
         notes: dto.notes,
@@ -150,7 +172,8 @@ export class OpnameService {
         },
       },
       include: {
-        conductor: { select: { id: true, username: true, email: true } },
+        conductor: { select: { id: true, username: true, email: true, fullName: true } },
+        assignee: { select: { id: true, username: true, email: true, fullName: true } },
         _count: { select: { items: true } },
       },
     });
@@ -159,6 +182,10 @@ export class OpnameService {
       id: session.id,
       sessionNumber: session.sessionNumber,
       status: session.status,
+      assigneeId: session.assigneeId,
+      assigneeName: session.assignee
+        ? session.assignee.fullName || session.assignee.username || session.assignee.email || '-'
+        : null,
       totalProducts: session.totalProducts,
       startedAt: session.startedAt?.toISOString(),
       itemCount: session._count.items,
@@ -313,6 +340,112 @@ export class OpnameService {
       sessionNumber: updated.sessionNumber,
       status: updated.status,
     };
+  }
+
+  // ============================================
+  // MONTHLY SUMMARY (recap card)
+  // ============================================
+
+  /**
+   * Rekap bulanan opname untuk satu shop.
+   * KPI: nilai kerugian (Rp) bulan ini + perubahan vs bulan lalu,
+   * akurasi stok (%), jumlah sesi bulan ini, tanggal opname terakhir.
+   */
+  async getMonthlySummary(shopId: string, month?: string) {
+    // month format: YYYY-MM. Default = bulan berjalan.
+    const now = new Date();
+    let year = now.getFullYear();
+    let mon = now.getMonth(); // 0-indexed
+    if (month && /^\d{4}-\d{2}$/.test(month)) {
+      const [y, m] = month.split('-').map(Number);
+      year = y;
+      mon = m - 1;
+    }
+
+    const startThis = new Date(year, mon, 1);
+    const startNext = new Date(year, mon + 1, 1);
+    const startPrev = new Date(year, mon - 1, 1);
+
+    const completedInclude = {
+      items: { include: { product: { select: { price: true } } } },
+    };
+
+    const [thisMonth, lastMonth, lastSession, sessionCount] = await Promise.all([
+      this.prisma.opnameSession.findMany({
+        where: {
+          shopId,
+          status: 'COMPLETED',
+          completedAt: { gte: startThis, lt: startNext },
+        },
+        include: completedInclude,
+      }),
+      this.prisma.opnameSession.findMany({
+        where: {
+          shopId,
+          status: 'COMPLETED',
+          completedAt: { gte: startPrev, lt: startThis },
+        },
+        include: completedInclude,
+      }),
+      this.prisma.opnameSession.findFirst({
+        where: { shopId, status: 'COMPLETED' },
+        orderBy: { completedAt: 'desc' },
+        select: { completedAt: true, sessionNumber: true },
+      }),
+      this.prisma.opnameSession.count({
+        where: { shopId, createdAt: { gte: startThis, lt: startNext } },
+      }),
+    ]);
+
+    const lossValue = this.calcLossValue(thisMonth);
+    const lossValueLastMonth = this.calcLossValue(lastMonth);
+
+    let lossChangePct: number | null = null;
+    if (lossValueLastMonth > 0) {
+      lossChangePct = Math.round(((lossValue - lossValueLastMonth) / lossValueLastMonth) * 100);
+    } else if (lossValue > 0) {
+      lossChangePct = 100; // dari 0 jadi ada kerugian
+    } else {
+      lossChangePct = 0;
+    }
+
+    // Akurasi = item cocok / item yang sudah dihitung (bulan ini)
+    let matched = 0;
+    let counted = 0;
+    for (const s of thisMonth) {
+      for (const it of s.items) {
+        if (it.actualQty !== null) {
+          counted += 1;
+          if (it.variance === 0) matched += 1;
+        }
+      }
+    }
+    const accuracy = counted > 0 ? Math.round((matched / counted) * 1000) / 10 : null;
+
+    return {
+      month: `${year}-${String(mon + 1).padStart(2, '0')}`,
+      lossValue,
+      lossValueLastMonth,
+      lossChangePct,
+      accuracy, // persen (0-100) atau null jika belum ada hitungan
+      sessionCount,
+      lastOpnameAt: lastSession?.completedAt?.toISOString() || null,
+      lastOpnameSession: lastSession?.sessionNumber || null,
+    };
+  }
+
+  private calcLossValue(
+    sessions: { items: { variance: number | null; product: { price: number } }[] }[],
+  ): number {
+    let total = 0;
+    for (const s of sessions) {
+      for (const it of s.items) {
+        if (it.variance !== null && it.variance < 0) {
+          total += Math.abs(it.variance) * (it.product?.price || 0);
+        }
+      }
+    }
+    return total;
   }
 
   // ============================================

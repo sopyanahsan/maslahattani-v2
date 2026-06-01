@@ -27,6 +27,14 @@ export class OpnameController {
     return this.opnameService.listSessions(query);
   }
 
+  @Get('summary')
+  async getSummary(
+    @Query('shopId') shopId: string,
+    @Query('month') month?: string,
+  ) {
+    return this.opnameService.getMonthlySummary(shopId, month);
+  }
+
   @Get('sessions/:id')
   async getSession(@Param('id') id: string) {
     return this.opnameService.getSession(id);

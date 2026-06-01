@@ -13,6 +13,8 @@ export interface OpnameSessionDto {
   notes: string | null;
   conductorId: string;
   conductorName: string;
+  assigneeId: string | null;
+  assigneeName: string | null;
   shopId: string;
   totalProducts: number;
   totalMatched: number;
@@ -54,6 +56,18 @@ export interface OpnameListResponse {
 export interface CreateOpnamePayload {
   shopId: string;
   notes?: string;
+  assigneeId?: string;
+}
+
+export interface OpnameSummaryDto {
+  month: string;
+  lossValue: number;
+  lossValueLastMonth: number;
+  lossChangePct: number | null;
+  accuracy: number | null;
+  sessionCount: number;
+  lastOpnameAt: string | null;
+  lastOpnameSession: string | null;
 }
 
 export interface UpdateOpnameItemPayload {
@@ -81,6 +95,13 @@ const opnameService = {
 
   async getSession(id: string): Promise<OpnameSessionDetailDto> {
     const { data } = await api.get<OpnameSessionDetailDto>(`/opname/sessions/${id}`);
+    return data;
+  },
+
+  async getSummary(shopId: string, month?: string): Promise<OpnameSummaryDto> {
+    const { data } = await api.get<OpnameSummaryDto>('/opname/summary', {
+      params: { shopId, ...(month ? { month } : {}) },
+    });
     return data;
   },
 

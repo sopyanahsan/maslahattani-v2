@@ -7,4 +7,9 @@ export class CreateOpnameSessionDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  /** Kasir (petugas) yang ditugaskan menghitung fisik. Opsional. */
+  @IsString()
+  @IsOptional()
+  assigneeId?: string;
 }
