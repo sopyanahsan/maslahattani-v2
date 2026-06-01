@@ -49,7 +49,7 @@ export class StockService {
   // STOCK IN (Restok)
   // ============================================
 
-  async stockIn(dto: StockInDto) {
+  async stockIn(dto: StockInDto, userId?: string) {
     // Find stock record
     const stock = await this.prisma.stock.findFirst({
       where: { productId: dto.productId, shopId: dto.shopId },
@@ -78,6 +78,7 @@ export class StockService {
           quantityAfter: newQty,
           quantityChange: dto.quantity,
           notes: dto.notes || 'Stok masuk',
+          createdById: userId || null,
         },
       });
 
@@ -100,7 +101,7 @@ export class StockService {
   // STOCK OPNAME (Penyesuaian stok fisik)
   // ============================================
 
-  async opname(dto: StockOpnameDto) {
+  async opname(dto: StockOpnameDto, userId?: string) {
     const results: any[] = [];
 
     await this.prisma.$transaction(async (tx) => {
@@ -132,6 +133,7 @@ export class StockService {
             quantityAfter: item.actualQuantity,
             quantityChange: difference,
             notes: item.notes || dto.notes || 'Stok opname',
+            createdById: userId || null,
           },
         });
 

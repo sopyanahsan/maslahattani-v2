@@ -45,8 +45,10 @@ export class OpnameController {
   async completeSession(
     @Param('id') id: string,
     @Body() body: { applyAdjustments?: boolean },
+    @Request() req: any,
   ) {
-    return this.opnameService.completeSession(id, body.applyAdjustments ?? false);
+    const userId = req.user?.sub || req.user?.id;
+    return this.opnameService.completeSession(id, body.applyAdjustments ?? false, userId);
   }
 
   @Post('sessions/:id/cancel')

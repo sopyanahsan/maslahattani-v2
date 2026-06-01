@@ -204,7 +204,7 @@ export class OpnameService {
   // COMPLETE SESSION
   // ============================================
 
-  async completeSession(id: string, applyAdjustments: boolean = false) {
+  async completeSession(id: string, applyAdjustments: boolean = false, userId?: string) {
     const session = await this.prisma.opnameSession.findUnique({
       where: { id },
       include: { items: true },
@@ -254,6 +254,7 @@ export class OpnameService {
                 quantityChange: item.variance!,
                 reference: session.id,
                 notes: `Opname ${session.sessionNumber}: adjustment`,
+                createdById: userId || null,
               },
             });
           }

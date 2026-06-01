@@ -366,6 +366,7 @@ export class TransactionsService {
               quantityChange: item.quantity,
               reference: transactionId,
               notes: `Void transaksi ${transaction.transactionNumber}: ${dto.reason}`,
+              createdById: adminUser?.id || adminUser?.sub || null,
             },
           });
         }
