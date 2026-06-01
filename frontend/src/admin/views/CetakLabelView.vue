@@ -9,9 +9,11 @@
         <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
       </select>
       <select v-model="paperSize" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none">
-        <option value="a4">A4 (21 label/halaman)</option>
-        <option value="label-103">Label 103mm (1/strip)</option>
-        <option value="label-107">Label 107mm (1/strip)</option>
+        <option value="105">Label No.105 (25×38mm) — 55/lembar</option>
+        <option value="109">Label No.109 (13×38mm) — 105/lembar</option>
+        <option value="108">Label No.108 (19×38mm) — 70/lembar</option>
+        <option value="103">Label No.103 (32×64mm) — 27/lembar</option>
+        <option value="a4">A4 Bebas (70×42mm) — 21/lembar</option>
       </select>
       <label class="flex items-center gap-1.5 cursor-pointer">
         <input v-model="showPrice" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-300 rounded" />
@@ -87,7 +89,7 @@ const categories = ref<any[]>([]);
 const loading = ref(false);
 const selectedIds = ref<string[]>([]);
 const filterCategory = ref('');
-const paperSize = ref('a4');
+const paperSize = ref('105');
 const showPrice = ref(true);
 
 const allSelected = computed(() => products.value.length > 0 && selectedIds.value.length === products.value.length);
@@ -135,16 +137,17 @@ async function handlePrint() {
   await nextTick();
 
   // Render barcodes into SVGs
+  const barcodeHeight = { '105': 30, '109': 16, '108': 22, '103': 38, 'a4': 40 }[paperSize.value] || 30;
   for (const p of selectedProducts.value) {
     const el = document.getElementById('bc-' + p.id);
     if (el) {
       try {
         JsBarcode(el, p.barcode || p.sku, {
           format: 'CODE128',
-          width: 1.5,
-          height: 40,
+          width: 1.2,
+          height: barcodeHeight,
           displayValue: false,
-          margin: 2,
+          margin: 1,
         });
       } catch { /* invalid barcode chars */ }
     }
@@ -166,9 +169,8 @@ onMounted(() => { fetchProducts(); fetchCategories(); });
   visibility: hidden;
 }
 
-/* Print styles */
+/* Print styles — presisi ukuran label pada kertas A4 (210×297mm) */
 @media print {
-  /* Hide everything except labels */
   body * { visibility: hidden !important; }
   #print-labels-area, #print-labels-area * { visibility: visible !important; }
   #print-labels-area {
@@ -176,50 +178,70 @@ onMounted(() => { fetchProducts(); fetchCategories(); });
     top: 0 !important;
     left: 0 !important;
     width: 210mm !important;
+    height: 297mm !important;
     visibility: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
-  .paper-a4 {
+  .print-labels {
     display: grid !important;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3mm;
-    padding: 5mm;
+    margin: 0 !important;
+    padding: 3mm !important;
+    box-sizing: border-box;
   }
-  .paper-a4 .label-item {
-    border: 0.3px dashed #bbb;
-    padding: 2mm 3mm;
+
+  /* Label No.105: 25×38mm → 5 col × 11 row = 55/A4 */
+  .paper-105 { grid-template-columns: repeat(5, 38mm); grid-auto-rows: 25mm; gap: 1.5mm 2mm; }
+  .paper-105 .label-item { width: 38mm; height: 25mm; }
+
+  /* Label No.109: 13×38mm → 5 col × 21 row = 105/A4 */
+  .paper-109 { grid-template-columns: repeat(5, 38mm); grid-auto-rows: 13mm; gap: 0.8mm 2mm; }
+  .paper-109 .label-item { width: 38mm; height: 13mm; }
+
+  /* Label No.108: 19×38mm → 5 col × 14 row = 70/A4 */
+  .paper-108 { grid-template-columns: repeat(5, 38mm); grid-auto-rows: 19mm; gap: 1mm 2mm; }
+  .paper-108 .label-item { width: 38mm; height: 19mm; }
+
+  /* Label No.103: 32×64mm → 3 col × 9 row = 27/A4 */
+  .paper-103 { grid-template-columns: repeat(3, 64mm); grid-auto-rows: 32mm; gap: 1mm 2mm; }
+  .paper-103 .label-item { width: 64mm; height: 32mm; }
+
+  /* A4 bebas: 70×42mm → 3 col × 7 row = 21/A4 */
+  .paper-a4 { grid-template-columns: repeat(3, 68mm); grid-auto-rows: 40mm; gap: 1.5mm 2mm; }
+  .paper-a4 .label-item { width: 68mm; height: 40mm; }
+
+  /* Common label item */
+  .label-item {
+    border: 0.2px dashed #ccc;
+    padding: 1mm;
     text-align: center;
     page-break-inside: avoid;
-    height: 38mm;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    box-sizing: border-box;
   }
 
-  .paper-label-103, .paper-label-107 {
-    display: flex !important;
-    flex-direction: column;
-    gap: 1mm;
-    padding: 2mm;
-  }
-  .paper-label-103 .label-item,
-  .paper-label-107 .label-item {
-    border-bottom: 0.3px dashed #bbb;
-    padding: 2mm 3mm;
-    text-align: center;
-    page-break-inside: avoid;
-    height: 25mm;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
+  .barcode-svg { width: 80%; max-height: 60%; }
+  .label-sku { font-size: 6pt; font-family: monospace; margin: 0.3mm 0; color: #444; line-height: 1; }
+  .label-name { font-size: 6.5pt; font-weight: 600; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; line-height: 1.1; }
+  .label-price { font-size: 7pt; font-weight: 700; color: #000; margin-top: 0.3mm; line-height: 1; }
 
-  .barcode-svg { width: 75%; max-height: 28px; }
-  .label-sku { font-size: 7pt; font-family: monospace; margin: 0.5mm 0; color: #555; }
-  .label-name { font-size: 8pt; font-weight: 600; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-  .label-price { font-size: 9pt; font-weight: 700; color: #000; margin-top: 0.5mm; }
+  /* Smaller text for tiny labels */
+  .paper-109 .label-sku { font-size: 5pt; }
+  .paper-109 .label-name { font-size: 5.5pt; }
+  .paper-109 .label-price { font-size: 6pt; }
+  .paper-109 .barcode-svg { max-height: 50%; }
+
+  /* Bigger text for large labels */
+  .paper-103 .label-sku { font-size: 7pt; }
+  .paper-103 .label-name { font-size: 8pt; }
+  .paper-103 .label-price { font-size: 9pt; }
+  .paper-a4 .label-sku { font-size: 7pt; }
+  .paper-a4 .label-name { font-size: 8pt; }
+  .paper-a4 .label-price { font-size: 9pt; }
 }
 </style>
