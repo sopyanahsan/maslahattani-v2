@@ -313,6 +313,7 @@ export class TransfersService {
           data: {
             stockId: sourceStock.id,
             type: 'TRANSFER_OUT',
+            source: 'TRANSFER_OUT',
             quantityBefore: sourceStock.quantity,
             quantityAfter: newSourceQty,
             quantityChange: -item.quantity,
@@ -348,6 +349,7 @@ export class TransfersService {
         data: {
           stockId: destStock.id,
           type: 'TRANSFER_IN',
+          source: 'TRANSFER_IN',
           quantityBefore: destStock.quantity,
           quantityAfter: newDestQty,
           quantityChange: receivedQty,

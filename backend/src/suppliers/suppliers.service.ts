@@ -298,6 +298,7 @@ export class SuppliersService {
           data: {
             stockId: stock.id,
             type: 'IN',
+            source: 'PURCHASE_ORDER',
             quantityBefore: qtyBefore,
             quantityAfter: qtyAfter,
             quantityChange: toReceive,

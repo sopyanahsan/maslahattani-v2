@@ -42,12 +42,14 @@ export class ProductsService {
           shopId: dto.shopId,
           name: dto.name,
           sku: dto.sku,
+          barcode: dto.barcode || null,
           price: dto.price,
           cost: dto.cost,
           supplierId: dto.supplierId || null,
           imageUrl: dto.imageUrl || null,
           categoryId: dto.categoryId || null,
           unit: dto.unit || null,
+          description: (dto as any).description || null,
         },
       });
 
@@ -68,6 +70,7 @@ export class ProductsService {
           data: {
             stockId: stock.id,
             type: 'IN',
+            source: 'INITIAL',
             quantityBefore: 0,
             quantityAfter: initialQty,
             quantityChange: initialQty,
@@ -100,6 +103,7 @@ export class ProductsService {
       where.OR = [
         { name: { contains: query.search, mode: 'insensitive' } },
         { sku: { contains: query.search, mode: 'insensitive' } },
+        { barcode: { contains: query.search, mode: 'insensitive' } },
       ];
     }
 
@@ -186,6 +190,26 @@ export class ProductsService {
   }
 
   // ============================================
+  // FIND BY BARCODE (untuk POS scan)
+  // ============================================
+
+  async findByBarcode(shopId: string, barcode: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { shopId, barcode, deletedAt: null },
+      include: {
+        stocks: { select: { quantity: true, warehouse: true } },
+        category: { select: { id: true, name: true, icon: true } },
+      },
+    });
+
+    if (!product) {
+      throw new NotFoundException(`Produk dengan barcode "${barcode}" tidak ditemukan.`);
+    }
+
+    return product;
+  }
+
+  // ============================================
   // UPDATE PRODUCT
   // ============================================
 
@@ -207,6 +231,7 @@ export class ProductsService {
         categoryId: dto.categoryId !== undefined ? dto.categoryId : product.categoryId,
         unit: dto.unit !== undefined ? dto.unit : product.unit,
         description: dto.description !== undefined ? dto.description : product.description,
+        barcode: dto.barcode !== undefined ? (dto.barcode || null) : product.barcode,
       },
       include: {
         stocks: { select: { quantity: true, warehouse: true } },
@@ -285,6 +310,7 @@ export class ProductsService {
 
       // Map columns (support both Indonesian & English headers)
       const imageUrl = String(row['URL Gambar'] || row['imageUrl'] || row['image_url'] || '').trim();
+      const barcode = String(row['Barcode'] || row['barcode'] || '').trim();
       const name = String(row['Nama Produk'] || row['nama'] || row['name'] || '').trim();
       const sku = String(row['SKU'] || row['sku'] || '').trim().toUpperCase();
       const priceRaw = row['Harga Jual'] || row['harga_jual'] || row['price'] || 0;
@@ -347,6 +373,7 @@ export class ProductsService {
               shopId,
               name,
               sku,
+              barcode: barcode || null,
               price,
               cost,
               unit: unit || null,
@@ -370,6 +397,7 @@ export class ProductsService {
               data: {
                 stockId: stock.id,
                 type: 'IN',
+                source: 'BULK_UPLOAD',
                 quantityBefore: 0,
                 quantityAfter: initialStock,
                 quantityChange: initialStock,
@@ -409,16 +437,16 @@ export class ProductsService {
     }
 
     const headers = [
-      'URL Gambar', 'SKU', 'Nama Produk', 'Kategori', 'Stok Awal', 'Satuan', 'Harga Jual', 'Harga Beli', 'Deskripsi',
+      'URL Gambar', 'SKU', 'Barcode', 'Nama Produk', 'Kategori', 'Stok Awal', 'Satuan', 'Harga Jual', 'Harga Beli', 'Deskripsi',
     ];
     const exampleRow = [
-      '', 'BRS-5KG-001', 'Beras Premium 5kg', 'Sembako', 50, 'pcs', 80000, 65000, 'Beras kualitas premium',
+      '', 'BRS-5KG-001', '8991042001234', 'Beras Premium 5kg', 'Sembako', 50, 'pcs', 80000, 65000, 'Beras kualitas premium',
     ];
 
     const ws = XLSX.utils.aoa_to_sheet([headers, exampleRow]);
     // Set column widths
     ws['!cols'] = [
-      { wch: 40 }, { wch: 15 }, { wch: 25 }, { wch: 15 },
+      { wch: 40 }, { wch: 15 }, { wch: 15 }, { wch: 25 }, { wch: 15 },
       { wch: 10 }, { wch: 8 }, { wch: 12 }, { wch: 12 }, { wch: 30 },
     ];
 

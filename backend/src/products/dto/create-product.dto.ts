@@ -49,4 +49,14 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   unit?: string;
+
+  @ApiPropertyOptional({ example: '8991042001234', description: 'Barcode dari pabrik (EAN/UPC)' })
+  @IsOptional()
+  @IsString()
+  barcode?: string;
+
+  @ApiPropertyOptional({ example: 'Beras kualitas premium' })
+  @IsOptional()
+  @IsString()
+  description?: string;
 }

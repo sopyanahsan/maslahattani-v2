@@ -73,6 +73,7 @@ export class StockService {
         data: {
           stockId: stock.id,
           type: 'IN',
+          source: 'STOCK_IN',
           quantityBefore: stock.quantity,
           quantityAfter: newQty,
           quantityChange: dto.quantity,
@@ -126,6 +127,7 @@ export class StockService {
           data: {
             stockId: stock.id,
             type: 'OPNAME',
+            source: 'OPNAME_INLINE',
             quantityBefore: stock.quantity,
             quantityAfter: item.actualQuantity,
             quantityChange: difference,

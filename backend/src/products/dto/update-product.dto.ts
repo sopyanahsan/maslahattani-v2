@@ -39,6 +39,11 @@ export class UpdateProductDto {
   @IsString()
   unit?: string;
 
+  @ApiPropertyOptional({ example: '8991042001234', description: 'Barcode dari pabrik (EAN/UPC)' })
+  @IsOptional()
+  @IsString()
+  barcode?: string;
+
   @ApiPropertyOptional({ example: 'Beras premium kualitas terbaik' })
   @IsOptional()
   @IsString()

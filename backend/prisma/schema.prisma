@@ -233,7 +233,8 @@ model Product {
   shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId              String
   name                String
-  sku                 String
+  sku                 String                // kode internal toko (auto-generated)
+  barcode             String?               // EAN/UPC dari pabrik (nullable, untuk scan POS)
   price               Int       // in rupiah
   cost                Int       // in rupiah
   supplierId          String?   // future: Supplier model
@@ -257,6 +258,7 @@ model Product {
   @@unique([shopId, sku])
   @@index([shopId])
   @@index([categoryId])
+  @@index([shopId, barcode])
   @@map("products")
 }
 
@@ -308,21 +310,39 @@ enum StockHistoryType {
   ADJUSTMENT
 }
 
+enum StockHistorySource {
+  INITIAL          // saldo awal saat produk dibuat
+  BULK_UPLOAD      // import Excel
+  SEED             // seed data
+  STOCK_IN         // restock manual
+  SALE             // penjualan via POS
+  SALE_VOID        // void penjualan (stok dikembalikan)
+  OPNAME_INLINE    // opname cepat dari /stock
+  OPNAME_SESSION   // opname dari sesi /opname
+  TRANSFER_OUT     // transfer keluar ke cabang lain
+  TRANSFER_IN      // transfer masuk dari cabang lain
+  PURCHASE_ORDER   // PO dari supplier
+  ADJUSTMENT       // penyesuaian manual lainnya
+}
+
 model StockHistory {
   id                  String    @id @default(cuid())
   stock               Stock     @relation(fields: [stockId], references: [id], onDelete: Cascade)
   stockId             String
   type                StockHistoryType
+  source              StockHistorySource?  // alasan/sumber pergerakan stok
+  paymentMethod       PaymentMethod?       // hanya untuk SALE (CASH/QRIS/TRANSFER/HUTANG)
   quantityBefore      Int
   quantityAfter       Int
   quantityChange      Int
-  reference           String?   // transaction_id, opname_id, etc
+  reference           String?   // transaction_id, opname_id, transfer_id, po_id
   notes               String?
   
   createdAt           DateTime  @default(now())
   
   @@index([stockId])
   @@index([createdAt])
+  @@index([source])
   @@map("stock_histories")
 }
 

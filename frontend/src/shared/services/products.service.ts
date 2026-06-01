@@ -14,6 +14,7 @@ export interface ProductDto {
   shopId: string;
   name: string;
   sku: string;
+  barcode?: string | null;
   price: number;
   cost: number;
   imageUrl?: string | null;
@@ -39,6 +40,8 @@ export interface ProductDetailDto extends ProductDto {
 export interface StockHistoryEntry {
   id: string;
   type: string;
+  source?: string | null;
+  paymentMethod?: 'CASH' | 'QRIS' | 'TRANSFER' | 'HUTANG' | null;
   quantityBefore: number;
   quantityAfter: number;
   quantityChange: number;
@@ -62,6 +65,8 @@ export interface CreateProductPayload {
   imageUrl?: string;
   categoryId?: string;
   unit?: string;
+  barcode?: string;
+  description?: string;
 }
 
 export interface UpdateProductPayload {
@@ -72,6 +77,7 @@ export interface UpdateProductPayload {
   imageUrl?: string;
   categoryId?: string;
   unit?: string;
+  barcode?: string;
   description?: string;
 }
 
@@ -140,6 +146,13 @@ const productsService = {
 
   async remove(id: string): Promise<DeleteProductResponse> {
     const { data } = await api.delete<DeleteProductResponse>(`/products/${id}`);
+    return data;
+  },
+
+  async findByBarcode(shopId: string, barcode: string): Promise<ProductDto> {
+    const { data } = await api.get<ProductDto>(`/products/by-barcode/${encodeURIComponent(barcode)}`, {
+      params: { shopId },
+    });
     return data;
   },
 };

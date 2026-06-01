@@ -185,6 +185,9 @@
                 <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   Tipe
                 </th>
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                  Sumber
+                </th>
                 <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   Perubahan
                 </th>
@@ -214,6 +217,27 @@
                   >
                     {{ h.type }}
                   </span>
+                </td>
+                <td class="px-4 py-2.5">
+                  <div class="flex items-center gap-1 flex-wrap">
+                    <span
+                      :class="[
+                        'inline-flex px-2 py-0.5 rounded-full text-[10px] font-semibold',
+                        sourceBadgeClass(h.source),
+                      ]"
+                    >
+                      {{ sourceLabel(h.source) }}
+                    </span>
+                    <span
+                      v-if="h.paymentMethod"
+                      :class="[
+                        'inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold uppercase',
+                        paymentMethodBadge(h.paymentMethod),
+                      ]"
+                    >
+                      {{ paymentMethodLabel(h.paymentMethod) }}
+                    </span>
+                  </div>
                 </td>
                 <td class="px-4 py-2.5 text-center">
                   <span
@@ -681,6 +705,66 @@ function historyTypeBadge(type: string): string {
     default:
       return 'bg-slate-100 text-slate-700';
   }
+}
+
+function sourceLabel(source?: string | null): string {
+  if (!source) return 'Lainnya';
+  const map: Record<string, string> = {
+    INITIAL: 'Stok Awal',
+    BULK_UPLOAD: 'Import Excel',
+    SEED: 'Seed Data',
+    STOCK_IN: 'Restock',
+    SALE: 'Penjualan',
+    SALE_VOID: 'Void Penjualan',
+    OPNAME_INLINE: 'Opname Cepat',
+    OPNAME_SESSION: 'Sesi Opname',
+    TRANSFER_OUT: 'Transfer Keluar',
+    TRANSFER_IN: 'Transfer Masuk',
+    PURCHASE_ORDER: 'PO Supplier',
+    ADJUSTMENT: 'Penyesuaian',
+  };
+  return map[source] || source;
+}
+
+function sourceBadgeClass(source?: string | null): string {
+  if (!source) return 'bg-slate-100 text-slate-600';
+  const map: Record<string, string> = {
+    INITIAL: 'bg-slate-100 text-slate-700',
+    BULK_UPLOAD: 'bg-violet-100 text-violet-700',
+    SEED: 'bg-slate-100 text-slate-600',
+    STOCK_IN: 'bg-emerald-100 text-emerald-700',
+    SALE: 'bg-blue-100 text-blue-700',
+    SALE_VOID: 'bg-amber-100 text-amber-700',
+    OPNAME_INLINE: 'bg-cyan-100 text-cyan-700',
+    OPNAME_SESSION: 'bg-cyan-100 text-cyan-700',
+    TRANSFER_OUT: 'bg-purple-100 text-purple-700',
+    TRANSFER_IN: 'bg-indigo-100 text-indigo-700',
+    PURCHASE_ORDER: 'bg-teal-100 text-teal-700',
+    ADJUSTMENT: 'bg-orange-100 text-orange-700',
+  };
+  return map[source] || 'bg-slate-100 text-slate-700';
+}
+
+function paymentMethodLabel(method?: string | null): string {
+  if (!method) return '';
+  const map: Record<string, string> = {
+    CASH: 'Tunai',
+    QRIS: 'QRIS',
+    TRANSFER: 'Transfer',
+    HUTANG: 'Hutang',
+  };
+  return map[method] || method;
+}
+
+function paymentMethodBadge(method?: string | null): string {
+  if (!method) return '';
+  const map: Record<string, string> = {
+    CASH: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
+    QRIS: 'bg-blue-50 text-blue-700 border border-blue-200',
+    TRANSFER: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
+    HUTANG: 'bg-amber-50 text-amber-700 border border-amber-200',
+  };
+  return map[method] || 'bg-slate-50 text-slate-600 border border-slate-200';
 }
 
 // ============================================

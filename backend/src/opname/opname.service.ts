@@ -248,6 +248,7 @@ export class OpnameService {
               data: {
                 stockId: stock.id,
                 type: 'OPNAME',
+                source: 'OPNAME_SESSION',
                 quantityBefore: item.systemQty,
                 quantityAfter: item.actualQty,
                 quantityChange: item.variance!,

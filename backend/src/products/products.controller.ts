@@ -85,6 +85,15 @@ export class ProductsController {
     return this.productsService.bulkUpload(shopId, file.buffer);
   }
 
+  @Get('by-barcode/:barcode')
+  @ApiOperation({ summary: 'Find product by barcode for POS scan' })
+  async findByBarcode(@Param('barcode') barcode: string, @Query('shopId') shopId: string) {
+    if (!shopId) {
+      throw new BadRequestException('shopId wajib diisi.');
+    }
+    return this.productsService.findByBarcode(shopId, barcode);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Detail produk by ID (include stok & history)' })
   async findOne(@Param('id') id: string) {

@@ -222,6 +222,8 @@ export class TransactionsService {
             data: {
               stockId: stock.id,
               type: 'OUT',
+              source: 'SALE',
+              paymentMethod: dto.paymentMethod,
               quantityBefore: stock.quantity,
               quantityAfter: stock.quantity - item.quantity,
               quantityChange: -item.quantity,
@@ -309,7 +311,7 @@ export class TransactionsService {
 
     const transaction = await this.prisma.transaction.findUnique({
       where: { id: transactionId },
-      include: { items: true },
+      include: { items: true, payments: true },
     });
 
     if (!transaction) {
@@ -356,6 +358,8 @@ export class TransactionsService {
             data: {
               stockId: stock.id,
               type: 'IN',
+              source: 'SALE_VOID',
+              paymentMethod: transaction.payments?.[0]?.method ?? null,
               quantityBefore: stock.quantity,
               quantityAfter: stock.quantity + item.quantity,
               quantityChange: item.quantity,

@@ -129,7 +129,12 @@
                 </div>
               </td>
               <td class="px-3 py-2.5">
-                <code class="text-[10px] font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">{{ product.sku }}</code>
+                <div class="flex flex-col gap-0.5">
+                  <code class="text-[10px] font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded inline-block w-fit">{{ product.sku }}</code>
+                  <code v-if="product.barcode" class="text-[9px] font-mono text-slate-400 px-1 inline-flex items-center gap-1">
+                    <ScanBarcodeIcon class="w-2.5 h-2.5" />{{ product.barcode }}
+                  </code>
+                </div>
               </td>
               <td class="px-3 py-2.5">
                 <p class="text-sm font-medium text-slate-900">{{ product.name }}</p>
@@ -337,6 +342,26 @@
                      focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               @blur="autoGenerateSku"
             />
+          </div>
+
+          <!-- 3b. Barcode (optional, scannable) -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
+              Barcode <span class="text-[10px] font-normal text-slate-400">(optional, scan / ketik)</span>
+            </label>
+            <div class="relative">
+              <ScanBarcodeIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                v-model="form.barcode"
+                type="text"
+                placeholder="8991042001234 (scan barcode pabrik)"
+                class="w-full h-9 pl-9 pr-3 text-sm font-mono border border-slate-300 rounded-md
+                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              />
+            </div>
+            <p class="text-[10px] text-slate-400 mt-0.5">
+              Untuk produk dengan barcode pabrik (EAN/UPC). Akan dipakai untuk scan di POS.
+            </p>
           </div>
 
           <!-- 4. Kategori (dropdown + inline add/delete) -->
@@ -659,6 +684,7 @@ import {
   Image as ImageIcon,
   Upload as UploadIcon,
   Download as DownloadIcon,
+  ScanBarcode as ScanBarcodeIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { uploadToCloudinary } from '@/shared/services/upload.service';
@@ -691,6 +717,7 @@ const formError = ref<string | null>(null);
 const form = reactive({
   name: '',
   sku: '',
+  barcode: '',
   price: 0,
   cost: 0,
   initialStock: 0,
@@ -777,6 +804,7 @@ function openCreateModal() {
   editingProduct.value = null;
   form.name = '';
   form.sku = '';
+  form.barcode = '';
   form.price = 0;
   form.cost = 0;
   form.initialStock = 0;
@@ -798,6 +826,7 @@ function openEditModal(product: ProductDto) {
   editingProduct.value = product;
   form.name = product.name;
   form.sku = product.sku;
+  form.barcode = product.barcode || '';
   form.price = product.price;
   form.cost = product.cost;
   form.initialStock = 0;
@@ -832,6 +861,7 @@ async function handleSubmitForm() {
         imageUrl: form.imageUrl ?? undefined,
         categoryId: form.categoryId || undefined,
         unit: form.unit || undefined,
+        barcode: form.barcode.trim() || undefined,
         description: form.description || undefined,
       });
     } else {
@@ -844,12 +874,14 @@ async function handleSubmitForm() {
         shopId,
         name: form.name,
         sku: form.sku,
+        barcode: form.barcode.trim() || undefined,
         price: form.price,
         cost: form.cost,
         initialStock: form.initialStock || undefined,
         imageUrl: form.imageUrl ?? undefined,
         categoryId: form.categoryId || undefined,
         unit: form.unit || undefined,
+        description: form.description || undefined,
       });
     }
     closeModal();

@@ -725,13 +725,17 @@ function showToast(message: string, type: 'success' | 'error' | 'info' = 'info')
   toastTimer = setTimeout(() => { toast.value = null; }, 3000);
 }
 
-function handleBarcodeScan(sku: string) {
-  const product = products.value.find(p => p.sku.toLowerCase() === sku.toLowerCase());
+function handleBarcodeScan(code: string) {
+  // Match by barcode first, fallback to SKU
+  const product = products.value.find(p =>
+    (p as any).barcode && (p as any).barcode.toLowerCase() === code.toLowerCase()
+  ) || products.value.find(p => p.sku.toLowerCase() === code.toLowerCase());
+
   if (product) {
     addToCart(product);
-    showToast(`${product.name} (${product.sku}) ditambahkan ke keranjang`, 'success');
+    showToast(`${product.name} ditambahkan ke keranjang`, 'success');
   } else {
-    showToast(`SKU "${sku}" tidak ditemukan di produk terdaftar`, 'error');
+    showToast(`Kode "${code}" tidak ditemukan di produk terdaftar`, 'error');
   }
   showScanModal.value = false;
 }
