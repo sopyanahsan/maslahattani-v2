@@ -424,6 +424,9 @@ import { useShopStore } from '@/shared/stores/shop.store';
 import settingsService from '@/shared/services/settings.service';
 import SystemSettingsView from '@/admin/views/SystemSettingsView.vue';
 import dashboardService from '@/shared/services/dashboard.service';
+import { useNotifSound } from '@/shared/composables/useNotifSound';
+
+const { preview: previewTone } = useNotifSound();
 
 const authStore = useAuthStore();
 const shopStore = useShopStore();
@@ -498,18 +501,7 @@ function toggleNotifSound() {
 function selectTone(tone: string) {
   notifSoundTone.value = tone;
   localStorage.setItem('notif_sound_tone', tone);
-  if (tone !== 'silent') {
-    try {
-      const TONES: Record<string, string> = {
-        chime: 'data:audio/wav;base64,UklGRl4FAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToFAAAAAAD//wEAAQD+/wIA/v8CAAAA//8BAAEA/v8DAAAA/f8DAP//AAABAP//AQAAAP//AgD//wEA//8BAAAAAQBzdHJpbmcA',
-        beep: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVYGAACAf3+AgICAgICBgYGCgoKDg4SEhYWGh4eIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7/Dx8vP09fb3+Pn6+/z9/v8A',
-        bell: 'data:audio/wav;base64,UklGRl4FAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToFAAAAAPz/BQD7/wQAAAD+/wMAAAD9/wQA/f8DAP//AgD//wIA//8BAAAAAAEAAAABAAEA//8BAP//AgD//w==',
-      };
-      const audio = new Audio(TONES[tone]);
-      audio.volume = 0.5;
-      audio.play().catch(() => {});
-    } catch { /* silent */ }
-  }
+  previewTone(tone as any);
 }
 
 const savingAlert = ref(false);

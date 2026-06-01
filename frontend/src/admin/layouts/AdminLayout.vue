@@ -33,6 +33,19 @@
         >
           <component :is="themeResolved === 'dark' ? SunIcon : MoonIcon" class="w-4 h-4" />
         </button>
+        <!-- Notification Bell (mobile) -->
+        <button
+          type="button"
+          class="relative p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
+          aria-label="Notifikasi"
+          @click="notifOpen = !notifOpen"
+        >
+          <BellIcon class="w-4 h-4" />
+          <span
+            v-if="alertCount > 0"
+            class="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 border border-white dark:border-slate-900"
+          />
+        </button>
         <button
           type="button"
           class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
@@ -212,69 +225,105 @@
           </button>
 
           <!-- Notification Bell -->
-          <div class="relative">
+          <div class="relative" ref="notifRef">
             <button
               type="button"
-              class="h-9 w-9 flex items-center justify-center rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors relative"
+              :class="[
+                'relative h-9 w-9 flex items-center justify-center rounded-md border transition-colors',
+                notifOpen
+                  ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400'
+                  : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+              ]"
               title="Notifikasi"
               @click="notifOpen = !notifOpen"
             >
-              <BellIcon class="w-4 h-4" />
+              <BellIcon class="w-4 h-4" :class="alertCount > 0 && !notifOpen ? 'animate-[wiggle_1s_ease-in-out]' : ''" />
               <span
                 v-if="alertCount > 0"
-                class="absolute -top-1 -right-1 w-4.5 h-4.5 min-w-[18px] px-1 flex items-center justify-center rounded-full text-[9px] font-bold text-white bg-red-500 border-2 border-white dark:border-slate-800 leading-none"
+                class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[9px] font-bold text-white bg-red-500 border-2 border-white dark:border-slate-900 leading-none shadow-sm"
               >
                 {{ alertCount > 99 ? '99+' : alertCount }}
               </span>
             </button>
 
             <!-- Notification Dropdown -->
-            <div
-              v-if="notifOpen"
-              class="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-xl z-40 overflow-hidden"
-            >
-              <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                <p class="text-xs font-bold text-slate-900 dark:text-slate-100">Notifikasi</p>
-                <button
-                  v-if="alertCount > 0"
-                  type="button"
-                  class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline"
-                  @click="markAllRead"
-                >
-                  Tandai baca semua
-                </button>
-              </div>
-              <div class="max-h-80 overflow-y-auto">
-                <div v-if="alertsLoading" class="py-8 text-center">
-                  <Loader2Icon class="w-4 h-4 animate-spin text-slate-400 mx-auto" />
-                </div>
-                <div v-else-if="alertItems.length === 0" class="py-8 text-center">
-                  <BellIcon class="w-6 h-6 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
-                  <p class="text-xs text-slate-400 dark:text-slate-500">Semua aman, tidak ada alert.</p>
-                </div>
-                <div v-else>
+            <Transition name="dropdown">
+              <div
+                v-if="notifOpen"
+                class="absolute right-0 top-full mt-2 w-[340px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl z-40 overflow-hidden"
+              >
+                <!-- Header -->
+                <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
+                  <div class="flex items-center gap-2">
+                    <BellIcon class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                    <p class="text-xs font-bold text-slate-900 dark:text-slate-100">Notifikasi</p>
+                    <span v-if="alertCount > 0" class="px-1.5 py-0.5 text-[9px] font-bold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 rounded-full">{{ alertCount }}</span>
+                  </div>
                   <button
-                    v-for="alert in alertItems.slice(0, 15)"
-                    :key="alert.id"
+                    v-if="alertCount > 0"
                     type="button"
-                    class="w-full px-4 py-2.5 border-b border-slate-50 dark:border-slate-800 last:border-0 hover:bg-blue-50 dark:hover:bg-blue-950/20 transition-colors text-left"
-                    @click="handleAlertClick(alert)"
+                    class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                    @click="markAllRead"
                   >
-                    <div class="flex items-start gap-2.5">
-                      <div :class="['w-2 h-2 rounded-full shrink-0 mt-1.5', alertDotColor(alert.severity)]"></div>
-                      <div class="flex-1 min-w-0">
-                        <p class="text-[11px] font-semibold text-slate-800 dark:text-slate-200 truncate">{{ alert.title }}</p>
-                        <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">{{ alert.shopName }} · {{ alert.description }}</p>
-                      </div>
-                      <span :class="['shrink-0 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded', alertTypeBadge(alert.type)]">{{ alertTypeShort(alert.type) }}</span>
+                    Tandai semua dibaca
+                  </button>
+                </div>
+
+                <!-- Body -->
+                <div class="max-h-[320px] overflow-y-auto">
+                  <div v-if="alertsLoading" class="py-10 flex flex-col items-center gap-2">
+                    <Loader2Icon class="w-5 h-5 animate-spin text-slate-300 dark:text-slate-600" />
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500">Memuat notifikasi...</p>
+                  </div>
+                  <div v-else-if="alertItems.length === 0" class="py-10 flex flex-col items-center gap-2">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <BellIcon class="w-5 h-5 text-slate-300 dark:text-slate-600" />
                     </div>
+                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Semua aman!</p>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500">Tidak ada alert aktif saat ini.</p>
+                  </div>
+                  <div v-else class="divide-y divide-slate-50 dark:divide-slate-800">
+                    <button
+                      v-for="alert in alertItems.slice(0, 15)"
+                      :key="alert.id"
+                      type="button"
+                      class="w-full px-4 py-3 hover:bg-blue-50/60 dark:hover:bg-blue-950/20 transition-colors text-left group"
+                      @click="handleAlertClick(alert)"
+                    >
+                      <div class="flex items-start gap-3">
+                        <!-- Severity dot with ring -->
+                        <div :class="['mt-1 w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-offset-1 dark:ring-offset-slate-900',
+                          alert.severity === 'critical' ? 'bg-red-500 ring-red-200 dark:ring-red-900' :
+                          alert.severity === 'warning'  ? 'bg-amber-500 ring-amber-200 dark:ring-amber-900' :
+                                                          'bg-blue-400 ring-blue-200 dark:ring-blue-900'
+                        ]" />
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2 mb-0.5">
+                            <p class="text-[11px] font-semibold text-slate-800 dark:text-slate-200 truncate group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">{{ alert.title }}</p>
+                            <span :class="['shrink-0 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-md', alertTypeBadge(alert.type)]">{{ alertTypeShort(alert.type) }}</span>
+                          </div>
+                          <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">{{ alert.shopName }}</p>
+                          <p class="text-[10px] text-slate-400 dark:text-slate-500 truncate">{{ alert.description }}</p>
+                        </div>
+                        <ChevronRightIcon class="w-3 h-3 text-slate-300 dark:text-slate-600 shrink-0 mt-1 group-hover:text-blue-400 transition-colors" />
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 flex items-center justify-between">
+                  <p class="text-[9px] text-slate-400 dark:text-slate-500">Diperbarui setiap 60 detik</p>
+                  <button
+                    type="button"
+                    class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1 transition-colors"
+                    @click="fetchAlerts"
+                  >
+                    <RefreshCwIcon class="w-2.5 h-2.5" /> Refresh
                   </button>
                 </div>
               </div>
-              <div v-if="alertItems.length > 0" class="px-4 py-2 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 text-center">
-                <p class="text-[9px] text-slate-400 dark:text-slate-500">Klik untuk langsung ke halaman terkait</p>
-              </div>
-            </div>
+            </Transition>
           </div>
 
           <span class="text-xs text-slate-500 dark:text-slate-400 hidden xl:inline">
@@ -467,7 +516,12 @@ import {
   Moon as MoonIcon,
   Monitor as MonitorIcon,
   Bell as BellIcon,
+  ChevronRight as ChevronRightIcon,
+  RefreshCw as RefreshCwIcon,
 } from 'lucide-vue-next';
+import { useNotifSound } from '@/shared/composables/useNotifSound';
+
+const { play: playNotifSound } = useNotifSound();
 
 const router = useRouter();
 const route = useRoute();
@@ -614,18 +668,20 @@ async function fetchBadgeCounts() {
 // NOTIFICATION SYSTEM (Bell icon + sound)
 // ============================================
 const notifOpen = ref(false);
+const notifRef = ref<HTMLElement | null>(null);
+
+function onDocClick(e: MouseEvent) {
+  if (notifRef.value && !notifRef.value.contains(e.target as Node)) {
+    notifOpen.value = false;
+  }
+}
 const alertItems = ref<Array<{ id: string; type: string; severity: string; title: string; description: string; shopId: string; shopName: string }>>([]);
 const alertCount = ref(0);
 const alertsLoading = ref(false);
 let prevAlertCount = 0;
 let notifTimer: ReturnType<typeof setInterval> | null = null;
 
-// Sound tones (short base64-encoded beep sounds)
-const SOUND_TONES: Record<string, string> = {
-  chime: 'data:audio/wav;base64,UklGRl4FAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToFAAAAAAD//wEAAQD+/wIA/v8CAAAA//8BAAEA/v8DAAAA/f8DAP//AAABAP//AQAAAP//AgD//wEA//8BAAAAAQBzdHJpbmcA',
-  beep: 'data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YVYGAACAf3+AgICAgICBgYGCgoKDg4SEhYWGh4eIiYqLjI2Oj5CRkpOUlZaXmJmam5ydnp+goaKjpKWmp6ipqqusra6vsLGys7S1tre4ubq7vL2+v8DBwsPExcbHyMnKy8zNzs/Q0dLT1NXW19jZ2tvc3d7f4OHi4+Tl5ufo6err7O3u7/Dx8vP09fb3+Pn6+/z9/v8A',
-  bell: 'data:audio/wav;base64,UklGRl4FAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YToFAAAAAPz/BQD7/wQAAAD+/wMAAAD9/wQA/f8DAP//AgD//wIA//8BAAAAAAEAAAABAAEA//8BAP//AgD//w==',
-};
+// Sound tones handled by useNotifSound composable
 
 function alertDotColor(severity: string): string {
   if (severity === 'critical') return 'bg-red-500';
@@ -660,18 +716,7 @@ async function fetchAlerts() {
   }
 }
 
-function playNotifSound() {
-  try {
-    const tone = localStorage.getItem('notif_sound_tone') || 'chime';
-    const enabled = localStorage.getItem('notif_sound_enabled') !== 'false';
-    if (!enabled || tone === 'silent') return;
-
-    const src = SOUND_TONES[tone] || SOUND_TONES.chime;
-    const audio = new Audio(src);
-    audio.volume = 0.5;
-    audio.play().catch(() => {}); // Ignore autoplay restrictions
-  } catch { /* silent */ }
-}
+// playNotifSound is provided by useNotifSound composable above
 
 function startNotifPolling() {
   fetchAlerts();
@@ -705,6 +750,7 @@ function markAllRead() {
 }
 
 onMounted(async () => {
+  document.addEventListener('click', onDocClick, true);
   startNotifPolling();
   if (canSwitchShop.value && availableShops.value.length === 0) {
     try {
@@ -732,6 +778,7 @@ onMounted(async () => {
 });
 
 onUnmounted(() => {
+  document.removeEventListener('click', onDocClick, true);
   stopNotifPolling();
 });
 
@@ -870,3 +917,18 @@ async function handleLogout() {
   router.push({ name: 'admin-login' });
 }
 </script>
+
+<style scoped>
+.dropdown-enter-active { transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1); }
+.dropdown-leave-active { transition: all 0.12s ease; }
+.dropdown-enter-from  { opacity: 0; transform: translateY(-6px) scale(0.97); }
+.dropdown-leave-to    { opacity: 0; transform: translateY(-4px) scale(0.98); }
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  20%       { transform: rotate(-12deg); }
+  40%       { transform: rotate(12deg); }
+  60%       { transform: rotate(-8deg); }
+  80%       { transform: rotate(8deg); }
+}
+</style>
