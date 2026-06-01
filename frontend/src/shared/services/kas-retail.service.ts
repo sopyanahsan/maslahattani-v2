@@ -78,6 +78,7 @@ const kasRetailService = {
     startDate?: string;
     endDate?: string;
     categoryId?: string;
+    cashBoxId?: string;
     page?: number;
     limit?: number;
   }): Promise<PaymentHistoryResponse> {

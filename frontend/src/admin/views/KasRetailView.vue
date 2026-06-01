@@ -58,7 +58,7 @@
       <div class="flex flex-col sm:flex-row gap-3">
         <select v-model="mutasiCategoryFilter" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" @change="fetchHistory">
           <option value="">Semua Kas</option>
-          <option v-for="cat in mutationCategories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
+          <option v-for="cb in cashBox?.cashBoxes || []" :key="cb.id" :value="cb.categoryId || cb.id">{{ cb.label }}</option>
         </select>
         <input v-model="mutasiStartDate" type="date" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" @change="fetchHistory" />
         <input v-model="mutasiEndDate" type="date" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" @change="fetchHistory" />
@@ -295,8 +295,49 @@ const cashBoxForm = reactive({ label: '', balance: 0 });
 // Mutasi Tab Methods
 // ============================================
 async function fetchCashBox() { const s = getShopId(); if (!s) return; try { cashBox.value = await kasRetailService.getCashBox(s); } catch { /* */ } }
-async function fetchHistory() { const s = getShopId(); if (!s) return; historyLoading.value = true; try { const res = await kasRetailService.getHistory({ shopId: s, categoryId: mutasiCategoryFilter.value || undefined, startDate: mutasiStartDate.value || undefined, endDate: mutasiEndDate.value || undefined, page: 1, limit: 20 }); historyData.value = res.data; historyMeta.value = res.meta; } catch { historyData.value = []; } finally { historyLoading.value = false; } }
-async function fetchHistoryPage(p: number) { const s = getShopId(); if (!s) return; historyLoading.value = true; try { const res = await kasRetailService.getHistory({ shopId: s, categoryId: mutasiCategoryFilter.value || undefined, startDate: mutasiStartDate.value || undefined, endDate: mutasiEndDate.value || undefined, page: p, limit: 20 }); historyData.value = res.data; historyMeta.value = res.meta; } catch { /* */ } finally { historyLoading.value = false; } }
+async function fetchHistory() {
+  const s = getShopId(); if (!s) return;
+  historyLoading.value = true;
+  try {
+    // Determine if filter value is a categoryId or cashBoxId
+    const filterVal = mutasiCategoryFilter.value || undefined;
+    const filterCb = (cashBox.value?.cashBoxes || []).find(cb => (cb.categoryId || cb.id) === filterVal);
+    const categoryId = filterCb?.categoryId || undefined;
+    const cashBoxId = (filterCb && !filterCb.categoryId) ? filterCb.id : undefined;
+
+    const res = await kasRetailService.getHistory({
+      shopId: s,
+      categoryId,
+      cashBoxId,
+      startDate: mutasiStartDate.value || undefined,
+      endDate: mutasiEndDate.value || undefined,
+      page: 1, limit: 20,
+    });
+    historyData.value = res.data; historyMeta.value = res.meta;
+  } catch { historyData.value = []; }
+  finally { historyLoading.value = false; }
+}
+async function fetchHistoryPage(p: number) {
+  const s = getShopId(); if (!s) return;
+  historyLoading.value = true;
+  try {
+    const filterVal = mutasiCategoryFilter.value || undefined;
+    const filterCb = (cashBox.value?.cashBoxes || []).find(cb => (cb.categoryId || cb.id) === filterVal);
+    const categoryId = filterCb?.categoryId || undefined;
+    const cashBoxId = (filterCb && !filterCb.categoryId) ? filterCb.id : undefined;
+
+    const res = await kasRetailService.getHistory({
+      shopId: s,
+      categoryId,
+      cashBoxId,
+      startDate: mutasiStartDate.value || undefined,
+      endDate: mutasiEndDate.value || undefined,
+      page: p, limit: 20,
+    });
+    historyData.value = res.data; historyMeta.value = res.meta;
+  } catch { /* */ }
+  finally { historyLoading.value = false; }
+}
 
 function openMutationModalForKas(type: 'CASH_IN' | 'CASH_OUT', cb: any) {
   mutationType.value = type;

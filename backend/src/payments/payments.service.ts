@@ -241,7 +241,23 @@ export class PaymentsService {
     const where: any = {};
     if (query.shopId) where.shopId = query.shopId;
     if (query.type) where.type = query.type;
-    if (query.categoryId) where.categoryId = query.categoryId;
+
+    // Support filter by categoryId OR by cashBoxId (lookup categoryId from cashbox)
+    if (query.categoryId) {
+      where.categoryId = query.categoryId;
+    } else if (query.cashBoxId) {
+      // Lookup the CashBox to get its categoryId
+      const cashBox = await this.prisma.cashBox.findUnique({
+        where: { id: query.cashBoxId },
+        select: { categoryId: true },
+      });
+      if (cashBox) {
+        where.categoryId = cashBox.categoryId;
+      } else {
+        // CashBox not found, return empty
+        return { data: [], meta: { total: 0, page, limit, totalPages: 0 } };
+      }
+    }
 
     if (query.startDate || query.endDate) {
       where.createdAt = {};
