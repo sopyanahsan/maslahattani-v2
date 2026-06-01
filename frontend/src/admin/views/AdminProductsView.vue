@@ -360,7 +360,7 @@
                 class="shrink-0 w-9 h-9 rounded-md border border-blue-300 bg-blue-50 text-blue-600
                        flex items-center justify-center hover:bg-blue-100 transition-colors"
                 title="Tambah kategori baru"
-                @click="showCategoryInline = !showCategoryInline"
+                @click="toggleCategoryInline"
               >
                 <PlusIcon class="w-4 h-4" />
               </button>
@@ -376,24 +376,29 @@
               </button>
             </div>
             <!-- Inline add category -->
-            <div v-if="showCategoryInline" class="mt-2 flex items-center gap-2">
-              <input
-                v-model="newCategoryName"
-                type="text"
-                placeholder="Nama kategori baru"
-                class="flex-1 h-8 px-2.5 text-xs border border-slate-300 rounded-md
-                       focus:border-blue-500 outline-none"
-                @keydown.enter.prevent="handleAddCategory"
-              />
-              <button
-                type="button"
-                :disabled="!newCategoryName.trim() || categoryAdding"
-                class="h-8 px-3 text-xs font-semibold text-white bg-blue-600 rounded-md
-                       hover:bg-blue-700 disabled:opacity-50"
-                @click="handleAddCategory"
-              >
-                {{ categoryAdding ? '...' : 'Tambah' }}
-              </button>
+            <div v-if="showCategoryInline" class="mt-2 space-y-2">
+              <div class="flex items-center gap-2">
+                <input
+                  v-model="newCategoryName"
+                  type="text"
+                  placeholder="Nama kategori baru"
+                  class="flex-1 h-8 px-2.5 text-xs border border-slate-300 rounded-md
+                         focus:border-blue-500 outline-none"
+                  @keydown.enter.prevent="handleAddCategory"
+                />
+                <button
+                  type="button"
+                  :disabled="!newCategoryName.trim() || categoryAdding"
+                  class="h-8 px-3 text-xs font-semibold text-white bg-blue-600 rounded-md
+                         hover:bg-blue-700 disabled:opacity-50"
+                  @click="handleAddCategory"
+                >
+                  {{ categoryAdding ? '...' : 'Tambah' }}
+                </button>
+              </div>
+              <div v-if="categoryError" class="bg-red-50 border border-red-200 rounded-md p-2 text-[11px] text-red-700">
+                {{ categoryError }}
+              </div>
             </div>
           </div>
 
@@ -704,6 +709,7 @@ const categoryList = ref<Array<{ id: string; name: string; icon?: string }>>([])
 const showCategoryInline = ref(false);
 const newCategoryName = ref('');
 const categoryAdding = ref(false);
+const categoryError = ref<string | null>(null);
 
 // Delete state
 const showDeleteModal = ref(false);
@@ -780,7 +786,11 @@ function openCreateModal() {
   form.description = '';
   imagePreviewUrl.value = null;
   showCategoryInline.value = false;
+  newCategoryName.value = '';
+  categoryError.value = null;
   formError.value = null;
+  // Refresh categories on modal open (in case other admin added categories)
+  fetchCategories();
   showModal.value = true;
 }
 
@@ -797,7 +807,10 @@ function openEditModal(product: ProductDto) {
   form.description = (product as any).description || '';
   imagePreviewUrl.value = product.imageUrl || null;
   showCategoryInline.value = false;
+  newCategoryName.value = '';
+  categoryError.value = null;
   formError.value = null;
+  fetchCategories();
   showModal.value = true;
 }
 
@@ -1022,19 +1035,33 @@ async function fetchCategories() {
   }
 }
 
+function toggleCategoryInline() {
+  showCategoryInline.value = !showCategoryInline.value;
+  newCategoryName.value = '';
+  categoryError.value = null;
+}
+
 async function handleAddCategory() {
-  if (!newCategoryName.value.trim()) return;
+  const name = newCategoryName.value.trim();
+  if (!name) return;
   categoryAdding.value = true;
+  categoryError.value = null;
   try {
-    const { data } = await api.post('/product-categories', { name: newCategoryName.value.trim() });
+    const { data } = await api.post('/product-categories', { name });
+    // Backend returns { category: { id, name, ... } }
+    const newCat = data?.category || data;
     await fetchCategories();
     // Auto-select newly created category
-    const created = categoryList.value.find(c => c.name === newCategoryName.value.trim()) || (data as any);
-    if (created?.id) form.categoryId = created.id;
+    const found = categoryList.value.find(c => c.name === name);
+    if (found?.id) {
+      form.categoryId = found.id;
+    } else if (newCat?.id) {
+      form.categoryId = newCat.id;
+    }
     newCategoryName.value = '';
     showCategoryInline.value = false;
   } catch (err: any) {
-    formError.value = err.response?.data?.message || 'Gagal menambah kategori.';
+    categoryError.value = err.response?.data?.message || err.message || 'Gagal menambah kategori.';
   } finally {
     categoryAdding.value = false;
   }
