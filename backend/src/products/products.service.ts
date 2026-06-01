@@ -8,8 +8,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const XLSX = require('xlsx');
+// xlsx — pastikan sudah `npm install` setelah pull
+let XLSX: any;
+try {
+  XLSX = require('xlsx');
+} catch {
+  // Will throw at runtime when bulk upload is called
+  XLSX = null;
+}
 
 @Injectable()
 export class ProductsService {
@@ -235,6 +241,12 @@ export class ProductsService {
   // ============================================
 
   async bulkUpload(shopId: string, fileBuffer: Buffer) {
+    if (!XLSX) {
+      throw new BadRequestException(
+        'Module "xlsx" belum terinstall. Jalankan: npm install xlsx',
+      );
+    }
+
     // Parse file
     const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
@@ -388,6 +400,12 @@ export class ProductsService {
   // ============================================
 
   generateTemplate(): Buffer {
+    if (!XLSX) {
+      throw new BadRequestException(
+        'Module "xlsx" belum terinstall. Jalankan: npm install xlsx',
+      );
+    }
+
     const headers = [
       'Nama Produk', 'SKU', 'Harga Jual', 'Modal', 'Stok Awal', 'Satuan', 'Kategori', 'Deskripsi',
     ];
