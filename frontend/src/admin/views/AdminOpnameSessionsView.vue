@@ -234,7 +234,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
         @click.self="showDetail = false"
       >
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
           <!-- Modal Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
             <div>
@@ -285,14 +285,15 @@
               </div>
 
               <!-- Items Table -->
-              <table class="w-full text-sm">
+              <div class="overflow-x-auto -mx-2">
+              <table class="w-full text-sm min-w-[600px]">
                 <thead>
                   <tr class="text-left text-[11px] text-slate-500 uppercase tracking-wide border-b border-slate-200">
                     <th class="pb-2 pr-3">Produk</th>
-                    <th class="pb-2 pr-3 text-right">Sistem</th>
-                    <th class="pb-2 pr-3 text-right">Fisik</th>
-                    <th class="pb-2 pr-3 text-right">Selisih</th>
-                    <th class="pb-2">Alasan</th>
+                    <th class="pb-2 pr-3 text-right whitespace-nowrap">Sistem</th>
+                    <th class="pb-2 pr-3 text-right whitespace-nowrap">Fisik</th>
+                    <th class="pb-2 pr-3 text-right whitespace-nowrap">Selisih</th>
+                    <th class="pb-2 min-w-[130px]">Alasan</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -338,7 +339,7 @@
                       <template v-if="detail.status === 'IN_PROGRESS' && item.variance !== null && item.variance !== 0">
                         <select
                           :value="item.reason || ''"
-                          class="h-7 px-1.5 text-[10px] border border-slate-300 rounded focus:border-blue-500 outline-none"
+                          class="h-7 px-2 text-[11px] min-w-[120px] border border-slate-300 rounded focus:border-blue-500 outline-none"
                           @change="(e) => handleUpdateReason(item.id, (e.target as HTMLSelectElement).value, item.actualQty!, item.systemQty)"
                         >
                           <option value="">— Pilih —</option>
@@ -359,6 +360,7 @@
                   </tr>
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
 
