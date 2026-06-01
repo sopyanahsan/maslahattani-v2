@@ -7,5 +7,9 @@ export class UpdateOpnameItemDto {
 
   @IsString()
   @IsOptional()
+  reason?: string; // HILANG | RUSAK | EXPIRED | SALAH_HITUNG | LAINNYA
+
+  @IsString()
+  @IsOptional()
   notes?: string;
 }

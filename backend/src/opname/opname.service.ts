@@ -107,6 +107,7 @@ export class OpnameService {
         systemQty: item.systemQty,
         actualQty: item.actualQty,
         variance: item.variance,
+        reason: item.reason,
         notes: item.notes,
       })),
     };
@@ -186,6 +187,7 @@ export class OpnameService {
       data: {
         actualQty: dto.actualQty,
         variance,
+        reason: dto.reason || null,
         notes: dto.notes,
       },
     });
@@ -196,6 +198,7 @@ export class OpnameService {
       systemQty: updated.systemQty,
       actualQty: updated.actualQty,
       variance: updated.variance,
+      reason: updated.reason,
       notes: updated.notes,
     };
   }
@@ -244,6 +247,7 @@ export class OpnameService {
           });
 
           if (stock) {
+            const reasonLabel = item.reason ? ` [${item.reason}]` : '';
             await this.prisma.stockHistory.create({
               data: {
                 stockId: stock.id,
@@ -253,7 +257,7 @@ export class OpnameService {
                 quantityAfter: item.actualQty,
                 quantityChange: item.variance!,
                 reference: session.id,
-                notes: `Opname ${session.sessionNumber}: adjustment`,
+                notes: `Opname ${session.sessionNumber}: ${item.variance! > 0 ? '+' : ''}${item.variance}${reasonLabel}${item.notes ? ' — ' + item.notes : ''}`,
                 createdById: userId || null,
               },
             });

@@ -762,6 +762,7 @@ model OpnameItem {
   systemQty       Int           // stok di sistem saat opname dimulai
   actualQty       Int?          // stok fisik yang dihitung
   variance        Int?          // actualQty - systemQty
+  reason          String?       // HILANG | RUSAK | EXPIRED | SALAH_HITUNG | LAINNYA
   notes           String?
 
   createdAt       DateTime      @default(now())

@@ -127,7 +127,7 @@
             <div v-if="detailLoading" class="text-center py-10 text-slate-500 text-sm">Memuat detail...</div>
             <div v-else-if="detail">
               <!-- Summary Cards (for completed) -->
-              <div v-if="detail.status === 'COMPLETED'" class="grid grid-cols-3 gap-3 mb-5">
+              <div v-if="detail.status === 'COMPLETED'" class="grid grid-cols-4 gap-3 mb-5">
                 <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
                   <p class="text-lg font-bold text-emerald-700">{{ detail.totalMatched }}</p>
                   <p class="text-[10px] text-emerald-600 uppercase font-semibold">Cocok</p>
@@ -140,6 +140,10 @@
                   <p class="text-lg font-bold text-red-700">{{ detail.totalDeficit }}</p>
                   <p class="text-[10px] text-red-600 uppercase font-semibold">Kurang</p>
                 </div>
+                <div class="bg-slate-50 border border-slate-200 rounded-lg p-3 text-center">
+                  <p class="text-lg font-bold text-red-600">{{ formatRupiah(calcLossValue()) }}</p>
+                  <p class="text-[10px] text-slate-600 uppercase font-semibold">Kerugian</p>
+                </div>
               </div>
 
               <!-- Items Table -->
@@ -149,7 +153,8 @@
                     <th class="pb-2 pr-3">Produk</th>
                     <th class="pb-2 pr-3 text-right">Sistem</th>
                     <th class="pb-2 pr-3 text-right">Fisik</th>
-                    <th class="pb-2 text-right">Selisih</th>
+                    <th class="pb-2 pr-3 text-right">Selisih</th>
+                    <th class="pb-2">Alasan</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -171,14 +176,14 @@
                           min="0"
                           class="w-16 h-7 px-2 text-xs text-right border border-slate-300 rounded
                                  focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-                          @change="(e) => handleUpdateItem(item.id, parseInt((e.target as HTMLInputElement).value), item.systemQty)"
+                          @change="(e) => handleUpdateItem(item.id, parseInt((e.target as HTMLInputElement).value), item.systemQty, item.reason)"
                         />
                       </template>
                       <template v-else>
                         <span class="text-xs text-slate-700">{{ item.actualQty ?? '-' }}</span>
                       </template>
                     </td>
-                    <td class="py-2.5 text-right">
+                    <td class="py-2.5 pr-3 text-right">
                       <span
                         v-if="item.variance !== null"
                         :class="[
@@ -190,6 +195,28 @@
                         {{ item.variance > 0 ? '+' : '' }}{{ item.variance }}
                       </span>
                       <span v-else class="text-xs text-slate-300">-</span>
+                    </td>
+                    <td class="py-2.5">
+                      <template v-if="detail.status === 'IN_PROGRESS' && item.variance !== null && item.variance !== 0">
+                        <select
+                          :value="item.reason || ''"
+                          class="h-7 px-1.5 text-[10px] border border-slate-300 rounded focus:border-blue-500 outline-none"
+                          @change="(e) => handleUpdateReason(item.id, (e.target as HTMLSelectElement).value, item.actualQty!, item.systemQty)"
+                        >
+                          <option value="">— Pilih —</option>
+                          <option value="HILANG">Hilang</option>
+                          <option value="RUSAK">Rusak</option>
+                          <option value="EXPIRED">Expired</option>
+                          <option value="SALAH_HITUNG">Salah Hitung</option>
+                          <option value="LAINNYA">Lainnya</option>
+                        </select>
+                      </template>
+                      <template v-else-if="item.reason">
+                        <span :class="['text-[10px] font-semibold px-1.5 py-0.5 rounded', reasonBadge(item.reason)]">{{ reasonLabel(item.reason) }}</span>
+                      </template>
+                      <template v-else>
+                        <span class="text-[10px] text-slate-300">—</span>
+                      </template>
                     </td>
                   </tr>
                 </tbody>
@@ -364,10 +391,10 @@ async function openDetail(session: OpnameSessionDto) {
   }
 }
 
-async function handleUpdateItem(itemId: string, actualQty: number, systemQty: number) {
+async function handleUpdateItem(itemId: string, actualQty: number, systemQty: number, reason?: string | null) {
   if (isNaN(actualQty) || actualQty < 0) return;
   try {
-    const updated = await opnameService.updateItem(itemId, { actualQty });
+    const updated = await opnameService.updateItem(itemId, { actualQty, reason: reason || undefined });
     // Update local state
     if (detail.value) {
       const idx = detail.value.items.findIndex((i) => i.id === itemId);
@@ -379,6 +406,37 @@ async function handleUpdateItem(itemId: string, actualQty: number, systemQty: nu
   } catch {
     // silent
   }
+}
+
+async function handleUpdateReason(itemId: string, reason: string, actualQty: number, systemQty: number) {
+  try {
+    await opnameService.updateItem(itemId, { actualQty, reason: reason || undefined });
+    if (detail.value) {
+      const item = detail.value.items.find((i: any) => i.id === itemId);
+      if (item) item.reason = reason || null;
+    }
+  } catch { /* silent */ }
+}
+
+function reasonLabel(reason: string): string {
+  const map: Record<string, string> = { HILANG: 'Hilang', RUSAK: 'Rusak', EXPIRED: 'Expired', SALAH_HITUNG: 'Salah Hitung', LAINNYA: 'Lainnya' };
+  return map[reason] || reason;
+}
+
+function reasonBadge(reason: string): string {
+  const map: Record<string, string> = { HILANG: 'bg-red-100 text-red-700', RUSAK: 'bg-amber-100 text-amber-700', EXPIRED: 'bg-purple-100 text-purple-700', SALAH_HITUNG: 'bg-blue-100 text-blue-700', LAINNYA: 'bg-slate-100 text-slate-700' };
+  return map[reason] || 'bg-slate-100 text-slate-700';
+}
+
+function calcLossValue(): number {
+  if (!detail.value) return 0;
+  return detail.value.items
+    .filter((i: any) => i.variance !== null && i.variance < 0)
+    .reduce((sum: number, i: any) => sum + (Math.abs(i.variance) * (i.productPrice || 0)), 0);
+}
+
+function formatRupiah(n: number): string {
+  return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);
 }
 
 async function handleComplete(applyAdjustments: boolean) {

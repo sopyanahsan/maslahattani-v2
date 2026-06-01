@@ -33,6 +33,7 @@ export interface OpnameItemDto {
   systemQty: number;
   actualQty: number | null;
   variance: number | null;
+  reason: string | null;
   notes: string | null;
 }
 
@@ -57,6 +58,7 @@ export interface CreateOpnamePayload {
 
 export interface UpdateOpnameItemPayload {
   actualQty: number;
+  reason?: string;
   notes?: string;
 }
 
