@@ -161,6 +161,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'cetak-label',
+        name: 'admin-cetak-label',
+        component: () => import('@/admin/views/CetakLabelView.vue'),
+        meta: {
+          title: 'Cetak Label',
+          description: 'Generate & cetak barcode label produk untuk A4 atau printer label.',
+        },
+      },
+      {
         path: 'debts',
         name: 'admin-debts',
         component: () => import('@/admin/views/AdminDebtsView.vue'),

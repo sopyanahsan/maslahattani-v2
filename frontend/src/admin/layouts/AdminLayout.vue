@@ -453,6 +453,7 @@ import {
   ArrowRightLeft as TransferIcon,
   Percent as PercentIcon,
   ClipboardList as ClipboardListIcon,
+  Tag as TagIcon,
   // Shifts & Profile
   Clock as ShiftIcon,
   User as UserIcon,
@@ -765,6 +766,7 @@ const navGroups = ref<NavGroup[]>([
     items: [
       { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
       { to: '/admin/riwayat-stok', label: 'Riwayat Stok', icon: ClipboardListIcon },
+      { to: '/admin/cetak-label', label: 'Cetak Label', icon: TagIcon },
       { to: '/admin/shops', label: 'Cabang', icon: Building2Icon },
       { to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon },
       { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
