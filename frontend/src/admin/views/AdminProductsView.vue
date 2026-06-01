@@ -156,6 +156,14 @@
                 <div class="flex items-center justify-center gap-1">
                   <button
                     class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center
+                           hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                    title="Riwayat Stok"
+                    @click="openStockHistory(product)"
+                  >
+                    <HistoryIcon class="w-3.5 h-3.5 text-blue-500" />
+                  </button>
+                  <button
+                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center
                            hover:bg-slate-100 transition-colors"
                     title="Edit"
                     @click="openEditModal(product)"
@@ -583,6 +591,50 @@
     </Teleport>
 
     <!-- ============================================ -->
+    <!-- Stock History Modal (per produk)             -->
+    <!-- ============================================ -->
+    <Teleport to="body">
+      <div v-if="showStockHistoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showStockHistoryModal = false"></div>
+        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+          <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-900">Riwayat Stok — {{ stockHistoryProduct?.name }}</h3>
+            <button type="button" class="text-slate-400 hover:text-slate-600" @click="showStockHistoryModal = false">✕</button>
+          </div>
+
+          <div v-if="stockHistoryLoading" class="flex items-center justify-center py-8">
+            <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+          </div>
+          <div v-else-if="stockHistoryData.length === 0" class="text-center py-8">
+            <p class="text-xs text-slate-500">Belum ada riwayat stok.</p>
+          </div>
+          <div v-else class="space-y-2">
+            <div v-for="h in stockHistoryData" :key="h.id"
+              class="flex items-center gap-3 p-3 rounded-lg border border-slate-100">
+              <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
+                h.quantityChange > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700']">
+                {{ h.quantityChange > 0 ? '↑' : '↓' }}
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-xs font-semibold text-slate-800">{{ sourceLabel(h.source) }}</span>
+                  <span v-if="h.paymentMethod" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">{{ paymentLabel(h.paymentMethod) }}</span>
+                </div>
+                <p class="text-[10px] text-slate-500 mt-0.5">{{ formatDateTime(h.createdAt) }}<span v-if="h.notes"> · {{ h.notes }}</span></p>
+              </div>
+              <div class="text-right shrink-0">
+                <p :class="['text-xs font-bold font-mono', h.quantityChange > 0 ? 'text-emerald-600' : 'text-red-600']">
+                  {{ h.quantityChange > 0 ? '+' : '' }}{{ h.quantityChange }}
+                </p>
+                <p class="text-[10px] text-slate-400 font-mono">{{ h.quantityBefore }} → {{ h.quantityAfter }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- ============================================ -->
     <!-- Bulk Upload Modal                            -->
     <!-- ============================================ -->
     <Teleport to="body">
@@ -685,6 +737,7 @@ import {
   Upload as UploadIcon,
   Download as DownloadIcon,
   ScanBarcode as ScanBarcodeIcon,
+  History as HistoryIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { uploadToCloudinary } from '@/shared/services/upload.service';
@@ -751,6 +804,12 @@ const bulkUploading = ref(false);
 const bulkError = ref<string | null>(null);
 const bulkResult = ref<{ success: boolean; message: string; imported?: number; skipped?: number; errors?: string[] } | null>(null);
 const downloadingTemplate = ref(false);
+
+// Stock history modal state
+const showStockHistoryModal = ref(false);
+const stockHistoryProduct = ref<ProductDto | null>(null);
+const stockHistoryData = ref<any[]>([]);
+const stockHistoryLoading = ref(false);
 
 // Debounce timer
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
@@ -914,6 +973,51 @@ async function handleDelete() {
   } finally {
     deleting.value = false;
   }
+}
+
+// ============================================
+// Stock History per Product
+// ============================================
+
+async function openStockHistory(product: ProductDto) {
+  stockHistoryProduct.value = product;
+  stockHistoryData.value = [];
+  showStockHistoryModal.value = true;
+  stockHistoryLoading.value = true;
+  try {
+    const detail = await productsService.getDetail(product.id);
+    // Flatten all stock histories from all warehouses
+    const histories: any[] = [];
+    for (const stock of detail.stocks || []) {
+      for (const h of stock.stockHistories || []) {
+        histories.push(h);
+      }
+    }
+    histories.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    stockHistoryData.value = histories;
+  } catch {
+    stockHistoryData.value = [];
+  } finally {
+    stockHistoryLoading.value = false;
+  }
+}
+
+function sourceLabel(source?: string | null): string {
+  if (!source) return '—';
+  const map: Record<string, string> = {
+    INITIAL: 'Stok Awal', BULK_UPLOAD: 'Import Excel', SEED: 'Seed',
+    STOCK_IN: 'Restock', SALE: 'Penjualan', SALE_VOID: 'Void',
+    OPNAME_INLINE: 'Opname', OPNAME_SESSION: 'Opname Sesi',
+    TRANSFER_OUT: 'Transfer Keluar', TRANSFER_IN: 'Transfer Masuk',
+    PURCHASE_ORDER: 'PO Supplier', ADJUSTMENT: 'Penyesuaian',
+  };
+  return map[source] || source;
+}
+
+function paymentLabel(method?: string | null): string {
+  if (!method) return '';
+  const map: Record<string, string> = { CASH: 'Tunai', QRIS: 'QRIS', TRANSFER: 'Transfer', HUTANG: 'Hutang' };
+  return map[method] || method;
 }
 
 // ============================================
@@ -1161,6 +1265,12 @@ function formatRupiah(amount: number): string {
     minimumFractionDigits: 0,
     maximumFractionDigits: 0,
   }).format(amount);
+}
+
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('id-ID', {
+    day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
+  });
 }
 
 function getTotalStock(product: ProductDto): number {
