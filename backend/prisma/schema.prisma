@@ -144,6 +144,8 @@ model Shop {
   purchaseOrders      PurchaseOrder[]
   transfersOut        StockTransfer[]      @relation("TransferFrom")
   transfersIn         StockTransfer[]      @relation("TransferTo")
+  rackZones           RackZone[]
+  racks               Rack[]
 
   @@map("shops")
 }
@@ -296,6 +298,8 @@ model Stock {
   productId           String
   quantity            Int       @default(0)
   warehouse           String?   @default("main")
+  rack                Rack?     @relation(fields: [rackId], references: [id], onDelete: SetNull)
+  rackId              String?
   
   updatedAt           DateTime  @updatedAt
   
@@ -304,6 +308,7 @@ model Stock {
   @@unique([shopId, productId, warehouse])
   @@index([shopId])
   @@index([productId])
+  @@index([rackId])
   @@map("stocks")
 }
 
@@ -1045,4 +1050,48 @@ model StockTransferItem {
   @@index([transferId])
   @@index([productId])
   @@map("stock_transfer_items")
+}
+
+
+
+// ============================================
+// RACK MANAGEMENT (Zona → Rak)
+// ============================================
+
+model RackZone {
+  id              String    @id @default(cuid())
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  name            String    // e.g. "Minuman Dingin", "Snack", "Kebutuhan Pokok"
+  description     String?
+  sortOrder       Int       @default(0)
+
+  racks           Rack[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([shopId, name])
+  @@index([shopId])
+  @@map("rack_zones")
+}
+
+model Rack {
+  id              String    @id @default(cuid())
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  zone            RackZone  @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  zoneId          String
+  code            String    // e.g. "A1", "B-03" — unique per shop
+  name            String?   // optional descriptive name e.g. "Rak Atas Kiri"
+
+  stocks          Stock[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([shopId, code])
+  @@index([shopId])
+  @@index([zoneId])
+  @@map("racks")
 }

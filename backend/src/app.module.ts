@@ -25,6 +25,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { DashboardBrilinkModule } from './dashboard-brilink/dashboard-brilink.module';
 import { BrilinkAccountsModule } from './brilink-accounts/brilink-accounts.module';
 import { CashBoxesModule } from './cash-boxes/cash-boxes.module';
+import { RacksModule } from './racks/racks.module';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import { CashBoxesModule } from './cash-boxes/cash-boxes.module';
     BrilinkAccountsModule,
     CashBoxesModule,
     OpnameModule,
+    RacksModule,
     SuppliersModule,
     TransfersModule,
     AnalyticsModule,

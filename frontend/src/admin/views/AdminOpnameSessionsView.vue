@@ -196,6 +196,36 @@
               ></textarea>
             </div>
 
+            <!-- Scope Rak (optional multi-select) -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+                Scope Rak <span class="text-slate-400 font-normal">— opsional, kosong = semua produk</span>
+              </label>
+              <div v-if="racksLoading" class="text-xs text-slate-400 py-2">Memuat rak...</div>
+              <div v-else-if="allRacks.length === 0" class="text-[11px] text-slate-400 py-2">
+                Belum ada rak. Buat di menu Label Rak terlebih dahulu.
+              </div>
+              <div v-else class="max-h-32 overflow-y-auto border border-slate-200 rounded-lg p-2 space-y-1">
+                <label
+                  v-for="rack in allRacks"
+                  :key="rack.id"
+                  class="flex items-center gap-2 px-2 py-1 rounded hover:bg-slate-50 cursor-pointer"
+                >
+                  <input
+                    type="checkbox"
+                    :value="rack.id"
+                    v-model="createForm.rackIds"
+                    class="w-3.5 h-3.5 text-blue-600 border-slate-300 rounded"
+                  />
+                  <span class="text-xs text-slate-700 font-mono">{{ rack.code }}</span>
+                  <span class="text-[11px] text-slate-400">{{ rack.zoneName }}</span>
+                </label>
+              </div>
+              <p v-if="createForm.rackIds.length > 0" class="text-[11px] text-blue-600 mt-1">
+                {{ createForm.rackIds.length }} rak dipilih — hanya produk di rak tsb yang diopname.
+              </p>
+            </div>
+
             <p class="text-[11px] text-slate-400">
               Sesi akan dibuat dengan snapshot stok semua produk di cabang aktif saat ini.
             </p>
@@ -409,6 +439,7 @@ import { useAuthStore } from '@/shared/stores/auth.store';
 import { useConfirm } from '@/shared/composables/useConfirm';
 import { useToast } from '@/shared/composables/useToast';
 import kasirService, { type KasirDto } from '@/shared/services/kasir.service';
+import rackService, { type RackDto } from '@/shared/services/rack.service';
 import opnameService, {
   type OpnameSessionDto,
   type OpnameSessionDetailDto,
@@ -440,9 +471,11 @@ const completing = ref(false);
 
 // Create modal
 const showCreate = ref(false);
-const createForm = reactive<{ assigneeId: string; notes: string }>({ assigneeId: '', notes: '' });
+const createForm = reactive<{ assigneeId: string; notes: string; rackIds: string[] }>({ assigneeId: '', notes: '', rackIds: [] });
 const kasirs = ref<KasirDto[]>([]);
 const kasirLoading = ref(false);
+const allRacks = ref<RackDto[]>([]);
+const racksLoading = ref(false);
 
 // Monthly recap
 const summary = ref<OpnameSummaryDto | null>(null);
@@ -570,8 +603,23 @@ async function fetchKasirs() {
 function openCreateModal() {
   createForm.assigneeId = '';
   createForm.notes = '';
+  createForm.rackIds = [];
   showCreate.value = true;
   if (kasirs.value.length === 0) fetchKasirs();
+  if (allRacks.value.length === 0) fetchAllRacks();
+}
+
+async function fetchAllRacks() {
+  const shopId = getShopId();
+  if (!shopId) return;
+  racksLoading.value = true;
+  try {
+    allRacks.value = await rackService.listRacks(shopId);
+  } catch {
+    allRacks.value = [];
+  } finally {
+    racksLoading.value = false;
+  }
 }
 
 async function submitCreate() {
@@ -586,6 +634,7 @@ async function submitCreate() {
       shopId,
       assigneeId: createForm.assigneeId || undefined,
       notes: createForm.notes.trim() || undefined,
+      rackIds: createForm.rackIds.length > 0 ? createForm.rackIds : undefined,
     });
     showCreate.value = false;
     await Promise.all([fetchSessions(), fetchSummary()]);

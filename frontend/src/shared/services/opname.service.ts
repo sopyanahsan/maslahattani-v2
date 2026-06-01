@@ -57,6 +57,7 @@ export interface CreateOpnamePayload {
   shopId: string;
   notes?: string;
   assigneeId?: string;
+  rackIds?: string[];
 }
 
 export interface OpnameSummaryDto {

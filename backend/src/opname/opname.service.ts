@@ -130,9 +130,15 @@ export class OpnameService {
   async createSession(dto: CreateOpnameSessionDto, conductorId: string) {
     const sessionNumber = this.generateSessionNumber();
 
-    // Get all products with stock for this shop
+    // Build stock query — optionally filter by rackIds
+    const stockWhere: any = { shopId: dto.shopId };
+    if (dto.rackIds && dto.rackIds.length > 0) {
+      stockWhere.rackId = { in: dto.rackIds };
+    }
+
+    // Get products with stock for this shop (filtered by rack if specified)
     const stocks = await this.prisma.stock.findMany({
-      where: { shopId: dto.shopId },
+      where: stockWhere,
       include: { product: { select: { id: true, deletedAt: true } } },
     });
 
@@ -140,7 +146,8 @@ export class OpnameService {
     const activeStocks = stocks.filter((s) => !s.product.deletedAt);
 
     if (activeStocks.length === 0) {
-      throw new BadRequestException('Tidak ada produk dengan stok di toko ini.');
+      const rackNote = dto.rackIds?.length ? ' di rak yang dipilih' : '';
+      throw new BadRequestException(`Tidak ada produk dengan stok${rackNote} di toko ini.`);
     }
 
     // Validate assignee (if provided) belongs to this shop

@@ -170,6 +170,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'racks',
+        name: 'admin-racks',
+        component: () => import('@/admin/views/AdminRacksView.vue'),
+        meta: {
+          title: 'Label Rak',
+          description: 'Kelola zona & rak, mapping produk, cetak label rak (QR Code).',
+        },
+      },
+      {
         path: 'debts',
         name: 'admin-debts',
         component: () => import('@/admin/views/AdminDebtsView.vue'),
