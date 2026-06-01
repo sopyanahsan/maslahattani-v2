@@ -266,6 +266,8 @@
 import { ref, reactive, onMounted } from 'vue';
 import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useConfirm } from '@/shared/composables/useConfirm';
+import { useToast } from '@/shared/composables/useToast';
 import opnameService, {
   type OpnameSessionDto,
   type OpnameSessionDetailDto,
@@ -274,6 +276,8 @@ import opnameService, {
 } from '@/shared/services/opname.service';
 
 const authStore = useAuthStore();
+const { ask } = useConfirm();
+const toast = useToast();
 
 // ============================================
 // State
@@ -372,7 +376,7 @@ async function handleCreate() {
     await opnameService.createSession({ shopId });
     await fetchSessions();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal membuat sesi opname.');
+    toast.error(err.response?.data?.message ?? 'Gagal membuat sesi opname.');
   } finally {
     creating.value = false;
   }
@@ -444,14 +448,15 @@ async function handleComplete(applyAdjustments: boolean) {
 
   const uncounted = detail.value.items.filter((i) => i.actualQty === null).length;
   if (uncounted > 0) {
-    alert(`Masih ada ${uncounted} produk yang belum dihitung.`);
+    toast.warning(`Masih ada ${uncounted} produk yang belum dihitung.`);
     return;
   }
 
   const msg = applyAdjustments
     ? 'Selesaikan opname DAN update stok sesuai hasil hitung fisik?'
     : 'Selesaikan opname TANPA mengubah stok?';
-  if (!confirm(msg)) return;
+  const confirmed = await ask({ title: 'Selesaikan Opname?', message: msg, confirmLabel: 'Selesaikan', variant: applyAdjustments ? 'danger' : 'primary' });
+  if (!confirmed) return;
 
   completing.value = true;
   try {
@@ -459,7 +464,7 @@ async function handleComplete(applyAdjustments: boolean) {
     showDetail.value = false;
     await fetchSessions();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal menyelesaikan opname.');
+    toast.error(err.response?.data?.message ?? 'Gagal menyelesaikan opname.');
   } finally {
     completing.value = false;
   }
@@ -467,7 +472,8 @@ async function handleComplete(applyAdjustments: boolean) {
 
 async function handleCancel() {
   if (!detail.value) return;
-  if (!confirm('Batalkan sesi opname ini?')) return;
+  const confirmed = await ask({ title: 'Batalkan Opname?', message: 'Sesi opname ini akan dibatalkan. Data hitung yang sudah diinput tidak akan disimpan.', confirmLabel: 'Batalkan', variant: 'danger' });
+  if (!confirmed) return;
   try {
     await opnameService.cancelSession(detail.value.id);
     showDetail.value = false;

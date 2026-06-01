@@ -421,12 +421,17 @@
         </div>
       </div>
     </Teleport>
+    <!-- Global UI: Confirm + Toast -->
+    <GlobalConfirm />
+    <GlobalToast />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, type Component } from 'vue';
 import api from '@/shared/services/api';
+import GlobalConfirm from '@/shared/components/GlobalConfirm.vue';
+import GlobalToast from '@/shared/components/GlobalToast.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';

@@ -291,6 +291,8 @@
 import { ref, reactive, onMounted, watch } from 'vue';
 import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useConfirm } from '@/shared/composables/useConfirm';
+import { useToast } from '@/shared/composables/useToast';
 import supplierService, {
   type SupplierDto,
   type PurchaseOrderDto,
@@ -299,6 +301,8 @@ import supplierService, {
 } from '@/shared/services/supplier.service';
 
 const authStore = useAuthStore();
+const { ask } = useConfirm();
+const toast = useToast();
 
 type TabKey = 'suppliers' | 'po';
 const tabs = [
@@ -443,7 +447,7 @@ async function handleSaveSupplier() {
     showSupplierModal.value = false;
     await fetchSuppliers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal menyimpan supplier.');
+    toast.error(err.response?.data?.message ?? 'Gagal menyimpan supplier.');
   } finally { savingSupplier.value = false; }
 }
 
@@ -474,7 +478,7 @@ async function handleCreatePO() {
     poForm.items = [{ productId: '', quantity: 1, unitCost: 0 }];
     await fetchPOs();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal membuat PO.');
+    toast.error(err.response?.data?.message ?? 'Gagal membuat PO.');
   } finally { creatingPO.value = false; }
 }
 
@@ -489,10 +493,11 @@ async function handleMarkOrdered() {
 
 async function handleMarkReceived() {
   if (!poDetail.value) return;
-  if (!confirm('Terima SEMUA sisa barang dan update stok? (Full receive)')) return;
+  const confirmed = await ask({ title: 'Terima Barang?', message: 'Terima SEMUA sisa barang dan update stok? (Full receive)', confirmLabel: 'Terima', variant: 'primary' });
+  if (!confirmed) return;
   try {
     const res = await supplierService.markReceived(poDetail.value.id);
-    alert(res.message || 'Berhasil!');
+    toast.success(res.message || 'Berhasil!');
     showPODetail.value = false;
     await fetchPOs();
   } catch (err: any) { alert(err.response?.data?.message ?? 'Gagal.'); }

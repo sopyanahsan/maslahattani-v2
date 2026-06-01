@@ -249,7 +249,12 @@ import kasRetailService, { type CashBoxResponse, type PaymentHistoryItem, type P
 import cashBoxCategoryService, { type CashBoxCategoryDto } from '@/shared/services/cashbox-category.service';
 import cashBoxService, { type CashBoxItem } from '@/shared/services/cash-box.service';
 
+import { useConfirm } from '@/shared/composables/useConfirm';
+import { useToast } from '@/shared/composables/useToast';
+
 const authStore = useAuthStore();
+const { ask } = useConfirm();
+const toast = useToast();
 type TabKey = 'mutasi' | 'kelola';
 const tabs: { key: TabKey; label: string }[] = [{ key: 'mutasi', label: 'Mutasi' }, { key: 'kelola', label: 'Kelola Kas' }];
 const activeTab = ref<TabKey>('mutasi');
@@ -420,13 +425,14 @@ async function handleSaveCashBox() {
 }
 
 async function handleDeleteCashBox(kas: CashBoxItem) {
-  if (!confirm(`Hapus kas "${kas.label}"?`)) return;
+  const confirmed = await ask({ title: 'Hapus Kas?', message: `Kas "${kas.label}" akan dihapus. Saldo harus 0.`, confirmLabel: 'Hapus', variant: 'danger' });
+  if (!confirmed) return;
   try {
     await cashBoxService.remove(kas.id);
     await fetchKelolaKas();
     await fetchCashBox();
   } catch (e: any) {
-    alert(e?.response?.data?.message || e?.message || 'Gagal menghapus.');
+    toast.error(e?.response?.data?.message || e?.message || 'Gagal menghapus.');
   }
 }
 

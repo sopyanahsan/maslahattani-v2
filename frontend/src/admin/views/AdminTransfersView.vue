@@ -263,6 +263,8 @@
 import { ref, reactive, onMounted } from 'vue';
 import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useConfirm } from '@/shared/composables/useConfirm';
+import { useToast } from '@/shared/composables/useToast';
 import transferService, {
   type TransferDto,
   type TransferDetailDto,
@@ -271,6 +273,8 @@ import transferService, {
 import api from '@/shared/services/api';
 
 const authStore = useAuthStore();
+const { ask } = useConfirm();
+const toast = useToast();
 
 // ============================================
 // State
@@ -410,7 +414,7 @@ async function handleCreateTransfer() {
     createForm.items = [{ productId: '', quantity: 1 }];
     await fetchTransfers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal membuat transfer.');
+    toast.error(err.response?.data?.message ?? 'Gagal membuat transfer.');
   } finally {
     creating.value = false;
   }
@@ -418,13 +422,14 @@ async function handleCreateTransfer() {
 
 async function handleApprove() {
   if (!detail.value) return;
-  if (!confirm('Approve transfer ini?')) return;
+  const confirmed = await ask({ title: 'Approve Transfer?', message: 'Transfer ini akan disetujui dan lanjut ke pengiriman.', confirmLabel: 'Approve' });
+  if (!confirmed) return;
   try {
     await transferService.approveTransfer(detail.value.id);
     showDetailModal.value = false;
     await fetchTransfers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal approve.');
+    toast.error(err.response?.data?.message ?? 'Gagal approve.');
   }
 }
 
@@ -441,13 +446,14 @@ async function confirmReject() {
     showDetailModal.value = false;
     await fetchTransfers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal menolak.');
+    toast.error(err.response?.data?.message ?? 'Gagal menolak.');
   }
 }
 
 async function handleShip() {
   if (!detail.value) return;
-  if (!confirm('Tandai transfer ini sudah dikirim?')) return;
+  const confirmed = await ask({ title: 'Kirim Transfer?', message: 'Tandai transfer ini sudah dikirim?', confirmLabel: 'Kirim' });
+  if (!confirmed) return;
   try {
     await transferService.shipTransfer(detail.value.id);
     showDetailModal.value = false;
