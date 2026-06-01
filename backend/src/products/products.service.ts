@@ -425,6 +425,8 @@ export class ProductsService {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Produk');
 
-    return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' }) as Buffer;
+    // Force buffer output (some xlsx versions return string by default)
+    const result = XLSX.write(wb, { type: 'buffer', bookType: 'xlsx', compression: true });
+    return Buffer.isBuffer(result) ? result : Buffer.from(result);
   }
 }

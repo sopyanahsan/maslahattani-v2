@@ -570,14 +570,17 @@
               <p class="text-xs font-semibold text-blue-800">Download Template</p>
               <p class="text-[10px] text-blue-600 mt-0.5">Gunakan template ini agar format kolom sesuai.</p>
             </div>
-            <a
-              :href="templateUrl"
-              download="template-produk.xlsx"
+            <button
+              type="button"
+              :disabled="downloadingTemplate"
               class="h-8 px-3 text-[10px] font-semibold text-blue-700 bg-white border border-blue-300 rounded-md
-                     hover:bg-blue-100 transition-colors flex items-center gap-1 shrink-0"
+                     hover:bg-blue-100 transition-colors flex items-center gap-1 shrink-0 disabled:opacity-50"
+              @click="downloadTemplate"
             >
-              <DownloadIcon class="w-3 h-3" /> Download
-            </a>
+              <Loader2Icon v-if="downloadingTemplate" class="w-3 h-3 animate-spin" />
+              <DownloadIcon v-else class="w-3 h-3" />
+              {{ downloadingTemplate ? 'Loading...' : 'Download' }}
+            </button>
           </div>
 
           <!-- File Input -->
@@ -714,7 +717,7 @@ const bulkFile = ref<File | null>(null);
 const bulkUploading = ref(false);
 const bulkError = ref<string | null>(null);
 const bulkResult = ref<{ success: boolean; message: string; imported?: number; skipped?: number; errors?: string[] } | null>(null);
-const templateUrl = '/api/products/bulk-template';
+const downloadingTemplate = ref(false);
 
 // Debounce timer
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
@@ -879,6 +882,29 @@ function handleBulkFileSelect(event: Event) {
   bulkFile.value = file;
   bulkError.value = null;
   bulkResult.value = null;
+}
+
+async function downloadTemplate() {
+  downloadingTemplate.value = true;
+  bulkError.value = null;
+  try {
+    const response = await api.get('/products/bulk-template', { responseType: 'blob' });
+    const blob = new Blob([response.data], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'template-produk.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+  } catch (err: any) {
+    bulkError.value = err.response?.data?.message || err.message || 'Gagal download template.';
+  } finally {
+    downloadingTemplate.value = false;
+  }
 }
 
 async function handleBulkUpload() {

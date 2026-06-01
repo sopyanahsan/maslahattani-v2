@@ -52,8 +52,9 @@ export class ProductsController {
     res.set({
       'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       'Content-Disposition': 'attachment; filename="template-produk.xlsx"',
+      'Content-Length': buffer.length.toString(),
     });
-    res.send(buffer);
+    res.end(buffer);
   }
 
   @Post('bulk-upload')
