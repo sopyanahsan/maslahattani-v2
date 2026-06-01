@@ -8,7 +8,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
-import * as XLSX from 'xlsx';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const XLSX = require('xlsx');
 
 @Injectable()
 export class ProductsService {

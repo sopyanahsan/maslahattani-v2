@@ -72,7 +72,7 @@ export class ProductsController {
     },
   })
   async bulkUpload(
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFile() file: any,
     @Body('shopId') shopId: string,
   ) {
     if (!file) {
