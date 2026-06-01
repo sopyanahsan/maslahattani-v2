@@ -370,6 +370,7 @@ import {
   Printer as PrinterIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useToast } from '@/shared/composables/useToast';
 import transactionsService, {
   type TransactionDto,
   type TransactionStatus,
@@ -379,6 +380,7 @@ import transactionsService, {
 } from '@/shared/services/transactions.service';
 
 const authStore = useAuthStore();
+const toast = useToast();
 
 // ============================================
 // State
@@ -565,14 +567,14 @@ async function handlePrintReceipt(trx: TransactionDto) {
       method: trx.payments?.[0]?.method || 'CASH',
     });
 
-    alert(`Struk ${trx.transactionNumber} tercetak ke ${thermalPrint.deviceName}`);
+    toast.success(`Struk ${trx.transactionNumber} tercetak ke ${thermalPrint.deviceName}`);
   } catch (err: any) {
     if (err.message?.includes('cancelled') || err.message?.includes('NotFound')) {
       // User cancelled pairing — silent
     } else if (err.message?.includes('Web Bluetooth')) {
-      alert('Bluetooth tidak tersedia di browser ini. Gunakan Chrome/Edge.');
+      toast.error('Bluetooth tidak tersedia di browser ini. Gunakan Chrome/Edge.');
     } else {
-      alert(err.message || 'Gagal cetak struk.');
+      toast.error(err.message || 'Gagal cetak struk.');
     }
   }
 }

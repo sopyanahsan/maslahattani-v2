@@ -743,7 +743,7 @@ async function handleCancel() {
     showDetail.value = false;
     await fetchSessions();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal membatalkan opname.');
+    toast.error(err.response?.data?.message ?? 'Gagal membatalkan opname.');
   }
 }
 

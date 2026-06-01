@@ -212,9 +212,11 @@ import {
   Trash2 as Trash2Icon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useToast } from '@/shared/composables/useToast';
 import api from '@/shared/services/api';
 
 const authStore = useAuthStore();
+const toast = useToast();
 
 // State
 const loading = ref(false);
@@ -320,7 +322,7 @@ async function handleVoid() {
     selectedTrx.value.voidReason = reason;
     await fetchTransactions();
   } catch (err: any) {
-    alert(err.response?.data?.message || 'Gagal membatalkan. Hubungi admin.');
+    toast.error(err.response?.data?.message || 'Gagal membatalkan. Hubungi admin.');
   }
 }
 
@@ -342,10 +344,10 @@ function handlePrintReceipt() {
         change: Math.max(0, (selectedTrx.value.payments?.[0]?.amount || 0) - selectedTrx.value.totalPrice),
         method: selectedTrx.value.payments?.[0]?.method || 'CASH',
       });
-      alert('Struk berhasil dicetak!');
+      toast.success('Struk berhasil dicetak!');
     } catch (err: any) {
       if (err.message === 'cancelled') return;
-      alert(err.message || 'Gagal cetak.');
+      toast.error(err.message || 'Gagal cetak.');
     }
   }).catch(() => { window.print(); });
 }
