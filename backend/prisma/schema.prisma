@@ -60,6 +60,7 @@ model User {
   ownedShops          Shop[]    @relation("ShopOwner")
   brilinkTransactions BrilinkTransaction[] @relation("BrilinkCashier")
   brilinkMutations    BrilinkMutation[]    @relation("BrilinkMutationCreator")
+  stockHistories      StockHistory[]       @relation("StockHistoryCreator")
   opnameSessions      OpnameSession[]      @relation("OpnameConductor")
   purchaseOrders      PurchaseOrder[]      @relation("POCreator")
   transferRequests    StockTransfer[]      @relation("TransferRequester")
@@ -337,6 +338,8 @@ model StockHistory {
   quantityChange      Int
   reference           String?   // transaction_id, opname_id, transfer_id, po_id
   notes               String?
+  createdBy           User?     @relation("StockHistoryCreator", fields: [createdById], references: [id])
+  createdById         String?   // user yang melakukan aksi (kasir/admin)
   
   createdAt           DateTime  @default(now())
   

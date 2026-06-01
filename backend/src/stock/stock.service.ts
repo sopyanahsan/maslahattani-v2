@@ -188,6 +188,7 @@ export class StockService {
     }
 
     if (query.type) where.type = query.type;
+    if (query.source) where.source = query.source;
 
     if (query.startDate || query.endDate) {
       where.createdAt = {};
@@ -202,6 +203,7 @@ export class StockService {
           stock: {
             include: { product: { select: { name: true, sku: true } } },
           },
+          createdBy: { select: { id: true, username: true, email: true, role: true } },
         },
         orderBy: { createdAt: 'desc' },
         skip,

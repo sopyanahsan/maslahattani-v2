@@ -152,6 +152,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'riwayat-stok',
+        name: 'admin-riwayat-stok',
+        component: () => import('@/admin/views/RiwayatStokView.vue'),
+        meta: {
+          title: 'Riwayat Stok',
+          description: 'Riwayat lengkap keluar masuk barang — siapa, dari mana, metode bayar.',
+        },
+      },
+      {
         path: 'debts',
         name: 'admin-debts',
         component: () => import('@/admin/views/AdminDebtsView.vue'),

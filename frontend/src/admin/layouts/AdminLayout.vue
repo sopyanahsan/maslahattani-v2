@@ -397,6 +397,7 @@ import {
   Landmark as LandmarkIcon,
   ArrowRightLeft as TransferIcon,
   Percent as PercentIcon,
+  ClipboardList as ClipboardListIcon,
   // Shifts & Profile
   Clock as ShiftIcon,
   User as UserIcon,
@@ -600,6 +601,7 @@ const navGroups = ref<NavGroup[]>([
     title: 'Inventaris',
     items: [
       { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
+      { to: '/admin/riwayat-stok', label: 'Riwayat Stok', icon: ClipboardListIcon },
       { to: '/admin/shops', label: 'Cabang', icon: Building2Icon },
       { to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon },
       { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },

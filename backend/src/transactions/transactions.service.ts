@@ -229,6 +229,7 @@ export class TransactionsService {
               quantityChange: -item.quantity,
               reference: trx.id,
               notes: `Penjualan ${transactionNumber}`,
+              createdById: userId,
             },
           });
         }
