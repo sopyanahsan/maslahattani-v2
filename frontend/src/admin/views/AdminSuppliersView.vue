@@ -284,28 +284,102 @@
                 <!-- Dropdown results -->
                 <div
                   v-if="showProductDropdown"
-                  class="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                  class="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-56 overflow-y-auto"
                 >
                   <div v-if="productSearchLoading" class="px-3 py-4 text-center text-xs text-slate-400">
                     Mencari...
                   </div>
-                  <div v-else-if="productSearchResults.length === 0 && productSearchQuery.length >= 2" class="px-3 py-4 text-center text-xs text-slate-400">
-                    Tidak ditemukan. Tambah produk baru di menu "Produk & Stok".
-                  </div>
-                  <button
-                    v-for="p in productSearchResults"
-                    :key="p.id"
-                    type="button"
-                    class="w-full px-3 py-2.5 text-left hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-100 last:border-0"
-                    @mousedown.prevent="selectProductForPO(p)"
-                  >
-                    <div class="min-w-0">
-                      <p class="text-xs font-semibold text-slate-800 truncate">{{ p.name }}</p>
-                      <p class="text-[10px] text-slate-400 font-mono">{{ p.sku }}</p>
-                    </div>
-                    <span class="text-[10px] text-slate-500 shrink-0 ml-2">Stok: {{ p.stock }}</span>
-                  </button>
+                  <template v-else>
+                    <button
+                      v-for="p in productSearchResults"
+                      :key="p.id"
+                      type="button"
+                      class="w-full px-3 py-2.5 text-left hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-100"
+                      @mousedown.prevent="selectProductForPO(p)"
+                    >
+                      <div class="min-w-0">
+                        <p class="text-xs font-semibold text-slate-800 truncate">{{ p.name }}</p>
+                        <p class="text-[10px] text-slate-400 font-mono">{{ p.sku }}</p>
+                      </div>
+                      <span class="text-[10px] text-slate-500 shrink-0 ml-2">Stok: {{ p.stock }}</span>
+                    </button>
+                    <!-- Quick add option -->
+                    <button
+                      v-if="productSearchQuery.length >= 2"
+                      type="button"
+                      class="w-full px-3 py-2.5 text-left hover:bg-emerald-50 transition-colors flex items-center gap-2 border-t border-slate-200"
+                      @mousedown.prevent="openQuickAddProduct"
+                    >
+                      <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                      </div>
+                      <div>
+                        <p class="text-xs font-semibold text-emerald-700">Tambah "{{ productSearchQuery }}" sebagai produk baru</p>
+                        <p class="text-[10px] text-slate-400">SKU akan di-generate otomatis</p>
+                      </div>
+                    </button>
+                  </template>
                 </div>
+              </div>
+            </div>
+
+            <!-- Quick Add Product Form (inline) -->
+            <div v-if="showQuickAddForm" class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 space-y-2.5">
+              <div class="flex items-center justify-between">
+                <p class="text-[11px] font-bold text-emerald-800 uppercase">Produk Baru (Quick Add)</p>
+                <button type="button" @click="showQuickAddForm = false" class="text-emerald-500 hover:text-emerald-700">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <div>
+                <label class="text-[9px] text-emerald-700 font-semibold">Nama Produk *</label>
+                <input
+                  v-model="quickAddForm.name"
+                  type="text"
+                  required
+                  placeholder="Nama produk baru"
+                  class="w-full h-8 px-2.5 text-xs border border-emerald-300 rounded-md outline-none focus:border-emerald-500 bg-white"
+                />
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[9px] text-emerald-700 font-semibold">Satuan</label>
+                  <select v-model="quickAddForm.unit" class="w-full h-8 px-2 text-xs border border-emerald-300 rounded-md outline-none focus:border-emerald-500 bg-white">
+                    <option value="pcs">pcs</option>
+                    <option value="kg">kg</option>
+                    <option value="liter">liter</option>
+                    <option value="dus">dus</option>
+                    <option value="karton">karton</option>
+                    <option value="bungkus">bungkus</option>
+                    <option value="botol">botol</option>
+                    <option value="sachet">sachet</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="text-[9px] text-emerald-700 font-semibold">Kategori <span class="text-emerald-500">(opsional)</span></label>
+                  <select v-model="quickAddForm.categoryId" class="w-full h-8 px-2 text-xs border border-emerald-300 rounded-md outline-none focus:border-emerald-500 bg-white">
+                    <option value="">Tanpa kategori</option>
+                    <option v-for="c in productCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <p class="text-[9px] text-emerald-600 flex-1">SKU & harga akan diisi otomatis nanti.</p>
+                <button
+                  type="button"
+                  :disabled="!quickAddForm.name.trim() || quickAddCreating"
+                  class="h-7 px-3 bg-emerald-600 text-white text-[10px] font-semibold rounded-md
+                         hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1"
+                  @click="handleQuickAddProduct"
+                >
+                  <svg v-if="quickAddCreating" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+                  </svg>
+                  {{ quickAddCreating ? 'Membuat...' : 'Buat & Tambahkan' }}
+                </button>
               </div>
             </div>
 
@@ -621,6 +695,12 @@ const productSearchLoading = ref(false);
 const showProductDropdown = ref(false);
 let productSearchTimer: ReturnType<typeof setTimeout> | null = null;
 
+// Quick add product form
+const showQuickAddForm = ref(false);
+const quickAddCreating = ref(false);
+const quickAddForm = reactive({ name: '', unit: 'pcs', categoryId: '' });
+const productCategories = ref<Array<{ id: string; name: string }>>([]);
+
 // Price review (after receive detects price changes)
 const showPriceReviewModal = ref(false);
 const pendingPriceChanges = ref<Array<{
@@ -846,6 +926,64 @@ function selectProductForPO(product: { id: string; name: string; sku: string; st
 
 function removePoItem(idx: number) {
   poForm.items.splice(idx, 1);
+}
+
+function openQuickAddProduct() {
+  quickAddForm.name = productSearchQuery.value;
+  quickAddForm.unit = 'pcs';
+  quickAddForm.categoryId = '';
+  showQuickAddForm.value = true;
+  showProductDropdown.value = false;
+  productSearchQuery.value = '';
+
+  // Fetch categories if not yet loaded
+  if (productCategories.value.length === 0) {
+    fetchProductCategories();
+  }
+}
+
+async function fetchProductCategories() {
+  try {
+    const shopId = getShopId();
+    if (!shopId) return;
+    const { data } = await supplierService.getProductCategories(shopId);
+    productCategories.value = data;
+  } catch {
+    productCategories.value = [];
+  }
+}
+
+async function handleQuickAddProduct() {
+  const shopId = getShopId();
+  if (!shopId || !quickAddForm.name.trim()) return;
+
+  quickAddCreating.value = true;
+  try {
+    const result = await supplierService.quickCreateProduct({
+      shopId,
+      name: quickAddForm.name.trim(),
+      unit: quickAddForm.unit || 'pcs',
+      categoryId: quickAddForm.categoryId || undefined,
+    });
+
+    // Add the new product to PO items
+    poForm.items.push({
+      productId: result.product.id,
+      productName: result.product.name,
+      productSku: result.product.sku,
+      quantity: 1,
+      unitCost: 0,
+    });
+
+    // Reset form
+    showQuickAddForm.value = false;
+    quickAddForm.name = '';
+    toast.success(`Produk "${result.product.name}" berhasil dibuat (SKU: ${result.product.sku})`);
+  } catch (err: any) {
+    toast.error(err.response?.data?.message ?? 'Gagal membuat produk.');
+  } finally {
+    quickAddCreating.value = false;
+  }
 }
 
 async function handleMarkOrdered() {

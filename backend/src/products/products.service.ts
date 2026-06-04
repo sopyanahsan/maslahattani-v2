@@ -9,6 +9,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
 import { BulkUpdatePricesDto } from './dto/bulk-update-prices.dto';
+import { QuickCreateProductDto } from './dto/quick-create-product.dto';
 // xlsx — pastikan sudah `npm install` setelah pull
 let XLSX: any;
 try {
@@ -260,6 +261,102 @@ export class ProductsService {
     });
 
     return { success: true, message: `Produk "${product.name}" berhasil dihapus.` };
+  }
+
+  // ============================================
+  // LIST CATEGORIES
+  // ============================================
+
+  async listCategories(shopId: string) {
+    const categories = await this.prisma.productCategory.findMany({
+      where: { shopId, isActive: true },
+      select: { id: true, name: true, icon: true },
+      orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    });
+    return { data: categories };
+  }
+
+  // ============================================
+  // QUICK CREATE (from PO flow — minimal fields)
+  // ============================================
+
+  /**
+   * Create product with minimal info (name + shopId).
+   * SKU auto-generated. Price/cost = 0 (to be filled when PO received).
+   * Used when creating a PO and the product doesn't exist yet.
+   */
+  async quickCreate(dto: QuickCreateProductDto) {
+    const sku = await this.generateUniqueSKU(dto.shopId, dto.name);
+
+    const product = await this.prisma.$transaction(async (tx) => {
+      const prod = await tx.product.create({
+        data: {
+          shopId: dto.shopId,
+          name: dto.name,
+          sku,
+          price: 0,
+          cost: 0,
+          unit: dto.unit || 'pcs',
+          categoryId: dto.categoryId || null,
+        },
+      });
+
+      // Create stock record with 0 qty
+      await tx.stock.create({
+        data: {
+          shopId: dto.shopId,
+          productId: prod.id,
+          quantity: 0,
+          warehouse: 'main',
+        },
+      });
+
+      return prod;
+    });
+
+    return {
+      success: true,
+      product: {
+        id: product.id,
+        name: product.name,
+        sku: product.sku,
+        unit: product.unit,
+        stock: 0,
+      },
+    };
+  }
+
+  /**
+   * Generate unique SKU from product name.
+   * Format: {3-char-prefix}-{3-random-alphanumeric}
+   * e.g. "Beras Organik 5kg" → "BER-7K3"
+   */
+  private async generateUniqueSKU(shopId: string, productName: string): Promise<string> {
+    // Get 3-char prefix from first word (or first 3 chars)
+    const words = productName.trim().toUpperCase().replace(/[^A-Z0-9\s]/g, '').split(/\s+/);
+    const prefix = words[0]?.substring(0, 3) || 'PRD';
+
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let attempts = 0;
+
+    while (attempts < 20) {
+      let suffix = '';
+      for (let i = 0; i < 3; i++) {
+        suffix += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      const sku = `${prefix}-${suffix}`;
+
+      // Check uniqueness
+      const existing = await this.prisma.product.findUnique({
+        where: { shopId_sku: { shopId, sku } },
+      });
+      if (!existing) return sku;
+      attempts++;
+    }
+
+    // Fallback: use timestamp
+    const ts = Date.now().toString(36).toUpperCase().slice(-4);
+    return `${prefix}-${ts}`;
   }
 
   // ============================================

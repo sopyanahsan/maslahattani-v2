@@ -23,6 +23,7 @@ import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
 import { BulkUpdatePricesDto } from './dto/bulk-update-prices.dto';
+import { QuickCreateProductDto } from './dto/quick-create-product.dto';
 import { Role } from '@prisma/client';
 
 @ApiTags('Products')
@@ -44,6 +45,12 @@ export class ProductsController {
   @ApiOperation({ summary: 'List produk (dengan search & pagination)' })
   async findAll(@Query() query: QueryProductDto) {
     return this.productsService.findAll(query);
+  }
+
+  @Get('categories')
+  @ApiOperation({ summary: 'List product categories for a shop' })
+  async listCategories(@Query('shopId') shopId: string) {
+    return this.productsService.listCategories(shopId);
   }
 
   @Get('bulk-template')
@@ -92,6 +99,14 @@ export class ProductsController {
   @ApiOperation({ summary: 'Bulk update harga beli & jual produk (dari PO receive)' })
   async bulkUpdatePrices(@Body() dto: BulkUpdatePricesDto) {
     return this.productsService.bulkUpdatePrices(dto);
+  }
+
+  @Post('quick-create')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Quick-create produk baru (dari PO flow, minimal fields, SKU auto)' })
+  async quickCreate(@Body() dto: QuickCreateProductDto) {
+    return this.productsService.quickCreate(dto);
   }
 
   @Get('by-barcode/:barcode')

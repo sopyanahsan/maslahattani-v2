@@ -190,6 +190,20 @@ const supplierService = {
       stock: p.stocks?.reduce((sum: number, s: any) => sum + s.quantity, 0) ?? 0,
     }));
   },
+
+  // === Quick create product (from PO flow) ===
+
+  async quickCreateProduct(payload: { shopId: string; name: string; unit?: string; categoryId?: string }) {
+    const { data } = await api.post('/products/quick-create', payload);
+    return data;
+  },
+
+  // === Product categories (for quick add form) ===
+
+  async getProductCategories(shopId: string): Promise<{ data: Array<{ id: string; name: string }> }> {
+    const { data } = await api.get('/products/categories', { params: { shopId } });
+    return { data: data.data || data || [] };
+  },
 };
 
 export default supplierService;
