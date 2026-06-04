@@ -15,6 +15,7 @@ import {
   CreateSupplierDto,
   UpdateSupplierDto,
   CreatePurchaseOrderDto,
+  ReceivePurchaseOrderDto,
   QuerySuppliersDto,
   QueryPurchaseOrdersDto,
 } from './dto';
@@ -78,7 +79,7 @@ export class SuppliersController {
   }
 
   @Post('purchase-orders/:id/receive')
-  async markReceived(@Param('id') id: string, @Body() body?: { items?: Array<{ itemId: string; receivedQty: number }> }) {
+  async markReceived(@Param('id') id: string, @Body() body: ReceivePurchaseOrderDto) {
     return this.suppliersService.markReceived(id, body?.items);
   }
 

@@ -10,9 +10,15 @@ export class PurchaseOrderItemDto {
   @Min(1)
   quantity: number;
 
+  /**
+   * Harga beli per unit (opsional saat buat PO).
+   * Bisa diisi nanti saat terima barang dari nota supplier.
+   * Default: 0 (belum diketahui).
+   */
   @IsInt()
   @Min(0)
-  unitCost: number;
+  @IsOptional()
+  unitCost?: number;
 }
 
 export class CreatePurchaseOrderDto {

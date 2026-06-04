@@ -184,8 +184,8 @@ export class SuppliersService {
     const items = dto.items.map((item) => ({
       productId: item.productId,
       quantity: item.quantity,
-      unitCost: item.unitCost,
-      subtotal: item.quantity * item.unitCost,
+      unitCost: item.unitCost || 0, // Opsional — bisa diisi nanti saat terima
+      subtotal: item.quantity * (item.unitCost || 0),
     }));
 
     const totalAmount = items.reduce((sum, item) => sum + item.subtotal, 0);
@@ -227,53 +227,79 @@ export class SuppliersService {
     });
   }
 
-  async markReceived(id: string, receivedItems?: Array<{ itemId: string; receivedQty: number }>) {
+  async markReceived(id: string, receivedItems?: Array<{ itemId: string; receivedQty: number; actualCost?: number }>) {
     const po = await this.prisma.purchaseOrder.findUnique({
       where: { id },
-      include: { items: true },
+      include: {
+        items: {
+          include: {
+            product: { select: { id: true, name: true, sku: true, cost: true, price: true } },
+          },
+        },
+      },
     });
     if (!po) throw new NotFoundException('PO tidak ditemukan.');
     if (po.status === 'RECEIVED' || po.status === 'CANCELLED') {
       throw new BadRequestException('PO sudah selesai atau dibatalkan.');
     }
 
-    // Build receive map. If no receivedItems → full receive (all remaining qty)
-    const receiveMap = new Map<string, number>();
+    // Build receive map with actualCost
+    const receiveMap = new Map<string, { qty: number; actualCost?: number }>();
     if (receivedItems && receivedItems.length > 0) {
       for (const ri of receivedItems) {
-        receiveMap.set(ri.itemId, ri.receivedQty);
+        receiveMap.set(ri.itemId, { qty: ri.receivedQty, actualCost: ri.actualCost });
       }
     } else {
       for (const item of po.items) {
-        receiveMap.set(item.id, item.quantity - item.receivedQty);
+        receiveMap.set(item.id, { qty: item.quantity - item.receivedQty });
       }
     }
 
     // Validate quantities
     for (const item of po.items) {
-      const toReceive = receiveMap.get(item.id);
-      if (toReceive === undefined) continue;
+      const entry = receiveMap.get(item.id);
+      if (!entry) continue;
       const remaining = item.quantity - item.receivedQty;
-      if (toReceive > remaining) {
+      if (entry.qty > remaining) {
         throw new BadRequestException(
-          `Qty terima (${toReceive}) melebihi sisa yang belum diterima (${remaining}).`,
+          `Qty terima (${entry.qty}) melebihi sisa yang belum diterima (${remaining}).`,
         );
       }
-      if (toReceive < 0) {
+      if (entry.qty < 0) {
         throw new BadRequestException('Qty terima tidak boleh negatif.');
       }
     }
 
+    // Track price changes
+    const priceChanges: Array<{
+      productId: string;
+      productName: string;
+      productSku: string;
+      oldCost: number;
+      newCost: number;
+      currentPrice: number;
+      marginPercent: number;
+      suggestedPrice: number;
+    }> = [];
+
     // Execute atomically
     const result = await this.prisma.$transaction(async (tx) => {
       for (const item of po.items) {
-        const toReceive = receiveMap.get(item.id) ?? 0;
+        const entry = receiveMap.get(item.id);
+        const toReceive = entry?.qty ?? 0;
         if (toReceive <= 0) continue;
 
-        // Update PO item receivedQty
+        // Determine actual cost: from input → from PO item → from product
+        const actualCost = entry?.actualCost ?? (item.unitCost > 0 ? item.unitCost : item.product.cost);
+
+        // Update PO item receivedQty + unitCost (in case it was 0 at creation)
         await tx.purchaseOrderItem.update({
           where: { id: item.id },
-          data: { receivedQty: item.receivedQty + toReceive },
+          data: {
+            receivedQty: item.receivedQty + toReceive,
+            unitCost: actualCost,
+            subtotal: item.quantity * actualCost,
+          },
         });
 
         // Find or create stock record
@@ -303,13 +329,38 @@ export class SuppliersService {
             quantityAfter: qtyAfter,
             quantityChange: toReceive,
             reference: po.id,
-            notes: `PO ${po.orderNumber}: terima ${toReceive} unit`,
+            notes: `PO ${po.orderNumber}: terima ${toReceive} unit @ Rp ${actualCost.toLocaleString('id-ID')}`,
           },
         });
+
+        // Detect price change: new cost vs current product cost
+        if (actualCost > 0 && actualCost !== item.product.cost) {
+          const oldCost = item.product.cost;
+          const currentPrice = item.product.price;
+          const marginPercent = oldCost > 0
+            ? Math.round(((currentPrice - oldCost) / oldCost) * 100)
+            : 0;
+          // Calculate suggested price: maintain same margin %, round up to nearest 100
+          const suggestedPrice = marginPercent > 0
+            ? Math.ceil((actualCost * (1 + marginPercent / 100)) / 100) * 100
+            : currentPrice;
+
+          priceChanges.push({
+            productId: item.product.id,
+            productName: item.product.name,
+            productSku: item.product.sku,
+            oldCost,
+            newCost: actualCost,
+            currentPrice,
+            marginPercent,
+            suggestedPrice,
+          });
+        }
       }
 
-      // Determine final status
+      // Recalculate totalAmount with actual costs
       const updatedItems = await tx.purchaseOrderItem.findMany({ where: { orderId: id } });
+      const newTotalAmount = updatedItems.reduce((sum, i) => sum + i.subtotal, 0);
       const allFullyReceived = updatedItems.every((i) => i.receivedQty >= i.quantity);
       const newStatus = allFullyReceived ? 'RECEIVED' : 'PARTIAL';
 
@@ -317,6 +368,7 @@ export class SuppliersService {
         where: { id },
         data: {
           status: newStatus,
+          totalAmount: newTotalAmount,
           ...(allFullyReceived ? { receivedAt: new Date() } : {}),
         },
         include: {
@@ -330,6 +382,7 @@ export class SuppliersService {
       message: result.status === 'RECEIVED'
         ? `PO ${po.orderNumber} selesai! Semua barang diterima & stok diupdate.`
         : `PO ${po.orderNumber} diterima sebagian. Sisa bisa diterima nanti.`,
+      priceChanges: priceChanges.length > 0 ? priceChanges : undefined,
     };
   }
 
