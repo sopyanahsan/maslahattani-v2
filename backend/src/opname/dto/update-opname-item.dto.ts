@@ -8,4 +8,8 @@ export class UpdateOpnameItemDto {
   @IsString()
   @IsOptional()
   notes?: string;
+
+  @IsString()
+  @IsOptional()
+  countedById?: string;
 }

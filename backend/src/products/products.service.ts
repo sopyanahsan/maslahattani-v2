@@ -90,13 +90,27 @@ export class ProductsService {
       ];
     }
 
+    // Determine sort order
+    let orderBy: any = { name: 'asc' }; // default: A-Z
+    if (query.sortBy) {
+      switch (query.sortBy) {
+        case 'name_asc': orderBy = { name: 'asc' }; break;
+        case 'name_desc': orderBy = { name: 'desc' }; break;
+        case 'price_asc': orderBy = { price: 'asc' }; break;
+        case 'price_desc': orderBy = { price: 'desc' }; break;
+        case 'newest': orderBy = { createdAt: 'desc' }; break;
+        case 'oldest': orderBy = { createdAt: 'asc' }; break;
+        default: orderBy = { name: 'asc' }; break;
+      }
+    }
+
     const [products, total] = await Promise.all([
       this.prisma.product.findMany({
         where,
         include: {
           stocks: { select: { quantity: true, warehouse: true } },
         },
-        orderBy: { name: 'asc' },
+        orderBy,
         skip,
         take: limit,
       }),

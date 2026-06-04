@@ -105,6 +105,21 @@ const routes: RouteRecordRaw[] = [
     ],
   },
 
+  // === Stock Opname (Public — no auth required, uses passcode) ===
+  {
+    path: '/opname',
+    name: 'webapp-opname-join',
+    component: () => import('@/webapp/views/OpnameJoinView.vue'),
+    meta: { title: 'Stock Opname', public: true },
+  },
+  {
+    path: '/opname/count/:sessionId',
+    name: 'webapp-opname-count',
+    component: () => import('@/webapp/views/OpnameCountView.vue'),
+    meta: { title: 'Hitung Stok', public: true },
+    props: true,
+  },
+
   // === 404 ===
   {
     path: '/:pathMatch(.*)*',
@@ -149,6 +164,10 @@ function getMeta<T = unknown>(
 
 router.beforeEach(async (to, _from, next) => {
   const authStore = useAuthStore();
+
+  // Public pages (like opname join) skip all auth checks
+  const isPublic = getMeta<boolean>(to, 'public');
+  if (isPublic) return next();
 
   if (authStore.isAuthenticated && !authStore.user) {
     await authStore.fetchUser();
