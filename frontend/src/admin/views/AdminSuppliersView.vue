@@ -166,6 +166,16 @@
               <p class="text-xs text-slate-500">{{ poDetail?.supplier.name }} &middot; {{ poDetail ? formatDate(poDetail.createdAt) : '' }}</p>
             </div>
             <div class="flex items-center gap-2">
+              <button
+                v-if="poDetail"
+                type="button"
+                class="h-7 px-2.5 text-[10px] font-semibold text-slate-600 border border-slate-200 rounded-md hover:bg-slate-50 flex items-center gap-1"
+                @click="handleSharePO"
+                title="Salin teks PO untuk kirim ke supplier"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                Share
+              </button>
               <span v-if="poDetail" :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', poStatusBadge(poDetail.status)]">
                 {{ poStatusLabel(poDetail.status) }}
               </span>
@@ -238,12 +248,13 @@
     </teleport>
 
     <!-- ============================================ -->
-    <!-- Create PO Modal                               -->
+    <!-- Create PO Modal (harga opsional)              -->
     <!-- ============================================ -->
     <teleport to="body">
       <div v-if="showCreatePO" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="showCreatePO = false">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
-          <h2 class="text-base font-bold text-slate-900 mb-4">Buat Purchase Order</h2>
+          <h2 class="text-base font-bold text-slate-900 mb-1">Buat Purchase Order</h2>
+          <p class="text-xs text-slate-500 mb-4">Harga beli opsional — bisa diisi nanti saat terima barang dari nota supplier.</p>
           <form @submit.prevent="handleCreatePO" class="space-y-4">
             <div>
               <label class="text-[11px] font-bold text-slate-600 uppercase">Supplier *</label>
@@ -253,19 +264,40 @@
               </select>
             </div>
             <div>
-              <label class="text-[11px] font-bold text-slate-600 uppercase">Item</label>
-              <div v-for="(item, idx) in poForm.items" :key="idx" class="flex gap-2 mt-2">
-                <input v-model="item.productId" placeholder="Product ID" required class="flex-1 h-8 px-2 text-xs border border-slate-300 rounded-lg outline-none" />
-                <input v-model.number="item.quantity" type="number" min="1" placeholder="Qty" required class="w-16 h-8 px-2 text-xs border border-slate-300 rounded-lg outline-none" />
-                <input v-model.number="item.unitCost" type="number" min="0" placeholder="Harga" required class="w-24 h-8 px-2 text-xs border border-slate-300 rounded-lg outline-none" />
-                <button type="button" @click="poForm.items.splice(idx, 1)" class="text-red-500 text-xs">x</button>
+              <label class="text-[11px] font-bold text-slate-600 uppercase">Item Pesanan</label>
+              <div v-for="(item, idx) in poForm.items" :key="idx" class="mt-2 p-2.5 bg-slate-50 rounded-lg space-y-1.5">
+                <div class="flex items-center gap-2">
+                  <input v-model="item.productId" placeholder="Product ID / SKU" required class="flex-1 h-8 px-2 text-xs border border-slate-300 rounded-md outline-none focus:border-blue-500" />
+                  <button type="button" @click="poForm.items.splice(idx, 1)" class="w-6 h-6 flex items-center justify-center rounded text-red-400 hover:text-red-600 hover:bg-red-50">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-[9px] text-slate-500">Qty *</label>
+                    <input v-model.number="item.quantity" type="number" min="1" placeholder="1" required class="w-full h-7 px-2 text-xs font-mono border border-slate-300 rounded-md outline-none focus:border-blue-500" />
+                  </div>
+                  <div>
+                    <label class="text-[9px] text-slate-500">Harga beli <span class="text-slate-400">(opsional)</span></label>
+                    <div class="relative">
+                      <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-400">Rp</span>
+                      <input v-model.number="item.unitCost" type="number" min="0" placeholder="Isi nanti" class="w-full h-7 pl-6 pr-2 text-xs font-mono text-right border border-slate-300 rounded-md outline-none focus:border-blue-500" />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <button type="button" @click="poForm.items.push({ productId: '', quantity: 1, unitCost: 0 })" class="mt-2 text-xs text-blue-600 hover:underline">+ Tambah item</button>
+              <button type="button" @click="poForm.items.push({ productId: '', quantity: 1, unitCost: 0 })" class="mt-2 text-xs text-blue-600 hover:underline flex items-center gap-1">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Tambah item
+              </button>
             </div>
-            <textarea v-model="poForm.notes" placeholder="Catatan (opsional)" rows="2" class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg outline-none resize-none"></textarea>
+            <div>
+              <label class="text-[11px] font-bold text-slate-600 uppercase">Catatan</label>
+              <textarea v-model="poForm.notes" placeholder="Catatan untuk supplier (opsional)" rows="2" class="mt-1 w-full px-3 py-2 text-sm border border-slate-300 rounded-lg outline-none resize-none focus:border-blue-500"></textarea>
+            </div>
             <div class="flex justify-end gap-2 pt-2">
               <button type="button" @click="showCreatePO = false" class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50">Batal</button>
-              <button type="submit" :disabled="creatingPO" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700">
+              <button type="submit" :disabled="creatingPO" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50">
                 {{ creatingPO ? 'Membuat...' : 'Buat PO' }}
               </button>
             </div>
@@ -762,6 +794,58 @@ async function handleCancelPO() {
     showPODetail.value = false;
     await fetchPOs();
   } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal.'); }
+}
+
+// ============================================
+// Share/Export PO
+// ============================================
+
+function handleSharePO() {
+  if (!poDetail.value) return;
+  const po = poDetail.value;
+  const lines: string[] = [
+    `📋 *PURCHASE ORDER*`,
+    `No: ${po.orderNumber}`,
+    `Tanggal: ${formatDate(po.createdAt)}`,
+    `Supplier: ${po.supplier.name}`,
+    po.supplier.phone ? `HP: ${po.supplier.phone}` : '',
+    ``,
+    `*Daftar Barang:*`,
+  ];
+
+  po.items.forEach((item, idx) => {
+    const costStr = item.unitCost > 0 ? ` @ ${formatRupiah(item.unitCost)}` : '';
+    lines.push(`${idx + 1}. ${item.productName} (${item.productSku}) — ${item.quantity} unit${costStr}`);
+  });
+
+  if (po.totalAmount > 0) {
+    lines.push('');
+    lines.push(`*Total: ${formatRupiah(po.totalAmount)}*`);
+  }
+
+  if (po.notes) {
+    lines.push('');
+    lines.push(`Catatan: ${po.notes}`);
+  }
+
+  lines.push('');
+  lines.push(`— Maslahat Tani`);
+
+  const text = lines.filter(Boolean).join('\n');
+
+  // Try to copy to clipboard
+  navigator.clipboard.writeText(text).then(() => {
+    toast.success('Teks PO tersalin! Tinggal paste ke WhatsApp.');
+  }).catch(() => {
+    // Fallback: open in new window
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    toast.success('Teks PO tersalin!');
+  });
 }
 
 // ============================================
