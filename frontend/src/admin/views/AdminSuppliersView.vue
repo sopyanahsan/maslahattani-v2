@@ -1,7 +1,36 @@
 <template>
   <div class="space-y-5">
     <!-- Header -->
-    <div></div>
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-slate-950">Supplier & PO</h1>
+        <p class="text-xs text-slate-500 mt-0.5">Kelola supplier dan purchase order pembelian barang.</p>
+      </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="bg-white border border-slate-200 rounded-lg p-4">
+        <p class="text-[10px] font-semibold text-blue-500 uppercase tracking-wide">Total Pembelian</p>
+        <p class="text-lg font-bold text-slate-900 mt-1">{{ formatRupiah(stats.totalPurchaseThisMonth) }}</p>
+        <p class="text-[10px] text-slate-400 mt-0.5">bulan ini</p>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-lg p-4">
+        <p class="text-[10px] font-semibold text-amber-500 uppercase tracking-wide">PO Pending</p>
+        <p class="text-lg font-bold text-amber-600 mt-1">{{ stats.poPending }}</p>
+        <p class="text-[10px] text-slate-400 mt-0.5">belum diterima</p>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-lg p-4">
+        <p class="text-[10px] font-semibold text-emerald-500 uppercase tracking-wide">Supplier Aktif</p>
+        <p class="text-lg font-bold text-slate-900 mt-1">{{ stats.activeSuppliers }}</p>
+        <p class="text-[10px] text-slate-400 mt-0.5">dari {{ suppliers.length }} total</p>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-lg p-4">
+        <p class="text-[10px] font-semibold text-violet-500 uppercase tracking-wide">PO Bulan Ini</p>
+        <p class="text-lg font-bold text-slate-900 mt-1">{{ stats.poThisMonth }}</p>
+        <p class="text-[10px] text-slate-400 mt-0.5">{{ stats.poReceivedThisMonth }} sudah diterima</p>
+      </div>
+    </div>
 
     <!-- Tabs -->
     <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
@@ -440,6 +469,15 @@ const purchaseOrders = ref<PurchaseOrderDto[]>([]);
 const posLoading = ref(false);
 const poFilterStatus = ref('');
 
+// Stats
+const stats = ref({
+  totalPurchaseThisMonth: 0,
+  poPending: 0,
+  activeSuppliers: 0,
+  poThisMonth: 0,
+  poReceivedThisMonth: 0,
+});
+
 // Supplier modal
 const showSupplierModal = ref(false);
 const editingSupplier = ref<SupplierDto | null>(null);
@@ -549,6 +587,38 @@ async function fetchPOs() {
     purchaseOrders.value = res.data;
   } catch { purchaseOrders.value = []; }
   finally { posLoading.value = false; }
+}
+
+async function fetchStats() {
+  try {
+    const shopId = getShopId();
+    // Fetch all POs (no status filter, larger limit for stats)
+    const allPOs = await supplierService.listPurchaseOrders({ shopId, limit: 200 });
+
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+
+    const posThisMonth = allPOs.data.filter((po) => {
+      const d = new Date(po.createdAt);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    });
+
+    const receivedThisMonth = posThisMonth.filter((po) => po.status === 'RECEIVED');
+    const pending = allPOs.data.filter((po) => po.status === 'ORDERED' || po.status === 'PARTIAL' || po.status === 'DRAFT');
+    const totalPurchase = receivedThisMonth.reduce((sum, po) => sum + po.totalAmount, 0);
+    const activeSupplierCount = suppliers.value.filter((s) => s.isActive).length;
+
+    stats.value = {
+      totalPurchaseThisMonth: totalPurchase,
+      poPending: pending.length,
+      activeSuppliers: activeSupplierCount,
+      poThisMonth: posThisMonth.length,
+      poReceivedThisMonth: receivedThisMonth.length,
+    };
+  } catch {
+    // Stats non-blocking
+  }
 }
 
 function openSupplierModal(s: SupplierDto | null) {
@@ -748,7 +818,10 @@ watch(activeTab, (tab) => {
   else fetchPOs();
 });
 
-onMounted(() => { fetchSuppliers(); });
+onMounted(() => {
+  fetchSuppliers();
+  fetchStats();
+});
 
 useAutoRefresh(fetchSuppliers);
 </script>
