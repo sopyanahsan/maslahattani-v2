@@ -22,6 +22,7 @@ import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
+import { BulkUpdatePricesDto } from './dto/bulk-update-prices.dto';
 import { Role } from '@prisma/client';
 
 @ApiTags('Products')
@@ -83,6 +84,14 @@ export class ProductsController {
       throw new BadRequestException('shopId wajib diisi.');
     }
     return this.productsService.bulkUpload(shopId, file.buffer);
+  }
+
+  @Post('bulk-update-prices')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Bulk update harga beli & jual produk (dari PO receive)' })
+  async bulkUpdatePrices(@Body() dto: BulkUpdatePricesDto) {
+    return this.productsService.bulkUpdatePrices(dto);
   }
 
   @Get('by-barcode/:barcode')

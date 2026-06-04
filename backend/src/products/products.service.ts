@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
+import { BulkUpdatePricesDto } from './dto/bulk-update-prices.dto';
 // xlsx — pastikan sudah `npm install` setelah pull
 let XLSX: any;
 try {
@@ -259,6 +260,82 @@ export class ProductsService {
     });
 
     return { success: true, message: `Produk "${product.name}" berhasil dihapus.` };
+  }
+
+  // ============================================
+  // BULK UPDATE PRICES (from PO price changes)
+  // ============================================
+
+  /**
+   * Update harga beli (cost) dan jual (price) untuk beberapa produk sekaligus.
+   * Dipanggil setelah terima PO dan admin review perubahan harga.
+   *
+   * Jika price tidak diisi per item, sistem hitung otomatis:
+   * - Ambil margin terakhir (currentPrice - currentCost) / currentCost * 100
+   * - Apply margin yang sama ke new cost
+   * - Round up ke kelipatan 100
+   */
+  async bulkUpdatePrices(dto: BulkUpdatePricesDto) {
+    const results: Array<{
+      productId: string;
+      productName: string;
+      oldCost: number;
+      newCost: number;
+      oldPrice: number;
+      newPrice: number;
+      marginPercent: number;
+    }> = [];
+
+    for (const update of dto.updates) {
+      const product = await this.prisma.product.findUnique({
+        where: { id: update.productId },
+      });
+
+      if (!product || product.deletedAt) continue;
+
+      const oldCost = product.cost;
+      const oldPrice = product.price;
+      const newCost = update.cost;
+
+      // Calculate new price
+      let newPrice: number;
+      if (update.price && update.price > 0) {
+        // Admin specified exact price
+        newPrice = update.price;
+      } else {
+        // Auto-calculate: maintain current margin percentage, round up to 100
+        const marginPercent = oldCost > 0
+          ? ((oldPrice - oldCost) / oldCost) * 100
+          : 20; // Default 20% margin if cost was 0
+        const rawPrice = newCost * (1 + marginPercent / 100);
+        newPrice = Math.ceil(rawPrice / 100) * 100;
+      }
+
+      const marginPercent = newCost > 0
+        ? Math.round(((newPrice - newCost) / newCost) * 100)
+        : 0;
+
+      await this.prisma.product.update({
+        where: { id: update.productId },
+        data: { cost: newCost, price: newPrice },
+      });
+
+      results.push({
+        productId: product.id,
+        productName: product.name,
+        oldCost,
+        newCost,
+        oldPrice,
+        newPrice,
+        marginPercent,
+      });
+    }
+
+    return {
+      success: true,
+      message: `${results.length} produk berhasil diupdate harganya.`,
+      updated: results,
+    };
   }
 
   // ============================================
