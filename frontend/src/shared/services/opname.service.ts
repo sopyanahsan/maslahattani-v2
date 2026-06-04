@@ -67,6 +67,8 @@ export interface OpnameListResponse {
 export interface CreateOpnamePayload {
   shopId: string;
   notes?: string;
+  /** Filter opname per rak — hanya produk di rak ini yang masuk sesi. Kosong = semua produk. */
+  rackIds?: string[];
 }
 
 export interface CreateOpnameResponse {

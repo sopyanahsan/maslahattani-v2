@@ -142,9 +142,15 @@ export class OpnameService {
     const sessionNumber = this.generateSessionNumber();
     const passcode = await this.generateUniquePasscode();
 
-    // Get all products with stock for this shop
+    // Build stock query — filter by rackIds if provided (opname per rak)
+    const stockWhere: any = { shopId: dto.shopId };
+    if (dto.rackIds && dto.rackIds.length > 0) {
+      stockWhere.rackId = { in: dto.rackIds };
+    }
+
+    // Get products with stock for this shop (optionally filtered by rack)
     const stocks = await this.prisma.stock.findMany({
-      where: { shopId: dto.shopId },
+      where: stockWhere,
       include: { product: { select: { id: true, deletedAt: true } } },
     });
 

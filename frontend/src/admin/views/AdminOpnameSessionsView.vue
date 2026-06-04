@@ -31,8 +31,8 @@
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div class="bg-white border border-slate-200 rounded-lg p-3">
           <p class="text-[10px] font-semibold text-red-500 uppercase tracking-wide">Kerugian</p>
-          <p class="text-lg font-bold text-red-600 mt-1">{{ formatRupiah(monthlyStats.totalLoss) }}</p>
-          <p class="text-[10px] text-slate-400 mt-0.5">= vs bln lalu</p>
+          <p class="text-lg font-bold text-red-600 mt-1">{{ monthlyStats.totalLoss }} item</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">produk kurang (defisit)</p>
         </div>
         <div class="bg-white border border-slate-200 rounded-lg p-3">
           <p class="text-[10px] font-semibold text-emerald-500 uppercase tracking-wide">Akurasi Stok</p>
@@ -148,6 +148,121 @@
         </button>
       </div>
     </div>
+
+    <!-- ============================================ -->
+    <!-- Create Opname Modal (with rack selection)    -->
+    <!-- ============================================ -->
+    <teleport to="body">
+      <div
+        v-if="showCreateModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div class="absolute inset-0 bg-black/40" @click="showCreateModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Mulai Stock Opname
+          </h2>
+
+          <!-- Mode selection -->
+          <div class="space-y-2">
+            <p class="text-xs font-semibold text-slate-700">Cakupan Opname</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                :class="[
+                  'p-3 rounded-lg border-2 text-left transition-all',
+                  createMode === 'all'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-slate-200 hover:border-slate-300'
+                ]"
+                @click="createMode = 'all'; selectedRackIds = []"
+              >
+                <p class="text-xs font-bold text-slate-800">Semua Produk</p>
+                <p class="text-[10px] text-slate-500 mt-0.5">Hitung seluruh produk cabang ini</p>
+              </button>
+              <button
+                type="button"
+                :class="[
+                  'p-3 rounded-lg border-2 text-left transition-all',
+                  createMode === 'by-rack'
+                    ? 'border-violet-500 bg-violet-50'
+                    : 'border-slate-200 hover:border-slate-300'
+                ]"
+                @click="createMode = 'by-rack'"
+              >
+                <p class="text-xs font-bold text-slate-800">Per Rak</p>
+                <p class="text-[10px] text-slate-500 mt-0.5">Pilih rak tertentu saja</p>
+              </button>
+            </div>
+          </div>
+
+          <!-- Rack selection (only if by-rack mode) -->
+          <div v-if="createMode === 'by-rack'" class="space-y-2">
+            <p class="text-xs font-semibold text-slate-700">
+              Pilih Rak
+              <span v-if="selectedRackIds.length > 0" class="text-blue-600">({{ selectedRackIds.length }} dipilih)</span>
+            </p>
+
+            <div v-if="loadingRacks" class="text-center py-4 text-xs text-slate-400">Memuat rak...</div>
+
+            <div v-else-if="availableRacks.length === 0" class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p class="text-xs text-amber-700">Belum ada rak di cabang ini. Buat rak dulu di menu "Label Rak".</p>
+            </div>
+
+            <div v-else class="max-h-48 overflow-y-auto space-y-1 border border-slate-200 rounded-lg p-2">
+              <label
+                v-for="rack in availableRacks"
+                :key="rack.id"
+                :class="[
+                  'flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-colors',
+                  selectedRackIds.includes(rack.id) ? 'bg-violet-50' : 'hover:bg-slate-50'
+                ]"
+              >
+                <input
+                  type="checkbox"
+                  :checked="selectedRackIds.includes(rack.id)"
+                  class="w-4 h-4 text-violet-600 border-slate-300 rounded"
+                  @change="toggleRackSelection(rack.id)"
+                />
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-semibold text-slate-800">{{ rack.code }} <span v-if="rack.name" class="font-normal text-slate-500">— {{ rack.name }}</span></p>
+                  <p class="text-[10px] text-slate-400">{{ rack.zoneName }} · {{ rack.productCount }} produk</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-2 pt-2">
+            <button
+              type="button"
+              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-lg
+                     hover:bg-slate-200 transition-colors"
+              @click="showCreateModal = false"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              :disabled="creating || (createMode === 'by-rack' && selectedRackIds.length === 0)"
+              class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg
+                     hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                     flex items-center gap-1.5"
+              @click="confirmCreateOpname"
+            >
+              <svg v-if="creating" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+              </svg>
+              {{ creating ? 'Membuat...' : 'Mulai Opname' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
 
     <!-- ============================================ -->
     <!-- Passcode Modal (after creating session)      -->
@@ -491,6 +606,7 @@ import opnameService, {
   type OpnameListResponse,
   type OpnameStatus,
 } from '@/shared/services/opname.service';
+import rackService, { type RackDto } from '@/shared/services/rack.service';
 
 const authStore = useAuthStore();
 
@@ -540,6 +656,13 @@ const showAlertModal = ref(false);
 const alertTitle = ref('');
 const alertMessage = ref('');
 const alertType = ref<'error' | 'warning' | 'info'>('info');
+
+// Create opname modal (with rack selection)
+const showCreateModal = ref(false);
+const availableRacks = ref<RackDto[]>([]);
+const selectedRackIds = ref<string[]>([]);
+const createMode = ref<'all' | 'by-rack'>('all');
+const loadingRacks = ref(false);
 
 // ============================================
 // Helpers
@@ -627,42 +750,55 @@ async function fetchSessions() {
     });
     sessions.value = response.data;
     meta.value = response.meta;
+  } catch (err: any) {
+    error.value = err.response?.data?.message ?? err.message ?? 'Gagal memuat sesi opname.';
+  } finally {
+    loading.value = false;
+  }
+}
 
-    // Compute monthly stats from completed sessions this month
+/** Fetch stats separately — all sessions this month (no pagination/filter) */
+async function fetchMonthlyStats() {
+  try {
+    const shopId = getShopId();
+    const response = await opnameService.listSessions({
+      shopId,
+      page: 1,
+      limit: 100, // Get all sessions this month
+    });
+
     const now = new Date();
     const thisMonth = now.getMonth();
     const thisYear = now.getFullYear();
+
     const completedThisMonth = response.data.filter((s) => {
       if (s.status !== 'COMPLETED' || !s.completedAt) return false;
       const d = new Date(s.completedAt);
       return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
     });
 
-    const totalDeficitItems = completedThisMonth.reduce((sum, s) => sum + s.totalDeficit, 0);
-    const totalMatched = completedThisMonth.reduce((sum, s) => sum + s.totalMatched, 0);
-    const totalItems = completedThisMonth.reduce((sum, s) => sum + s.totalProducts, 0);
-
-    // Count all sessions this month (any status)
     const allThisMonth = response.data.filter((s) => {
       const d = new Date(s.createdAt);
       return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
     });
+
+    const totalMatched = completedThisMonth.reduce((sum, s) => sum + s.totalMatched, 0);
+    const totalItems = completedThisMonth.reduce((sum, s) => sum + s.totalProducts, 0);
+    const totalDeficit = completedThisMonth.reduce((sum, s) => sum + s.totalDeficit, 0);
 
     const lastCompleted = completedThisMonth.length > 0
       ? new Date(completedThisMonth[0].completedAt!).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
       : '';
 
     monthlyStats.value = {
-      totalLoss: totalDeficitItems * 0, // Placeholder — needs actual cost calculation
+      totalLoss: totalDeficit, // jumlah item kurang (nanti bisa dikalikan harga rata-rata)
       totalItems,
       matched: totalMatched,
       totalSessions: allThisMonth.length,
       lastOpnameDate: lastCompleted,
     };
-  } catch (err: any) {
-    error.value = err.response?.data?.message ?? err.message ?? 'Gagal memuat sesi opname.';
-  } finally {
-    loading.value = false;
+  } catch {
+    // Stats gagal tidak blocking
   }
 }
 
@@ -679,9 +815,35 @@ function goPage(page: number) {
 async function handleCreate() {
   const shopId = getShopId();
   if (!shopId) return;
+
+  // Open create modal with rack options
+  showCreateModal.value = true;
+  createMode.value = 'all';
+  selectedRackIds.value = [];
+
+  // Fetch racks for this shop
+  loadingRacks.value = true;
+  try {
+    availableRacks.value = await rackService.listRacks(shopId);
+  } catch {
+    availableRacks.value = [];
+  } finally {
+    loadingRacks.value = false;
+  }
+}
+
+async function confirmCreateOpname() {
+  const shopId = getShopId();
+  if (!shopId) return;
+
   creating.value = true;
   try {
-    const result = await opnameService.createSession({ shopId });
+    const payload: any = { shopId };
+    if (createMode.value === 'by-rack' && selectedRackIds.value.length > 0) {
+      payload.rackIds = selectedRackIds.value;
+    }
+    const result = await opnameService.createSession(payload);
+    showCreateModal.value = false;
     createdPasscode.value = result.passcode;
     showPasscodeModal.value = true;
     copied.value = false;
@@ -690,6 +852,15 @@ async function handleCreate() {
     showAlert('Gagal', err.response?.data?.message ?? 'Gagal membuat sesi opname.', 'error');
   } finally {
     creating.value = false;
+  }
+}
+
+function toggleRackSelection(rackId: string) {
+  const idx = selectedRackIds.value.indexOf(rackId);
+  if (idx === -1) {
+    selectedRackIds.value.push(rackId);
+  } else {
+    selectedRackIds.value.splice(idx, 1);
   }
 }
 
@@ -816,5 +987,6 @@ function showAlert(title: string, message: string, type: 'error' | 'warning' | '
 // ============================================
 onMounted(() => {
   fetchSessions();
+  fetchMonthlyStats();
 });
 </script>
