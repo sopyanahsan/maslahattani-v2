@@ -18,7 +18,10 @@
       <div class="bg-white border border-slate-200 rounded-lg p-4">
         <p class="text-[10px] font-semibold text-amber-500 uppercase tracking-wide">PO Pending</p>
         <p class="text-lg font-bold text-amber-600 mt-1">{{ stats.poPending }}</p>
-        <p class="text-[10px] text-slate-400 mt-0.5">belum diterima</p>
+        <p class="text-[10px] text-slate-400 mt-0.5">
+          belum diterima
+          <span v-if="stats.overdueCount > 0" class="text-red-500 font-semibold"> · {{ stats.overdueCount }} overdue!</span>
+        </p>
       </div>
       <div class="bg-white border border-slate-200 rounded-lg p-4">
         <p class="text-[10px] font-semibold text-emerald-500 uppercase tracking-wide">Supplier Aktif</p>
@@ -173,8 +176,18 @@
                 @click="handleSharePO"
                 title="Salin teks PO untuk kirim ke supplier"
               >
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
-                Share
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                Salin
+              </button>
+              <button
+                v-if="poDetail && poDetail.supplier.phone"
+                type="button"
+                class="h-7 px-2.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-md hover:bg-emerald-100 flex items-center gap-1"
+                @click="handleSendWhatsApp"
+                title="Kirim PO ke WhatsApp supplier"
+              >
+                <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492a.5.5 0 00.612.612l4.458-1.495A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 22c-2.357 0-4.545-.8-6.285-2.146l-.44-.352-3.162 1.06 1.06-3.162-.352-.44A9.953 9.953 0 012 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10z"/></svg>
+                Kirim WA
               </button>
               <span v-if="poDetail" :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', poStatusBadge(poDetail.status)]">
                 {{ poStatusLabel(poDetail.status) }}
@@ -713,6 +726,7 @@ const stats = ref({
   activeSuppliers: 0,
   poThisMonth: 0,
   poReceivedThisMonth: 0,
+  overdueCount: 0, // PO > 3 hari belum diterima
 });
 
 // Supplier modal
@@ -875,12 +889,21 @@ async function fetchStats() {
     const totalPurchase = receivedThisMonth.reduce((sum, po) => sum + po.totalAmount, 0);
     const activeSupplierCount = suppliers.value.filter((s) => s.isActive).length;
 
+    // POs ordered > 3 days ago but not yet received
+    const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
+    const overdue = allPOs.data.filter((po) => {
+      if (po.status !== 'ORDERED' && po.status !== 'PARTIAL') return false;
+      const orderedDate = po.orderedAt ? new Date(po.orderedAt) : new Date(po.createdAt);
+      return orderedDate < threeDaysAgo;
+    });
+
     stats.value = {
       totalPurchaseThisMonth: totalPurchase,
       poPending: pending.length,
       activeSuppliers: activeSupplierCount,
       poThisMonth: posThisMonth.length,
       poReceivedThisMonth: receivedThisMonth.length,
+      overdueCount: overdue.length,
     };
   } catch {
     // Stats non-blocking
@@ -1148,7 +1171,41 @@ async function handleCancelPO() {
 
 function handleSharePO() {
   if (!poDetail.value) return;
+  const text = generatePOText();
+
+  // Try to copy to clipboard
+  navigator.clipboard.writeText(text).then(() => {
+    toast.success('Teks PO tersalin! Tinggal paste ke WhatsApp.');
+  }).catch(() => {
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    toast.success('Teks PO tersalin!');
+  });
+}
+
+function handleSendWhatsApp() {
+  if (!poDetail.value) return;
   const po = poDetail.value;
+  const text = generatePOText();
+
+  // Format phone number for wa.me (remove leading 0, add 62)
+  let phone = (po.supplier.phone || '').replace(/[^0-9]/g, '');
+  if (phone.startsWith('0')) {
+    phone = '62' + phone.substring(1);
+  } else if (!phone.startsWith('62')) {
+    phone = '62' + phone;
+  }
+
+  const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(text)}`;
+  window.open(waUrl, '_blank');
+}
+
+function generatePOText(): string {
+  const po = poDetail.value!;
   const lines: string[] = [
     `📋 *PURCHASE ORDER*`,
     `No: ${po.orderNumber}`,
@@ -1177,21 +1234,7 @@ function handleSharePO() {
   lines.push('');
   lines.push(`— Maslahat Tani`);
 
-  const text = lines.filter(Boolean).join('\n');
-
-  // Try to copy to clipboard
-  navigator.clipboard.writeText(text).then(() => {
-    toast.success('Teks PO tersalin! Tinggal paste ke WhatsApp.');
-  }).catch(() => {
-    // Fallback: open in new window
-    const el = document.createElement('textarea');
-    el.value = text;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-    toast.success('Teks PO tersalin!');
-  });
+  return lines.filter(Boolean).join('\n');
 }
 
 // ============================================
