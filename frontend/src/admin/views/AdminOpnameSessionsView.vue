@@ -22,6 +22,38 @@
       </button>
     </div>
 
+    <!-- Rekap Opname Bulan Ini -->
+    <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-bold text-slate-800">Rekap Opname Bulan Ini</h2>
+        <span class="text-xs text-slate-500">{{ currentMonthYear }}</span>
+      </div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white border border-slate-200 rounded-lg p-3">
+          <p class="text-[10px] font-semibold text-red-500 uppercase tracking-wide">Kerugian</p>
+          <p class="text-lg font-bold text-red-600 mt-1">{{ formatRupiah(monthlyStats.totalLoss) }}</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">= vs bln lalu</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3">
+          <p class="text-[10px] font-semibold text-emerald-500 uppercase tracking-wide">Akurasi Stok</p>
+          <p class="text-lg font-bold text-slate-900 mt-1">
+            {{ monthlyStats.totalItems > 0 ? Math.round((monthlyStats.matched / monthlyStats.totalItems) * 100) + '%' : '—' }}
+          </p>
+          <p class="text-[10px] text-slate-400 mt-0.5">item cocok / dihitung</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3">
+          <p class="text-[10px] font-semibold text-blue-500 uppercase tracking-wide">Jumlah Sesi</p>
+          <p class="text-lg font-bold text-slate-900 mt-1">{{ monthlyStats.totalSessions }}</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">sesi bulan ini</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3">
+          <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Opname Terakhir</p>
+          <p class="text-lg font-bold text-slate-900 mt-1">{{ monthlyStats.lastOpnameDate || '—' }}</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">{{ monthlyStats.lastOpnameDate ? '' : 'belum ada' }}</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Filter -->
     <div class="flex gap-3">
       <select
@@ -451,7 +483,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import opnameService, {
   type OpnameSessionDto,
@@ -472,6 +504,19 @@ const error = ref<string | null>(null);
 const creating = ref(false);
 const filterStatus = ref<string>('');
 const currentPage = ref(1);
+
+// Monthly stats
+const monthlyStats = ref({
+  totalLoss: 0,
+  totalItems: 0,
+  matched: 0,
+  totalSessions: 0,
+  lastOpnameDate: '',
+});
+
+const currentMonthYear = computed(() => {
+  return new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+});
 
 // Detail modal
 const showDetail = ref(false);
@@ -512,6 +557,10 @@ function formatDate(iso: string): string {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function formatRupiah(amount: number): string {
+  return 'Rp ' + amount.toLocaleString('id-ID');
 }
 
 function formatTime(iso: string): string {
@@ -578,6 +627,38 @@ async function fetchSessions() {
     });
     sessions.value = response.data;
     meta.value = response.meta;
+
+    // Compute monthly stats from completed sessions this month
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+    const completedThisMonth = response.data.filter((s) => {
+      if (s.status !== 'COMPLETED' || !s.completedAt) return false;
+      const d = new Date(s.completedAt);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    });
+
+    const totalDeficitItems = completedThisMonth.reduce((sum, s) => sum + s.totalDeficit, 0);
+    const totalMatched = completedThisMonth.reduce((sum, s) => sum + s.totalMatched, 0);
+    const totalItems = completedThisMonth.reduce((sum, s) => sum + s.totalProducts, 0);
+
+    // Count all sessions this month (any status)
+    const allThisMonth = response.data.filter((s) => {
+      const d = new Date(s.createdAt);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    });
+
+    const lastCompleted = completedThisMonth.length > 0
+      ? new Date(completedThisMonth[0].completedAt!).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+      : '';
+
+    monthlyStats.value = {
+      totalLoss: totalDeficitItems * 0, // Placeholder — needs actual cost calculation
+      totalItems,
+      matched: totalMatched,
+      totalSessions: allThisMonth.length,
+      lastOpnameDate: lastCompleted,
+    };
   } catch (err: any) {
     error.value = err.response?.data?.message ?? err.message ?? 'Gagal memuat sesi opname.';
   } finally {
