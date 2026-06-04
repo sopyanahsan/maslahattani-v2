@@ -97,6 +97,10 @@
           <div class="w-10 h-10 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center"><HistoryIcon class="w-5 h-5" /></div>
           <span class="text-[10px] font-medium text-slate-700 text-center">Riwayat</span>
         </RouterLink>
+        <RouterLink to="/opname" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-colors shadow-sm gap-2">
+          <div class="w-10 h-10 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center"><ClipboardCheckIcon class="w-5 h-5" /></div>
+          <span class="text-[10px] font-medium text-slate-700 text-center">Stok Opname</span>
+        </RouterLink>
       </div>
     </div>
 
@@ -147,6 +151,7 @@ import {
   Banknote as BanknoteIcon, ArrowLeftRight as ArrowLeftRightIcon,
   Smartphone as SmartphoneIcon, History as HistoryIcon,
   ArrowDown as ArrowDownIcon, ArrowUp as ArrowUpIcon,
+  ClipboardCheck as ClipboardCheckIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShiftStore } from '@/shared/stores/shift.store';
