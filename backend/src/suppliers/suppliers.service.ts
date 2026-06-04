@@ -270,7 +270,7 @@ export class SuppliersService {
       }
     }
 
-    // Track price changes
+    // Track price changes (existing products with different cost)
     const priceChanges: Array<{
       productId: string;
       productName: string;
@@ -281,6 +281,18 @@ export class SuppliersService {
       marginPercent: number;
       suggestedPrice: number;
     }> = [];
+
+    // Track new products (cost was 0, first time receiving → need to set price)
+    const newProducts: Array<{
+      productId: string;
+      productName: string;
+      productSku: string;
+      cost: number;
+      suggestedPrice: number;
+      defaultMarginPercent: number;
+    }> = [];
+
+    const DEFAULT_MARGIN_PERCENT = 20; // 20% default margin for new products
 
     // Execute atomically
     const result = await this.prisma.$transaction(async (tx) => {
@@ -333,28 +345,40 @@ export class SuppliersService {
           },
         });
 
-        // Detect price change: new cost vs current product cost
-        if (actualCost > 0 && actualCost !== item.product.cost) {
+        // Detect price change or new product pricing
+        if (actualCost > 0) {
           const oldCost = item.product.cost;
           const currentPrice = item.product.price;
-          const marginPercent = oldCost > 0
-            ? Math.round(((currentPrice - oldCost) / oldCost) * 100)
-            : 0;
-          // Calculate suggested price: maintain same margin %, round up to nearest 100
-          const suggestedPrice = marginPercent > 0
-            ? Math.ceil((actualCost * (1 + marginPercent / 100)) / 100) * 100
-            : currentPrice;
 
-          priceChanges.push({
-            productId: item.product.id,
-            productName: item.product.name,
-            productSku: item.product.sku,
-            oldCost,
-            newCost: actualCost,
-            currentPrice,
-            marginPercent,
-            suggestedPrice,
-          });
+          if (oldCost === 0 && currentPrice === 0) {
+            // NEW PRODUCT: first time receiving — need to set sell price
+            const suggestedPrice = Math.ceil((actualCost * (1 + DEFAULT_MARGIN_PERCENT / 100)) / 100) * 100;
+            newProducts.push({
+              productId: item.product.id,
+              productName: item.product.name,
+              productSku: item.product.sku,
+              cost: actualCost,
+              suggestedPrice,
+              defaultMarginPercent: DEFAULT_MARGIN_PERCENT,
+            });
+          } else if (actualCost !== oldCost && oldCost > 0) {
+            // EXISTING PRODUCT: cost changed → suggest new price
+            const marginPercent = Math.round(((currentPrice - oldCost) / oldCost) * 100);
+            const suggestedPrice = marginPercent > 0
+              ? Math.ceil((actualCost * (1 + marginPercent / 100)) / 100) * 100
+              : currentPrice;
+
+            priceChanges.push({
+              productId: item.product.id,
+              productName: item.product.name,
+              productSku: item.product.sku,
+              oldCost,
+              newCost: actualCost,
+              currentPrice,
+              marginPercent,
+              suggestedPrice,
+            });
+          }
         }
       }
 
@@ -383,6 +407,7 @@ export class SuppliersService {
         ? `PO ${po.orderNumber} selesai! Semua barang diterima & stok diupdate.`
         : `PO ${po.orderNumber} diterima sebagian. Sisa bisa diterima nanti.`,
       priceChanges: priceChanges.length > 0 ? priceChanges : undefined,
+      newProducts: newProducts.length > 0 ? newProducts : undefined,
     };
   }
 
