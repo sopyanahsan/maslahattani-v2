@@ -593,6 +593,12 @@ model OpnameSession {
   conductorId     String
 
   sessionNumber   String        @unique
+  /**
+   * Passcode 6 karakter (uppercase alphanumeric) untuk join sesi opname via webapp.
+   * Generated saat admin buat sesi. Petugas input kode ini di webapp untuk mulai hitung.
+   * Expired otomatis ketika sesi COMPLETED atau CANCELLED.
+   */
+  passcode        String        @unique
   status          OpnameStatus  @default(DRAFT)
   notes           String?
   startedAt       DateTime?
@@ -605,6 +611,7 @@ model OpnameSession {
   totalDeficit    Int           @default(0)
 
   items           OpnameItem[]
+  participants    OpnameParticipant[]
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -627,6 +634,8 @@ model OpnameItem {
   actualQty       Int?          // stok fisik yang dihitung
   variance        Int?          // actualQty - systemQty
   notes           String?
+  /** Siapa yang menghitung item ini (reference ke OpnameParticipant) */
+  countedById     String?
 
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
@@ -635,6 +644,28 @@ model OpnameItem {
   @@index([sessionId])
   @@index([productId])
   @@map("opname_items")
+}
+
+/**
+ * Peserta yang join sesi opname via passcode.
+ * Satu sesi bisa punya banyak peserta (multi-device counting).
+ * Nama diinput saat join (free text atau pilih dari list user).
+ */
+model OpnameParticipant {
+  id              String        @id @default(cuid())
+  session         OpnameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId       String
+  /** Nama petugas (free text, diisi saat join via passcode) */
+  name            String
+  /** Optional: link ke user jika petugas punya akun */
+  userId          String?
+  /** Device/browser identifier untuk tracking multi-device */
+  deviceId        String?
+
+  joinedAt        DateTime      @default(now())
+
+  @@index([sessionId])
+  @@map("opname_participants")
 }
 
 // ============================================

@@ -62,9 +62,23 @@
               <span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', statusBadge(session.status)]">
                 {{ statusLabel(session.status) }}
               </span>
+              <!-- Passcode badge for active sessions -->
+              <span
+                v-if="session.status === 'IN_PROGRESS'"
+                class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-violet-100 text-violet-700 text-[10px] font-bold font-mono tracking-wider"
+                :title="'Kode untuk join: ' + session.passcode"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                </svg>
+                {{ session.passcode }}
+              </span>
             </div>
             <p class="text-xs text-slate-500 mt-1">
               Oleh {{ session.conductorName }} &middot; {{ formatDate(session.createdAt) }}
+            </p>
+            <p v-if="session.participantCount && session.participantCount > 0" class="text-[10px] text-slate-400 mt-0.5">
+              {{ session.participantCount }} petugas bergabung
             </p>
           </div>
           <div class="text-right text-xs text-slate-600">
@@ -98,6 +112,74 @@
     </div>
 
     <!-- ============================================ -->
+    <!-- Passcode Modal (after creating session)      -->
+    <!-- ============================================ -->
+    <teleport to="body">
+      <div
+        v-if="showPasscodeModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div class="absolute inset-0 bg-black/40" @click="showPasscodeModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center space-y-4">
+          <!-- Success icon -->
+          <div class="mx-auto w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center">
+            <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+
+          <div>
+            <h2 class="text-base font-bold text-slate-900">Sesi Opname Dibuat!</h2>
+            <p class="text-xs text-slate-500 mt-1">
+              Berikan kode ini ke petugas untuk mulai menghitung stok di webapp.
+            </p>
+          </div>
+
+          <!-- Passcode display -->
+          <div class="bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl py-5 px-4">
+            <p class="text-[10px] text-slate-500 uppercase font-semibold tracking-wide mb-1">Kode Opname</p>
+            <p class="text-3xl font-black font-mono text-slate-900 tracking-[0.3em]">
+              {{ createdPasscode }}
+            </p>
+          </div>
+
+          <!-- Info -->
+          <div class="text-left bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-1">
+            <p class="text-[11px] text-blue-800 font-semibold">Cara pakai:</p>
+            <ol class="text-[11px] text-blue-700 list-decimal list-inside space-y-0.5">
+              <li>Petugas buka webapp di HP/tablet</li>
+              <li>Masukkan kode <strong>{{ createdPasscode }}</strong></li>
+              <li>Isi nama petugas, lalu mulai hitung</li>
+            </ol>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="flex-1 h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-lg
+                     hover:bg-slate-200 transition-colors flex items-center justify-center gap-1.5"
+              @click="copyPasscode"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+              {{ copied ? 'Tersalin!' : 'Salin Kode' }}
+            </button>
+            <button
+              type="button"
+              class="flex-1 h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg
+                     hover:bg-blue-700 transition-colors"
+              @click="showPasscodeModal = false"
+            >
+              Tutup
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <!-- ============================================ -->
     <!-- Detail Modal                                  -->
     <!-- ============================================ -->
     <teleport to="body">
@@ -116,6 +198,18 @@
               </p>
             </div>
             <div class="flex items-center gap-2">
+              <!-- Passcode in detail header -->
+              <span
+                v-if="detail && detail.status === 'IN_PROGRESS'"
+                class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-violet-50 border border-violet-200 text-violet-700 text-xs font-bold font-mono tracking-wider cursor-pointer"
+                :title="'Klik untuk salin kode'"
+                @click="copyToClipboard(detail.passcode)"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                </svg>
+                {{ detail.passcode }}
+              </span>
               <span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', detail ? statusBadge(detail.status) : '']">
                 {{ detail ? statusLabel(detail.status) : '' }}
               </span>
@@ -131,6 +225,37 @@
           <div class="flex-1 overflow-y-auto px-6 py-4">
             <div v-if="detailLoading" class="text-center py-10 text-slate-500 text-sm">Memuat detail...</div>
             <div v-else-if="detail">
+              <!-- Participants section (for active sessions) -->
+              <div v-if="detail.participants && detail.participants.length > 0" class="mb-5">
+                <h3 class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  Petugas ({{ detail.participants.length }})
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                  <span
+                    v-for="p in detail.participants"
+                    :key="p.id"
+                    class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 rounded-md text-[11px] text-slate-700"
+                  >
+                    <span class="w-4 h-4 bg-blue-500 text-white rounded-full text-[8px] font-bold flex items-center justify-center">
+                      {{ p.name.charAt(0).toUpperCase() }}
+                    </span>
+                    {{ p.name }}
+                    <span class="text-slate-400 text-[9px]">{{ formatTime(p.joinedAt) }}</span>
+                  </span>
+                </div>
+              </div>
+
+              <div v-else-if="detail.status === 'IN_PROGRESS'" class="mb-5 bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <p class="text-xs text-amber-700">
+                  Belum ada petugas yang bergabung. Bagikan kode
+                  <strong class="font-mono">{{ detail.passcode }}</strong>
+                  ke petugas untuk mulai menghitung.
+                </p>
+              </div>
+
               <!-- Summary Cards (for completed) -->
               <div v-if="detail.status === 'COMPLETED'" class="grid grid-cols-3 gap-3 mb-5">
                 <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
@@ -241,7 +366,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import opnameService, {
   type OpnameSessionDto,
@@ -269,6 +394,11 @@ const detail = ref<OpnameSessionDetailDto | null>(null);
 const detailLoading = ref(false);
 const completing = ref(false);
 
+// Passcode modal (shown after creating)
+const showPasscodeModal = ref(false);
+const createdPasscode = ref('');
+const copied = ref(false);
+
 // ============================================
 // Helpers
 // ============================================
@@ -282,6 +412,13 @@ function formatDate(iso: string): string {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+function formatTime(iso: string): string {
+  return new Date(iso).toLocaleTimeString('id-ID', {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -305,6 +442,26 @@ function statusLabel(status: OpnameStatus): string {
     case 'DRAFT': return 'Draft';
     default: return status;
   }
+}
+
+async function copyToClipboard(text: string) {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch {
+    // Fallback
+    const el = document.createElement('textarea');
+    el.value = text;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+  }
+}
+
+async function copyPasscode() {
+  await copyToClipboard(createdPasscode.value);
+  copied.value = true;
+  setTimeout(() => { copied.value = false; }, 2000);
 }
 
 // ============================================
@@ -346,7 +503,11 @@ async function handleCreate() {
   if (!shopId) return;
   creating.value = true;
   try {
-    await opnameService.createSession({ shopId });
+    const result = await opnameService.createSession({ shopId });
+    // Show passcode modal
+    createdPasscode.value = result.passcode;
+    showPasscodeModal.value = true;
+    copied.value = false;
     await fetchSessions();
   } catch (err: any) {
     alert(err.response?.data?.message ?? 'Gagal membuat sesi opname.');
@@ -368,7 +529,7 @@ async function openDetail(session: OpnameSessionDto) {
   }
 }
 
-async function handleUpdateItem(itemId: string, actualQty: number, systemQty: number) {
+async function handleUpdateItem(itemId: string, actualQty: number, _systemQty: number) {
   if (isNaN(actualQty) || actualQty < 0) return;
   try {
     const updated = await opnameService.updateItem(itemId, { actualQty });

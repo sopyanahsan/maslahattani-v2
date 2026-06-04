@@ -9,6 +9,7 @@ export type OpnameStatus = 'DRAFT' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED';
 export interface OpnameSessionDto {
   id: string;
   sessionNumber: string;
+  passcode: string;
   status: OpnameStatus;
   notes: string | null;
   conductorId: string;
@@ -22,6 +23,15 @@ export interface OpnameSessionDto {
   completedAt: string | null;
   createdAt: string;
   itemCount: number;
+  participantCount?: number;
+}
+
+export interface OpnameParticipantDto {
+  id: string;
+  name: string;
+  userId: string | null;
+  deviceId: string | null;
+  joinedAt: string;
 }
 
 export interface OpnameItemDto {
@@ -34,10 +44,12 @@ export interface OpnameItemDto {
   actualQty: number | null;
   variance: number | null;
   notes: string | null;
+  countedById: string | null;
 }
 
 export interface OpnameSessionDetailDto extends Omit<OpnameSessionDto, 'itemCount'> {
   items: OpnameItemDto[];
+  participants: OpnameParticipantDto[];
 }
 
 export interface OpnameListResponse {
@@ -55,9 +67,57 @@ export interface CreateOpnamePayload {
   notes?: string;
 }
 
+export interface CreateOpnameResponse {
+  id: string;
+  sessionNumber: string;
+  passcode: string;
+  status: OpnameStatus;
+  totalProducts: number;
+  startedAt: string;
+  itemCount: number;
+}
+
 export interface UpdateOpnameItemPayload {
   actualQty: number;
   notes?: string;
+  countedById?: string;
+}
+
+export interface JoinOpnamePayload {
+  passcode: string;
+  name: string;
+  userId?: string;
+  deviceId?: string;
+}
+
+export interface JoinOpnameResponse {
+  participant: {
+    id: string;
+    name: string;
+    joinedAt: string;
+  };
+  session: {
+    id: string;
+    sessionNumber: string;
+    status: OpnameStatus;
+    shopName: string;
+    shopAddress: string;
+    totalProducts: number;
+    participantCount: number;
+    startedAt: string | null;
+  };
+}
+
+export interface PasscodeLookupResponse {
+  id: string;
+  sessionNumber: string;
+  passcode: string;
+  status: OpnameStatus;
+  shopName: string;
+  shopAddress: string;
+  totalProducts: number;
+  participantCount: number;
+  startedAt: string | null;
 }
 
 // ============================================
@@ -82,8 +142,8 @@ const opnameService = {
     return data;
   },
 
-  async createSession(payload: CreateOpnamePayload) {
-    const { data } = await api.post('/opname/sessions', payload);
+  async createSession(payload: CreateOpnamePayload): Promise<CreateOpnameResponse> {
+    const { data } = await api.post<CreateOpnameResponse>('/opname/sessions', payload);
     return data;
   },
 
@@ -99,6 +159,20 @@ const opnameService = {
 
   async updateItem(itemId: string, payload: UpdateOpnameItemPayload) {
     const { data } = await api.patch(`/opname/items/${itemId}`, payload);
+    return data;
+  },
+
+  // ============================================
+  // Passcode / Public endpoints (for webapp)
+  // ============================================
+
+  async lookupByPasscode(passcode: string): Promise<PasscodeLookupResponse> {
+    const { data } = await api.get<PasscodeLookupResponse>(`/opname/join/${passcode}`);
+    return data;
+  },
+
+  async joinSession(payload: JoinOpnamePayload): Promise<JoinOpnameResponse> {
+    const { data } = await api.post<JoinOpnameResponse>('/opname/join', payload);
     return data;
   },
 };

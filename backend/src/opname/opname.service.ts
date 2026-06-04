@@ -8,6 +8,7 @@ import {
   CreateOpnameSessionDto,
   UpdateOpnameItemDto,
   QueryOpnameSessionsDto,
+  JoinOpnameSessionDto,
 } from './dto';
 
 @Injectable()
@@ -32,7 +33,7 @@ export class OpnameService {
         where,
         include: {
           conductor: { select: { id: true, username: true, email: true } },
-          _count: { select: { items: true } },
+          _count: { select: { items: true, participants: true } },
         },
         orderBy: { createdAt: 'desc' },
         skip,
@@ -45,6 +46,7 @@ export class OpnameService {
       data: data.map((s) => ({
         id: s.id,
         sessionNumber: s.sessionNumber,
+        passcode: s.passcode,
         status: s.status,
         notes: s.notes,
         conductorId: s.conductorId,
@@ -58,13 +60,14 @@ export class OpnameService {
         completedAt: s.completedAt?.toISOString() || null,
         createdAt: s.createdAt.toISOString(),
         itemCount: s._count.items,
+        participantCount: s._count.participants,
       })),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
   // ============================================
-  // GET SESSION DETAIL (with items)
+  // GET SESSION DETAIL (with items & participants)
   // ============================================
 
   async getSession(id: string) {
@@ -72,6 +75,9 @@ export class OpnameService {
       where: { id },
       include: {
         conductor: { select: { id: true, username: true, email: true } },
+        participants: {
+          orderBy: { joinedAt: 'asc' },
+        },
         items: {
           include: {
             product: { select: { id: true, name: true, sku: true, price: true } },
@@ -86,6 +92,7 @@ export class OpnameService {
     return {
       id: session.id,
       sessionNumber: session.sessionNumber,
+      passcode: session.passcode,
       status: session.status,
       notes: session.notes,
       conductorId: session.conductorId,
@@ -98,6 +105,13 @@ export class OpnameService {
       startedAt: session.startedAt?.toISOString() || null,
       completedAt: session.completedAt?.toISOString() || null,
       createdAt: session.createdAt.toISOString(),
+      participants: session.participants.map((p) => ({
+        id: p.id,
+        name: p.name,
+        userId: p.userId,
+        deviceId: p.deviceId,
+        joinedAt: p.joinedAt.toISOString(),
+      })),
       items: session.items.map((item) => ({
         id: item.id,
         productId: item.productId,
@@ -108,16 +122,18 @@ export class OpnameService {
         actualQty: item.actualQty,
         variance: item.variance,
         notes: item.notes,
+        countedById: item.countedById,
       })),
     };
   }
 
   // ============================================
-  // CREATE SESSION
+  // CREATE SESSION (with passcode generation)
   // ============================================
 
   async createSession(dto: CreateOpnameSessionDto, conductorId: string) {
     const sessionNumber = this.generateSessionNumber();
+    const passcode = await this.generateUniquePasscode();
 
     // Get all products with stock for this shop
     const stocks = await this.prisma.stock.findMany({
@@ -137,6 +153,7 @@ export class OpnameService {
         shopId: dto.shopId,
         conductorId,
         sessionNumber,
+        passcode,
         status: 'IN_PROGRESS',
         notes: dto.notes,
         startedAt: new Date(),
@@ -157,10 +174,95 @@ export class OpnameService {
     return {
       id: session.id,
       sessionNumber: session.sessionNumber,
+      passcode: session.passcode,
       status: session.status,
       totalProducts: session.totalProducts,
       startedAt: session.startedAt?.toISOString(),
       itemCount: session._count.items,
+    };
+  }
+
+  // ============================================
+  // JOIN SESSION VIA PASSCODE (for webapp)
+  // ============================================
+
+  async joinSessionByPasscode(dto: JoinOpnameSessionDto) {
+    const session = await this.prisma.opnameSession.findUnique({
+      where: { passcode: dto.passcode.toUpperCase() },
+      include: {
+        shop: { select: { id: true, name: true, address: true } },
+        _count: { select: { items: true, participants: true } },
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Kode opname tidak ditemukan. Periksa kembali kode yang dimasukkan.');
+    }
+
+    if (session.status === 'COMPLETED') {
+      throw new BadRequestException('Sesi opname ini sudah selesai.');
+    }
+
+    if (session.status === 'CANCELLED') {
+      throw new BadRequestException('Sesi opname ini sudah dibatalkan.');
+    }
+
+    // Create participant record
+    const participant = await this.prisma.opnameParticipant.create({
+      data: {
+        sessionId: session.id,
+        name: dto.name,
+        userId: dto.userId || null,
+        deviceId: dto.deviceId || null,
+      },
+    });
+
+    return {
+      participant: {
+        id: participant.id,
+        name: participant.name,
+        joinedAt: participant.joinedAt.toISOString(),
+      },
+      session: {
+        id: session.id,
+        sessionNumber: session.sessionNumber,
+        status: session.status,
+        shopName: session.shop.name,
+        shopAddress: session.shop.address,
+        totalProducts: session._count.items,
+        participantCount: session._count.participants + 1,
+        startedAt: session.startedAt?.toISOString() || null,
+      },
+    };
+  }
+
+  // ============================================
+  // GET SESSION BY PASSCODE (public lookup)
+  // ============================================
+
+  async getSessionByPasscode(passcode: string) {
+    const session = await this.prisma.opnameSession.findUnique({
+      where: { passcode: passcode.toUpperCase() },
+      include: {
+        shop: { select: { id: true, name: true, address: true } },
+        _count: { select: { items: true, participants: true } },
+      },
+    });
+
+    if (!session) {
+      throw new NotFoundException('Kode opname tidak ditemukan.');
+    }
+
+    return {
+      id: session.id,
+      sessionNumber: session.sessionNumber,
+      passcode: session.passcode,
+      status: session.status,
+      shopName: session.shop.name,
+      shopAddress: session.shop.address,
+      totalProducts: session._count.items,
+      participantCount: session._count.participants,
+      startedAt: session.startedAt?.toISOString() || null,
     };
   }
 
@@ -187,6 +289,7 @@ export class OpnameService {
         actualQty: dto.actualQty,
         variance,
         notes: dto.notes,
+        countedById: dto.countedById || item.countedById,
       },
     });
 
@@ -197,6 +300,7 @@ export class OpnameService {
       actualQty: updated.actualQty,
       variance: updated.variance,
       notes: updated.notes,
+      countedById: updated.countedById,
     };
   }
 
@@ -318,5 +422,34 @@ export class OpnameService {
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
     const rand = Math.random().toString(36).substring(2, 6).toUpperCase();
     return `OPN-${dateStr}-${rand}`;
+  }
+
+  /**
+   * Generate unique 6-character alphanumeric passcode.
+   * Checks DB for uniqueness to avoid collision.
+   */
+  private async generateUniquePasscode(): Promise<string> {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Exclude 0/O/1/I to avoid confusion
+    let attempts = 0;
+    const maxAttempts = 10;
+
+    while (attempts < maxAttempts) {
+      let code = '';
+      for (let i = 0; i < 6; i++) {
+        code += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+
+      // Check uniqueness among active sessions
+      const existing = await this.prisma.opnameSession.findUnique({
+        where: { passcode: code },
+      });
+
+      if (!existing) return code;
+      attempts++;
+    }
+
+    // Fallback: use timestamp-based code
+    const ts = Date.now().toString(36).toUpperCase().slice(-6);
+    return ts;
   }
 }
