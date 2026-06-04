@@ -168,6 +168,13 @@ const supplierService = {
     const { data } = await api.post(`/suppliers/purchase-orders/${id}/cancel`);
     return data;
   },
+
+  // === Price Updates (from PO receive) ===
+
+  async bulkUpdatePrices(updates: Array<{ productId: string; cost: number; price?: number }>) {
+    const { data } = await api.post('/products/bulk-update-prices', { updates });
+    return data;
+  },
 };
 
 export default supplierService;

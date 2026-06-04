@@ -297,6 +297,113 @@
         </div>
       </div>
     </teleport>
+
+    <!-- ============================================ -->
+    <!-- Price Review Modal (after receive)            -->
+    <!-- ============================================ -->
+    <teleport to="body">
+      <div v-if="showPriceReviewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="showPriceReviewModal = false">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-xl p-6 max-h-[85vh] overflow-hidden flex flex-col">
+          <!-- Header -->
+          <div class="flex items-start gap-3 mb-4">
+            <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-base font-bold text-slate-900">Harga Beli Berubah!</h2>
+              <p class="text-xs text-slate-500 mt-0.5">
+                {{ pendingPriceChanges.length }} produk dengan harga beli berbeda dari sebelumnya. Review dan update harga jual?
+              </p>
+            </div>
+          </div>
+
+          <!-- Items list -->
+          <div class="flex-1 overflow-y-auto space-y-2 mb-4">
+            <div
+              v-for="(item, idx) in pendingPriceChanges"
+              :key="item.productId"
+              class="border border-slate-200 rounded-lg p-3 space-y-2"
+            >
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-xs font-semibold text-slate-800">{{ item.productName }}</p>
+                  <p class="text-[10px] text-slate-400 font-mono">{{ item.productSku }}</p>
+                </div>
+                <span
+                  :class="[
+                    'text-[10px] font-bold px-1.5 py-0.5 rounded',
+                    item.newCost > item.oldCost ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700'
+                  ]"
+                >
+                  {{ item.newCost > item.oldCost ? '↑' : '↓' }}
+                  {{ Math.abs(Math.round(((item.newCost - item.oldCost) / item.oldCost) * 100)) }}%
+                </span>
+              </div>
+
+              <!-- Cost change -->
+              <div class="grid grid-cols-3 gap-2 text-center">
+                <div class="bg-slate-50 rounded-md p-1.5">
+                  <p class="text-[9px] text-slate-500 uppercase">Modal Lama</p>
+                  <p class="text-xs font-mono text-slate-600 line-through">{{ formatRupiah(item.oldCost) }}</p>
+                </div>
+                <div class="bg-amber-50 rounded-md p-1.5">
+                  <p class="text-[9px] text-amber-600 uppercase font-bold">Modal Baru</p>
+                  <p class="text-xs font-mono font-bold text-amber-700">{{ formatRupiah(item.newCost) }}</p>
+                </div>
+                <div class="bg-blue-50 rounded-md p-1.5">
+                  <p class="text-[9px] text-blue-600 uppercase">Margin</p>
+                  <p class="text-xs font-mono font-bold text-blue-700">{{ item.marginPercent }}%</p>
+                </div>
+              </div>
+
+              <!-- Price suggestion -->
+              <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-md p-2">
+                <div class="flex-1">
+                  <p class="text-[9px] text-slate-500">Harga jual saat ini: <strong>{{ formatRupiah(item.currentPrice) }}</strong></p>
+                  <p class="text-[9px] text-emerald-700 font-semibold">Saran harga baru (margin {{ item.marginPercent }}%):</p>
+                </div>
+                <input
+                  v-model.number="priceReviewInputs[idx]"
+                  type="number"
+                  :min="item.newCost"
+                  class="w-24 h-7 px-2 text-xs font-mono text-right border border-emerald-300 rounded focus:border-emerald-500 outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+            <button
+              type="button"
+              class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50"
+              @click="handleSkipPriceReview"
+            >
+              Lewati (Harga Tetap)
+            </button>
+            <div class="flex gap-2">
+              <button
+                type="button"
+                class="h-9 px-4 text-xs font-semibold text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50"
+                @click="handleUpdateCostOnly"
+              >
+                Update Modal Saja
+              </button>
+              <button
+                type="button"
+                :disabled="applyingPrices"
+                class="h-9 px-4 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 disabled:opacity-50"
+                @click="handleUpdateCostAndPrice"
+              >
+                {{ applyingPrices ? 'Menyimpan...' : 'Update Modal + Jual' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -378,6 +485,8 @@ const pendingPriceChanges = ref<Array<{
   marginPercent: number;
   suggestedPrice: number;
 }>>([]);
+const priceReviewInputs = ref<number[]>([]);
+const applyingPrices = ref(false);
 
 // ============================================
 // Helpers
@@ -566,6 +675,7 @@ async function handlePartialReceive() {
     // Check for price changes → show review modal (Tahap 4)
     if (res.priceChanges && res.priceChanges.length > 0) {
       pendingPriceChanges.value = res.priceChanges;
+      priceReviewInputs.value = res.priceChanges.map((p: any) => p.suggestedPrice);
       showPriceReviewModal.value = true;
     }
   } catch (err: any) {
@@ -582,6 +692,52 @@ async function handleCancelPO() {
     showPODetail.value = false;
     await fetchPOs();
   } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal.'); }
+}
+
+// ============================================
+// Price Review Handlers
+// ============================================
+
+function handleSkipPriceReview() {
+  showPriceReviewModal.value = false;
+  pendingPriceChanges.value = [];
+  priceReviewInputs.value = [];
+  toast.info('Harga tidak diubah.');
+}
+
+async function handleUpdateCostOnly() {
+  applyingPrices.value = true;
+  try {
+    const updates = pendingPriceChanges.value.map((item) => ({
+      productId: item.productId,
+      cost: item.newCost,
+      price: item.currentPrice, // keep current price
+    }));
+    await supplierService.bulkUpdatePrices(updates);
+    toast.success('Modal produk berhasil diupdate. Harga jual tetap.');
+    showPriceReviewModal.value = false;
+    pendingPriceChanges.value = [];
+  } catch (err: any) {
+    toast.error(err.response?.data?.message ?? 'Gagal update harga.');
+  } finally { applyingPrices.value = false; }
+}
+
+async function handleUpdateCostAndPrice() {
+  applyingPrices.value = true;
+  try {
+    const updates = pendingPriceChanges.value.map((item, idx) => ({
+      productId: item.productId,
+      cost: item.newCost,
+      price: priceReviewInputs.value[idx] || item.suggestedPrice,
+    }));
+    await supplierService.bulkUpdatePrices(updates);
+    toast.success('Modal & harga jual produk berhasil diupdate!');
+    showPriceReviewModal.value = false;
+    pendingPriceChanges.value = [];
+    priceReviewInputs.value = [];
+  } catch (err: any) {
+    toast.error(err.response?.data?.message ?? 'Gagal update harga.');
+  } finally { applyingPrices.value = false; }
 }
 
 // ============================================
