@@ -18,7 +18,7 @@ import {
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
 
-@Controller('opname')
+@Controller('api/opname')
 export class OpnameController {
   constructor(private readonly opnameService: OpnameService) {}
 
