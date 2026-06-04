@@ -204,14 +204,81 @@
             <span class="font-bold text-slate-700">{{ items.length - countedCount }}</span> tersisa
           </p>
         </div>
-        <div v-if="countedCount === items.length && items.length > 0" class="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg">
-          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <!-- Button: Selesai & Kirim ke Admin -->
+        <button
+          v-if="countedCount === items.length && items.length > 0"
+          type="button"
+          :disabled="submitting"
+          class="h-9 px-4 bg-emerald-600 text-white text-xs font-semibold rounded-lg
+                 hover:bg-emerald-700 active:scale-[0.97] transition-all flex items-center gap-1.5
+                 disabled:opacity-50 disabled:cursor-not-allowed"
+          @click="handleSubmitToAdmin"
+        >
+          <svg v-if="submitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+          </svg>
+          <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <span class="text-xs font-bold text-emerald-700">Semua sudah dihitung!</span>
-        </div>
+          {{ submitting ? 'Mengirim...' : 'Selesai & Kirim ke Admin' }}
+        </button>
+        <!-- Progress indicator if not all counted -->
+        <span v-else-if="countedCount > 0" class="text-[10px] text-slate-400">
+          {{ Math.round(progressPercent) }}%
+        </span>
       </div>
     </div>
+
+    <!-- Success Modal (after submit) -->
+    <teleport to="body">
+      <div
+        v-if="showSuccessModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center space-y-4">
+          <!-- Success animation -->
+          <div class="mx-auto w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center">
+            <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+          </div>
+
+          <div>
+            <h2 class="text-lg font-bold text-slate-900">Opname Selesai!</h2>
+            <p class="text-sm text-slate-500 mt-1">
+              Hasil hitung stok sudah dikirim ke admin. Admin akan review dan memutuskan apakah stok perlu disesuaikan.
+            </p>
+          </div>
+
+          <!-- Summary -->
+          <div class="bg-slate-50 rounded-xl p-4 text-left space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-500">Total produk dihitung</span>
+              <span class="text-xs font-bold text-slate-800">{{ items.length }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-500">Cocok (selisih 0)</span>
+              <span class="text-xs font-bold text-emerald-600">{{ matchedCount }}</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-500">Ada selisih</span>
+              <span class="text-xs font-bold text-amber-600">{{ items.length - matchedCount }}</span>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="w-full h-10 bg-emerald-600 text-white text-sm font-semibold rounded-xl
+                   hover:bg-emerald-700 transition-colors"
+            @click="handleDone"
+          >
+            Kembali ke Beranda
+          </button>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -244,6 +311,10 @@ const participantName = sessionStorage.getItem('opname_participant_name') || 'Pe
 const participantId = sessionStorage.getItem('opname_participant_id') || '';
 const passcode = sessionStorage.getItem('opname_passcode') || '';
 
+// Submit state
+const submitting = ref(false);
+const showSuccessModal = ref(false);
+
 // ============================================
 // Types
 // ============================================
@@ -256,6 +327,7 @@ interface CountableItem extends OpnameItemDto {
 // Computed
 // ============================================
 const countedCount = computed(() => items.value.filter((i) => i.actualQty !== null).length);
+const matchedCount = computed(() => items.value.filter((i) => i.variance === 0).length);
 const progressPercent = computed(() => {
   if (items.value.length === 0) return 0;
   return Math.round((countedCount.value / items.value.length) * 100);
@@ -373,6 +445,37 @@ function handleExit() {
   sessionStorage.removeItem('opname_participant_name');
   sessionStorage.removeItem('opname_session_id');
   sessionStorage.removeItem('opname_passcode');
+  router.push({ name: 'webapp-opname-join' });
+}
+
+async function handleSubmitToAdmin() {
+  if (countedCount.value < items.value.length) return;
+
+  const confirmed = confirm(
+    'Semua produk sudah dihitung. Kirim hasil ke admin untuk di-review?',
+  );
+  if (!confirmed) return;
+
+  submitting.value = true;
+  try {
+    // Notify backend that this participant has finished counting
+    await opnameService.notifyCountingComplete(props.sessionId, participantId);
+    showSuccessModal.value = true;
+  } catch {
+    // Even if notify fails, show success since all items are already saved
+    showSuccessModal.value = true;
+  } finally {
+    submitting.value = false;
+  }
+}
+
+function handleDone() {
+  // Clear session data
+  sessionStorage.removeItem('opname_participant_id');
+  sessionStorage.removeItem('opname_participant_name');
+  sessionStorage.removeItem('opname_session_id');
+  sessionStorage.removeItem('opname_passcode');
+  showSuccessModal.value = false;
   router.push({ name: 'webapp-opname-join' });
 }
 

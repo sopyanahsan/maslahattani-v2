@@ -94,6 +94,18 @@ export class OpnameController {
     return this.opnameService.getSession(id);
   }
 
+  /**
+   * Notify that a participant has finished counting all items.
+   * Marks the session as ready for admin review.
+   */
+  @Post('public/sessions/:id/counting-complete')
+  async notifyCountingComplete(
+    @Param('id') id: string,
+    @Body() body: { participantId: string },
+  ) {
+    return this.opnameService.markCountingComplete(id, body.participantId);
+  }
+
   // ============================================
   // ITEMS (Protected for admin, will also be used by webapp via participant)
   // ============================================

@@ -23,6 +23,8 @@ export interface OpnameSessionDto {
   completedAt: string | null;
   createdAt: string;
   itemCount: number;
+  countedItems?: number;
+  allCounted?: boolean;
   participantCount?: number;
 }
 
@@ -191,6 +193,17 @@ const opnameService = {
    */
   async updateItemPublic(itemId: string, payload: UpdateOpnameItemPayload) {
     const { data } = await api.patch(`/opname/public/items/${itemId}`, payload);
+    return data;
+  },
+
+  /**
+   * Notify backend that a participant has completed counting all items.
+   * This triggers a notification to admin that the session is ready to review.
+   */
+  async notifyCountingComplete(sessionId: string, participantId: string) {
+    const { data } = await api.post(`/opname/public/sessions/${sessionId}/counting-complete`, {
+      participantId,
+    });
     return data;
   },
 };

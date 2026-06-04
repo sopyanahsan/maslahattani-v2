@@ -79,6 +79,12 @@
             </p>
             <p v-if="session.participantCount && session.participantCount > 0" class="text-[10px] text-slate-400 mt-0.5">
               {{ session.participantCount }} petugas bergabung
+              <span v-if="session.allCounted" class="ml-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[9px] font-bold">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Siap Review
+              </span>
             </p>
           </div>
           <div class="text-right text-xs text-slate-600">
