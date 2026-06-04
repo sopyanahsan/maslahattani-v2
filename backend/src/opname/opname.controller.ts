@@ -85,6 +85,15 @@ export class OpnameController {
     return this.opnameService.joinSessionByPasscode(dto);
   }
 
+  /**
+   * Get session detail (public - for webapp petugas after joining).
+   * Same data as GET /sessions/:id but without JWT requirement.
+   */
+  @Get('public/sessions/:id')
+  async getSessionPublic(@Param('id') id: string) {
+    return this.opnameService.getSession(id);
+  }
+
   // ============================================
   // ITEMS (Protected for admin, will also be used by webapp via participant)
   // ============================================

@@ -175,6 +175,24 @@ const opnameService = {
     const { data } = await api.post<JoinOpnameResponse>('/opname/join', payload);
     return data;
   },
+
+  /**
+   * Get session detail via public endpoint (no JWT required).
+   * Used by webapp petugas after joining via passcode.
+   */
+  async getSessionPublic(sessionId: string): Promise<OpnameSessionDetailDto> {
+    const { data } = await api.get<OpnameSessionDetailDto>(`/opname/public/sessions/${sessionId}`);
+    return data;
+  },
+
+  /**
+   * Update item count via public endpoint (no JWT required).
+   * Used by webapp petugas to submit counted quantities.
+   */
+  async updateItemPublic(itemId: string, payload: UpdateOpnameItemPayload) {
+    const { data } = await api.patch(`/opname/public/items/${itemId}`, payload);
+    return data;
+  },
 };
 
 export default opnameService;
