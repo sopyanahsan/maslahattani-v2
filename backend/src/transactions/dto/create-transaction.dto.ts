@@ -57,6 +57,20 @@ export class CreateTransactionDto {
   @IsString()
   paymentReference?: string;
 
+  @ApiPropertyOptional({ example: 'Pak Ahmad', description: 'Nama pelanggan (wajib untuk hutang)' })
+  @IsOptional()
+  @IsString()
+  customerName?: string;
+
+  @ApiPropertyOptional({ example: '08123456789', description: 'No HP pelanggan (wajib untuk hutang)' })
+  @IsOptional()
+  @IsString()
+  customerPhone?: string;
+
+  @ApiPropertyOptional({ example: true, description: 'Jika amountPaid < total, catat sisa sebagai hutang?' })
+  @IsOptional()
+  createDebtForRemainder?: boolean;
+
   @ApiPropertyOptional({
     example: '550e8400-e29b-41d4-a716-446655440000',
     description:

@@ -1,0 +1,254 @@
+<template>
+  <div class="space-y-5 p-4">
+    <!-- Header -->
+    <header class="px-4 pt-4 pb-3 bg-white border-b border-slate-100">
+      <h1 class="font-bold text-lg text-slate-800">Pengaturan</h1>
+      <p class="text-xs text-slate-500 mt-0.5">Profil & keamanan akun</p>
+    </header>
+
+    <!-- Profile Card -->
+    <div class="px-4">
+      <div class="bg-white rounded-xl border border-slate-200 p-5">
+        <div class="flex items-center gap-4 mb-4">
+          <div class="w-14 h-14 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 shrink-0">
+            <UserIcon class="w-7 h-7" />
+          </div>
+          <div class="min-w-0">
+            <p class="font-bold text-slate-800 truncate">{{ profileData.fullName || userName }}</p>
+            <p class="text-xs text-slate-500">Kasir · {{ shopName }}</p>
+          </div>
+        </div>
+        <!-- Editable fields -->
+        <div class="space-y-3 border-t border-slate-100 pt-4">
+          <div>
+            <label class="text-[10px] text-slate-500 font-medium uppercase">Nama Lengkap</label>
+            <input v-model="profileData.fullName" type="text" placeholder="Belum diisi" class="w-full h-8 px-3 mt-1 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-500 font-medium uppercase">No HP</label>
+            <input v-model="profileData.phone" type="text" placeholder="08xxxxxxxxxx" class="w-full h-8 px-3 mt-1 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+          </div>
+          <div>
+            <label class="text-[10px] text-slate-500 font-medium uppercase">Alamat</label>
+            <input v-model="profileData.address" type="text" placeholder="Alamat lengkap" class="w-full h-8 px-3 mt-1 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+          </div>
+          <button :disabled="savingProfile" class="h-8 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5" @click="handleSaveProfile">
+            <Loader2Icon v-if="savingProfile" class="w-3.5 h-3.5 animate-spin" />
+            <span>{{ savingProfile ? 'Menyimpan...' : 'Simpan Profil' }}</span>
+          </button>
+          <p v-if="profileSuccess" class="text-[10px] text-emerald-600 font-medium">Profil berhasil disimpan!</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shift Info -->
+    <div class="px-4">
+      <h3 class="text-sm font-bold text-slate-800 mb-3">Shift</h3>
+      <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
+        <div class="flex items-center justify-between p-4">
+          <span class="text-sm text-slate-600">Status</span>
+          <span v-if="hasOpenShift" class="flex items-center gap-1.5 text-sm font-semibold text-emerald-600">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Aktif ({{ shiftDurationLabel }})
+          </span>
+          <span v-else class="text-sm text-slate-400">Tidak ada shift aktif</span>
+        </div>
+        <RouterLink to="/retail/shift" class="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+          <span class="text-sm text-slate-600">Kelola Shift</span>
+          <ChevronRightIcon class="w-4 h-4 text-slate-400" />
+        </RouterLink>
+        <div v-if="shiftHistory.length > 0" class="p-4">
+          <p class="text-[10px] text-slate-500 font-medium uppercase mb-2">Riwayat Shift Terakhir</p>
+          <div class="space-y-2">
+            <div v-for="sh in shiftHistory" :key="sh.id" class="flex items-center justify-between text-xs">
+              <span class="text-slate-700">{{ sh.date }}</span>
+              <span class="text-slate-500">{{ sh.duration }}</span>
+              <span :class="['font-semibold', sh.status === 'CLOSED' ? 'text-slate-600' : 'text-emerald-600']">{{ sh.status === 'CLOSED' ? 'Ditutup' : sh.status }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security -->
+    <div class="px-4">
+      <h3 class="text-sm font-bold text-slate-800 mb-3">Keamanan</h3>
+      <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
+        <button @click="showChangePinModal = true" class="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+          <div class="flex items-center gap-3">
+            <LockIcon class="w-5 h-5 text-blue-600" />
+            <span class="text-sm text-slate-700">Ganti PIN</span>
+          </div>
+          <ChevronRightIcon class="w-4 h-4 text-slate-400" />
+        </button>
+        <button class="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
+          <div class="flex items-center gap-3">
+            <RefreshCwIcon class="w-5 h-5 text-amber-600" />
+            <span class="text-sm text-slate-700">Minta Reset PIN ke Admin</span>
+          </div>
+          <ChevronRightIcon class="w-4 h-4 text-slate-400" />
+        </button>
+      </div>
+    </div>
+
+    <!-- App Info & Logout -->
+    <div class="px-4">
+      <h3 class="text-sm font-bold text-slate-800 mb-3">Aplikasi</h3>
+      <div class="bg-white rounded-xl border border-slate-200 divide-y divide-slate-100">
+        <div class="flex items-center justify-between p-4">
+          <span class="text-sm text-slate-600">Versi</span>
+          <span class="text-sm text-slate-400">1.0.0</span>
+        </div>
+        <button @click="handleLogout" class="w-full flex items-center gap-3 p-4 hover:bg-red-50 transition-colors">
+          <LogOutIcon class="w-5 h-5 text-red-500" />
+          <span class="text-sm font-semibold text-red-600">Logout</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Change PIN Modal -->
+    <Teleport to="body">
+      <div v-if="showChangePinModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" @click="showChangePinModal = false"></div>
+        <div class="relative bg-white rounded-2xl w-full max-w-sm p-6 space-y-4">
+          <h3 class="text-lg font-bold text-slate-800">Ganti PIN</h3>
+
+          <div v-if="pinError" class="bg-red-50 border-l-4 border-red-500 rounded-md p-3">
+            <p class="text-xs text-red-800">{{ pinError }}</p>
+          </div>
+          <div v-if="pinSuccess" class="bg-emerald-50 border-l-4 border-emerald-500 rounded-md p-3">
+            <p class="text-xs text-emerald-800">{{ pinSuccess }}</p>
+          </div>
+
+          <form @submit.prevent="handleChangePin" class="space-y-3">
+            <div>
+              <label class="text-sm font-medium text-slate-700">PIN Lama</label>
+              <input v-model="pinForm.oldPin" type="password" inputmode="numeric" maxlength="6" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 mt-1 text-center tracking-widest focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none" placeholder="****">
+            </div>
+            <div>
+              <label class="text-sm font-medium text-slate-700">PIN Baru</label>
+              <input v-model="pinForm.newPin" type="password" inputmode="numeric" maxlength="6" minlength="4" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 mt-1 text-center tracking-widest focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none" placeholder="****">
+            </div>
+            <div>
+              <label class="text-sm font-medium text-slate-700">Konfirmasi PIN Baru</label>
+              <input v-model="pinForm.confirmPin" type="password" inputmode="numeric" maxlength="6" minlength="4" required class="w-full bg-slate-50 border border-slate-200 rounded-xl py-2.5 px-4 mt-1 text-center tracking-widest focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none" placeholder="****">
+            </div>
+            <div class="flex gap-3 pt-2">
+              <button type="button" @click="showChangePinModal = false" class="flex-1 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold text-slate-600 hover:bg-slate-50">Batal</button>
+              <button type="submit" :disabled="pinLoading" class="flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-50">
+                <Loader2Icon v-if="pinLoading" class="w-4 h-4 animate-spin mx-auto" />
+                <span v-else>Simpan</span>
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </Teleport>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
+import {
+  User as UserIcon,
+  Lock as LockIcon,
+  RefreshCw as RefreshCwIcon,
+  LogOut as LogOutIcon,
+  ChevronRight as ChevronRightIcon,
+  Loader2 as Loader2Icon,
+} from 'lucide-vue-next';
+import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
+import { useShiftStore } from '@/shared/stores/shift.store';
+import authService from '@/shared/services/auth.service';
+import api from '@/shared/services/api';
+
+const router = useRouter();
+const authStore = useAuthStore();
+const shopStore = useShopStore();
+const shiftStore = useShiftStore();
+
+const userName = computed(() => authStore.user?.username || authStore.user?.email || 'Kasir');
+const shopName = computed(() => shopStore.currentShopName || 'Toko');
+const hasOpenShift = computed(() => shiftStore.hasOpenShift);
+const shiftDurationLabel = computed(() => {
+  const m = shiftStore.shiftDurationMinutes;
+  const h = Math.floor(m / 60);
+  const min = m % 60;
+  return h > 0 ? `${h}j ${min}m` : `${min}m`;
+});
+
+const shiftHistory = ref<Array<{ id: string; date: string; duration: string; status: string }>>([]);
+
+// Profile edit
+const profileData = reactive({ fullName: '', phone: '', address: '' });
+const savingProfile = ref(false);
+const profileSuccess = ref(false);
+
+async function handleSaveProfile() {
+  savingProfile.value = true;
+  profileSuccess.value = false;
+  try {
+    await api.patch('/profile', {
+      fullName: profileData.fullName || undefined,
+      phone: profileData.phone || undefined,
+      address: profileData.address || undefined,
+    });
+    profileSuccess.value = true;
+    setTimeout(() => { profileSuccess.value = false; }, 3000);
+  } catch { /* silent */ }
+  finally { savingProfile.value = false; }
+}
+
+async function fetchProfile() {
+  try {
+    const { data } = await api.get('/profile');
+    if (data.profile) {
+      profileData.fullName = data.profile.fullName || '';
+      profileData.phone = data.profile.phone || '';
+      profileData.address = data.profile.address || '';
+    }
+  } catch { /* silent */ }
+}
+
+// Change PIN
+const showChangePinModal = ref(false);
+const pinLoading = ref(false);
+const pinError = ref<string | null>(null);
+const pinSuccess = ref<string | null>(null);
+const pinForm = reactive({ oldPin: '', newPin: '', confirmPin: '' });
+
+async function handleChangePin() {
+  pinError.value = null;
+  pinSuccess.value = null;
+
+  if (pinForm.newPin.length < 4) { pinError.value = 'PIN baru minimal 4 digit.'; return; }
+  if (pinForm.newPin !== pinForm.confirmPin) { pinError.value = 'Konfirmasi PIN tidak cocok.'; return; }
+  if (!/^\d{4,6}$/.test(pinForm.newPin)) { pinError.value = 'PIN harus berupa angka 4-6 digit.'; return; }
+
+  pinLoading.value = true;
+  try {
+    await authService.changePin(pinForm.oldPin, pinForm.newPin);
+    pinSuccess.value = 'PIN berhasil diubah!';
+    pinForm.oldPin = '';
+    pinForm.newPin = '';
+    pinForm.confirmPin = '';
+    setTimeout(() => { showChangePinModal.value = false; pinSuccess.value = null; }, 1500);
+  } catch (err: any) {
+    pinError.value = err?.response?.data?.message || err?.message || 'Gagal mengubah PIN.';
+  } finally {
+    pinLoading.value = false;
+  }
+}
+
+async function handleLogout() {
+  await authStore.logout();
+  router.push({ name: 'login' });
+}
+
+onMounted(async () => {
+  try { await shiftStore.fetchCurrentShift(); } catch {}
+  await fetchProfile();
+});
+</script>

@@ -18,6 +18,11 @@ export class QueryStockHistoryDto {
   @IsString()
   type?: string;
 
+  @ApiPropertyOptional({ example: 'SALE', description: 'Filter by source: SALE, STOCK_IN, OPNAME_SESSION, TRANSFER_IN, etc.' })
+  @IsOptional()
+  @IsString()
+  source?: string;
+
   @ApiPropertyOptional({ example: '2026-05-01' })
   @IsOptional()
   @IsString()

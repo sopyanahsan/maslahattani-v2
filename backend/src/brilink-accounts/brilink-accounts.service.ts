@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -43,18 +44,27 @@ export class BrilinkAccountsService {
       });
     }
 
-    return this.prisma.brilinkAccount.create({
-      data: {
-        shopId: dto.shopId,
-        label: dto.label,
-        accountNumber: dto.accountNumber,
-        accountHolder: dto.accountHolder,
-        balance: dto.balance ?? 0,
-        lowBalanceThreshold: dto.lowBalanceThreshold ?? 1000000,
-        isDefault: dto.isDefault ?? false,
-        notes: dto.notes,
-      },
-    });
+    try {
+      return await this.prisma.brilinkAccount.create({
+        data: {
+          shopId: dto.shopId,
+          label: dto.label,
+          accountNumber: dto.accountNumber,
+          accountHolder: dto.accountHolder,
+          balance: dto.balance ?? 0,
+          lowBalanceThreshold: dto.lowBalanceThreshold ?? 1000000,
+          isDefault: dto.isDefault ?? false,
+          notes: dto.notes,
+        },
+      });
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new ConflictException(
+          `Rekening dengan nomor "${dto.accountNumber}" sudah terdaftar di toko ini.`,
+        );
+      }
+      throw error;
+    }
   }
 
   async update(id: string, dto: UpdateBrilinkAccountDto) {
@@ -68,24 +78,33 @@ export class BrilinkAccountsService {
       });
     }
 
-    return this.prisma.brilinkAccount.update({
-      where: { id },
-      data: {
-        ...(dto.label !== undefined && { label: dto.label }),
-        ...(dto.accountNumber !== undefined && {
-          accountNumber: dto.accountNumber,
-        }),
-        ...(dto.accountHolder !== undefined && {
-          accountHolder: dto.accountHolder,
-        }),
-        ...(dto.lowBalanceThreshold !== undefined && {
-          lowBalanceThreshold: dto.lowBalanceThreshold,
-        }),
-        ...(dto.isDefault !== undefined && { isDefault: dto.isDefault }),
-        ...(dto.isActive !== undefined && { isActive: dto.isActive }),
-        ...(dto.notes !== undefined && { notes: dto.notes }),
-      },
-    });
+    try {
+      return await this.prisma.brilinkAccount.update({
+        where: { id },
+        data: {
+          ...(dto.label !== undefined && { label: dto.label }),
+          ...(dto.accountNumber !== undefined && {
+            accountNumber: dto.accountNumber,
+          }),
+          ...(dto.accountHolder !== undefined && {
+            accountHolder: dto.accountHolder,
+          }),
+          ...(dto.lowBalanceThreshold !== undefined && {
+            lowBalanceThreshold: dto.lowBalanceThreshold,
+          }),
+          ...(dto.isDefault !== undefined && { isDefault: dto.isDefault }),
+          ...(dto.isActive !== undefined && { isActive: dto.isActive }),
+          ...(dto.notes !== undefined && { notes: dto.notes }),
+        },
+      });
+    } catch (error: any) {
+      if (error.code === 'P2002') {
+        throw new ConflictException(
+          `Rekening dengan nomor "${dto.accountNumber}" sudah terdaftar di toko ini.`,
+        );
+      }
+      throw error;
+    }
   }
 
   async remove(id: string) {

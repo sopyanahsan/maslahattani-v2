@@ -4,12 +4,7 @@
     <!-- TOP BAR: Title + Period Selector + Refresh   -->
     <!-- ============================================ -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Dashboard BRILink</h1>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-          Monitoring layanan BRILink — transaksi, fee, saldo rekening.
-        </p>
-      </div>
+      <div></div>
 
       <div class="flex items-center gap-2">
         <!-- Period selector -->
@@ -29,42 +24,10 @@
             {{ opt.label }}
           </button>
         </div>
-
-        <!-- Auto-refresh toggle -->
-        <button
-          type="button"
-          :class="[
-            'h-7 px-2.5 text-[11px] font-semibold rounded-md border transition-colors flex items-center gap-1',
-            store.autoRefresh
-              ? 'border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400'
-              : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400',
-          ]"
-          :title="store.autoRefresh ? 'Auto-refresh aktif (30s)' : 'Auto-refresh nonaktif'"
-          @click="store.toggleAutoRefresh()"
-        >
-          <RefreshCwIcon :class="['w-3 h-3', store.autoRefresh && 'animate-spin']" />
-          {{ store.autoRefresh ? 'ON' : 'OFF' }}
-        </button>
-
-        <!-- Manual refresh -->
-        <button
-          type="button"
-          class="h-7 px-2.5 text-[11px] font-semibold rounded-md border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-          :disabled="store.isAnyLoading"
-          @click="store.fetchAll()"
-        >
-          Refresh
-        </button>
       </div>
     </div>
 
-    <!-- Last updated indicator -->
-    <p
-      v-if="store.lastUpdatedAt"
-      class="text-[10px] text-slate-400 dark:text-slate-500"
-    >
-      Terakhir diperbarui {{ store.lastUpdatedSecondsAgo }}s yang lalu
-    </p>
+    <!-- KPI Cards section starts here -->
 
     <!-- ============================================ -->
     <!-- ROW 1: KPI Cards (4)                         -->
@@ -115,7 +78,7 @@
     <!-- ============================================ -->
     <!-- ROW 2: Quick Actions (5 buttons)             -->
     <!-- ============================================ -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
       <RouterLink
         v-for="action in quickActions"
         :key="action.label"
@@ -307,7 +270,6 @@
 import { computed, onMounted, onUnmounted, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import {
-  RefreshCw as RefreshCwIcon,
   Hash as HashIcon,
   Banknote as BanknoteIcon,
   TrendingUp as TrendingUpIcon,
@@ -315,8 +277,6 @@ import {
   Landmark as LandmarkIcon,
   ScrollText as ScrollTextIcon,
   Settings as SettingsIcon,
-  LayoutDashboard as DashboardIcon,
-  Wallet as WalletIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useDashboardBrilinkStore } from '@/shared/stores/dashboard-brilink.store';
@@ -340,7 +300,7 @@ const periodOptions: { value: DashboardPeriod; label: string }[] = [
   { value: 'month', label: '30 Hari' },
 ];
 
-// 5 Quick Actions (REPORTING ONLY — no "Buat Transaksi")
+// 3 Quick Actions (BRILink only — no cross-links to Retail)
 const quickActions = [
   {
     label: 'Mutasi & Rekening',
@@ -365,22 +325,6 @@ const quickActions = [
     icon: SettingsIcon,
     iconBg: 'bg-amber-100 dark:bg-amber-900/30',
     iconColor: 'text-amber-600 dark:text-amber-400',
-  },
-  {
-    label: 'Dashboard Retail',
-    desc: 'Monitoring retail',
-    to: '/admin/dashboard',
-    icon: DashboardIcon,
-    iconBg: 'bg-emerald-100 dark:bg-emerald-900/30',
-    iconColor: 'text-emerald-600 dark:text-emerald-400',
-  },
-  {
-    label: 'Mutasi Retail',
-    desc: 'Kas retail',
-    to: '/admin/kas-retail',
-    icon: WalletIcon,
-    iconBg: 'bg-purple-100 dark:bg-purple-900/30',
-    iconColor: 'text-purple-600 dark:text-purple-400',
   },
 ];
 

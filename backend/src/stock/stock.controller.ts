@@ -5,6 +5,7 @@ import {
   Body,
   Query,
   UseGuards,
+  Request,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -32,16 +33,18 @@ export class StockController {
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Stok masuk / restok (admin only)' })
-  async stockIn(@Body() dto: StockInDto) {
-    return this.stockService.stockIn(dto);
+  async stockIn(@Body() dto: StockInDto, @Request() req: any) {
+    const userId = req.user?.sub || req.user?.id;
+    return this.stockService.stockIn(dto, userId);
   }
 
   @Post('opname')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
   @ApiOperation({ summary: 'Stok opname - penyesuaian stok fisik (admin only)' })
-  async opname(@Body() dto: StockOpnameDto) {
-    return this.stockService.opname(dto);
+  async opname(@Body() dto: StockOpnameDto, @Request() req: any) {
+    const userId = req.user?.sub || req.user?.id;
+    return this.stockService.opname(dto, userId);
   }
 
   @Get('history')

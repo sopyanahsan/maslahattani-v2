@@ -31,6 +31,8 @@ export interface StockHistoryDto {
   id: string;
   stockId: string;
   type: 'IN' | 'OUT' | 'OPNAME' | 'TRANSFER_OUT' | 'TRANSFER_IN' | 'ADJUSTMENT';
+  source?: 'INITIAL' | 'BULK_UPLOAD' | 'SEED' | 'STOCK_IN' | 'SALE' | 'SALE_VOID' | 'OPNAME_INLINE' | 'OPNAME_SESSION' | 'TRANSFER_OUT' | 'TRANSFER_IN' | 'PURCHASE_ORDER' | 'ADJUSTMENT' | null;
+  paymentMethod?: 'CASH' | 'QRIS' | 'TRANSFER' | 'HUTANG' | null;
   quantityBefore: number;
   quantityAfter: number;
   quantityChange: number;

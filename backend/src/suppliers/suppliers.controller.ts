@@ -20,7 +20,7 @@ import {
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
 
-@Controller('suppliers')
+@Controller('api/suppliers')
 @UseGuards(JwtAuthGuard)
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
@@ -78,8 +78,8 @@ export class SuppliersController {
   }
 
   @Post('purchase-orders/:id/receive')
-  async markReceived(@Param('id') id: string) {
-    return this.suppliersService.markReceived(id);
+  async markReceived(@Param('id') id: string, @Body() body?: { items?: Array<{ itemId: string; receivedQty: number }> }) {
+    return this.suppliersService.markReceived(id, body?.items);
   }
 
   @Post('purchase-orders/:id/cancel')

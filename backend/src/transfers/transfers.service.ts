@@ -268,7 +268,7 @@ export class TransfersService {
   // RECEIVE TRANSFER (update stock both shops)
   // ============================================
 
-  async receiveTransfer(id: string, dto?: ReceiveTransferDto) {
+  async receiveTransfer(id: string, dto?: ReceiveTransferDto, userId?: string) {
     const transfer = await this.prisma.stockTransfer.findUnique({
       where: { id },
       include: { items: true },
@@ -313,11 +313,13 @@ export class TransfersService {
           data: {
             stockId: sourceStock.id,
             type: 'TRANSFER_OUT',
+            source: 'TRANSFER_OUT',
             quantityBefore: sourceStock.quantity,
             quantityAfter: newSourceQty,
             quantityChange: -item.quantity,
             reference: transfer.id,
             notes: `Transfer keluar ${transfer.transferNumber}: ${item.quantity} unit`,
+            createdById: userId || null,
           },
         });
       }
@@ -348,11 +350,13 @@ export class TransfersService {
         data: {
           stockId: destStock.id,
           type: 'TRANSFER_IN',
+          source: 'TRANSFER_IN',
           quantityBefore: destStock.quantity,
           quantityAfter: newDestQty,
           quantityChange: receivedQty,
           reference: transfer.id,
           notes: `Transfer masuk ${transfer.transferNumber}: ${receivedQty} unit`,
+          createdById: userId || null,
         },
       });
     }

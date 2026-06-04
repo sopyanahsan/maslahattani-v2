@@ -76,6 +76,46 @@ export class TransactionsService {
     }
 
     // ============================================
+    // ENFORCE PENGATURAN SISTEM TOGGLES
+    // ============================================
+    const shopSettings = await this.prisma.shopSetting.findUnique({
+      where: { shopId },
+      select: {
+        paymentCashEnabled: true,
+        paymentQrisEnabled: true,
+        paymentHutangEnabled: true,
+        saveBillEnabled: true,
+        discountPerItemEnabled: true,
+        discountTotalEnabled: true,
+      },
+    });
+
+    if (shopSettings) {
+      // Payment method check
+      const methodMap: Record<string, boolean> = {
+        CASH: shopSettings.paymentCashEnabled,
+        QRIS: shopSettings.paymentQrisEnabled,
+        HUTANG: shopSettings.paymentHutangEnabled,
+      };
+      const methodAllowed = methodMap[dto.paymentMethod];
+      if (methodAllowed === false) {
+        throw new BadRequestException(
+          `Metode pembayaran "${dto.paymentMethod}" dinonaktifkan oleh admin.`,
+        );
+      }
+
+      // Discount enforcement
+      if (!shopSettings.discountPerItemEnabled) {
+        const hasItemDiscount = dto.items.some((i) => (i.discount ?? 0) > 0);
+        if (hasItemDiscount) {
+          throw new BadRequestException(
+            'Diskon per-item dinonaktifkan oleh admin.',
+          );
+        }
+      }
+    }
+
+    // ============================================
     // VALIDATE PRODUCTS + STOCK
     // ============================================
     const productIds = dto.items.map((item) => item.productId);
@@ -159,9 +199,10 @@ export class TransactionsService {
           },
         },
         include: {
-          items: { include: { product: { select: { name: true, sku: true } } } },
+          items: { include: { product: { select: { name: true, sku: true, price: true } } } },
           payments: true,
           user: { select: { id: true, email: true, username: true } },
+          shop: { select: { id: true, name: true, address: true, phone: true } },
         },
       });
 
@@ -181,11 +222,14 @@ export class TransactionsService {
             data: {
               stockId: stock.id,
               type: 'OUT',
+              source: 'SALE',
+              paymentMethod: dto.paymentMethod,
               quantityBefore: stock.quantity,
               quantityAfter: stock.quantity - item.quantity,
               quantityChange: -item.quantity,
               reference: trx.id,
               notes: `Penjualan ${transactionNumber}`,
+              createdById: userId,
             },
           });
         }
@@ -196,10 +240,53 @@ export class TransactionsService {
 
     const change = dto.amountPaid ? dto.amountPaid - totalPrice : 0;
 
+    // ============================================
+    // AUTO-CREATE DEBT (Hutang flow)
+    // ============================================
+    let debtInfo: { id: string; amount: number } | null = null;
+
+    if (dto.paymentMethod === 'HUTANG') {
+      // Full hutang: entire amount is debt
+      if (!dto.customerName) {
+        throw new BadRequestException('Nama pelanggan wajib diisi untuk metode Hutang.');
+      }
+      await this.prisma.debt.create({
+        data: {
+          shopId,
+          transactionId: transaction.id,
+          customerName: dto.customerName,
+          customerPhone: dto.customerPhone || null,
+          totalAmount: totalPrice,
+          paidAmount: 0,
+          status: 'PENDING',
+        },
+      });
+      debtInfo = { id: transaction.id, amount: totalPrice };
+    } else if (dto.createDebtForRemainder && dto.amountPaid && dto.amountPaid < totalPrice) {
+      // Partial hutang: paid some, rest is debt
+      if (!dto.customerName) {
+        throw new BadRequestException('Nama pelanggan wajib untuk mencatat sisa sebagai hutang.');
+      }
+      const debtAmount = totalPrice - dto.amountPaid;
+      await this.prisma.debt.create({
+        data: {
+          shopId,
+          transactionId: transaction.id,
+          customerName: dto.customerName,
+          customerPhone: dto.customerPhone || null,
+          totalAmount: debtAmount,
+          paidAmount: 0,
+          status: 'PENDING',
+        },
+      });
+      debtInfo = { id: transaction.id, amount: debtAmount };
+    }
+
     return {
       success: true,
       idempotent: false,
       transaction,
+      debt: debtInfo,
       summary: {
         transactionNumber,
         totalPrice,
@@ -225,7 +312,7 @@ export class TransactionsService {
 
     const transaction = await this.prisma.transaction.findUnique({
       where: { id: transactionId },
-      include: { items: true },
+      include: { items: true, payments: true },
     });
 
     if (!transaction) {
@@ -272,11 +359,14 @@ export class TransactionsService {
             data: {
               stockId: stock.id,
               type: 'IN',
+              source: 'SALE_VOID',
+              paymentMethod: transaction.payments?.[0]?.method ?? null,
               quantityBefore: stock.quantity,
               quantityAfter: stock.quantity + item.quantity,
               quantityChange: item.quantity,
               reference: transactionId,
               notes: `Void transaksi ${transaction.transactionNumber}: ${dto.reason}`,
+              createdById: adminUser?.id || adminUser?.sub || null,
             },
           });
         }
@@ -425,6 +515,139 @@ export class TransactionsService {
       totalHutang: hutangStats._sum.amount || 0,
       jumlahHutang: hutangStats._count,
     };
+  }
+
+  // ============================================
+  // SAVE BILL (park transaction as PENDING)
+  // ============================================
+
+  async saveBill(
+    dto: CreateTransactionDto,
+    userId: string,
+    shopId: string,
+    customerName?: string,
+    customerPhone?: string,
+    tableNumber?: string,
+  ) {
+    // Enforce saveBillEnabled toggle
+    const settings = await this.prisma.shopSetting.findUnique({
+      where: { shopId },
+      select: { saveBillEnabled: true },
+    });
+    if (settings && !settings.saveBillEnabled) {
+      throw new BadRequestException(
+        'Fitur Simpan Bill dinonaktifkan oleh admin.',
+      );
+    }
+
+    const productIds = dto.items.map((item) => item.productId);
+    const products = await this.prisma.product.findMany({
+      where: { id: { in: productIds }, shopId, deletedAt: null },
+    });
+
+    if (products.length !== productIds.length) {
+      throw new BadRequestException('Satu atau lebih produk tidak ditemukan.');
+    }
+
+    let totalPrice = 0;
+    let totalCost = 0;
+    let totalDiscount = 0;
+
+    const transactionItems = dto.items.map((item) => {
+      const product = products.find((p) => p.id === item.productId)!;
+      const discount = item.discount ?? 0;
+      const subtotal = product.price * item.quantity - discount;
+      totalPrice += subtotal;
+      totalCost += product.cost * item.quantity;
+      totalDiscount += discount;
+      return { productId: item.productId, quantity: item.quantity, unitPrice: product.price, discount, subtotal };
+    });
+
+    const transactionNumber = await this.generateTransactionNumber(shopId);
+
+    const bill = await this.prisma.transaction.create({
+      data: {
+        shopId,
+        userId,
+        transactionNumber,
+        totalPrice,
+        totalCost,
+        totalDiscount,
+        status: TransactionStatus.PENDING,
+        idempotencyKey: dto.idempotencyKey,
+        clientCreatedAt: dto.clientCreatedAt ? new Date(dto.clientCreatedAt) : null,
+        items: { create: transactionItems },
+      },
+      include: {
+        items: { include: { product: { select: { name: true, sku: true } } } },
+      },
+    });
+
+    return {
+      success: true,
+      message: `Bill ${transactionNumber} tersimpan.`,
+      bill,
+    };
+  }
+
+  // ============================================
+  // LIST SAVED BILLS (status=PENDING for current user in current shift)
+  // ============================================
+
+  async listSavedBills(userId: string, shopId: string) {
+    const bills = await this.prisma.transaction.findMany({
+      where: {
+        shopId,
+        userId,
+        status: TransactionStatus.PENDING,
+      },
+      include: {
+        items: { include: { product: { select: { name: true, sku: true, price: true } } } },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return { data: bills, total: bills.length };
+  }
+
+  // ============================================
+  // LOAD BILL (return items for cart restore)
+  // ============================================
+
+  async loadBill(billId: string, userId: string, shopId: string) {
+    const bill = await this.prisma.transaction.findFirst({
+      where: { id: billId, shopId, userId, status: TransactionStatus.PENDING },
+      include: {
+        items: { include: { product: { select: { id: true, name: true, sku: true, price: true } } } },
+      },
+    });
+
+    if (!bill) {
+      throw new NotFoundException('Bill tidak ditemukan atau sudah diproses.');
+    }
+
+    return { bill };
+  }
+
+  // ============================================
+  // DISCARD BILL (delete pending transaction)
+  // ============================================
+
+  async discardBill(billId: string, userId: string, shopId: string) {
+    const bill = await this.prisma.transaction.findFirst({
+      where: { id: billId, shopId, userId, status: TransactionStatus.PENDING },
+    });
+
+    if (!bill) {
+      throw new NotFoundException('Bill tidak ditemukan atau sudah diproses.');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      await tx.transactionItem.deleteMany({ where: { transactionId: billId } });
+      await tx.transaction.delete({ where: { id: billId } });
+    });
+
+    return { success: true, message: `Bill ${bill.transactionNumber} dihapus.` };
   }
 
   // ============================================

@@ -909,6 +909,61 @@ export class DashboardService {
   }
 
   // ============================================
+  // ALERTS MULTI-SHOP (Cross-cabang for Super Admin bell icon)
+  // ============================================
+
+  async getAlertsMultiShop() {
+    const now = new Date();
+
+    const [lowStockItems, brilinkAllAccounts, allShops, openShifts, overdueDebts] = await Promise.all([
+      this.prisma.stock.findMany({
+        where: { quantity: { lte: 5 }, product: { deletedAt: null } },
+        include: { product: { select: { name: true, sku: true } }, shop: { select: { id: true, name: true } } },
+        orderBy: { quantity: 'asc' },
+        take: 20,
+      }),
+      this.prisma.brilinkAccount.findMany({
+        where: { isActive: true },
+        include: { shop: { select: { id: true, name: true } } },
+      }),
+      this.prisma.shop.findMany({ select: { id: true, name: true } }),
+      this.prisma.shift.findMany({ where: { status: 'OPEN' }, select: { shopId: true }, distinct: ['shopId'] }),
+      this.prisma.debt.findMany({
+        where: { status: { in: ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'] }, dueDate: { not: null, lte: now } },
+        include: { shop: { select: { id: true, name: true } } },
+        orderBy: { dueDate: 'asc' },
+        take: 10,
+      }),
+    ]);
+
+    const brilinkLow = brilinkAllAccounts.filter(a => a.balance < a.lowBalanceThreshold);
+    const openShopIds = new Set(openShifts.map(s => s.shopId));
+    const noShiftShops = allShops.filter(s => !openShopIds.has(s.id));
+
+    const alerts: Array<{ id: string; type: string; severity: string; title: string; description: string; shopId: string; shopName: string }> = [];
+
+    for (const s of lowStockItems) {
+      alerts.push({ id: `stock-${s.id}`, type: 'LOW_STOCK', severity: s.quantity === 0 ? 'critical' : 'warning', title: `Stok ${s.product.name} tinggal ${s.quantity}`, description: `SKU: ${s.product.sku}`, shopId: s.shop.id, shopName: s.shop.name });
+    }
+    for (const a of brilinkLow) {
+      alerts.push({ id: `brilink-${a.id}`, type: 'BRILINK_LOW', severity: 'warning', title: `BRILink "${a.label}" saldo rendah`, description: `Rp ${a.balance.toLocaleString('id-ID')}`, shopId: a.shop.id, shopName: a.shop.name });
+    }
+    for (const s of noShiftShops) {
+      alerts.push({ id: `shift-${s.id}`, type: 'NO_SHIFT', severity: 'info', title: `Shift belum dibuka`, description: `Belum ada kasir buka shift`, shopId: s.id, shopName: s.name });
+    }
+    for (const d of overdueDebts) {
+      const remaining = d.totalAmount - d.paidAmount;
+      const daysOverdue = Math.max(0, Math.floor((now.getTime() - (d.dueDate?.getTime() || now.getTime())) / 86400000));
+      alerts.push({ id: `debt-${d.id}`, type: 'DEBT_OVERDUE', severity: daysOverdue > 7 ? 'critical' : 'warning', title: `Hutang ${d.customerName} jatuh tempo`, description: `Sisa Rp ${remaining.toLocaleString('id-ID')} (${daysOverdue} hari)`, shopId: d.shop.id, shopName: d.shop.name });
+    }
+
+    const severityOrder: Record<string, number> = { critical: 0, warning: 1, info: 2 };
+    alerts.sort((a, b) => (severityOrder[a.severity] ?? 9) - (severityOrder[b.severity] ?? 9));
+
+    return { alerts, summary: { total: alerts.length, critical: alerts.filter(a => a.severity === 'critical').length, warning: alerts.filter(a => a.severity === 'warning').length, info: alerts.filter(a => a.severity === 'info').length } };
+  }
+
+  // ============================================
   // 8. CASHIER LEADERBOARD
   // ============================================
 
@@ -922,7 +977,7 @@ export class DashboardService {
     const results: Array<{
       userId: string;
       name: string | null;
-      email: string;
+      email: string | null;
       transactionCount: bigint | string;
       revenue: bigint | string;
     }> = await this.prisma.$queryRawUnsafe(

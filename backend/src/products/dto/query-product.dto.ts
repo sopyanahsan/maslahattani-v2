@@ -1,17 +1,6 @@
-import { IsOptional, IsString, IsInt, IsEnum, Min } from 'class-validator';
+import { IsOptional, IsString, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
-
-export enum ProductSortBy {
-  NAME_ASC = 'name_asc',
-  NAME_DESC = 'name_desc',
-  PRICE_ASC = 'price_asc',
-  PRICE_DESC = 'price_desc',
-  STOCK_ASC = 'stock_asc',
-  STOCK_DESC = 'stock_desc',
-  NEWEST = 'newest',
-  OLDEST = 'oldest',
-}
 
 export class QueryProductDto {
   @ApiPropertyOptional({ example: 'shop-id-123' })
@@ -24,15 +13,18 @@ export class QueryProductDto {
   @IsString()
   search?: string;
 
-  @ApiPropertyOptional({ example: 'all', description: 'Filter kategori produk' })
+  @ApiPropertyOptional({ example: 'category-id-123', description: 'Filter by categoryId' })
   @IsOptional()
   @IsString()
-  category?: string;
+  categoryId?: string;
 
-  @ApiPropertyOptional({ enum: ProductSortBy, description: 'Sort produk' })
+  @ApiPropertyOptional({
+    example: 'name-asc',
+    description: 'Sort: name-asc, name-desc, stock-low, stock-high, price-high, price-low',
+  })
   @IsOptional()
-  @IsEnum(ProductSortBy)
-  sortBy?: ProductSortBy;
+  @IsString()
+  sortBy?: string;
 
   @ApiPropertyOptional({ example: 1 })
   @IsOptional()

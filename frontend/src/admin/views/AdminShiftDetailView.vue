@@ -22,10 +22,7 @@
         >
           <ArrowLeftIcon class="w-4 h-4 text-slate-600" />
         </RouterLink>
-        <div>
-          <h1 class="text-xl font-bold text-slate-950">Settlement Shift</h1>
-          <p class="text-xs text-slate-500">{{ shiftMeta }}</p>
-        </div>
+        <div></div>
       </div>
 
       <ShiftStatusBadge v-if="shift" :status="shift.status" />

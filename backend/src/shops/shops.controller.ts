@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Patch,
+  Delete,
   Param,
   Body,
   Request,
@@ -62,5 +63,37 @@ export class ShopsController {
   })
   async selectShop(@Param('id') id: string, @Request() req: any) {
     return this.shopsService.selectShop(id, req.user);
+  }
+
+  @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Hapus cabang (super-admin only). Cabang dengan data akan di-nonaktifkan.' })
+  async remove(@Param('id') id: string, @Request() req: any) {
+    return this.shopsService.remove(id, req.user);
+  }
+
+  @Get('multi/overview')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Dashboard multi-cabang: overview semua cabang sekaligus (super-admin only)' })
+  async getMultiBranchOverview() {
+    return this.shopsService.getMultiBranchOverview();
+  }
+
+  // === Shop Settings ===
+
+  @Get(':id/settings')
+  @ApiOperation({ summary: 'Get semua settings toko (termasuk toggles)' })
+  async getSettings(@Param('id') id: string) {
+    return this.shopsService.getSettings(id);
+  }
+
+  @Patch(':id/settings')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Update settings toko (admin)' })
+  async updateSettings(@Param('id') id: string, @Body() dto: any) {
+    return this.shopsService.updateSettings(id, dto);
   }
 }

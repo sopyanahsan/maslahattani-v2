@@ -55,6 +55,43 @@ export class TransactionsController {
     return this.transactionsService.getStats(shopId, startDate, endDate);
   }
 
+  // ============================================
+  // SAVE BILL (park as PENDING)
+  // ============================================
+
+  @Post('save-bill')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Simpan bill (transaksi PENDING, belum bayar)' })
+  async saveBill(@Body() dto: CreateTransactionDto, @Request() req: any) {
+    if (!req.user.shopId) {
+      throw new ForbiddenException('Tidak ada cabang aktif.');
+    }
+    return this.transactionsService.saveBill(dto, req.user.id, req.user.shopId);
+  }
+
+  @Get('saved-bills')
+  @ApiOperation({ summary: 'List bill tersimpan (status PENDING) untuk user aktif' })
+  async listSavedBills(@Request() req: any) {
+    if (!req.user.shopId) {
+      throw new ForbiddenException('Tidak ada cabang aktif.');
+    }
+    return this.transactionsService.listSavedBills(req.user.id, req.user.shopId);
+  }
+
+  @Post('load-bill/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Load bill tersimpan ke cart (return items)' })
+  async loadBill(@Param('id') id: string, @Request() req: any) {
+    return this.transactionsService.loadBill(id, req.user.id, req.user.shopId);
+  }
+
+  @Post('discard-bill/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Hapus bill tersimpan (delete transaksi PENDING)' })
+  async discardBill(@Param('id') id: string, @Request() req: any) {
+    return this.transactionsService.discardBill(id, req.user.id, req.user.shopId);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Detail transaksi by ID' })
   async findOne(@Param('id') id: string) {

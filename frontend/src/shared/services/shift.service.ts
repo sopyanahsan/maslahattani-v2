@@ -168,7 +168,11 @@ export interface OpenShiftPayload {
 export interface ActualCashByCategoryEntry {
   categoryId: string;
   actualCash: number;
-  actualQRIS: number;
+  /**
+   * QRIS aktual (opsional). Kalau tidak dikirim, backend rekonsiliasi
+   * otomatis ke nilai expected (variance QRIS = 0).
+   */
+  actualQRIS?: number;
   /**
    * Optional breakdown denominasi. Kalau di-pass, server validate
    * sum(denominations) === actualCash.

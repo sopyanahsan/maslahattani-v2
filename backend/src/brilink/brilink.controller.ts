@@ -19,7 +19,7 @@ import {
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
 
-@Controller('brilink')
+@Controller('api/brilink')
 @UseGuards(JwtAuthGuard)
 export class BrilinkController {
   constructor(private readonly brilinkService: BrilinkService) {}

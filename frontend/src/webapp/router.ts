@@ -19,19 +19,7 @@ const routes: RouteRecordRaw[] = [
     path: '/login',
     name: 'login',
     component: () => import('@/webapp/views/LoginView.vue'),
-    meta: { title: 'Masuk Kasir', guestOnly: true },
-  },
-  {
-    path: '/register',
-    name: 'register',
-    component: () => import('@/webapp/views/LoginView.vue'), // Placeholder — register page diisi nanti
-    meta: { title: 'Daftar Kasir', guestOnly: true },
-  },
-  {
-    path: '/forgot-password',
-    name: 'forgot-password',
-    component: () => import('@/webapp/views/LoginView.vue'), // Placeholder
-    meta: { title: 'Lupa Password', guestOnly: true },
+    meta: { title: 'Masuk', guestOnly: true },
   },
 
   // === App Shell (KasirLayout) ===
@@ -48,37 +36,30 @@ const routes: RouteRecordRaw[] = [
         path: 'dashboard',
         name: 'webapp-dashboard',
         component: () => import('@/webapp/views/DashboardView.vue'),
-        meta: { title: 'Dashboard Kasir' },
+        meta: { title: 'Beranda' },
       },
 
-      // === Retail (Phase 1) ===
+      // === Retail POS ===
       {
         path: 'retail/pos',
         name: 'webapp-retail-pos',
         component: () => import('@/webapp/views/POSView.vue'),
         meta: {
-          title: 'Kasir Retail — POS',
-          description:
-            'Cari produk, atur qty, pilih metode bayar, checkout. POS kasir retail.',
+          title: 'Kasir',
+          description: 'POS kasir retail — cari produk, atur qty, checkout.',
         },
       },
       {
         path: 'retail/history',
         name: 'webapp-retail-history',
         component: () => import('@/webapp/views/TransactionHistoryView.vue'),
-        meta: {
-          title: 'Riwayat Transaksi',
-          description: 'Daftar transaksi yang Anda kerjakan hari ini.',
-        },
+        meta: { title: 'Riwayat Transaksi' },
       },
       {
         path: 'retail/shift',
         name: 'webapp-retail-shift',
         component: () => import('@/webapp/views/ShiftView.vue'),
-        meta: {
-          title: 'Shift Kasir',
-          description: 'Buka shift di awal jam kerja, tutup shift dengan input nominal kas fisik.',
-        },
+        meta: { title: 'Shift Kasir' },
       },
 
       // === BRILink ===
@@ -86,7 +67,7 @@ const routes: RouteRecordRaw[] = [
         path: 'brilink/menu',
         name: 'webapp-brilink-menu',
         component: () => import('@/webapp/views/BrilinkMenuView.vue'),
-        meta: { title: 'BRILink — Menu' },
+        meta: { title: 'BRILink' },
       },
       {
         path: 'brilink/transaction',
@@ -101,6 +82,22 @@ const routes: RouteRecordRaw[] = [
         name: 'webapp-receipt',
         component: () => import('@/webapp/views/ReceiptView.vue'),
         meta: { title: 'Struk Pembayaran' },
+      },
+
+      // === Reports (new) ===
+      {
+        path: 'reports',
+        name: 'webapp-reports',
+        component: () => import('@/webapp/views/ReportsView.vue'),
+        meta: { title: 'Laporan' },
+      },
+
+      // === Settings / Profile (new) ===
+      {
+        path: 'settings',
+        name: 'webapp-settings',
+        component: () => import('@/webapp/views/SettingsView.vue'),
+        meta: { title: 'Pengaturan' },
       },
     ],
   },
@@ -199,7 +196,7 @@ router.beforeEach(async (to, _from, next) => {
 
 router.afterEach((to) => {
   const explicit = getMeta<string>(to, 'title');
-  document.title = explicit ? `${explicit} — Maslahat Tani` : 'Maslahat Tani';
+  document.title = explicit ? `${explicit} — Ngalir` : 'Ngalir';
 });
 
 export default router;

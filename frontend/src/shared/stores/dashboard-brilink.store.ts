@@ -106,9 +106,12 @@ export const useDashboardBrilinkStore = defineStore('dashboardBrilink', () => {
   // Section fetchers
   // ============================================
 
-  async function fetchSection(section: BrilinkDashboardSection) {
+  async function fetchSection(section: BrilinkDashboardSection, isRefresh = false) {
     if (!shopId.value) return;
-    loading.value[section] = true;
+    // Only show loading skeleton on first load — skip during auto-refresh to prevent flicker
+    if (!isRefresh) {
+      loading.value[section] = true;
+    }
     errors.value[section] = null;
 
     try {
@@ -179,11 +182,11 @@ export const useDashboardBrilinkStore = defineStore('dashboardBrilink', () => {
   }
 
   /**
-   * Fetch semua section parallel. 1 section gagal tidak menggagalkan yang lain.
+   * Fetch semua section parallel. isRefresh=true → no loading flicker.
    */
-  async function fetchAll() {
+  async function fetchAll(isRefresh = false) {
     if (!shopId.value) return;
-    await Promise.allSettled(ALL_SECTIONS.map((s) => fetchSection(s)));
+    await Promise.allSettled(ALL_SECTIONS.map((s) => fetchSection(s, isRefresh)));
   }
 
   // ============================================
@@ -195,7 +198,7 @@ export const useDashboardBrilinkStore = defineStore('dashboardBrilink', () => {
     if (!autoRefresh.value) return;
     refreshTimer = setInterval(() => {
       if (autoRefresh.value && shopId.value) {
-        fetchAll();
+        fetchAll(true); // silent refresh — no skeleton flicker
       }
     }, refreshIntervalMs.value);
     if (!tickTimer) {

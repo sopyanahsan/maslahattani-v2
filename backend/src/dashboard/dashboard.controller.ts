@@ -80,6 +80,12 @@ export class DashboardController {
     return this.dashboardService.getAlerts(shopId);
   }
 
+  @Get('alerts/all')
+  @ApiOperation({ summary: 'All alerts cross-cabang (untuk bell notif topbar — super admin)' })
+  async getAlertsAll() {
+    return this.dashboardService.getAlertsMultiShop();
+  }
+
   @Get('cashier-leaderboard')
   @ApiOperation({ summary: 'Top cashier by transaction count + revenue' })
   async getCashierLeaderboard(@Query() query: QueryDashboardDto) {

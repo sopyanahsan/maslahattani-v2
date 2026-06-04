@@ -12,6 +12,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RegisterKasirDto, VerifyOtpDto } from './dto/register.dto';
 import { LoginDto, RefreshTokenDto } from './dto/login.dto';
+import { LoginPinDto, ChangePinDto } from './dto/login-pin.dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -89,5 +90,32 @@ export class AuthController {
   @ApiOperation({ summary: 'Change password (untuk akun fresh yang mustChangePassword=true)' })
   async changePassword(@Request() req: any, @Body() dto: ChangePasswordDto) {
     return this.authService.changePassword(req.user.id, dto.newPassword);
+  }
+
+  @Post('login-pin')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login kasir dengan username + PIN (4-6 digit)' })
+  async loginWithPin(@Body() dto: LoginPinDto, @Request() req: any) {
+    const ipAddress = req.ip || req.connection?.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+    return this.authService.loginWithPin(dto, ipAddress, userAgent);
+  }
+
+  @Post('change-pin')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Ganti PIN kasir (auth required, verify PIN lama)' })
+  async changePin(@Request() req: any, @Body() dto: ChangePinDto) {
+    return this.authService.changePin(req.user.id, dto);
+  }
+
+  @Post('set-new-pin')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Set PIN baru (untuk kasir fresh yang mustChangePin=true, tanpa verifikasi PIN lama)' })
+  async setNewPin(@Request() req: any, @Body() dto: { newPin: string }) {
+    return this.authService.setNewPin(req.user.id, dto.newPin);
   }
 }

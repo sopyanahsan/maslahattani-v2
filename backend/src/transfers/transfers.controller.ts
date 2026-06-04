@@ -17,7 +17,7 @@ import {
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
 
-@Controller('transfers')
+@Controller('api/transfers')
 @UseGuards(JwtAuthGuard)
 export class TransfersController {
   constructor(private readonly transfersService: TransfersService) {}
@@ -60,8 +60,9 @@ export class TransfersController {
   }
 
   @Post(':id/receive')
-  async receiveTransfer(@Param('id') id: string, @Body() dto: ReceiveTransferDto) {
-    return this.transfersService.receiveTransfer(id, dto);
+  async receiveTransfer(@Param('id') id: string, @Body() dto: ReceiveTransferDto, @Request() req: any) {
+    const userId = req.user?.sub || req.user?.id;
+    return this.transfersService.receiveTransfer(id, dto, userId);
   }
 
   @Post(':id/cancel')

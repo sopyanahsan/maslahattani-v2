@@ -1,10 +1,7 @@
 <template>
   <div class="space-y-5">
     <!-- Header -->
-    <div>
-      <h1 class="text-xl font-bold text-slate-950">Transfer Stok Antar Cabang</h1>
-      <p class="text-xs text-slate-500 mt-0.5">Kelola transfer stok antar cabang dengan alur persetujuan.</p>
-    </div>
+    <div></div>
 
     <!-- Filters & Actions -->
     <div class="flex flex-wrap gap-3 items-center justify-between">
@@ -264,7 +261,10 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useConfirm } from '@/shared/composables/useConfirm';
+import { useToast } from '@/shared/composables/useToast';
 import transferService, {
   type TransferDto,
   type TransferDetailDto,
@@ -273,6 +273,8 @@ import transferService, {
 import api from '@/shared/services/api';
 
 const authStore = useAuthStore();
+const { ask } = useConfirm();
+const toast = useToast();
 
 // ============================================
 // State
@@ -412,7 +414,7 @@ async function handleCreateTransfer() {
     createForm.items = [{ productId: '', quantity: 1 }];
     await fetchTransfers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal membuat transfer.');
+    toast.error(err.response?.data?.message ?? 'Gagal membuat transfer.');
   } finally {
     creating.value = false;
   }
@@ -420,13 +422,14 @@ async function handleCreateTransfer() {
 
 async function handleApprove() {
   if (!detail.value) return;
-  if (!confirm('Approve transfer ini?')) return;
+  const confirmed = await ask({ title: 'Approve Transfer?', message: 'Transfer ini akan disetujui dan lanjut ke pengiriman.', confirmLabel: 'Approve' });
+  if (!confirmed) return;
   try {
     await transferService.approveTransfer(detail.value.id);
     showDetailModal.value = false;
     await fetchTransfers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal approve.');
+    toast.error(err.response?.data?.message ?? 'Gagal approve.');
   }
 }
 
@@ -443,43 +446,46 @@ async function confirmReject() {
     showDetailModal.value = false;
     await fetchTransfers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal menolak.');
+    toast.error(err.response?.data?.message ?? 'Gagal menolak.');
   }
 }
 
 async function handleShip() {
   if (!detail.value) return;
-  if (!confirm('Tandai transfer ini sudah dikirim?')) return;
+  const confirmed = await ask({ title: 'Kirim Transfer?', message: 'Tandai transfer ini sudah dikirim?', confirmLabel: 'Kirim' });
+  if (!confirmed) return;
   try {
     await transferService.shipTransfer(detail.value.id);
     showDetailModal.value = false;
     await fetchTransfers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal.');
+    toast.error(err.response?.data?.message ?? 'Gagal.');
   }
 }
 
 async function handleReceive() {
   if (!detail.value) return;
-  if (!confirm('Terima barang dan update stok kedua cabang?')) return;
+  const confirmed = await ask({ title: 'Terima Barang?', message: 'Terima barang dan update stok kedua cabang?', confirmLabel: 'Terima', variant: 'danger' });
+  if (!confirmed) return;
   try {
     await transferService.receiveTransfer(detail.value.id);
     showDetailModal.value = false;
     await fetchTransfers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal menerima.');
+    toast.error(err.response?.data?.message ?? 'Gagal menerima.');
   }
 }
 
 async function handleCancel() {
   if (!detail.value) return;
-  if (!confirm('Batalkan transfer ini?')) return;
+  const confirmed = await ask({ title: 'Batalkan Transfer?', message: 'Batalkan transfer ini?', confirmLabel: 'Batalkan', variant: 'danger' });
+  if (!confirmed) return;
   try {
     await transferService.cancelTransfer(detail.value.id);
     showDetailModal.value = false;
     await fetchTransfers();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal membatalkan.');
+    toast.error(err.response?.data?.message ?? 'Gagal membatalkan.');
   }
 }
 
@@ -491,4 +497,6 @@ onMounted(() => {
   fetchShops();
   fetchProducts();
 });
+
+useAutoRefresh(fetchTransfers);
 </script>

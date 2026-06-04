@@ -34,4 +34,29 @@ export class CreateProductDto {
   @IsInt()
   @Min(0)
   initialStock?: number;
+
+  @ApiPropertyOptional({ example: 'https://res.cloudinary.com/xxx/image/upload/v1/product.jpg' })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
+  @ApiPropertyOptional({ example: 'category-id-123' })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @ApiPropertyOptional({ example: 'pcs', description: 'Satuan produk (pcs, kg, liter, dll)' })
+  @IsOptional()
+  @IsString()
+  unit?: string;
+
+  @ApiPropertyOptional({ example: '8991042001234', description: 'Barcode dari pabrik (EAN/UPC)' })
+  @IsOptional()
+  @IsString()
+  barcode?: string;
+
+  @ApiPropertyOptional({ example: 'Beras kualitas premium' })
+  @IsOptional()
+  @IsString()
+  description?: string;
 }
