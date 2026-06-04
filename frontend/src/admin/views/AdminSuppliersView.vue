@@ -248,14 +248,15 @@
     </teleport>
 
     <!-- ============================================ -->
-    <!-- Create PO Modal (harga opsional)              -->
+    <!-- Create PO Modal (with product search)         -->
     <!-- ============================================ -->
     <teleport to="body">
       <div v-if="showCreatePO" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="showCreatePO = false">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
           <h2 class="text-base font-bold text-slate-900 mb-1">Buat Purchase Order</h2>
-          <p class="text-xs text-slate-500 mb-4">Harga beli opsional — bisa diisi nanti saat terima barang dari nota supplier.</p>
+          <p class="text-xs text-slate-500 mb-4">Cari produk, tentukan qty. Harga beli diisi nanti saat terima barang.</p>
           <form @submit.prevent="handleCreatePO" class="space-y-4">
+            <!-- Supplier -->
             <div>
               <label class="text-[11px] font-bold text-slate-600 uppercase">Supplier *</label>
               <select v-model="poForm.supplierId" required class="mt-1 w-full h-9 px-3 text-sm border border-slate-300 rounded-lg focus:border-blue-500 outline-none">
@@ -263,41 +264,104 @@
                 <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
               </select>
             </div>
+
+            <!-- Product Search -->
             <div>
-              <label class="text-[11px] font-bold text-slate-600 uppercase">Item Pesanan</label>
-              <div v-for="(item, idx) in poForm.items" :key="idx" class="mt-2 p-2.5 bg-slate-50 rounded-lg space-y-1.5">
-                <div class="flex items-center gap-2">
-                  <input v-model="item.productId" placeholder="Product ID / SKU" required class="flex-1 h-8 px-2 text-xs border border-slate-300 rounded-md outline-none focus:border-blue-500" />
-                  <button type="button" @click="poForm.items.splice(idx, 1)" class="w-6 h-6 flex items-center justify-center rounded text-red-400 hover:text-red-600 hover:bg-red-50">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              <label class="text-[11px] font-bold text-slate-600 uppercase">Tambah Produk</label>
+              <div class="relative mt-1">
+                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+                <input
+                  v-model="productSearchQuery"
+                  type="text"
+                  placeholder="Cari nama produk atau SKU..."
+                  class="w-full h-9 pl-8 pr-3 text-sm border border-slate-300 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                  @input="handleProductSearch"
+                  @focus="productSearchQuery.length >= 2 && (showProductDropdown = true)"
+                  @blur="setTimeout(() => showProductDropdown = false, 200)"
+                />
+                <!-- Dropdown results -->
+                <div
+                  v-if="showProductDropdown"
+                  class="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-48 overflow-y-auto"
+                >
+                  <div v-if="productSearchLoading" class="px-3 py-4 text-center text-xs text-slate-400">
+                    Mencari...
+                  </div>
+                  <div v-else-if="productSearchResults.length === 0 && productSearchQuery.length >= 2" class="px-3 py-4 text-center text-xs text-slate-400">
+                    Tidak ditemukan. Tambah produk baru di menu "Produk & Stok".
+                  </div>
+                  <button
+                    v-for="p in productSearchResults"
+                    :key="p.id"
+                    type="button"
+                    class="w-full px-3 py-2.5 text-left hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-100 last:border-0"
+                    @mousedown.prevent="selectProductForPO(p)"
+                  >
+                    <div class="min-w-0">
+                      <p class="text-xs font-semibold text-slate-800 truncate">{{ p.name }}</p>
+                      <p class="text-[10px] text-slate-400 font-mono">{{ p.sku }}</p>
+                    </div>
+                    <span class="text-[10px] text-slate-500 shrink-0 ml-2">Stok: {{ p.stock }}</span>
                   </button>
                 </div>
-                <div class="grid grid-cols-2 gap-2">
-                  <div>
-                    <label class="text-[9px] text-slate-500">Qty *</label>
-                    <input v-model.number="item.quantity" type="number" min="1" placeholder="1" required class="w-full h-7 px-2 text-xs font-mono border border-slate-300 rounded-md outline-none focus:border-blue-500" />
+              </div>
+            </div>
+
+            <!-- Selected Items -->
+            <div v-if="poForm.items.length > 0">
+              <label class="text-[11px] font-bold text-slate-600 uppercase">Item Pesanan ({{ poForm.items.length }})</label>
+              <div class="mt-1.5 space-y-2">
+                <div
+                  v-for="(item, idx) in poForm.items"
+                  :key="item.productId"
+                  class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg"
+                >
+                  <div class="flex items-center justify-between mb-1.5">
+                    <div class="min-w-0">
+                      <p class="text-xs font-semibold text-slate-800 truncate">{{ item.productName }}</p>
+                      <p class="text-[10px] text-slate-400 font-mono">{{ item.productSku }}</p>
+                    </div>
+                    <button type="button" @click="removePoItem(idx)" class="w-6 h-6 flex items-center justify-center rounded text-red-400 hover:text-red-600 hover:bg-red-50 shrink-0">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
                   </div>
-                  <div>
-                    <label class="text-[9px] text-slate-500">Harga beli <span class="text-slate-400">(opsional)</span></label>
-                    <div class="relative">
-                      <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-400">Rp</span>
-                      <input v-model.number="item.unitCost" type="number" min="0" placeholder="Isi nanti" class="w-full h-7 pl-6 pr-2 text-xs font-mono text-right border border-slate-300 rounded-md outline-none focus:border-blue-500" />
+                  <div class="grid grid-cols-2 gap-2">
+                    <div>
+                      <label class="text-[9px] text-slate-500">Qty *</label>
+                      <input v-model.number="item.quantity" type="number" min="1" required class="w-full h-7 px-2 text-xs font-mono border border-slate-300 rounded-md outline-none focus:border-blue-500" />
+                    </div>
+                    <div>
+                      <label class="text-[9px] text-slate-500">Harga beli <span class="text-slate-400">(opsional)</span></label>
+                      <div class="relative">
+                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-400">Rp</span>
+                        <input v-model.number="item.unitCost" type="number" min="0" placeholder="Isi nanti" class="w-full h-7 pl-6 pr-2 text-xs font-mono text-right border border-slate-300 rounded-md outline-none focus:border-blue-500" />
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <button type="button" @click="poForm.items.push({ productId: '', quantity: 1, unitCost: 0 })" class="mt-2 text-xs text-blue-600 hover:underline flex items-center gap-1">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                Tambah item
-              </button>
             </div>
+
+            <!-- Empty state -->
+            <div v-else class="bg-slate-50 border border-dashed border-slate-300 rounded-lg p-6 text-center">
+              <svg class="w-8 h-8 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+              </svg>
+              <p class="text-xs text-slate-500">Cari dan tambahkan produk di atas</p>
+            </div>
+
+            <!-- Notes -->
             <div>
               <label class="text-[11px] font-bold text-slate-600 uppercase">Catatan</label>
               <textarea v-model="poForm.notes" placeholder="Catatan untuk supplier (opsional)" rows="2" class="mt-1 w-full px-3 py-2 text-sm border border-slate-300 rounded-lg outline-none resize-none focus:border-blue-500"></textarea>
             </div>
+
+            <!-- Actions -->
             <div class="flex justify-end gap-2 pt-2">
               <button type="button" @click="showCreatePO = false" class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50">Batal</button>
-              <button type="submit" :disabled="creatingPO" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50">
+              <button type="submit" :disabled="creatingPO || poForm.items.length === 0" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50">
                 {{ creatingPO ? 'Membuat...' : 'Buat PO' }}
               </button>
             </div>
@@ -537,11 +601,25 @@ const partialReceiveItems = ref<Array<{
 // Create PO
 const showCreatePO = ref(false);
 const creatingPO = ref(false);
+interface POFormItem {
+  productId: string;
+  productName: string;
+  productSku: string;
+  quantity: number;
+  unitCost: number;
+}
 const poForm = reactive({
   supplierId: '',
   notes: '',
-  items: [{ productId: '', quantity: 1, unitCost: 0 }] as { productId: string; quantity: number; unitCost: number }[],
+  items: [] as POFormItem[],
 });
+
+// Product search for PO creation
+const productSearchQuery = ref('');
+const productSearchResults = ref<Array<{ id: string; name: string; sku: string; stock: number }>>([]);
+const productSearchLoading = ref(false);
+const showProductDropdown = ref(false);
+let productSearchTimer: ReturnType<typeof setTimeout> | null = null;
 
 // Price review (after receive detects price changes)
 const showPriceReviewModal = ref(false);
@@ -709,16 +787,65 @@ async function handleCreatePO() {
       shopId,
       supplierId: poForm.supplierId,
       notes: poForm.notes || undefined,
-      items: poForm.items.filter((i) => i.productId),
+      items: poForm.items.map((i) => ({
+        productId: i.productId,
+        quantity: i.quantity,
+        unitCost: i.unitCost || 0,
+      })),
     });
     showCreatePO.value = false;
     poForm.supplierId = '';
     poForm.notes = '';
-    poForm.items = [{ productId: '', quantity: 1, unitCost: 0 }];
+    poForm.items = [];
+    productSearchQuery.value = '';
     await fetchPOs();
+    await fetchStats();
   } catch (err: any) {
     toast.error(err.response?.data?.message ?? 'Gagal membuat PO.');
   } finally { creatingPO.value = false; }
+}
+
+// Product search for PO
+function handleProductSearch() {
+  if (productSearchTimer) clearTimeout(productSearchTimer);
+  const q = productSearchQuery.value.trim();
+  if (q.length < 2) {
+    productSearchResults.value = [];
+    showProductDropdown.value = false;
+    return;
+  }
+  productSearchTimer = setTimeout(async () => {
+    productSearchLoading.value = true;
+    showProductDropdown.value = true;
+    try {
+      const shopId = getShopId();
+      const res = await supplierService.searchProducts(shopId || '', q);
+      // Filter out products already in PO
+      const existingIds = new Set(poForm.items.map((i) => i.productId));
+      productSearchResults.value = res.filter((p: any) => !existingIds.has(p.id));
+    } catch {
+      productSearchResults.value = [];
+    } finally {
+      productSearchLoading.value = false;
+    }
+  }, 300);
+}
+
+function selectProductForPO(product: { id: string; name: string; sku: string; stock: number }) {
+  poForm.items.push({
+    productId: product.id,
+    productName: product.name,
+    productSku: product.sku,
+    quantity: 1,
+    unitCost: 0,
+  });
+  productSearchQuery.value = '';
+  productSearchResults.value = [];
+  showProductDropdown.value = false;
+}
+
+function removePoItem(idx: number) {
+  poForm.items.splice(idx, 1);
 }
 
 async function handleMarkOrdered() {

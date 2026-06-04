@@ -175,6 +175,21 @@ const supplierService = {
     const { data } = await api.post('/products/bulk-update-prices', { updates });
     return data;
   },
+
+  // === Product search (for PO creation) ===
+
+  async searchProducts(shopId: string, search: string): Promise<Array<{ id: string; name: string; sku: string; stock: number }>> {
+    const { data } = await api.get('/products', {
+      params: { shopId, search, limit: 10 },
+    });
+    // Map response to simplified format
+    return (data.data || []).map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      sku: p.sku,
+      stock: p.stocks?.reduce((sum: number, s: any) => sum + s.quantity, 0) ?? 0,
+    }));
+  },
 };
 
 export default supplierService;
