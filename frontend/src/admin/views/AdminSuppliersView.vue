@@ -200,14 +200,8 @@
                 v-if="poDetail.status === 'ORDERED' || poDetail.status === 'PARTIAL'"
                 type="button"
                 class="h-9 px-4 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700"
-                @click="handleMarkReceived"
-              >Terima Semua Sisa Barang</button>
-              <button
-                v-if="poDetail.status === 'ORDERED' || poDetail.status === 'PARTIAL'"
-                type="button"
-                class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700"
                 @click="openPartialReceive"
-              >Terima Sebagian</button>
+              >Terima Barang</button>
             </div>
           </div>
         </div>
@@ -251,33 +245,52 @@
       </div>
     </teleport>
     <!-- ============================================ -->
-    <!-- Partial Receive Modal                         -->
+    <!-- Partial Receive Modal (with actualCost)       -->
     <!-- ============================================ -->
     <teleport to="body">
       <div v-if="showPartialReceive" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40" @click.self="showPartialReceive = false">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
-          <h2 class="text-base font-bold text-slate-900 mb-2">Terima Barang (Sebagian)</h2>
-          <p class="text-xs text-slate-500 mb-4">Masukkan qty yang diterima per item. Kosongkan atau 0 untuk skip.</p>
+          <h2 class="text-base font-bold text-slate-900 mb-1">Terima Barang</h2>
+          <p class="text-xs text-slate-500 mb-4">Masukkan qty diterima dan <strong>harga beli dari nota supplier</strong> per item.</p>
           <div class="space-y-3">
-            <div v-for="item in partialReceiveItems" :key="item.itemId" class="flex items-center gap-3 p-3 bg-slate-50 rounded-lg">
-              <div class="flex-1 min-w-0">
-                <p class="text-xs font-semibold text-slate-800 truncate">{{ item.productName }}</p>
-                <p class="text-[10px] text-slate-500">Sisa: {{ item.remaining }} dari {{ item.orderQty }}</p>
+            <div v-for="item in partialReceiveItems" :key="item.itemId" class="p-3 bg-slate-50 rounded-lg space-y-2">
+              <div class="flex items-center justify-between">
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold text-slate-800 truncate">{{ item.productName }}</p>
+                  <p class="text-[10px] text-slate-500">Sisa: {{ item.remaining }} dari {{ item.orderQty }}</p>
+                </div>
               </div>
-              <div class="shrink-0 w-20">
-                <input
-                  v-model.number="item.receivedQty"
-                  type="number"
-                  :min="0"
-                  :max="item.remaining"
-                  class="w-full h-8 px-2 text-sm font-mono text-center border border-slate-300 rounded-md focus:border-blue-500 outline-none"
-                />
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="text-[9px] font-bold text-slate-500 uppercase">Qty Diterima</label>
+                  <input
+                    v-model.number="item.receivedQty"
+                    type="number"
+                    :min="0"
+                    :max="item.remaining"
+                    class="w-full h-8 px-2 text-sm font-mono text-center border border-slate-300 rounded-md focus:border-blue-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label class="text-[9px] font-bold text-slate-500 uppercase">Harga Beli (Nota)</label>
+                  <div class="relative">
+                    <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">Rp</span>
+                    <input
+                      v-model.number="item.actualCost"
+                      type="number"
+                      :min="0"
+                      :placeholder="String(item.lastCost || 0)"
+                      class="w-full h-8 pl-7 pr-2 text-sm font-mono text-right border border-slate-300 rounded-md focus:border-blue-500 outline-none"
+                    />
+                  </div>
+                  <p v-if="item.lastCost" class="text-[9px] text-slate-400 mt-0.5">Terakhir: {{ formatRupiah(item.lastCost) }}</p>
+                </div>
               </div>
             </div>
           </div>
           <div class="flex justify-end gap-2 pt-4">
             <button type="button" @click="showPartialReceive = false" class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-300 rounded-lg hover:bg-slate-50">Batal</button>
-            <button type="button" :disabled="receivingPartial" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50" @click="handlePartialReceive">
+            <button type="button" :disabled="receivingPartial" class="h-9 px-4 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 disabled:opacity-50" @click="handlePartialReceive">
               {{ receivingPartial ? 'Memproses...' : 'Konfirmasi Terima' }}
             </button>
           </div>
@@ -340,6 +353,8 @@ const partialReceiveItems = ref<Array<{
   orderQty: number;
   remaining: number;
   receivedQty: number;
+  actualCost: number;
+  lastCost: number;
 }>>([]);
 
 // Create PO
@@ -350,6 +365,19 @@ const poForm = reactive({
   notes: '',
   items: [{ productId: '', quantity: 1, unitCost: 0 }] as { productId: string; quantity: number; unitCost: number }[],
 });
+
+// Price review (after receive detects price changes)
+const showPriceReviewModal = ref(false);
+const pendingPriceChanges = ref<Array<{
+  productId: string;
+  productName: string;
+  productSku: string;
+  oldCost: number;
+  newCost: number;
+  currentPrice: number;
+  marginPercent: number;
+  suggestedPrice: number;
+}>>([]);
 
 // ============================================
 // Helpers
@@ -493,14 +521,8 @@ async function handleMarkOrdered() {
 
 async function handleMarkReceived() {
   if (!poDetail.value) return;
-  const confirmed = await ask({ title: 'Terima Barang?', message: 'Terima SEMUA sisa barang dan update stok? (Full receive)', confirmLabel: 'Terima', variant: 'primary' });
-  if (!confirmed) return;
-  try {
-    const res = await supplierService.markReceived(poDetail.value.id);
-    toast.success(res.message || 'Berhasil!');
-    showPODetail.value = false;
-    await fetchPOs();
-  } catch (err: any) { toast.error(err.response?.data?.message ?? 'Gagal.'); }
+  // For full receive, also open the receive modal so admin can input actual costs
+  openPartialReceive();
 }
 
 function openPartialReceive() {
@@ -513,6 +535,8 @@ function openPartialReceive() {
       orderQty: item.quantity,
       remaining: item.quantity - item.receivedQty,
       receivedQty: item.quantity - item.receivedQty, // default: terima semua sisa
+      actualCost: item.unitCost || 0, // pre-fill dari PO item (bisa 0 kalau belum diisi)
+      lastCost: item.unitCost || 0, // harga terakhir dari PO/produk
     }));
   showPartialReceive.value = true;
 }
@@ -521,8 +545,16 @@ async function handlePartialReceive() {
   if (!poDetail.value) return;
   const items = partialReceiveItems.value
     .filter((i) => i.receivedQty > 0)
-    .map((i) => ({ itemId: i.itemId, receivedQty: i.receivedQty }));
+    .map((i) => ({ itemId: i.itemId, receivedQty: i.receivedQty, actualCost: i.actualCost || undefined }));
   if (items.length === 0) { toast.warning('Tidak ada item yang diterima.'); return; }
+
+  // Validate: harga beli harus diisi
+  const missingCost = partialReceiveItems.value.filter((i) => i.receivedQty > 0 && (!i.actualCost || i.actualCost <= 0));
+  if (missingCost.length > 0) {
+    toast.warning(`Harga beli belum diisi untuk: ${missingCost.map(i => i.productName).join(', ')}`);
+    return;
+  }
+
   receivingPartial.value = true;
   try {
     const res = await supplierService.markReceived(poDetail.value.id, items);
@@ -530,6 +562,12 @@ async function handlePartialReceive() {
     showPartialReceive.value = false;
     showPODetail.value = false;
     await fetchPOs();
+
+    // Check for price changes → show review modal (Tahap 4)
+    if (res.priceChanges && res.priceChanges.length > 0) {
+      pendingPriceChanges.value = res.priceChanges;
+      showPriceReviewModal.value = true;
+    }
   } catch (err: any) {
     toast.error(err.response?.data?.message ?? 'Gagal menerima barang.');
   } finally { receivingPartial.value = false; }
