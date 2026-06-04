@@ -279,6 +279,44 @@
         </div>
       </div>
     </teleport>
+
+    <!-- Custom Confirm Modal -->
+    <teleport to="body">
+      <div
+        v-if="showConfirmModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div class="absolute inset-0 bg-black/40" @click="handleConfirmNo"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+          <div class="text-center">
+            <div class="mx-auto w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-3">
+              <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+            </div>
+            <h3 class="text-base font-bold text-slate-900">{{ confirmTitle }}</h3>
+            <p class="text-sm text-slate-500 mt-1.5">{{ confirmMessage }}</p>
+          </div>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="flex-1 h-10 text-sm font-semibold text-slate-700 bg-slate-100 rounded-xl
+                     hover:bg-slate-200 transition-colors"
+              @click="handleConfirmNo"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              :class="['flex-1 h-10 text-sm font-semibold text-white rounded-xl transition-colors', confirmButtonClass]"
+              @click="handleConfirmYes"
+            >
+              {{ confirmButtonText }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -314,6 +352,14 @@ const passcode = sessionStorage.getItem('opname_passcode') || '';
 // Submit state
 const submitting = ref(false);
 const showSuccessModal = ref(false);
+
+// Custom confirm modal state
+const showConfirmModal = ref(false);
+const confirmTitle = ref('');
+const confirmMessage = ref('');
+const confirmAction = ref<(() => void) | null>(null);
+const confirmButtonText = ref('Ya');
+const confirmButtonClass = ref('bg-blue-600 hover:bg-blue-700');
 
 // ============================================
 // Types
@@ -435,12 +481,19 @@ async function submitCount(item: CountableItem) {
 
 function handleExit() {
   if (countedCount.value < items.value.length) {
-    const confirmed = confirm(
+    showCustomConfirm(
+      'Keluar Sesi?',
       `Masih ada ${items.value.length - countedCount.value} produk belum dihitung. Yakin keluar?`,
+      doExit,
+      'Ya, Keluar',
+      'bg-red-600 hover:bg-red-700',
     );
-    if (!confirmed) return;
+    return;
   }
-  // Clear session data
+  doExit();
+}
+
+function doExit() {
   sessionStorage.removeItem('opname_participant_id');
   sessionStorage.removeItem('opname_participant_name');
   sessionStorage.removeItem('opname_session_id');
@@ -451,22 +504,50 @@ function handleExit() {
 async function handleSubmitToAdmin() {
   if (countedCount.value < items.value.length) return;
 
-  const confirmed = confirm(
+  showCustomConfirm(
+    'Kirim Hasil Opname?',
     'Semua produk sudah dihitung. Kirim hasil ke admin untuk di-review?',
+    doSubmit,
+    'Kirim ke Admin',
+    'bg-emerald-600 hover:bg-emerald-700',
   );
-  if (!confirmed) return;
+}
 
+async function doSubmit() {
   submitting.value = true;
   try {
-    // Notify backend that this participant has finished counting
     await opnameService.notifyCountingComplete(props.sessionId, participantId);
     showSuccessModal.value = true;
   } catch {
-    // Even if notify fails, show success since all items are already saved
     showSuccessModal.value = true;
   } finally {
     submitting.value = false;
   }
+}
+
+function showCustomConfirm(
+  title: string,
+  message: string,
+  action: () => void,
+  btnText: string = 'Ya',
+  btnClass: string = 'bg-blue-600 hover:bg-blue-700',
+) {
+  confirmTitle.value = title;
+  confirmMessage.value = message;
+  confirmAction.value = action;
+  confirmButtonText.value = btnText;
+  confirmButtonClass.value = btnClass;
+  showConfirmModal.value = true;
+}
+
+function handleConfirmYes() {
+  showConfirmModal.value = false;
+  if (confirmAction.value) confirmAction.value();
+}
+
+function handleConfirmNo() {
+  showConfirmModal.value = false;
+  confirmAction.value = null;
 }
 
 function handleDone() {

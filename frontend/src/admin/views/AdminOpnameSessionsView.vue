@@ -368,6 +368,85 @@
         </div>
       </div>
     </teleport>
+
+    <!-- Custom Confirm Modal -->
+    <teleport to="body">
+      <div
+        v-if="showConfirmModal"
+        class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      >
+        <div class="absolute inset-0 bg-black/40" @click="handleConfirmNo"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+          <div class="text-center">
+            <div class="mx-auto w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-3">
+              <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+            </div>
+            <h3 class="text-base font-bold text-slate-900">{{ confirmTitle }}</h3>
+            <p class="text-sm text-slate-500 mt-1.5">{{ confirmMessage }}</p>
+          </div>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="flex-1 h-9 text-xs font-semibold text-slate-700 bg-slate-100 rounded-lg
+                     hover:bg-slate-200 transition-colors"
+              @click="handleConfirmNo"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              :class="['flex-1 h-9 text-xs font-semibold text-white rounded-lg transition-colors', confirmBtnClass]"
+              @click="handleConfirmYes"
+            >
+              {{ confirmBtnText }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <!-- Custom Alert Modal -->
+    <teleport to="body">
+      <div
+        v-if="showAlertModal"
+        class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      >
+        <div class="absolute inset-0 bg-black/40" @click="showAlertModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+          <div class="text-center">
+            <div
+              :class="[
+                'mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-3',
+                alertType === 'error' ? 'bg-red-100' : alertType === 'warning' ? 'bg-amber-100' : 'bg-blue-100'
+              ]"
+            >
+              <svg
+                :class="[
+                  'w-6 h-6',
+                  alertType === 'error' ? 'text-red-600' : alertType === 'warning' ? 'text-amber-600' : 'text-blue-600'
+                ]"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path v-if="alertType === 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+            </div>
+            <h3 class="text-base font-bold text-slate-900">{{ alertTitle }}</h3>
+            <p class="text-sm text-slate-500 mt-1.5">{{ alertMessage }}</p>
+          </div>
+          <button
+            type="button"
+            class="w-full h-9 text-xs font-semibold text-white bg-slate-700 rounded-lg
+                   hover:bg-slate-800 transition-colors"
+            @click="showAlertModal = false"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -404,6 +483,18 @@ const completing = ref(false);
 const showPasscodeModal = ref(false);
 const createdPasscode = ref('');
 const copied = ref(false);
+
+// Custom confirm/alert modal
+const showConfirmModal = ref(false);
+const confirmTitle = ref('');
+const confirmMessage = ref('');
+const confirmAction = ref<(() => void) | null>(null);
+const confirmBtnText = ref('Ya');
+const confirmBtnClass = ref('bg-blue-600 hover:bg-blue-700');
+const showAlertModal = ref(false);
+const alertTitle = ref('');
+const alertMessage = ref('');
+const alertType = ref<'error' | 'warning' | 'info'>('info');
 
 // ============================================
 // Helpers
@@ -510,13 +601,12 @@ async function handleCreate() {
   creating.value = true;
   try {
     const result = await opnameService.createSession({ shopId });
-    // Show passcode modal
     createdPasscode.value = result.passcode;
     showPasscodeModal.value = true;
     copied.value = false;
     await fetchSessions();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal membuat sesi opname.');
+    showAlert('Gagal', err.response?.data?.message ?? 'Gagal membuat sesi opname.', 'error');
   } finally {
     creating.value = false;
   }
@@ -557,37 +647,87 @@ async function handleComplete(applyAdjustments: boolean) {
 
   const uncounted = detail.value.items.filter((i) => i.actualQty === null).length;
   if (uncounted > 0) {
-    alert(`Masih ada ${uncounted} produk yang belum dihitung.`);
+    showAlert('Belum Lengkap', `Masih ada ${uncounted} produk yang belum dihitung.`, 'warning');
     return;
   }
 
   const msg = applyAdjustments
     ? 'Selesaikan opname DAN update stok sesuai hasil hitung fisik?'
     : 'Selesaikan opname TANPA mengubah stok?';
-  if (!confirm(msg)) return;
 
-  completing.value = true;
-  try {
-    await opnameService.completeSession(detail.value.id, applyAdjustments);
-    showDetail.value = false;
-    await fetchSessions();
-  } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal menyelesaikan opname.');
-  } finally {
-    completing.value = false;
-  }
+  showConfirm(
+    applyAdjustments ? 'Selesai & Update Stok?' : 'Selesaikan Opname?',
+    msg,
+    async () => {
+      completing.value = true;
+      try {
+        await opnameService.completeSession(detail.value!.id, applyAdjustments);
+        showDetail.value = false;
+        await fetchSessions();
+      } catch (err: any) {
+        showAlert('Gagal', err.response?.data?.message ?? 'Gagal menyelesaikan opname.', 'error');
+      } finally {
+        completing.value = false;
+      }
+    },
+    applyAdjustments ? 'Ya, Update Stok' : 'Ya, Selesaikan',
+    applyAdjustments ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-700 hover:bg-slate-800',
+  );
 }
 
 async function handleCancel() {
   if (!detail.value) return;
-  if (!confirm('Batalkan sesi opname ini?')) return;
-  try {
-    await opnameService.cancelSession(detail.value.id);
-    showDetail.value = false;
-    await fetchSessions();
-  } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal membatalkan opname.');
-  }
+  showConfirm(
+    'Batalkan Opname?',
+    'Sesi opname ini akan dibatalkan. Data hitung yang sudah ada tidak akan disimpan.',
+    async () => {
+      try {
+        await opnameService.cancelSession(detail.value!.id);
+        showDetail.value = false;
+        await fetchSessions();
+      } catch (err: any) {
+        showAlert('Gagal', err.response?.data?.message ?? 'Gagal membatalkan opname.', 'error');
+      }
+    },
+    'Ya, Batalkan',
+    'bg-red-600 hover:bg-red-700',
+  );
+}
+
+// ============================================
+// Custom Modal Helpers
+// ============================================
+
+function showConfirm(
+  title: string,
+  message: string,
+  action: () => void,
+  btnText: string = 'Ya',
+  btnClass: string = 'bg-blue-600 hover:bg-blue-700',
+) {
+  confirmTitle.value = title;
+  confirmMessage.value = message;
+  confirmAction.value = action;
+  confirmBtnText.value = btnText;
+  confirmBtnClass.value = btnClass;
+  showConfirmModal.value = true;
+}
+
+function handleConfirmYes() {
+  showConfirmModal.value = false;
+  if (confirmAction.value) confirmAction.value();
+}
+
+function handleConfirmNo() {
+  showConfirmModal.value = false;
+  confirmAction.value = null;
+}
+
+function showAlert(title: string, message: string, type: 'error' | 'warning' | 'info' = 'info') {
+  alertTitle.value = title;
+  alertMessage.value = message;
+  alertType.value = type;
+  showAlertModal.value = true;
 }
 
 // ============================================
