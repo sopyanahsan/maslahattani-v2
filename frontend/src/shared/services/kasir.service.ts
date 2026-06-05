@@ -24,7 +24,8 @@ export interface KasirDto {
 export interface CreateKasirPayload {
   name: string;
   username: string;
-  pin: string;
+  pin?: string;       // Required for KASIR role
+  password?: string;  // Required for ADMIN role
   email?: string;
   shopId?: string;
   role?: string;

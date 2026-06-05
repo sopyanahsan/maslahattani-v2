@@ -9,7 +9,7 @@
         @click="openCreateModal"
       >
         <UserPlusIcon class="w-4 h-4" />
-        <span>Tambah Kasir</span>
+        <span>Tambah User</span>
       </button>
     </div>
 
@@ -87,7 +87,7 @@
       <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showCreateModal = false"></div>
         <form class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleCreate">
-          <h2 class="text-base font-bold text-slate-950 dark:text-slate-100 flex items-center gap-2"><UserPlusIcon class="w-5 h-5 text-violet-600 dark:text-violet-400" /> Tambah Kasir Baru</h2>
+          <h2 class="text-base font-bold text-slate-950 dark:text-slate-100 flex items-center gap-2"><UserPlusIcon class="w-5 h-5 text-violet-600 dark:text-violet-400" /> Tambah User Baru</h2>
 
           <!-- Role Selection (Super Admin only) -->
           <div v-if="authStore.isSuperAdmin">
@@ -109,10 +109,18 @@
             <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Huruf kecil, angka, tanpa spasi. Digunakan kasir untuk login.</p>
           </div>
 
-          <div>
+          <!-- PIN (untuk role KASIR) -->
+          <div v-if="createForm.role === 'KASIR'">
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">PIN Awal <span class="text-red-500">*</span></label>
-            <input v-model="createForm.pin" type="text" required minlength="4" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="4-6 digit angka" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none font-mono tracking-widest text-center" />
+            <input v-model="createForm.pin" type="text" :required="createForm.role === 'KASIR'" minlength="4" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="4-6 digit angka" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none font-mono tracking-widest text-center" />
             <p class="text-[10px] text-amber-600 dark:text-amber-400 mt-1">Kasir wajib ganti PIN saat login pertama kali.</p>
+          </div>
+
+          <!-- Password (untuk role ADMIN) -->
+          <div v-if="createForm.role === 'ADMIN'">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Password <span class="text-red-500">*</span></label>
+            <input v-model="createForm.password" type="password" :required="createForm.role === 'ADMIN'" minlength="6" placeholder="Minimal 6 karakter" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Admin login pakai username + password. Wajib ganti password saat login pertama.</p>
           </div>
 
           <div>
@@ -131,13 +139,18 @@
           <div v-if="createError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ createError }}</div>
 
           <div v-if="createResult" class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-lg p-4 space-y-2">
-            <p class="text-xs font-bold text-emerald-800 dark:text-emerald-200">Kasir berhasil dibuat!</p>
+            <p class="text-xs font-bold text-emerald-800 dark:text-emerald-200">{{ createForm.role === 'ADMIN' ? 'Admin Cabang' : 'Kasir' }} berhasil dibuat!</p>
             <div class="bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 rounded-md px-3 py-2 space-y-1">
               <p class="text-[10px] text-slate-500 dark:text-slate-400">Username</p>
               <p class="text-sm font-mono font-semibold text-slate-900 dark:text-slate-100">{{ createResult.kasir.username }}</p>
             </div>
             <p class="text-[10px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 rounded px-2 py-1">
-              Kasir login dengan username + PIN. PIN wajib diganti saat login pertama.
+              <template v-if="createForm.role === 'KASIR'">
+                Kasir login dengan username + PIN. PIN wajib diganti saat login pertama.
+              </template>
+              <template v-else>
+                Admin login dengan username + password di halaman /admin/login. Password wajib diganti saat login pertama.
+              </template>
             </p>
           </div>
 
@@ -205,7 +218,7 @@ const showCreateModal = ref(false);
 const creating = ref(false);
 const createError = ref<string | null>(null);
 const createResult = ref<CreateKasirResponse | null>(null);
-const createForm = reactive({ name: '', username: '', pin: '', email: '', shopId: '', role: 'KASIR' });
+const createForm = reactive({ name: '', username: '', pin: '', password: '', email: '', shopId: '', role: 'KASIR' });
 const shopsList = ref<ShopDto[]>([]);
 
 const showResetModal = ref(false);
@@ -224,7 +237,7 @@ async function fetchKasir() {
 }
 
 function openCreateModal() {
-  createForm.name = ''; createForm.username = ''; createForm.pin = '';
+  createForm.name = ''; createForm.username = ''; createForm.pin = ''; createForm.password = '';
   createForm.email = ''; createForm.shopId = authStore.user?.shopId ?? ''; createForm.role = 'KASIR';
   createError.value = null; createResult.value = null; showCreateModal.value = true;
   fetchShops();
@@ -236,11 +249,19 @@ async function fetchShops() {
 function closeCreateModal() { showCreateModal.value = false; if (createResult.value) fetchKasir(); }
 
 async function handleCreate() {
-  // Validate PIN format
-  if (!/^\d{4,6}$/.test(createForm.pin)) {
-    createError.value = 'PIN harus 4-6 digit angka.';
-    return;
+  // Validate based on role
+  if (createForm.role === 'KASIR') {
+    if (!/^\d{4,6}$/.test(createForm.pin)) {
+      createError.value = 'PIN harus 4-6 digit angka.';
+      return;
+    }
+  } else if (createForm.role === 'ADMIN') {
+    if (!createForm.password || createForm.password.length < 6) {
+      createError.value = 'Password minimal 6 karakter.';
+      return;
+    }
   }
+
   if (createForm.username.length < 3) {
     createError.value = 'Username minimal 3 karakter.';
     return;
@@ -251,12 +272,13 @@ async function handleCreate() {
     createResult.value = await kasirService.create({
       name: createForm.name,
       username: createForm.username.toLowerCase().trim(),
-      pin: createForm.pin,
+      pin: createForm.role === 'KASIR' ? createForm.pin : undefined,
+      password: createForm.role === 'ADMIN' ? createForm.password : undefined,
       email: createForm.email || undefined,
       shopId: createForm.shopId || undefined,
       role: authStore.isSuperAdmin ? createForm.role : 'KASIR',
     });
-  } catch (err: any) { createError.value = err.response?.data?.message ?? err.message ?? 'Gagal membuat kasir.'; }
+  } catch (err: any) { createError.value = err.response?.data?.message ?? err.message ?? 'Gagal membuat user.'; }
   finally { creating.value = false; }
 }
 
