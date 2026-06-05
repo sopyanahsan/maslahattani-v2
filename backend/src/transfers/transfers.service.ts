@@ -315,7 +315,15 @@ export class TransfersService {
   async receiveTransfer(id: string, dto?: ReceiveTransferDto, userId?: string) {
     const transfer = await this.prisma.stockTransfer.findUnique({
       where: { id },
-      include: { items: true },
+      include: {
+        items: {
+          include: {
+            product: {
+              select: { id: true, name: true, sku: true, barcode: true, price: true, cost: true, unit: true, description: true, imageUrl: true },
+            },
+          },
+        },
+      },
     });
     if (!transfer) throw new NotFoundException('Transfer tidak ditemukan.');
 
@@ -330,6 +338,9 @@ export class TransfersService {
         receivedMap.set(item.productId, item.receivedQty);
       }
     }
+
+    // Track new products cloned to destination
+    const clonedProducts: Array<{ name: string; sku: string }> = [];
 
     // Process each item: deduct from source shop, add to destination shop
     for (const item of transfer.items) {
@@ -368,17 +379,44 @@ export class TransfersService {
         });
       }
 
+      // --- Check if product exists in destination shop ---
+      // Product is per-shop. If destination doesn't have this product, clone it.
+      let destProductId = item.productId;
+      const existingDestProduct = await this.prisma.product.findFirst({
+        where: { shopId: transfer.toShopId, sku: item.product.sku, deletedAt: null },
+      });
+
+      if (!existingDestProduct) {
+        // Clone product to destination shop
+        const clonedProduct = await this.prisma.product.create({
+          data: {
+            shopId: transfer.toShopId,
+            name: item.product.name,
+            sku: item.product.sku,
+            barcode: item.product.barcode || null,
+            price: item.product.price,
+            cost: item.product.cost,
+            unit: item.product.unit || 'pcs',
+            description: item.product.description || null,
+            imageUrl: item.product.imageUrl || null,
+          },
+        });
+        destProductId = clonedProduct.id;
+        clonedProducts.push({ name: item.product.name, sku: item.product.sku });
+      } else {
+        destProductId = existingDestProduct.id;
+      }
+
       // --- Add stock to destination shop (toShop) ---
       let destStock = await this.prisma.stock.findFirst({
-        where: { shopId: transfer.toShopId, productId: item.productId },
+        where: { shopId: transfer.toShopId, productId: destProductId },
       });
 
       if (!destStock) {
-        // Create stock record if it doesn't exist in destination
         destStock = await this.prisma.stock.create({
           data: {
             shopId: transfer.toShopId,
-            productId: item.productId,
+            productId: destProductId,
             quantity: 0,
           },
         });
@@ -405,13 +443,19 @@ export class TransfersService {
       });
     }
 
-    return this.prisma.stockTransfer.update({
+    const result = await this.prisma.stockTransfer.update({
       where: { id },
       data: {
         status: 'RECEIVED',
         receivedAt: new Date(),
       },
     });
+
+    return {
+      transfer: result,
+      message: `Transfer ${transfer.transferNumber} diterima. Stok berhasil diupdate.`,
+      clonedProducts: clonedProducts.length > 0 ? clonedProducts : undefined,
+    };
   }
 
   // ============================================
