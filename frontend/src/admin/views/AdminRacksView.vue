@@ -3,13 +3,13 @@
     <!-- Header + Actions -->
     <div class="flex items-center justify-between flex-wrap gap-3">
       <div class="flex items-center gap-2">
-        <select v-model="filterZoneId" class="h-9 px-3 text-sm border border-slate-300 rounded-lg focus:border-blue-500 outline-none" @change="fetchRacks">
+        <select v-model="filterZoneId" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none" @change="fetchRacks">
           <option value="">Semua Zona</option>
           <option v-for="z in zones" :key="z.id" :value="z.id">{{ z.name }} ({{ z.rackCount }})</option>
         </select>
       </div>
       <div class="flex items-center gap-2">
-        <button type="button" class="h-9 px-3 text-xs font-semibold text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 flex items-center gap-1.5" @click="openZoneModal()">+ Zona</button>
+        <button type="button" class="h-9 px-3 text-xs font-semibold text-slate-700 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-1.5" @click="openZoneModal()">+ Zona</button>
         <button type="button" class="h-9 px-3 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 flex items-center gap-1.5" @click="openRackModal()">+ Rak</button>
         <button type="button" :disabled="selectedRackIds.length === 0" class="h-9 px-3 text-xs font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5" @click="handlePrintLabels">
           Cetak {{ selectedRackIds.length }} Label
@@ -19,14 +19,14 @@
 
     <!-- Racks Table -->
     <div v-if="loading" class="text-center py-10 text-slate-400 text-sm">Memuat rak...</div>
-    <div v-else-if="racks.length === 0" class="bg-white border border-dashed border-slate-300 rounded-xl p-10 text-center">
-      <p class="text-sm font-semibold text-slate-700">Belum ada rak</p>
+    <div v-else-if="racks.length === 0" class="bg-white border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center">
+      <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada rak</p>
       <p class="text-xs text-slate-400 mt-1">Buat zona dulu, lalu tambahkan rak di dalamnya.</p>
     </div>
-    <div v-else class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
-          <thead class="bg-slate-50 border-b border-slate-200">
+          <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th class="px-3 py-2.5 text-center w-10">
                 <input type="checkbox" :checked="allSelected" class="w-4 h-4 text-blue-600 border-slate-300 rounded" @change="toggleAll" />
@@ -38,15 +38,15 @@
               <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase">Aksi</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
-            <tr v-for="r in racks" :key="r.id" class="hover:bg-slate-50 cursor-pointer" @click="openRackDetail(r)">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tr v-for="r in racks" :key="r.id" class="hover:bg-slate-50 dark:hover:bg-slate-800 cursor-pointer" @click="openRackDetail(r)">
               <td class="px-3 py-2.5 text-center" @click.stop>
                 <input type="checkbox" :checked="selectedRackIds.includes(r.id)" class="w-4 h-4 text-blue-600 border-slate-300 rounded" @change="toggleSelect(r.id)" />
               </td>
               <td class="px-3 py-2.5 text-sm font-bold text-slate-900 font-mono">{{ r.code }}</td>
-              <td class="px-3 py-2.5 text-sm text-slate-700">{{ r.name || '—' }}</td>
+              <td class="px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300">{{ r.name || '—' }}</td>
               <td class="px-3 py-2.5"><span class="text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded font-semibold">{{ r.zoneName }}</span></td>
-              <td class="px-3 py-2.5 text-right text-sm text-slate-600">{{ r.productCount }}</td>
+              <td class="px-3 py-2.5 text-right text-sm text-slate-600 dark:text-slate-400">{{ r.productCount }}</td>
               <td class="px-3 py-2.5 text-center" @click.stop>
                 <button class="text-xs text-blue-600 hover:underline mr-2" @click="openRackModal(r)">Edit</button>
                 <button class="text-xs text-red-600 hover:underline" @click="handleDeleteRack(r)">Hapus</button>
@@ -58,12 +58,12 @@
     </div>
 
     <!-- Zones List (collapsible) -->
-    <details class="bg-white border border-slate-200 rounded-xl p-4">
+    <details class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
       <summary class="text-sm font-bold text-slate-900 cursor-pointer select-none">Kelola Zona ({{ zones.length }})</summary>
       <div class="mt-3 space-y-2">
-        <div v-for="z in zones" :key="z.id" class="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg">
+        <div v-for="z in zones" :key="z.id" class="flex items-center justify-between py-2 px-3 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
           <div>
-            <span class="text-sm font-semibold text-slate-800">{{ z.name }}</span>
+            <span class="text-sm font-semibold text-slate-800 dark:text-slate-200">{{ z.name }}</span>
             <span class="text-[11px] text-slate-400 ml-2">{{ z.rackCount }} rak</span>
             <span v-if="z.description" class="text-[11px] text-slate-400 ml-2">— {{ z.description }}</span>
           </div>
@@ -79,22 +79,22 @@
     <!-- Zone Modal -->
     <teleport to="body">
       <div v-if="showZoneModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="showZoneModal = false">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
-          <div class="px-6 py-4 border-b border-slate-200">
-            <h2 class="text-base font-bold text-slate-900">{{ editingZone ? 'Edit Zona' : 'Tambah Zona' }}</h2>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+            <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">{{ editingZone ? 'Edit Zona' : 'Tambah Zona' }}</h2>
           </div>
           <div class="px-6 py-5 space-y-3">
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Zona</label>
-              <input v-model="zoneForm.name" type="text" placeholder="cth. Minuman Dingin" class="w-full h-10 px-3 text-sm border border-slate-300 rounded-lg focus:border-blue-500 outline-none" />
+              <input v-model="zoneForm.name" type="text" placeholder="cth. Minuman Dingin" class="w-full h-10 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none" />
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Deskripsi (opsional)</label>
-              <input v-model="zoneForm.description" type="text" placeholder="cth. Rak kulkas depan kasir" class="w-full h-10 px-3 text-sm border border-slate-300 rounded-lg focus:border-blue-500 outline-none" />
+              <input v-model="zoneForm.description" type="text" placeholder="cth. Rak kulkas depan kasir" class="w-full h-10 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none" />
             </div>
           </div>
           <div class="px-6 py-4 border-t border-slate-200 flex justify-end gap-2">
-            <button class="h-9 px-4 text-xs font-semibold text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50" @click="showZoneModal = false">Batal</button>
+            <button class="h-9 px-4 text-xs font-semibold text-slate-700 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800" @click="showZoneModal = false">Batal</button>
             <button class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-60" :disabled="savingZone" @click="submitZone">
               {{ savingZone ? 'Menyimpan...' : 'Simpan' }}
             </button>
@@ -106,29 +106,29 @@
     <!-- Rack Modal -->
     <teleport to="body">
       <div v-if="showRackModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="showRackModal = false">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
-          <div class="px-6 py-4 border-b border-slate-200">
-            <h2 class="text-base font-bold text-slate-900">{{ editingRack ? 'Edit Rak' : 'Tambah Rak' }}</h2>
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+          <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-800">
+            <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">{{ editingRack ? 'Edit Rak' : 'Tambah Rak' }}</h2>
           </div>
           <div class="px-6 py-5 space-y-3">
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Zona</label>
-              <select v-model="rackForm.zoneId" class="w-full h-10 px-3 text-sm border border-slate-300 rounded-lg focus:border-blue-500 outline-none">
+              <select v-model="rackForm.zoneId" class="w-full h-10 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none">
                 <option value="">— Pilih Zona —</option>
                 <option v-for="z in zones" :key="z.id" :value="z.id">{{ z.name }}</option>
               </select>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Kode Rak</label>
-              <input v-model="rackForm.code" type="text" placeholder="cth. A1, B-03" class="w-full h-10 px-3 text-sm border border-slate-300 rounded-lg focus:border-blue-500 outline-none font-mono" />
+              <input v-model="rackForm.code" type="text" placeholder="cth. A1, B-03" class="w-full h-10 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none font-mono" />
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Nama (opsional)</label>
-              <input v-model="rackForm.name" type="text" placeholder="cth. Rak Atas Kiri" class="w-full h-10 px-3 text-sm border border-slate-300 rounded-lg focus:border-blue-500 outline-none" />
+              <input v-model="rackForm.name" type="text" placeholder="cth. Rak Atas Kiri" class="w-full h-10 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none" />
             </div>
           </div>
           <div class="px-6 py-4 border-t border-slate-200 flex justify-end gap-2">
-            <button class="h-9 px-4 text-xs font-semibold text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50" @click="showRackModal = false">Batal</button>
+            <button class="h-9 px-4 text-xs font-semibold text-slate-700 border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800" @click="showRackModal = false">Batal</button>
             <button class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-60" :disabled="savingRack" @click="submitRack">
               {{ savingRack ? 'Menyimpan...' : 'Simpan' }}
             </button>
@@ -140,14 +140,14 @@
     <!-- Rack Detail Modal (products in rack + add/remove) -->
     <teleport to="body">
       <div v-if="showRackDetail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="showRackDetail = false">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
           <!-- Header -->
-          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800">
             <div>
-              <h2 class="text-base font-bold text-slate-900">Rak {{ detailRack?.code }}</h2>
-              <p class="text-xs text-slate-500">{{ detailRack?.zoneName }}{{ detailRack?.name ? ' — ' + detailRack.name : '' }}</p>
+              <h2 class="text-base font-bold text-slate-900 dark:text-slate-100">Rak {{ detailRack?.code }}</h2>
+              <p class="text-xs text-slate-500 dark:text-slate-400">{{ detailRack?.zoneName }}{{ detailRack?.name ? ' — ' + detailRack.name : '' }}</p>
             </div>
-            <button @click="showRackDetail = false" class="text-slate-400 hover:text-slate-600">
+            <button @click="showRackDetail = false" class="text-slate-400 hover:text-slate-600 dark:text-slate-400">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
               </svg>
@@ -163,7 +163,7 @@
                 v-model="searchUnassigned"
                 type="text"
                 placeholder="Cari produk (nama / SKU)..."
-                class="w-full h-9 px-3 text-sm border border-slate-300 rounded-lg focus:border-blue-500 outline-none"
+                class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none"
                 @input="debouncedSearchUnassigned"
               />
               <!-- Search Results -->
@@ -175,7 +175,7 @@
                   @click="handleAssignProduct(p.stockId)"
                 >
                   <div>
-                    <p class="text-xs font-medium text-slate-800">{{ p.productName }}</p>
+                    <p class="text-xs font-medium text-slate-800 dark:text-slate-200">{{ p.productName }}</p>
                     <p class="text-[10px] text-slate-400">{{ p.productSku }} &middot; Stok: {{ p.quantity }}</p>
                   </div>
                   <span class="text-[10px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">+ Tambah</span>
@@ -191,7 +191,7 @@
             <div>
               <h3 class="text-xs font-semibold text-slate-700 mb-2">Produk di Rak Ini ({{ rackProducts.length }})</h3>
               <div v-if="loadingRackProducts" class="text-center py-4 text-xs text-slate-400">Memuat...</div>
-              <div v-else-if="rackProducts.length === 0" class="text-center py-6 bg-slate-50 rounded-lg">
+              <div v-else-if="rackProducts.length === 0" class="text-center py-6 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
                 <p class="text-xs text-slate-400">Belum ada produk di rak ini.</p>
                 <p class="text-[11px] text-slate-400 mt-1">Gunakan pencarian di atas untuk menambahkan.</p>
               </div>
@@ -199,10 +199,10 @@
                 <div
                   v-for="p in rackProducts"
                   :key="p.stockId"
-                  class="flex items-center justify-between px-3 py-2.5 bg-slate-50 rounded-lg"
+                  class="flex items-center justify-between px-3 py-2.5 bg-slate-50 dark:bg-slate-800/50 rounded-lg"
                 >
                   <div>
-                    <p class="text-xs font-medium text-slate-800">{{ p.productName }}</p>
+                    <p class="text-xs font-medium text-slate-800 dark:text-slate-200">{{ p.productName }}</p>
                     <p class="text-[10px] text-slate-400">{{ p.productSku }} &middot; Stok: {{ p.quantity }}</p>
                   </div>
                   <button
