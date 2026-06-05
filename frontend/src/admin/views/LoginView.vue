@@ -45,8 +45,8 @@
               <div class="space-y-1">
                 <label class="text-sm font-medium text-slate-300">Email atau Username</label>
                 <div class="relative">
-                  <MailIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                  <input v-model="form.identifier" type="text" required class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" placeholder="admin@maslahattani.my.id">
+                  <UserIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                  <input v-model="form.identifier" type="text" required class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-colors" placeholder="username atau email">
                 </div>
               </div>
               
@@ -97,7 +97,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { Shield as ShieldIcon, Lock as LockIcon, Mail as MailIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon } from 'lucide-vue-next';
+import { Shield as ShieldIcon, Lock as LockIcon, User as UserIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 
 const router = useRouter();
