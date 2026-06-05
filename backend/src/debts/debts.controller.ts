@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
 import { DebtsService } from './debts.service';
 import { CreateDebtDto } from './dto/create-debt.dto';
 import { PayDebtDto } from './dto/pay-debt.dto';
@@ -19,7 +20,7 @@ import { QueryDebtDto } from './dto/query-debt.dto';
 
 @ApiTags('Debts / Hutang')
 @Controller('api/debts')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ShopScopeGuard)
 @ApiBearerAuth()
 export class DebtsController {
   constructor(private readonly debtsService: DebtsService) {}

@@ -17,6 +17,7 @@ import {
   JoinOpnameSessionDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
+import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
 
 @Controller('api/opname')
 export class OpnameController {
@@ -27,19 +28,19 @@ export class OpnameController {
   // ============================================
 
   @Get('sessions')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ShopScopeGuard)
   async listSessions(@Query() query: QueryOpnameSessionsDto) {
     return this.opnameService.listSessions(query);
   }
 
   @Get('sessions/:id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ShopScopeGuard)
   async getSession(@Param('id') id: string) {
     return this.opnameService.getSession(id);
   }
 
   @Post('sessions')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ShopScopeGuard)
   async createSession(
     @Body() dto: CreateOpnameSessionDto,
     @Request() req: any,
@@ -49,7 +50,7 @@ export class OpnameController {
   }
 
   @Post('sessions/:id/complete')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ShopScopeGuard)
   async completeSession(
     @Param('id') id: string,
     @Body() body: { applyAdjustments?: boolean },
@@ -58,7 +59,7 @@ export class OpnameController {
   }
 
   @Post('sessions/:id/cancel')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ShopScopeGuard)
   async cancelSession(@Param('id') id: string) {
     return this.opnameService.cancelSession(id);
   }
@@ -111,7 +112,7 @@ export class OpnameController {
   // ============================================
 
   @Patch('items/:itemId')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, ShopScopeGuard)
   async updateItem(
     @Param('itemId') itemId: string,
     @Body() dto: UpdateOpnameItemDto,

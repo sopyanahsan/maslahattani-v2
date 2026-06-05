@@ -6,6 +6,7 @@ import {
   QueryDashboardDto,
 } from './dto/query-dashboard.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
 
 /**
  * Dashboard Retail — endpoint utama monitoring operasional toko.
@@ -17,7 +18,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
  */
 @ApiTags('Dashboard Retail')
 @Controller('api/dashboard/retail')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ShopScopeGuard)
 @ApiBearerAuth()
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}

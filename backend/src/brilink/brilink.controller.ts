@@ -18,9 +18,10 @@ import {
   QueryBrilinkTransactionsDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
+import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
 
 @Controller('api/brilink')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ShopScopeGuard)
 export class BrilinkController {
   constructor(private readonly brilinkService: BrilinkService) {}
 

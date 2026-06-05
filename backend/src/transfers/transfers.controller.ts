@@ -16,9 +16,10 @@ import {
   QueryTransfersDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
+import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
 
 @Controller('api/transfers')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ShopScopeGuard)
 export class TransfersController {
   constructor(private readonly transfersService: TransfersService) {}
 

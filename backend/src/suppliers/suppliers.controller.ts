@@ -20,9 +20,10 @@ import {
   QueryPurchaseOrdersDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
+import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
 
 @Controller('api/suppliers')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ShopScopeGuard)
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 

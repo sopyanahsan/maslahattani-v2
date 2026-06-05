@@ -18,9 +18,10 @@ import {
   AssignRackDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
+import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
 
 @Controller('api/racks')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ShopScopeGuard)
 export class RacksController {
   constructor(private readonly racksService: RacksService) {}
 

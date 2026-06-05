@@ -10,6 +10,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/guards/roles.guard';
+import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
 import { StockService } from './stock.service';
 import { StockInDto } from './dto/stock-in.dto';
 import { StockOpnameDto } from './dto/stock-opname.dto';
@@ -18,7 +19,7 @@ import { Role } from '@prisma/client';
 
 @ApiTags('Stock')
 @Controller('api/stock')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ShopScopeGuard)
 @ApiBearerAuth()
 export class StockController {
   constructor(private readonly stockService: StockService) {}
