@@ -184,29 +184,29 @@
       </div>
 
       <!-- ============================================ -->
-      <!-- COLUMN 2: Cash Denomination Input            -->
+      <!-- COLUMN 2: Cash Input (Total + Optional Detail) -->
       <!-- ============================================ -->
       <div class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
         <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             <CoinsIcon class="w-4 h-4 text-amber-600" />
-            Input Uang Tunai (per Pecahan)
+            Hitung Kas Fisik
           </h3>
           <p class="text-[11px] text-slate-500 mt-0.5">
-            Hitung fisik kas oleh admin saat finalisasi
+            Input total uang fisik di laci. Detail pecahan opsional.
           </p>
         </div>
 
         <div class="p-5 space-y-4">
-          <!-- Per category denomination input -->
+          <!-- Per category: simple total input -->
           <div
             v-for="cb in shift.cashBoxes"
-            :key="'denom-' + cb.id"
-            class="space-y-2"
+            :key="'cash-' + cb.id"
+            class="space-y-3"
           >
             <div
               v-if="shift.cashBoxes.length > 1"
-              class="flex items-center gap-2 pb-1"
+              class="flex items-center gap-2"
             >
               <span
                 :class="[
@@ -222,12 +222,41 @@
               </span>
             </div>
 
-            <CashDenominationInput
-              :model-value="getDenomination(cb.categoryId)"
-              :disabled="shift.status === 'FINALIZED'"
-              @update:model-value="(val) => setDenomination(cb.categoryId, val)"
-              @total-change="(val) => setDenomTotal(cb.categoryId, val)"
-            />
+            <!-- Total Cash Input (PRIMARY - single field) -->
+            <div>
+              <label class="text-[10px] font-semibold text-slate-600 uppercase tracking-wide">Total Uang Tunai Fisik</label>
+              <div class="relative mt-1">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-mono text-slate-500">Rp</span>
+                <input
+                  :value="getDenomTotal(cb.categoryId) > 0 ? formatRupiah(getDenomTotal(cb.categoryId)).replace('Rp', '').trim() : ''"
+                  type="text"
+                  inputmode="numeric"
+                  placeholder="0"
+                  :disabled="shift.status === 'FINALIZED'"
+                  class="w-full h-11 pl-10 pr-3 text-lg font-mono font-bold text-right border border-slate-200 rounded-lg bg-white focus:ring-2 focus:ring-blue-200 focus:border-blue-400 outline-none disabled:bg-slate-100 disabled:cursor-not-allowed"
+                  @input="(e) => handleDirectTotalInput(cb.categoryId, e)"
+                />
+              </div>
+              <p class="text-[9px] text-slate-400 mt-1">Ekspektasi sistem: {{ formatRupiah(cb.startingCash + cb.expectedCash) }}</p>
+            </div>
+
+            <!-- Collapsible Denomination Detail (OPTIONAL) -->
+            <details class="group">
+              <summary class="flex items-center gap-1.5 cursor-pointer text-[10px] font-semibold text-blue-600 hover:text-blue-700 select-none">
+                <svg class="w-3 h-3 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                </svg>
+                Detail pecahan (opsional)
+              </summary>
+              <div class="mt-2">
+                <CashDenominationInput
+                  :model-value="getDenomination(cb.categoryId)"
+                  :disabled="shift.status === 'FINALIZED'"
+                  @update:model-value="(val) => setDenomination(cb.categoryId, val)"
+                  @total-change="(val) => setDenomTotal(cb.categoryId, val)"
+                />
+              </div>
+            </details>
 
             <div
               v-if="shift.cashBoxes.length > 1"
@@ -556,6 +585,20 @@ function getDenomTotal(categoryId: string): number {
 
 function setDenomTotal(categoryId: string, val: number) {
   denomTotals[categoryId] = val;
+}
+
+/**
+ * Handle direct total input (single number field).
+ * Sets the total directly without denomination breakdown.
+ * Clears any existing denomination values.
+ */
+function handleDirectTotalInput(categoryId: string, event: Event) {
+  const target = event.target as HTMLInputElement;
+  const cleaned = target.value.replace(/\D/g, '');
+  const parsed = cleaned === '' ? 0 : parseInt(cleaned, 10);
+  denomTotals[categoryId] = parsed;
+  // Clear denomination breakdown (user is inputting total directly)
+  denominationInputs[categoryId] = { lainnya: parsed };
 }
 
 function getDifference(categoryId: string, expected: number): number {
