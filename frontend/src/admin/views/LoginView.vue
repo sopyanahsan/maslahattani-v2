@@ -82,6 +82,38 @@
                 Kembali
               </button>
             </form>
+
+            <!-- Step 3: Change Password (first login) -->
+            <form v-else-if="step === 'change-password'" @submit.prevent="handleChangePassword" class="space-y-5" key="change-pw">
+              <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center mx-auto mb-3 border border-amber-500/30">
+                  <LockIcon class="w-6 h-6 text-amber-400" />
+                </div>
+                <p class="text-base font-semibold text-white">Ubah Password</p>
+                <p class="text-sm text-slate-400 mt-1">Akun baru — wajib ganti password sebelum mulai.</p>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-sm font-medium text-slate-300">Password Baru</label>
+                <div class="relative">
+                  <LockIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                  <input v-model="newPassword" type="password" required minlength="6" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors" placeholder="Minimal 6 karakter">
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-sm font-medium text-slate-300">Konfirmasi Password</label>
+                <div class="relative">
+                  <LockIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                  <input v-model="confirmPassword" type="password" required minlength="6" class="w-full bg-slate-900/50 border border-slate-700 rounded-lg py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 transition-colors" placeholder="Ulangi password baru">
+                </div>
+              </div>
+
+              <button type="submit" :disabled="isLoading" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-semibold py-2.5 rounded-lg transition-colors flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed">
+                <Loader2Icon v-if="isLoading" class="w-5 h-5 animate-spin" />
+                <span v-else>Simpan & Lanjutkan</span>
+              </button>
+            </form>
           </Transition>
         </div>
       </div>
@@ -103,7 +135,9 @@ import { useAuthStore } from '@/shared/stores/auth.store';
 const router = useRouter();
 const authStore = useAuthStore();
 
-const step = ref<'credentials' | 'otp' | 'success'>('credentials');
+const step = ref<'credentials' | 'otp' | 'change-password' | 'success'>('credentials');
+const newPassword = ref('');
+const confirmPassword = ref('');
 const isLoading = ref(false);
 const errorMessage = ref<string | null>(null);
 const infoMessage = ref<string | null>(null);
@@ -127,8 +161,13 @@ const handleCredentials = async () => {
     // Step 1: validate credentials + trigger OTP (for super-admin)
     await authStore.loginStep1(form.identifier, form.password);
 
-    // If user is already authenticated (admin cabang — no OTP needed), redirect
+    // If user is already authenticated (admin cabang — no OTP needed)
     if (authStore.isAuthenticated) {
+      // Check mustChangePassword
+      if (authStore.user?.mustChangePassword) {
+        step.value = 'change-password';
+        return;
+      }
       step.value = 'success';
       setTimeout(() => { router.push({ name: 'admin-dashboard' }); }, 1500);
       return;
@@ -151,6 +190,13 @@ const handleOTP = async () => {
   try {
     // Step 2: verify OTP + get token
     await authStore.loginStep2(form.identifier, form.password, form.otp);
+
+    // Check mustChangePassword after OTP
+    if (authStore.user?.mustChangePassword) {
+      step.value = 'change-password';
+      return;
+    }
+
     step.value = 'success';
 
     // Redirect after animation completes (2s)
@@ -159,6 +205,31 @@ const handleOTP = async () => {
     }, 2000);
   } catch (err: any) {
     errorMessage.value = err?.response?.data?.message || err?.message || 'Kode OTP tidak valid atau sudah expired.';
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handleChangePassword = async () => {
+  if (newPassword.value.length < 6) {
+    errorMessage.value = 'Password minimal 6 karakter.';
+    return;
+  }
+  if (newPassword.value !== confirmPassword.value) {
+    errorMessage.value = 'Konfirmasi password tidak cocok.';
+    return;
+  }
+
+  isLoading.value = true;
+  errorMessage.value = null;
+
+  try {
+    const authService = (await import('@/shared/services/auth.service')).default;
+    await authService.changePassword(newPassword.value);
+    step.value = 'success';
+    setTimeout(() => { router.push({ name: 'admin-dashboard' }); }, 1500);
+  } catch (err: any) {
+    errorMessage.value = err?.response?.data?.message || err?.message || 'Gagal mengubah password.';
   } finally {
     isLoading.value = false;
   }
