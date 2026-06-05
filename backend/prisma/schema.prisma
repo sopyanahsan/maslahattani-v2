@@ -881,13 +881,7 @@ model BrilinkReconciliation {
   id              String    @id @default(cuid())
   shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId          String
-  target          String
-  targetId        String
-  targetLabel     String
-  balanceApp      Int
-  balanceReal     Int
-  adjustment      Int
-  status          String
+
   notes           String?
   createdById     String
   createdAt       DateTime  @default(now())
