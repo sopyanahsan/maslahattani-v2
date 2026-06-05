@@ -237,11 +237,13 @@
 import { ref, computed, reactive, onMounted, nextTick } from 'vue';
 import QRCode from 'qrcode';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import { useConfirm } from '@/shared/composables/useConfirm';
 import { useToast } from '@/shared/composables/useToast';
 import rackService, { type RackZoneDto, type RackDto, type RackProductDto } from '@/shared/services/rack.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const { ask } = useConfirm();
 const toast = useToast();
 
@@ -283,7 +285,7 @@ const allSelected = computed(() => racks.value.length > 0 && selectedRackIds.val
 const selectedRacks = computed(() => racks.value.filter((r) => selectedRackIds.value.includes(r.id)));
 
 function getShopId(): string | undefined {
-  return authStore.user?.shopId || undefined;
+  return authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
 }
 
 // ============================================

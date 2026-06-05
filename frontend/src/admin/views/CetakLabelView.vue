@@ -79,10 +79,12 @@
 <script setup lang="ts">
 import { onMounted, ref, computed, nextTick } from 'vue';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import api from '@/shared/services/api';
 import JsBarcode from 'jsbarcode';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 
 const products = ref<any[]>([]);
 const categories = ref<any[]>([]);
@@ -100,7 +102,7 @@ function formatRupiah(n: number): string {
 }
 
 async function fetchProducts() {
-  const shopId = authStore.user?.shopId;
+  const shopId = authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
   if (!shopId) return;
   loading.value = true;
   try {
