@@ -194,7 +194,7 @@
           </div>
           <div class="min-w-0 flex-1">
             <p class="text-xs font-medium text-white truncate">{{ displayName }}</p>
-            <p class="text-[11px] text-slate-400 truncate">{{ roleLabel }}</p>
+            <p class="text-[11px] text-slate-400 truncate">{{ displayUsername || roleLabel }}</p>
           </div>
         </div>
       </div>
@@ -338,7 +338,7 @@
             </div>
             <div class="text-right">
               <p class="text-xs font-semibold text-slate-900 dark:text-slate-100">{{ displayName }}</p>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ roleLabel }}</p>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ displayUsername || roleLabel }}</p>
             </div>
           </div>
         </div>
@@ -916,7 +916,13 @@ function onNavClick(e: MouseEvent, navigate: (e?: MouseEvent) => void) {
 const displayName = computed(() => {
   const u = authStore.user;
   if (!u) return 'Admin';
-  return u.username || u.email || 'Admin';
+  return (u as any).fullName || u.username || u.email || 'Admin';
+});
+
+const displayUsername = computed(() => {
+  const u = authStore.user;
+  if (!u) return '';
+  return u.username || '';
 });
 
 const userInitials = computed(() => {

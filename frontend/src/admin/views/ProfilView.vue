@@ -146,14 +146,10 @@
 
       <!-- 2FA OTP toggle -->
       <div class="flex items-center justify-between py-3">
-        <div>
+        <div class="flex-1 min-w-0 mr-4">
           <p class="text-sm font-medium text-slate-900 dark:text-slate-100">Two-Factor Authentication (2FA)</p>
-          <p class="text-xs text-slate-500 dark:text-slate-400">
-            {{ otpEnabled
-              ? 'Aktif — Kode OTP dikirim ke email saat login.'
-              : 'Nonaktif — Login langsung tanpa OTP.'
-            }}
-          </p>
+          <p v-if="otpEnabled" class="text-xs text-emerald-600 dark:text-emerald-400 mt-0.5">Aktif — Kode OTP dikirim ke email saat login.</p>
+          <p v-else class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Nonaktif — Login langsung tanpa OTP.</p>
           <p v-if="!user?.email && !otpEnabled" class="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">
             Perlu email untuk mengaktifkan 2FA.
           </p>
@@ -162,15 +158,15 @@
           type="button"
           :disabled="togglingOtp || (!user?.email && !otpEnabled)"
           :class="[
-            'relative w-11 h-6 rounded-full transition-colors disabled:opacity-50',
+            'relative inline-flex shrink-0 w-11 h-6 rounded-full transition-colors disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed',
             otpEnabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700',
           ]"
           @click="handleToggleOtp"
         >
           <span
             :class="[
-              'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform',
-              otpEnabled ? 'translate-x-5' : 'translate-x-0.5',
+              'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200',
+              otpEnabled ? 'translate-x-5' : 'translate-x-0',
             ]"
           ></span>
         </button>
