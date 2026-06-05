@@ -831,20 +831,24 @@ model BrilinkMutation {
 // ============================================
 // BRILINK CASH BOX (KAS TUNAI BRILINK)
 // ============================================
+//
+// Kas tunai BRILink 100% terpisah dari kas retail (CashBox).
+// 1 shop = 1 BrilinkCashBox.
+// Saldo naik saat nasabah bayar tunai (transfer/topup), turun saat tarik tunai.
 
 enum BrilinkCashMutationType {
-  TRX_IN
-  TRX_OUT
-  SETOR
-  TARIK
-  ADJUSTMENT
-  VOID_REVERSE
+  TRX_IN          // Dari transaksi: nasabah bayar tunai
+  TRX_OUT         // Dari transaksi: agen kasih tunai (tarik tunai)
+  SETOR           // Admin tambah modal kas tunai
+  TARIK           // Admin ambil tunai
+  ADJUSTMENT      // Koreksi dari reconciliation
+  VOID_REVERSE    // Reversal dari void transaksi
 }
 
 model BrilinkCashBox {
   id                  String    @id @default(cuid())
   shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  shopId              String    @unique
+  shopId              String    @unique  // 1 kas tunai per shop
   balance             Int       @default(0)
   lowBalanceThreshold Int       @default(2000000)
   lastAudit           DateTime?
@@ -863,10 +867,10 @@ model BrilinkCashMutation {
   cashBox         BrilinkCashBox          @relation(fields: [cashBoxId], references: [id], onDelete: Cascade)
   cashBoxId       String
   type            BrilinkCashMutationType
-  amount          Int
+  amount          Int                     // always positive
   balanceBefore   Int
   balanceAfter    Int
-  reference       String?
+  reference       String?                 // brilinkTransaction.id or reconciliation.id
   description     String
   notes           String?
   createdById     String?
@@ -877,17 +881,21 @@ model BrilinkCashMutation {
   @@map("brilink_cash_mutations")
 }
 
+// ============================================
+// BRILINK RECONCILIATION
+// ============================================
+
 model BrilinkReconciliation {
   id              String    @id @default(cuid())
   shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId          String
-  target          String
-  targetId        String
-  targetLabel     String
-  balanceApp      Int
-  balanceReal     Int
-  adjustment      Int
-  status          String
+  target          String    // 'ACCOUNT' | 'CASHBOX'
+  targetId        String    // accountId or cashBoxId
+  targetLabel     String    // "BRI Utama" or "Kas Tunai"
+  balanceApp      Int       // saldo di app sebelum adjustment
+  balanceReal     Int       // saldo real yang diinput admin
+  adjustment      Int       // selisih (real - app)
+  status          String    // 'MATCHED' | 'ADJUSTED'
   notes           String?
   createdById     String
   createdAt       DateTime  @default(now())
