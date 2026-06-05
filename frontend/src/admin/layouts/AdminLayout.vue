@@ -471,6 +471,41 @@
       </div>
     </Teleport>
     <!-- Global UI: Confirm + Toast -->
+    <!-- Full-Screen Loading Overlay (Branch Switch) -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div
+          v-if="showSwitchOverlay"
+          class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm"
+        >
+          <div class="text-center space-y-4">
+            <!-- Animated icon -->
+            <div class="relative mx-auto w-16 h-16">
+              <div class="absolute inset-0 border-4 border-blue-100 dark:border-blue-900 rounded-full"></div>
+              <div class="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+              <div class="absolute inset-3 bg-blue-50 dark:bg-blue-950 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+              </div>
+            </div>
+            <!-- Text -->
+            <div>
+              <p class="text-lg font-bold text-slate-900 dark:text-slate-100">Pindah Cabang</p>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Memuat data <strong class="text-blue-600">{{ switchOverlayShopName }}</strong>...
+              </p>
+            </div>
+            <!-- Progress dots -->
+            <div class="flex items-center justify-center gap-1.5">
+              <span class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0s"></span>
+              <span class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.15s"></span>
+              <span class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.3s"></span>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
     <GlobalConfirm />
     <GlobalToast />
   </div>
@@ -540,6 +575,10 @@ const showSwitchConfirmation = ref(false);
 const pendingSwitchShopId = ref<string | null>(null);
 const pendingSwitchShopName = ref('');
 
+// Full-screen loading overlay (shown after branch switch confirmed)
+const showSwitchOverlay = ref(false);
+const switchOverlayShopName = ref('');
+
 // === Theme ===
 const themeIcon = computed<Component>(() => {
   if (themeMode.value === 'system') return MonitorIcon;
@@ -593,14 +632,29 @@ async function confirmSwitchShop() {
     await shopStore.selectShop(pendingSwitchShopId.value);
     await authStore.fetchUser();
     showSwitchConfirmation.value = false;
+    showBranchPickerModal.value = false;
+
+    // Show loading overlay while page reloads data
+    showSwitchOverlay.value = true;
+    switchOverlayShopName.value = pendingSwitchShopName.value;
+
     pendingSwitchShopId.value = null;
     pendingSwitchShopName.value = '';
+
+    // Navigate to trigger data reload
     router.replace({
       path: route.path,
       query: { ...route.query, _t: Date.now().toString() },
     });
+
+    // Hide overlay after a short delay (gives time for components to re-fetch)
+    setTimeout(() => {
+      showSwitchOverlay.value = false;
+      switchOverlayShopName.value = '';
+    }, 1800);
   } catch (err: any) {
     switchError.value = err?.message ?? 'Gagal ganti cabang.';
+    showSwitchOverlay.value = false;
   } finally {
     switchingShop.value = false;
   }
@@ -923,6 +977,10 @@ async function handleLogout() {
 .dropdown-leave-active { transition: all 0.12s ease; }
 .dropdown-enter-from  { opacity: 0; transform: translateY(-6px) scale(0.97); }
 .dropdown-leave-to    { opacity: 0; transform: translateY(-4px) scale(0.98); }
+
+.fade-enter-active { transition: opacity 0.3s ease; }
+.fade-leave-active { transition: opacity 0.4s ease 0.2s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
 
 @keyframes wiggle {
   0%, 100% { transform: rotate(0deg); }
