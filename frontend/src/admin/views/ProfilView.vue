@@ -4,7 +4,7 @@
     <div>
       <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Profil Saya</h1>
       <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-        Kelola data pribadi, password, dan keamanan akun.
+        Kelola data pribadi, username, dan keamanan akun.
       </p>
     </div>
 
@@ -16,19 +16,10 @@
                       flex items-center justify-center text-xl font-bold text-blue-700 dark:text-blue-300">
             {{ initials }}
           </div>
-          <button
-            type="button"
-            class="absolute -bottom-1 -right-1 w-7 h-7 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700
-                   rounded-full flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-700"
-            disabled
-            title="Upload foto (segera)"
-          >
-            <component :is="CameraIcon" class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
-          </button>
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-base font-bold text-slate-900 dark:text-slate-100">{{ displayName }}</p>
-          <p class="text-xs text-slate-500 dark:text-slate-400">{{ user?.email }}</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400">{{ user?.email || 'Belum ada email' }}</p>
           <span class="inline-flex mt-1.5 text-[10px] font-bold uppercase tracking-wide
                        bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 px-2 py-0.5 rounded">
             {{ roleLabel }}
@@ -40,14 +31,30 @@
     <!-- Personal data form -->
     <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
       <h2 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">Data Pribadi</h2>
-      <form @submit.prevent="handleSavePersonal" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <form @submit.prevent="handleSaveProfile" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            Username
+          </label>
+          <input
+            v-model="form.username"
+            type="text"
+            placeholder="username"
+            class="mt-1 w-full h-9 px-3 text-sm font-mono bg-white dark:bg-slate-800
+                   border border-slate-300 dark:border-slate-700 rounded-lg
+                   text-slate-900 dark:text-slate-100
+                   focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+          />
+          <p class="text-[9px] text-slate-400 mt-0.5">Huruf kecil, angka, tanpa spasi. Dipakai untuk login.</p>
+        </div>
         <div>
           <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">
             Nama Lengkap
           </label>
           <input
-            v-model="form.name"
+            v-model="form.fullName"
             type="text"
+            placeholder="Nama lengkap Anda"
             class="mt-1 w-full h-9 px-3 text-sm bg-white dark:bg-slate-800
                    border border-slate-300 dark:border-slate-700 rounded-lg
                    text-slate-900 dark:text-slate-100
@@ -59,13 +66,14 @@
             Email
           </label>
           <input
-            :value="user?.email"
+            :value="user?.email || ''"
             type="email"
             disabled
             class="mt-1 w-full h-9 px-3 text-sm bg-slate-50 dark:bg-slate-800/50
                    border border-slate-200 dark:border-slate-700 rounded-lg
                    text-slate-500 dark:text-slate-400 cursor-not-allowed"
           />
+          <p class="text-[9px] text-slate-400 mt-0.5">Email tidak bisa diubah langsung.</p>
         </div>
         <div>
           <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">
@@ -88,19 +96,26 @@
           <textarea
             v-model="form.address"
             rows="2"
+            placeholder="Alamat lengkap"
             class="mt-1 w-full px-3 py-2 text-sm bg-white dark:bg-slate-800
                    border border-slate-300 dark:border-slate-700 rounded-lg
                    text-slate-900 dark:text-slate-100
                    focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
           ></textarea>
         </div>
+
+        <div v-if="profileError" class="sm:col-span-2 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md p-2 text-xs text-red-700 dark:text-red-300">
+          {{ profileError }}
+        </div>
+
         <div class="sm:col-span-2 flex justify-end">
           <button
             type="submit"
-            :disabled="savingPersonal"
-            class="h-9 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold rounded-lg transition-colors"
+            :disabled="savingProfile"
+            class="h-9 px-4 bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
           >
-            {{ savingPersonal ? 'Menyimpan...' : 'Simpan Perubahan' }}
+            <Loader2Icon v-if="savingProfile" class="w-3.5 h-3.5 animate-spin" />
+            {{ savingProfile ? 'Menyimpan...' : 'Simpan Perubahan' }}
           </button>
         </div>
       </form>
@@ -129,64 +144,74 @@
         </button>
       </div>
 
-      <!-- 2FA toggle -->
+      <!-- 2FA OTP toggle -->
       <div class="flex items-center justify-between py-3">
         <div>
           <p class="text-sm font-medium text-slate-900 dark:text-slate-100">Two-Factor Authentication (2FA)</p>
           <p class="text-xs text-slate-500 dark:text-slate-400">
-            Tambahkan lapisan keamanan dengan OTP via email.
+            {{ otpEnabled
+              ? 'Aktif — Kode OTP dikirim ke email saat login.'
+              : 'Nonaktif — Login langsung tanpa OTP.'
+            }}
+          </p>
+          <p v-if="!user?.email && !otpEnabled" class="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">
+            Perlu email untuk mengaktifkan 2FA.
           </p>
         </div>
         <button
           type="button"
+          :disabled="togglingOtp || (!user?.email && !otpEnabled)"
           :class="[
-            'relative w-11 h-6 rounded-full transition-colors',
-            twoFAEnabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700',
+            'relative w-11 h-6 rounded-full transition-colors disabled:opacity-50',
+            otpEnabled ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700',
           ]"
-          @click="twoFAEnabled = !twoFAEnabled"
-          disabled
-          title="Segera tersedia"
+          @click="handleToggleOtp"
         >
           <span
             :class="[
               'absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform',
-              twoFAEnabled ? 'translate-x-5' : 'translate-x-0.5',
+              otpEnabled ? 'translate-x-5' : 'translate-x-0.5',
             ]"
           ></span>
         </button>
       </div>
     </section>
-
-    <p class="text-xs text-slate-400 dark:text-slate-500 text-center">
-      Beberapa fitur (upload foto, ganti password, 2FA) akan tersedia di update berikutnya.
-    </p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue';
+import { computed, reactive, ref, onMounted } from 'vue';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useToast } from '@/shared/composables/useToast';
-import { Camera as CameraIcon } from 'lucide-vue-next';
+import { Loader2 as Loader2Icon } from 'lucide-vue-next';
+import api from '@/shared/services/api';
 
 const authStore = useAuthStore();
 const toast = useToast();
 
 const user = computed(() => authStore.user);
 
+// Form state
 const form = reactive({
-  name: user.value?.username || '',
+  username: '',
+  fullName: '',
   phone: '',
   address: '',
 });
 
-const twoFAEnabled = ref(false);
-const savingPersonal = ref(false);
+const otpEnabled = ref(false);
+const togglingOtp = ref(false);
+const savingProfile = ref(false);
+const profileError = ref<string | null>(null);
+
+// ============================================
+// Computed
+// ============================================
 
 const displayName = computed(() => {
   const u = user.value;
   if (!u) return '-';
-  return u.username || u.email?.split('@')[0] || 'User';
+  return (u as any).fullName || u.username || u.email?.split('@')[0] || 'User';
 });
 
 const initials = computed(() => {
@@ -200,7 +225,7 @@ const initials = computed(() => {
 const roleLabel = computed(() => {
   const r = user.value?.role;
   if (r === 'SUPER_ADMIN') return 'Super Admin';
-  if (r === 'ADMIN') return 'Admin';
+  if (r === 'ADMIN') return 'Admin Cabang';
   if (r === 'CASHIER_SUPERVISOR') return 'Supervisor Kasir';
   if (r === 'KASIR') return 'Kasir';
   return '-';
@@ -212,11 +237,64 @@ const lastPasswordResetLabel = computed(() => {
   return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 });
 
-async function handleSavePersonal() {
-  savingPersonal.value = true;
-  // TODO: implement API call to update profile
-  await new Promise((r) => setTimeout(r, 600));
-  savingPersonal.value = false;
-  toast.info('Fitur update profil akan segera tersedia.');
+// ============================================
+// Methods
+// ============================================
+
+async function loadProfile() {
+  try {
+    const { data } = await api.get('/auth/me');
+    form.username = data.username || '';
+    form.fullName = data.fullName || '';
+    form.phone = data.phone || '';
+    form.address = data.address || '';
+    otpEnabled.value = data.otpEnabled ?? false;
+  } catch {
+    // Use whatever auth store has
+    form.username = user.value?.username || '';
+  }
 }
+
+async function handleSaveProfile() {
+  savingProfile.value = true;
+  profileError.value = null;
+  try {
+    const { data } = await api.post('/auth/update-profile', {
+      username: form.username.trim() || undefined,
+      fullName: form.fullName.trim() || undefined,
+      phone: form.phone.trim() || undefined,
+      address: form.address.trim() || undefined,
+    });
+    toast.success(data.message || 'Profil berhasil disimpan.');
+    // Update auth store user
+    if (data.user) {
+      await authStore.fetchUser();
+    }
+  } catch (err: any) {
+    profileError.value = err.response?.data?.message || err.message || 'Gagal menyimpan profil.';
+  } finally {
+    savingProfile.value = false;
+  }
+}
+
+async function handleToggleOtp() {
+  const newState = !otpEnabled.value;
+  togglingOtp.value = true;
+  try {
+    const { data } = await api.post('/auth/toggle-otp', { enabled: newState });
+    otpEnabled.value = newState;
+    toast.success(data.message || (newState ? '2FA diaktifkan.' : '2FA dinonaktifkan.'));
+  } catch (err: any) {
+    toast.error(err.response?.data?.message || 'Gagal mengubah pengaturan 2FA.');
+  } finally {
+    togglingOtp.value = false;
+  }
+}
+
+// ============================================
+// Lifecycle
+// ============================================
+onMounted(() => {
+  loadProfile();
+});
 </script>
