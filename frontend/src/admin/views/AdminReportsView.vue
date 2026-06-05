@@ -12,8 +12,8 @@
       <div class="flex items-center gap-1.5">
         <button v-for="r in quickRanges" :key="r.label" type="button" class="h-7 px-2.5 text-[11px] font-medium border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800" @click="applyRange(r.days)">{{ r.label }}</button>
       </div>
-      <!-- Export PDF & Excel — dropdown pilih Retail / BRILink / Semua -->
-      <div v-if="salesReport || brilinkReport" class="flex items-center gap-1.5 sm:ml-auto relative">
+      <!-- Export PDF & Excel -->
+      <div v-if="salesReport" class="flex items-center gap-1.5 sm:ml-auto relative">
         <button
           type="button"
           :disabled="exporting"
@@ -45,21 +45,11 @@
             <ReceiptIcon class="w-3.5 h-3.5 text-blue-500" /> Laporan Retail
           </button>
           <button
-            v-if="brilinkReport"
-            type="button"
-            class="w-full px-4 py-2.5 text-left text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
-            @click="handleExport(showExportMenu, 'brilink')"
-          >
-            <LandmarkIcon class="w-3.5 h-3.5 text-indigo-500" /> Laporan BRILink
-          </button>
-          <div class="border-t border-slate-100 dark:border-slate-800"></div>
-          <button
-            v-if="salesReport && brilinkReport"
             type="button"
             class="w-full px-4 py-2.5 text-left text-xs font-semibold text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2"
             @click="handleExport(showExportMenu, 'all')"
           >
-            <DownloadIcon class="w-3.5 h-3.5 text-slate-500" /> Semua Laporan
+            <DownloadIcon class="w-3.5 h-3.5 text-slate-500" /> Export Laporan Retail
           </button>
         </div>
       </div>
@@ -96,25 +86,6 @@
         </div>
       </div>
 
-      <!-- BRILink Report -->
-      <div v-if="brilinkReport" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-        <div class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Laporan BRILink</h3>
-          <button type="button" class="h-7 px-2.5 text-[10px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" @click="exportBrilink">Export CSV</button>
-        </div>
-        <div class="p-5">
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center"><p class="text-[10px] text-slate-500 dark:text-slate-400">Transaksi</p><p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">{{ brilinkReport.summary.totalTransactions }}</p></div>
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center"><p class="text-[10px] text-slate-500 dark:text-slate-400">Volume</p><p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">{{ formatRupiah(brilinkReport.summary.volume) }}</p></div>
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center"><p class="text-[10px] text-slate-500 dark:text-slate-400">Fee</p><p class="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{{ formatRupiah(brilinkReport.summary.feeEarnings) }}</p></div>
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center"><p class="text-[10px] text-slate-500 dark:text-slate-400">Avg Fee</p><p class="text-sm font-bold font-mono text-indigo-600 dark:text-indigo-400 mt-1">{{ formatRupiah(brilinkReport.summary.avgFee) }}</p></div>
-          </div>
-          <div v-if="brilinkReport.categoryBreakdown.length > 0">
-            <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase mb-2">Per Kategori</p>
-            <div class="overflow-x-auto"><table class="w-full"><thead class="border-b border-slate-200 dark:border-slate-800"><tr><th class="px-3 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Kategori</th><th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Trx</th><th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Volume</th><th class="px-3 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Fee</th></tr></thead><tbody class="divide-y divide-slate-100 dark:divide-slate-800"><tr v-for="cat in brilinkReport.categoryBreakdown" :key="cat.category" class="hover:bg-slate-50 dark:hover:bg-slate-800/50"><td class="px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200">{{ cat.category }}</td><td class="px-3 py-2 text-right text-xs font-mono text-slate-600 dark:text-slate-400">{{ cat.count }}</td><td class="px-3 py-2 text-right text-xs font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(cat.volume) }}</td><td class="px-3 py-2 text-right text-xs font-mono text-emerald-600 dark:text-emerald-400">{{ formatRupiah(cat.fee) }}</td></tr></tbody></table></div>
-          </div>
-        </div>
-      </div>
     </template>
   </div>
 </template>

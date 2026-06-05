@@ -855,16 +855,17 @@ interface NavGroup {
 
 const topItems: NavItem[] = [
   { to: '/admin/home', label: 'Home', icon: HomeIcon },
-  { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
 ];
 
 const navGroups = ref<NavGroup[]>([
   {
     title: 'Retail',
     items: [
+      { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
       { to: '/admin/transactions', label: 'Transaksi', icon: ReceiptIcon },
       { to: '/admin/debts', label: 'Hutang', icon: DebtIcon },
       { to: '/admin/kas-retail', label: 'Kas Retail', icon: WalletIcon },
+      { to: '/admin/reports', label: 'Laporan Retail', icon: ReportIcon },
     ],
   },
   {
@@ -878,12 +879,6 @@ const navGroups = ref<NavGroup[]>([
       { to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon },
       { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
       { to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon },
-    ],
-  },
-  {
-    title: 'Keuangan',
-    items: [
-      { to: '/admin/reports', label: 'Laporan Retail', icon: ReportIcon },
     ],
   },
   {
