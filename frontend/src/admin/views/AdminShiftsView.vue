@@ -75,7 +75,7 @@
     <div v-if="!loading && shifts.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-3">
       <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
         <p class="text-[11px] text-slate-500 dark:text-slate-400">Total Shift</p>
-        <p class="text-lg font-bold text-slate-900 font-mono mt-0.5">
+        <p class="text-lg font-bold text-slate-900 dark:text-slate-100 font-mono mt-0.5">
           {{ shifts.length }}
         </p>
       </div>
@@ -199,7 +199,7 @@
                   {{ initials(shift.user?.username || shift.user?.email || '?') }}
                 </div>
                 <div class="min-w-0">
-                  <p class="text-sm font-semibold text-slate-900 truncate">
+                  <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
                     {{ shift.user?.username || shift.user?.email || '—' }}
                   </p>
                   <p
@@ -257,7 +257,7 @@
         >
           <div class="flex items-start justify-between gap-3 mb-2">
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-slate-900 truncate">
+              <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
                 {{ shift.user?.username || shift.user?.email }}
               </p>
               <p class="text-[11px] text-slate-500 dark:text-slate-400">

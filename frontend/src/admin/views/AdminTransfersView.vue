@@ -41,15 +41,15 @@
     <div v-else-if="transfers.length === 0" class="text-center py-10 text-slate-400 text-sm">Belum ada transfer stok.</div>
     <div v-else class="space-y-2">
       <!-- Incoming transfers needing action (badge) -->
-      <div v-if="incomingPendingCount > 0" class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2 mb-3">
-        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+      <div v-if="incomingPendingCount > 0" class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-3 flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center shrink-0">
           <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
           </svg>
         </div>
         <div>
-          <p class="text-xs font-semibold text-blue-800">{{ incomingPendingCount }} transfer masuk menunggu diterima</p>
-          <p class="text-[10px] text-blue-600">Klik untuk review dan terima barang.</p>
+          <p class="text-xs font-semibold text-blue-800 dark:text-blue-200">{{ incomingPendingCount }} transfer masuk menunggu diterima</p>
+          <p class="text-[10px] text-blue-600 dark:text-blue-400">Klik untuk review dan terima barang.</p>
         </div>
       </div>
 
@@ -57,8 +57,8 @@
         v-for="t in transfers"
         :key="t.id"
         :class="[
-          'bg-white border rounded-xl p-4 hover:border-slate-300 dark:hover:border-slate-600 transition-colors cursor-pointer',
-          isIncoming(t) && t.status === 'IN_TRANSIT' ? 'border-blue-300 bg-blue-50/30' : 'border-slate-200'
+          'bg-white dark:bg-slate-900 border rounded-xl p-4 hover:border-slate-300 dark:hover:border-slate-600 transition-colors cursor-pointer',
+          isIncoming(t) && t.status === 'IN_TRANSIT' ? 'border-blue-300 dark:border-blue-700 bg-blue-50/30 dark:bg-blue-950/20' : 'border-slate-200 dark:border-slate-800'
         ]"
         @click="openDetail(t)"
       >
