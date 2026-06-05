@@ -151,12 +151,48 @@
             </div>
           </div>
 
-          <!-- Transaction count -->
-          <div class="bg-slate-50 rounded-md px-3 py-2 flex items-center justify-between">
-            <span class="text-xs text-slate-500">Jumlah Transaksi</span>
-            <span class="text-sm font-mono font-semibold text-slate-900">
-              {{ transactions.length }} trx
-            </span>
+          <!-- Transaction count + Payment Breakdown -->
+          <div class="bg-slate-50 rounded-lg px-3 py-2.5 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold text-slate-700">Jumlah Transaksi</span>
+              <span class="text-sm font-mono font-bold text-slate-900">
+                {{ transactions.length }} trx
+              </span>
+            </div>
+
+            <!-- Payment method breakdown -->
+            <div v-if="transactions.length > 0" class="space-y-1 pt-1 border-t border-slate-200">
+              <div v-if="paymentBreakdown.cash > 0" class="flex items-center justify-between">
+                <span class="text-[10px] text-slate-500 flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Cash
+                </span>
+                <span class="text-[10px] font-mono text-slate-700">{{ formatRupiah(paymentBreakdown.cash) }} ({{ paymentBreakdown.cashCount }}x)</span>
+              </div>
+              <div v-if="paymentBreakdown.qris > 0" class="flex items-center justify-between">
+                <span class="text-[10px] text-slate-500 flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-blue-500"></span> QRIS
+                </span>
+                <span class="text-[10px] font-mono text-slate-700">{{ formatRupiah(paymentBreakdown.qris) }} ({{ paymentBreakdown.qrisCount }}x)</span>
+              </div>
+              <div v-if="paymentBreakdown.transfer > 0" class="flex items-center justify-between">
+                <span class="text-[10px] text-slate-500 flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Transfer
+                </span>
+                <span class="text-[10px] font-mono text-slate-700">{{ formatRupiah(paymentBreakdown.transfer) }} ({{ paymentBreakdown.transferCount }}x)</span>
+              </div>
+              <div v-if="paymentBreakdown.hutang > 0" class="flex items-center justify-between">
+                <span class="text-[10px] text-slate-500 flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-amber-500"></span> Hutang
+                </span>
+                <span class="text-[10px] font-mono text-slate-700">{{ formatRupiah(paymentBreakdown.hutang) }} ({{ paymentBreakdown.hutangCount }}x)</span>
+              </div>
+            </div>
+
+            <!-- Total omzet -->
+            <div v-if="transactions.length > 0" class="flex items-center justify-between pt-1 border-t border-slate-200">
+              <span class="text-[10px] font-bold text-slate-600">Total Omzet Shift</span>
+              <span class="text-xs font-mono font-bold text-slate-900">{{ formatRupiah(totalOmzetShift) }}</span>
+            </div>
           </div>
 
           <!-- Shift time info -->
@@ -565,6 +601,25 @@ const grandDifference = computed(() => {
     const expected = cb.startingCash + cb.expectedCash;
     return sum + getDifference(cb.categoryId, expected);
   }, 0);
+});
+
+// Payment method breakdown from transactions
+const paymentBreakdown = computed(() => {
+  const result = { cash: 0, cashCount: 0, qris: 0, qrisCount: 0, transfer: 0, transferCount: 0, hutang: 0, hutangCount: 0 };
+  for (const trx of transactions.value) {
+    for (const payment of trx.payments || []) {
+      const method = payment.method?.toUpperCase();
+      if (method === 'CASH') { result.cash += payment.amount; result.cashCount++; }
+      else if (method === 'QRIS') { result.qris += payment.amount; result.qrisCount++; }
+      else if (method === 'TRANSFER') { result.transfer += payment.amount; result.transferCount++; }
+      else if (method === 'HUTANG') { result.hutang += payment.amount; result.hutangCount++; }
+    }
+  }
+  return result;
+});
+
+const totalOmzetShift = computed(() => {
+  return transactions.value.reduce((sum, trx) => sum + trx.totalPrice, 0);
 });
 
 // ============================================
