@@ -36,9 +36,20 @@ export class AdminService {
   }
 
   /**
-   * Create new kasir with username + PIN (no email required)
+   * Create new user (kasir with PIN or admin with password)
    */
   async createKasir(dto: CreateKasirDto) {
+    const role = dto.role || Role.KASIR;
+    const isAdmin = role === Role.ADMIN;
+
+    // Validate: KASIR needs PIN, ADMIN needs password
+    if (!isAdmin && !dto.pin) {
+      throw new ConflictException('PIN wajib diisi untuk role Kasir.');
+    }
+    if (isAdmin && !dto.password) {
+      throw new ConflictException('Password wajib diisi untuk role Admin.');
+    }
+
     // Check username exists
     const existingUsername = await this.prisma.user.findUnique({
       where: { username: dto.username.toLowerCase() },
@@ -57,29 +68,39 @@ export class AdminService {
       }
     }
 
-    // Hash PIN
-    const pinHash = await bcrypt.hash(dto.pin, 12);
+    // Prepare credentials based on role
+    let passwordHash: string;
+    let pinHash: string | null = null;
+    let mustChangePassword = false;
+    let mustChangePin = false;
 
-    // Generate a placeholder password hash (kasir uses PIN, not password)
-    const placeholderPassword = await bcrypt.hash(
-      `ngalir_${Date.now()}_${Math.random()}`,
-      12,
-    );
+    if (isAdmin) {
+      // ADMIN: uses password for login
+      passwordHash = await bcrypt.hash(dto.password!, 12);
+      mustChangePassword = true; // Force change on first login
+    } else {
+      // KASIR: uses PIN for login
+      pinHash = await bcrypt.hash(dto.pin!, 12);
+      mustChangePin = true; // Force change on first login
+      // Generate placeholder password (kasir doesn't use password)
+      passwordHash = await bcrypt.hash(
+        `ngalir_${Date.now()}_${Math.random()}`,
+        12,
+      );
+    }
 
-    // Create user. Email is null if not provided — kasir can add later via
-    // profile page with OTP verification.
     const kasir = await this.prisma.user.create({
       data: {
         email: dto.email?.toLowerCase() || null,
         username: dto.username.toLowerCase(),
-        passwordHash: placeholderPassword,
+        passwordHash,
         pin: pinHash,
-        pinChangedAt: new Date(),
-        role: dto.role || Role.KASIR,
+        pinChangedAt: pinHash ? new Date() : null,
+        role,
         status: UserStatus.ACTIVE,
         shopId: dto.shopId || null,
-        mustChangePassword: false,
-        mustChangePin: true,
+        mustChangePassword,
+        mustChangePin,
       },
       select: {
         id: true,
@@ -92,9 +113,12 @@ export class AdminService {
       },
     });
 
+    const roleLabel = isAdmin ? 'Admin' : 'Kasir';
+    const loginMethod = isAdmin ? 'password di /admin/login' : 'PIN di webapp';
+
     return {
       kasir,
-      message: `Kasir "${dto.username}" berhasil dibuat dengan PIN.`,
+      message: `${roleLabel} "${dto.username}" berhasil dibuat. Login dengan username + ${loginMethod}.`,
     };
   }
 

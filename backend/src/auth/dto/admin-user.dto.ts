@@ -3,7 +3,7 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserStatus, Role } from '@prisma/client';
 
 export class CreateKasirDto {
-  @ApiProperty({ example: 'Sopyan', description: 'Nama lengkap kasir' })
+  @ApiProperty({ example: 'Sopyan', description: 'Nama lengkap' })
   @IsString()
   @MinLength(2)
   name: string;
@@ -13,12 +13,27 @@ export class CreateKasirDto {
   @MinLength(3)
   username: string;
 
-  @ApiProperty({ example: '1234', description: 'PIN awal 4-6 digit' })
+  /**
+   * PIN awal 4-6 digit — wajib untuk role KASIR.
+   * Tidak diperlukan untuk role ADMIN (gunakan password).
+   */
+  @ApiPropertyOptional({ example: '1234', description: 'PIN awal 4-6 digit (untuk KASIR)' })
+  @IsOptional()
   @IsString()
   @MinLength(4)
   @MaxLength(6)
   @Matches(/^\d{4,6}$/, { message: 'PIN harus 4-6 digit angka.' })
-  pin: string;
+  pin?: string;
+
+  /**
+   * Password — wajib untuk role ADMIN.
+   * Tidak diperlukan untuk role KASIR (gunakan PIN).
+   */
+  @ApiPropertyOptional({ example: 'admin123', description: 'Password (untuk ADMIN, min 6 char)' })
+  @IsOptional()
+  @IsString()
+  @MinLength(6)
+  password?: string;
 
   @ApiPropertyOptional({ example: 'kasir@gmail.com', description: 'Email opsional' })
   @IsOptional()
