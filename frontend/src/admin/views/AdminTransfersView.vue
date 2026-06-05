@@ -40,10 +40,26 @@
     <div v-if="loading" class="text-center py-10 text-slate-500 text-sm">Memuat...</div>
     <div v-else-if="transfers.length === 0" class="text-center py-10 text-slate-400 text-sm">Belum ada transfer stok.</div>
     <div v-else class="space-y-2">
+      <!-- Incoming transfers needing action (badge) -->
+      <div v-if="incomingPendingCount > 0" class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2 mb-3">
+        <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-blue-800">{{ incomingPendingCount }} transfer masuk menunggu diterima</p>
+          <p class="text-[10px] text-blue-600">Klik untuk review dan terima barang.</p>
+        </div>
+      </div>
+
       <div
         v-for="t in transfers"
         :key="t.id"
-        class="bg-white border border-slate-200 rounded-xl p-4 hover:border-slate-300 transition-colors cursor-pointer"
+        :class="[
+          'bg-white border rounded-xl p-4 hover:border-slate-300 transition-colors cursor-pointer',
+          isIncoming(t) && t.status === 'IN_TRANSIT' ? 'border-blue-300 bg-blue-50/30' : 'border-slate-200'
+        ]"
         @click="openDetail(t)"
       >
         <div class="flex items-start justify-between">
@@ -53,6 +69,21 @@
               <span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', statusBadge(t.status)]">
                 {{ statusLabel(t.status) }}
               </span>
+              <!-- Contextual direction badge -->
+              <span
+                v-if="isIncoming(t)"
+                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-blue-100 text-blue-700"
+              >
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                MASUK
+              </span>
+              <span
+                v-else-if="isOutgoing(t)"
+                class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-700"
+              >
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+                KELUAR
+              </span>
             </div>
             <p class="text-xs text-slate-500 mt-1">
               {{ t.fromShopName }} &rarr; {{ t.toShopName }} &middot; {{ t.itemCount }} item
@@ -61,7 +92,14 @@
               Diminta oleh {{ t.requestedByName }} &middot; {{ formatDate(t.requestedAt) }}
             </p>
           </div>
-          <div class="text-right">
+          <div class="text-right flex items-center gap-2">
+            <!-- Action hint -->
+            <span v-if="isIncoming(t) && t.status === 'IN_TRANSIT'" class="text-[9px] font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+              Perlu diterima
+            </span>
+            <span v-else-if="isOutgoing(t) && t.status === 'APPROVED'" class="text-[9px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+              Perlu dikirim
+            </span>
             <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
           </div>
         </div>
@@ -198,7 +236,7 @@
             </div>
           </div>
 
-          <!-- Action Buttons -->
+          <!-- Action Buttons (role-based: pengirim vs penerima) -->
           <div v-if="detail && !['RECEIVED', 'REJECTED', 'CANCELLED'].includes(detail.status)" class="px-6 py-4 border-t border-slate-200 flex justify-between">
             <button
               type="button"
@@ -206,7 +244,7 @@
               @click="handleCancel"
             >Batalkan</button>
             <div class="flex gap-2">
-              <!-- Pending: approve or reject -->
+              <!-- Pending: approve or reject (Super Admin / cabang tujuan) -->
               <template v-if="detail.status === 'PENDING'">
                 <button
                   type="button"
@@ -219,21 +257,27 @@
                   @click="handleApprove"
                 >Approve</button>
               </template>
-              <!-- Approved: mark shipped -->
-              <template v-if="detail.status === 'APPROVED'">
+              <!-- Approved: mark shipped (hanya cabang PENGIRIM) -->
+              <template v-if="detail.status === 'APPROVED' && isDetailOutgoing">
                 <button
                   type="button"
                   class="h-9 px-4 bg-amber-500 text-white text-xs font-semibold rounded-lg hover:bg-amber-600"
                   @click="handleShip"
                 >Tandai Dikirim</button>
               </template>
-              <!-- In Transit: receive -->
-              <template v-if="detail.status === 'IN_TRANSIT'">
+              <template v-if="detail.status === 'APPROVED' && isDetailIncoming">
+                <span class="text-xs text-slate-500 flex items-center">Menunggu cabang asal mengirim...</span>
+              </template>
+              <!-- In Transit: receive (hanya cabang PENERIMA) -->
+              <template v-if="detail.status === 'IN_TRANSIT' && isDetailIncoming">
                 <button
                   type="button"
                   class="h-9 px-4 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700"
                   @click="handleReceive"
                 >Terima Barang + Update Stok</button>
+              </template>
+              <template v-if="detail.status === 'IN_TRANSIT' && isDetailOutgoing">
+                <span class="text-xs text-slate-500 flex items-center">Menunggu cabang tujuan menerima...</span>
               </template>
             </div>
           </div>
@@ -298,10 +342,29 @@ const createForm = reactive({
 });
 
 // Computed
-const currentShopName = computed(() => shopStore.currentShopName || authStore.user?.shopId || 'Cabang aktif');
+const currentShopName = computed(() => shopStore.currentShopName || 'Cabang aktif');
 const destinationShops = computed(() => {
   const currentId = getShopId();
   return shops.value.filter((s) => s.id !== currentId);
+});
+
+// Count incoming transfers needing action
+const incomingPendingCount = computed(() => {
+  const shopId = getShopId();
+  if (!shopId) return 0;
+  return transfers.value.filter(
+    (t) => t.toShopId === shopId && t.status === 'IN_TRANSIT'
+  ).length;
+});
+
+// Detail: is current shop the sender or receiver?
+const isDetailOutgoing = computed(() => {
+  if (!detail.value) return false;
+  return detail.value.fromShop.id === getShopId();
+});
+const isDetailIncoming = computed(() => {
+  if (!detail.value) return false;
+  return detail.value.toShop.id === getShopId();
 });
 
 // Detail modal
@@ -319,6 +382,14 @@ const rejectNotes = ref('');
 
 function getShopId(): string | undefined {
   return authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
+}
+
+function isIncoming(t: TransferDto): boolean {
+  return t.toShopId === getShopId();
+}
+
+function isOutgoing(t: TransferDto): boolean {
+  return t.fromShopId === getShopId();
 }
 
 function formatDate(iso: string): string {
