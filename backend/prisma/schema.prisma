@@ -124,6 +124,8 @@ model Shop {
   brilinkTransactions BrilinkTransaction[]
   brilinkFees         BrilinkFee[]
   brilinkAccounts     BrilinkAccount[]
+  brilinkCashBox      BrilinkCashBox?
+  brilinkReconciliations BrilinkReconciliation[]
   opnameSessions      OpnameSession[]
   suppliers           Supplier[]
   purchaseOrders      PurchaseOrder[]
@@ -150,6 +152,15 @@ model ShopSetting {
    */
   alertConfig         Json?
   brilinkCategoryConfig Json?
+  /**
+   * KPI targets for BRILink dashboard & transaction page.
+   * JSON shape: {
+   *   dailyTransactionTarget: number,   // target jumlah transaksi per hari (default 50)
+   *   dailyVolumeTarget: number,        // target volume transaksi per hari in Rp (default 50_000_000)
+   *   dailyFeeTarget: number,           // target fee/profit per hari in Rp (default 500_000)
+   * }
+   */
+  brilinkKpiConfig    Json?
   updatedAt           DateTime  @updatedAt
   
   @@map("shop_settings")
@@ -686,6 +697,7 @@ enum BrilinkTransactionStatus {
   SUCCESS
   FAILED
   PENDING
+  VOIDED
 }
 
 enum BrilinkFeeType {
@@ -712,6 +724,23 @@ model BrilinkTransaction {
   total           Int                      // amount + fee
   status          BrilinkTransactionStatus @default(SUCCESS)
 
+  // Flow & Impact fields
+  flowDirection   String?                  // 'DEBIT' | 'CREDIT' (auto-derived from category)
+  accountImpact   Int                      @default(0) // signed: negative for debit, positive for credit
+  cashImpact      Int                      @default(0) // signed: impact on kas tunai
+
+  // Offline support
+  idempotencyKey  String?                  @unique
+  clientCreatedAt DateTime?
+
+  // Void support
+  voidedAt        DateTime?
+  voidedBy        String?
+  voidReason      String?
+
+  // Link to cash mutation (for traceability)
+  cashMutationId  String?
+
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
 
@@ -719,6 +748,7 @@ model BrilinkTransaction {
   @@index([cashierId])
   @@index([category])
   @@index([createdAt])
+  @@index([status])
   @@map("brilink_transactions")
 }
 
@@ -795,6 +825,76 @@ model BrilinkMutation {
   @@index([accountId])
   @@index([createdAt])
   @@map("brilink_mutations")
+}
+
+
+// ============================================
+// BRILINK CASH BOX (KAS TUNAI BRILINK)
+// ============================================
+
+enum BrilinkCashMutationType {
+  TRX_IN
+  TRX_OUT
+  SETOR
+  TARIK
+  ADJUSTMENT
+  VOID_REVERSE
+}
+
+model BrilinkCashBox {
+  id                  String    @id @default(cuid())
+  shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId              String    @unique
+  balance             Int       @default(0)
+  lowBalanceThreshold Int       @default(2000000)
+  lastAudit           DateTime?
+  lastAuditBalance    Int?
+  notes               String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  mutations           BrilinkCashMutation[]
+
+  @@map("brilink_cash_boxes")
+}
+
+model BrilinkCashMutation {
+  id              String                  @id @default(cuid())
+  cashBox         BrilinkCashBox          @relation(fields: [cashBoxId], references: [id], onDelete: Cascade)
+  cashBoxId       String
+  type            BrilinkCashMutationType
+  amount          Int
+  balanceBefore   Int
+  balanceAfter    Int
+  reference       String?
+  description     String
+  notes           String?
+  createdById     String?
+  createdAt       DateTime                @default(now())
+
+  @@index([cashBoxId])
+  @@index([createdAt])
+  @@map("brilink_cash_mutations")
+}
+
+model BrilinkReconciliation {
+  id              String    @id @default(cuid())
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  target          String
+  targetId        String
+  targetLabel     String
+  balanceApp      Int
+  balanceReal     Int
+  adjustment      Int
+  status          String
+  notes           String?
+  createdById     String
+  createdAt       DateTime  @default(now())
+
+  @@index([shopId])
+  @@index([createdAt])
+  @@map("brilink_reconciliations")
 }
 
 
