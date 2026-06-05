@@ -78,17 +78,17 @@
           <form @submit.prevent="handleCreateTransfer" class="space-y-4">
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="text-[11px] font-bold text-slate-600 uppercase">Dari Cabang *</label>
-                <select v-model="createForm.fromShopId" required class="mt-1 w-full h-9 px-3 text-sm border border-slate-300 rounded-lg focus:border-blue-500 outline-none">
-                  <option value="">Pilih cabang asal</option>
-                  <option v-for="shop in shops" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
-                </select>
+                <label class="text-[11px] font-bold text-slate-600 uppercase">Dari Cabang</label>
+                <div class="mt-1 h-9 px-3 flex items-center text-sm bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-medium">
+                  {{ currentShopName || 'Cabang aktif' }}
+                </div>
+                <p class="text-[9px] text-slate-400 mt-0.5">Otomatis dari cabang aktif</p>
               </div>
               <div>
                 <label class="text-[11px] font-bold text-slate-600 uppercase">Ke Cabang *</label>
                 <select v-model="createForm.toShopId" required class="mt-1 w-full h-9 px-3 text-sm border border-slate-300 rounded-lg focus:border-blue-500 outline-none">
                   <option value="">Pilih cabang tujuan</option>
-                  <option v-for="shop in shops.filter(s => s.id !== createForm.fromShopId)" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
+                  <option v-for="shop in destinationShops" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
                 </select>
               </div>
             </div>
@@ -260,9 +260,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import { useConfirm } from '@/shared/composables/useConfirm';
 import { useToast } from '@/shared/composables/useToast';
 import transferService, {
@@ -273,6 +274,7 @@ import transferService, {
 import api from '@/shared/services/api';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const { ask } = useConfirm();
 const toast = useToast();
 
@@ -290,10 +292,16 @@ const creating = ref(false);
 const shops = ref<{ id: string; name: string }[]>([]);
 const products = ref<{ id: string; name: string; sku: string }[]>([]);
 const createForm = reactive({
-  fromShopId: '',
   toShopId: '',
   notes: '',
   items: [{ productId: '', quantity: 1 }] as { productId: string; quantity: number }[],
+});
+
+// Computed
+const currentShopName = computed(() => shopStore.currentShopName || authStore.user?.shopId || 'Cabang aktif');
+const destinationShops = computed(() => {
+  const currentId = getShopId();
+  return shops.value.filter((s) => s.id !== currentId);
 });
 
 // Detail modal
@@ -310,7 +318,7 @@ const rejectNotes = ref('');
 // ============================================
 
 function getShopId(): string | undefined {
-  return authStore.user?.shopId || undefined;
+  return authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
 }
 
 function formatDate(iso: string): string {
@@ -398,21 +406,26 @@ async function openDetail(t: TransferDto) {
 }
 
 async function handleCreateTransfer() {
-  if (!createForm.fromShopId || !createForm.toShopId || createForm.items.length === 0) return;
+  const fromShopId = getShopId();
+  if (!fromShopId || !createForm.toShopId || createForm.items.length === 0) return;
   creating.value = true;
   try {
-    await transferService.createTransfer({
-      fromShopId: createForm.fromShopId,
+    const result = await transferService.createTransfer({
+      fromShopId,
       toShopId: createForm.toShopId,
       notes: createForm.notes || undefined,
       items: createForm.items.filter((i) => i.productId),
     });
     showCreateModal.value = false;
-    createForm.fromShopId = '';
     createForm.toShopId = '';
     createForm.notes = '';
     createForm.items = [{ productId: '', quantity: 1 }];
     await fetchTransfers();
+
+    // Show stock warning if any
+    if (result.stockWarnings && result.stockWarnings.length > 0) {
+      toast.warning(`Transfer dibuat, tapi ${result.stockWarnings.length} item stoknya mungkin kurang saat kirim.`);
+    }
   } catch (err: any) {
     toast.error(err.response?.data?.message ?? 'Gagal membuat transfer.');
   } finally {
