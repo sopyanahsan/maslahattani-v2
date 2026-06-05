@@ -99,6 +99,29 @@ export interface CreateBrilinkTransactionPayload {
   amount: number;
 }
 
+export interface BrilinkTransactionAccountInfo {
+  id: string;
+  label: string;
+  balance: number;
+  lowBalanceThreshold: number;
+  isLowBalance: boolean;
+}
+
+export interface CreateBrilinkTransactionResult {
+  id: string;
+  summary: {
+    refNumber: string;
+    category: BrilinkCategory;
+    customerName: string;
+    destination: string;
+    amount: number;
+    fee: number;
+    total: number;
+    status: 'SUCCESS' | 'FAILED' | 'PENDING';
+  };
+  account: BrilinkTransactionAccountInfo | null;
+}
+
 export interface CreateBrilinkFeePayload {
   shopId: string;
   category: BrilinkCategory;
@@ -145,8 +168,13 @@ const brilinkService = {
   /**
    * Create a new BRILink transaction
    */
-  async createTransaction(payload: CreateBrilinkTransactionPayload) {
-    const { data } = await api.post('/brilink/transactions', payload);
+  async createTransaction(
+    payload: CreateBrilinkTransactionPayload,
+  ): Promise<CreateBrilinkTransactionResult> {
+    const { data } = await api.post<CreateBrilinkTransactionResult>(
+      '/brilink/transactions',
+      payload,
+    );
     return data;
   },
 

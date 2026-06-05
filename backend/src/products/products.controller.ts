@@ -8,19 +8,28 @@ import {
   Body,
   Query,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  Res,
+  BadRequestException,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiBearerAuth, ApiConsumes, ApiBody } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/guards/roles.guard';
+import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
+import { BulkUpdatePricesDto } from './dto/bulk-update-prices.dto';
+import { QuickCreateProductDto } from './dto/quick-create-product.dto';
 import { Role } from '@prisma/client';
 
 @ApiTags('Products')
 @Controller('api/products')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ShopScopeGuard)
 @ApiBearerAuth()
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
@@ -37,6 +46,77 @@ export class ProductsController {
   @ApiOperation({ summary: 'List produk (dengan search & pagination)' })
   async findAll(@Query() query: QueryProductDto) {
     return this.productsService.findAll(query);
+  }
+
+  @Get('categories')
+  @ApiOperation({ summary: 'List product categories for a shop' })
+  async listCategories(@Query('shopId') shopId: string) {
+    return this.productsService.listCategories(shopId);
+  }
+
+  @Get('bulk-template')
+  @ApiOperation({ summary: 'Download template Excel untuk bulk upload produk' })
+  async downloadTemplate(@Res() res: Response) {
+    const buffer = this.productsService.generateTemplate();
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="template-produk.xlsx"',
+      'Content-Length': buffer.length.toString(),
+    });
+    res.end(buffer);
+  }
+
+  @Post('bulk-upload')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload massal produk dari file Excel (admin only)' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        shopId: { type: 'string' },
+      },
+    },
+  })
+  async bulkUpload(
+    @UploadedFile() file: any,
+    @Body('shopId') shopId: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('File tidak ditemukan. Upload file .xlsx atau .csv.');
+    }
+    if (!shopId) {
+      throw new BadRequestException('shopId wajib diisi.');
+    }
+    return this.productsService.bulkUpload(shopId, file.buffer);
+  }
+
+  @Post('bulk-update-prices')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Bulk update harga beli & jual produk (dari PO receive)' })
+  async bulkUpdatePrices(@Body() dto: BulkUpdatePricesDto) {
+    return this.productsService.bulkUpdatePrices(dto);
+  }
+
+  @Post('quick-create')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Quick-create produk baru (dari PO flow, minimal fields, SKU auto)' })
+  async quickCreate(@Body() dto: QuickCreateProductDto) {
+    return this.productsService.quickCreate(dto);
+  }
+
+  @Get('by-barcode/:barcode')
+  @ApiOperation({ summary: 'Find product by barcode for POS scan' })
+  async findByBarcode(@Param('barcode') barcode: string, @Query('shopId') shopId: string) {
+    if (!shopId) {
+      throw new BadRequestException('shopId wajib diisi.');
+    }
+    return this.productsService.findByBarcode(shopId, barcode);
   }
 
   @Get(':id')

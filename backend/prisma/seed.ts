@@ -340,6 +340,7 @@ async function seedShopProducts(shopId: string, products: ProductSeed[]) {
         data: {
           stockId: stock.id,
           type: 'IN',
+          source: 'SEED',
           quantityBefore: 0,
           quantityAfter: p.stock,
           quantityChange: p.stock,

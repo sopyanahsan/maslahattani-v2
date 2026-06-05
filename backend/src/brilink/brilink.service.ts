@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateBrilinkTransactionDto,
@@ -6,6 +6,17 @@ import {
   UpdateBrilinkFeeDto,
   QueryBrilinkTransactionsDto,
 } from './dto';
+
+/** Human-readable label per category, used for mutation/ledger descriptions. */
+const CATEGORY_LABELS: Record<string, string> = {
+  TRANSFER_BRI: 'Transfer BRI',
+  TRANSFER_OTHER: 'Transfer Antar Bank',
+  TARIK_TUNAI: 'Tarik Tunai',
+  TOPUP_PULSA: 'Pulsa',
+  TOPUP_DATA: 'Paket Data',
+  TOPUP_EWALLET: 'E-Wallet',
+  TOPUP_PLN: 'Token PLN',
+};
 
 @Injectable()
 export class BrilinkService {
@@ -78,7 +89,18 @@ export class BrilinkService {
     shopId: string,
     cashierId: string,
   ) {
-    // Calculate fee from matching fee rules
+    // Enforce brilinkEnabled toggle
+    const shopSettings = await this.prisma.shopSetting.findUnique({
+      where: { shopId },
+      select: { brilinkEnabled: true },
+    });
+    if (shopSettings && !shopSettings.brilinkEnabled) {
+      throw new BadRequestException(
+        'Modul BRILink dinonaktifkan oleh admin. Hubungi admin untuk mengaktifkan.',
+      );
+    }
+
+    // Calculate fee from matching fee rules (by category + nominal range)
     const feeRules = await this.prisma.brilinkFee.findMany({
       where: {
         shopId,
@@ -103,22 +125,95 @@ export class BrilinkService {
     const total = dto.amount + fee;
     const refNumber = this.generateRefNumber();
 
-    const transaction = await this.prisma.brilinkTransaction.create({
-      data: {
-        shopId,
-        cashierId,
-        refNumber,
-        category: dto.category,
-        customerName: dto.customerName,
-        customerPhone: dto.customerPhone,
-        destination: dto.destination,
-        amount: dto.amount,
-        fee,
-        total,
-        status: 'SUCCESS',
-      },
+    // Resolve the BRI account that backs this transaction: default active
+    // account first, else the oldest active account for the shop.
+    const account = await this.prisma.brilinkAccount.findFirst({
+      where: { shopId, isActive: true },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'asc' }],
     });
 
+    const baseData = {
+      shopId,
+      cashierId,
+      refNumber,
+      category: dto.category,
+      customerName: dto.customerName,
+      customerPhone: dto.customerPhone,
+      destination: dto.destination,
+      amount: dto.amount,
+      fee,
+      total,
+      status: 'SUCCESS' as const,
+    };
+
+    // No BRI account configured yet → record the transaction without touching
+    // any ledger so shops that haven't set up an account can still operate.
+    if (!account) {
+      const transaction = await this.prisma.brilinkTransaction.create({
+        data: baseData,
+      });
+      return this.buildTransactionResponse(transaction, null);
+    }
+
+    // PRD 24.3: every current BRILink category DEBITS the BRI account balance by
+    // the nominal `amount` (the `fee` is the agent's cash margin paid by the
+    // customer, not deducted from the BRI balance).
+    if (account.balance < dto.amount) {
+      throw new BadRequestException(
+        `Saldo rekening BRI "${account.label}" tidak cukup. ` +
+          `Saldo saat ini Rp ${account.balance.toLocaleString('id-ID')}, ` +
+          `dibutuhkan Rp ${dto.amount.toLocaleString('id-ID')}.`,
+      );
+    }
+
+    const balanceBefore = account.balance;
+    const balanceAfter = balanceBefore - dto.amount;
+    const label = CATEGORY_LABELS[dto.category] ?? dto.category;
+
+    const [transaction, updatedAccount] = await this.prisma.$transaction([
+      this.prisma.brilinkTransaction.create({
+        data: { ...baseData, accountId: account.id },
+      }),
+      this.prisma.brilinkAccount.update({
+        where: { id: account.id },
+        data: { balance: balanceAfter },
+      }),
+      this.prisma.brilinkMutation.create({
+        data: {
+          accountId: account.id,
+          type: 'TRX_DEBIT',
+          amount: dto.amount,
+          balanceBefore,
+          balanceAfter,
+          reference: refNumber,
+          description: `${label} - ${dto.customerName}`,
+          createdById: cashierId,
+        },
+      }),
+    ]);
+
+    return this.buildTransactionResponse(transaction, updatedAccount);
+  }
+
+  private buildTransactionResponse(
+    transaction: {
+      id: string;
+      refNumber: string;
+      category: string;
+      customerName: string;
+      destination: string;
+      amount: number;
+      fee: number;
+      total: number;
+      status: string;
+    },
+    account: {
+      id: string;
+      label: string;
+      balance: number;
+      lowBalanceThreshold: number;
+    } | null,
+  ) {
     return {
       id: transaction.id,
       summary: {
@@ -131,6 +226,15 @@ export class BrilinkService {
         total: transaction.total,
         status: transaction.status,
       },
+      account: account
+        ? {
+            id: account.id,
+            label: account.label,
+            balance: account.balance,
+            lowBalanceThreshold: account.lowBalanceThreshold,
+            isLowBalance: account.balance <= account.lowBalanceThreshold,
+          }
+        : null,
     };
   }
 

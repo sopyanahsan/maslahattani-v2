@@ -8,11 +8,12 @@ export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 
 export interface KasirDto {
   id: string;
-  email: string;
+  email?: string | null;
   username?: string | null;
   role: string;
   status: UserStatus;
   shopId?: string | null;
+  shopName?: string | null;
   lastLogin?: string | null;
   createdAt: string;
 }
@@ -22,7 +23,11 @@ export interface KasirDto {
 // ============================================
 
 export interface CreateKasirPayload {
-  email: string;
+  name: string;
+  username: string;
+  pin?: string;       // Required for KASIR role
+  password?: string;  // Required for ADMIN role
+  email?: string;
   shopId?: string;
   role?: string;
 }
@@ -30,6 +35,7 @@ export interface CreateKasirPayload {
 export interface UpdateKasirPayload {
   status?: UserStatus;
   shopId?: string;
+  name?: string;
 }
 
 // ============================================
@@ -43,7 +49,6 @@ export interface KasirListResponse {
 
 export interface CreateKasirResponse {
   kasir: KasirDto;
-  tempPassword: string;
   message: string;
 }
 
@@ -53,6 +58,11 @@ export interface UpdateKasirResponse {
 
 export interface ResetPasswordResponse {
   tempPassword: string;
+  message: string;
+}
+
+export interface ResetPinResponse {
+  tempPin: string;
   message: string;
 }
 
@@ -84,6 +94,11 @@ const kasirService = {
 
   async resetPassword(id: string): Promise<ResetPasswordResponse> {
     const { data } = await api.post<ResetPasswordResponse>(`/admin/kasir/${id}/reset-password`);
+    return data;
+  },
+
+  async resetPin(id: string): Promise<ResetPinResponse> {
+    const { data } = await api.post<ResetPinResponse>(`/admin/kasir/${id}/reset-pin`);
     return data;
   },
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
     <RouterLink
       v-for="action in actions"
       :key="action.label"
@@ -37,11 +37,8 @@
 import { RouterLink } from 'vue-router';
 import {
   LayoutDashboard as DashboardIcon,
-  Landmark as LandmarkIcon,
   Wallet as WalletIcon,
-  Building2 as Building2Icon,
   Receipt as ReceiptIcon,
-  ScrollText as ScrollTextIcon,
 } from 'lucide-vue-next';
 
 /**
@@ -59,14 +56,6 @@ const actions = [
     iconColor: 'text-blue-600 dark:text-blue-400',
   },
   {
-    label: 'Dashboard BRILink',
-    desc: 'Layanan BRILink',
-    to: '/admin/brilink',
-    icon: LandmarkIcon,
-    iconBg: 'bg-purple-100 dark:bg-purple-900/30',
-    iconColor: 'text-purple-600 dark:text-purple-400',
-  },
-  {
     label: 'Mutasi Retail',
     desc: 'Kas retail',
     to: '/admin/kas-retail',
@@ -75,28 +64,12 @@ const actions = [
     iconColor: 'text-emerald-600 dark:text-emerald-400',
   },
   {
-    label: 'Mutasi BRILink',
-    desc: 'Kas + rekening BRI',
-    to: '/admin/kas-rekening-brilink',
-    icon: Building2Icon,
-    iconBg: 'bg-indigo-100 dark:bg-indigo-900/30',
-    iconColor: 'text-indigo-600 dark:text-indigo-400',
-  },
-  {
     label: 'Transaksi Retail',
     desc: 'Riwayat POS',
     to: '/admin/transactions',
     icon: ReceiptIcon,
     iconBg: 'bg-amber-100 dark:bg-amber-900/30',
     iconColor: 'text-amber-600 dark:text-amber-400',
-  },
-  {
-    label: 'Transaksi BRILink',
-    desc: 'Riwayat BRILink',
-    to: '/admin/brilink/transaksi',
-    icon: ScrollTextIcon,
-    iconBg: 'bg-rose-100 dark:bg-rose-900/30',
-    iconColor: 'text-rose-600 dark:text-rose-400',
   },
 ];
 </script>

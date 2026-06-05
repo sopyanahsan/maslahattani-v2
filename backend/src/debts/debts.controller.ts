@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Param,
   Body,
   Query,
@@ -10,14 +11,16 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
 import { DebtsService } from './debts.service';
 import { CreateDebtDto } from './dto/create-debt.dto';
 import { PayDebtDto } from './dto/pay-debt.dto';
+import { UpdateDebtDto } from './dto/update-debt.dto';
 import { QueryDebtDto } from './dto/query-debt.dto';
 
 @ApiTags('Debts / Hutang')
 @Controller('api/debts')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, ShopScopeGuard)
 @ApiBearerAuth()
 export class DebtsController {
   constructor(private readonly debtsService: DebtsService) {}
@@ -47,6 +50,12 @@ export class DebtsController {
   @ApiOperation({ summary: 'Detail hutang (include riwayat pembayaran)' })
   async findOne(@Param('id') id: string) {
     return this.debtsService.findOne(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Update hutang (jatuh tempo, catatan, info customer)' })
+  async update(@Param('id') id: string, @Body() dto: UpdateDebtDto) {
+    return this.debtsService.updateDebt(id, dto);
   }
 
   @Put(':id/payment')

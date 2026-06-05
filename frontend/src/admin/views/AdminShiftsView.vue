@@ -92,7 +92,7 @@
         </p>
       </div>
       <div class="bg-white border border-slate-200 rounded-lg p-3">
-        <p class="text-[11px] text-slate-500">Total Variance</p>
+        <p class="text-[11px] text-slate-500">Total Selisih</p>
         <p
           :class="[
             'text-lg font-bold font-mono mt-0.5',
@@ -167,7 +167,7 @@
               Cabang
             </th>
             <th class="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-slate-600">
-              Variance
+              Selisih
             </th>
             <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600">
               Status
@@ -232,6 +232,12 @@
             </td>
             <td class="px-4 py-3 text-center">
               <ShiftStatusBadge :status="shift.status" />
+              <p v-if="shift.status === 'FINALIZED' && shift.finalizedBy" class="text-[9px] text-slate-400 mt-0.5">
+                oleh {{ shift.finalizedBy }}
+              </p>
+              <p v-if="shift.status === 'FINALIZED' && shift.finalizedAt" class="text-[9px] text-slate-400">
+                {{ formatDateTime(shift.finalizedAt) }}
+              </p>
             </td>
             <td class="px-4 py-3 text-right">
               <component :is="ChevronRightIcon" class="w-4 h-4 text-slate-400" />
@@ -264,7 +270,7 @@
             <ShiftStatusBadge :status="shift.status" />
           </div>
           <div v-if="shift.status !== 'OPEN'" class="flex items-center justify-between text-[11px]">
-            <span class="text-slate-500">Variance</span>
+            <span class="text-slate-500">Selisih</span>
             <span
               :class="[
                 'font-mono font-bold',
@@ -398,13 +404,23 @@ function formatTime(iso: string): string {
   });
 }
 
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString('id-ID', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 function formatRupiah(value: number): string {
   return `Rp ${new Intl.NumberFormat('id-ID').format(Math.abs(value))}`;
 }
 
 function formatVariance(value: number): string {
   if (value === 0) return 'Cocok';
-  return `${value > 0 ? '+' : ''}${formatRupiah(value)}`;
+  const formatted = `Rp ${new Intl.NumberFormat('id-ID').format(Math.abs(value))}`;
+  return value > 0 ? `+${formatted}` : `-${formatted}`;
 }
 
 function initials(text: string): string {

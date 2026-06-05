@@ -13,7 +13,7 @@ import { UpdateShopDto } from './dto/update-shop.dto';
 
 interface AuthUser {
   id: string;
-  email: string;
+  email: string | null;
   username?: string | null;
   role: Role;
   shopId?: string | null;
@@ -267,5 +267,174 @@ export class ShopsService {
     });
 
     return shop ? [shop] : [];
+  }
+
+  // ============================================
+  // DELETE / DISABLE SHOP
+  // ============================================
+
+  async remove(id: string, user: AuthUser) {
+    if (user.role !== Role.SUPER_ADMIN) {
+      throw new ForbiddenException('Hanya super admin yang bisa menghapus cabang.');
+    }
+
+    const shop = await this.prisma.shop.findUnique({
+      where: { id },
+      include: {
+        _count: { select: { users: true, products: true, transactions: true } },
+      },
+    });
+
+    if (!shop) {
+      throw new NotFoundException('Cabang tidak ditemukan.');
+    }
+
+    // Prevent deleting the branch user is currently on
+    if (user.shopId === id) {
+      throw new ConflictException('Tidak bisa menghapus cabang yang sedang aktif. Pindah ke cabang lain dulu.');
+    }
+
+    const hasData = (shop._count.transactions > 0) || (shop._count.products > 0) || (shop._count.users > 0);
+
+    if (hasData) {
+      // Soft-disable: don't actually delete, just mark as disabled
+      // For now we throw a clear error since we don't have isActive field on Shop
+      throw new ConflictException(
+        `Cabang "${shop.name}" tidak bisa dihapus karena masih punya data (${shop._count.users} kasir, ${shop._count.products} produk, ${shop._count.transactions} transaksi). Kosongkan data atau hubungi developer untuk nonaktifkan.`,
+      );
+    }
+
+    // Hard delete — cabang benar-benar kosong
+    await this.prisma.$transaction(async (tx) => {
+      // Delete related settings, cashbox, etc
+      await tx.shopSetting.deleteMany({ where: { shopId: id } });
+      await tx.cashBox.deleteMany({ where: { shopId: id } });
+      await tx.shop.delete({ where: { id } });
+    });
+
+    return { success: true, message: `Cabang "${shop.name}" berhasil dihapus.` };
+  }
+
+  // ============================================
+  // MULTI-BRANCH OVERVIEW (Dashboard Lintas Cabang)
+  // ============================================
+
+  async getMultiBranchOverview() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const shops = await this.prisma.shop.findMany({
+      orderBy: { createdAt: 'asc' },
+      include: {
+        _count: { select: { users: true, products: true } },
+      },
+    });
+
+    const overview = await Promise.all(
+      shops.map(async (shop) => {
+        // Today's transactions
+        const todayTrx = await this.prisma.transaction.aggregate({
+          where: { shopId: shop.id, status: 'COMPLETED', createdAt: { gte: today } },
+          _sum: { totalPrice: true },
+          _count: true,
+        });
+
+        // Low stock count (quantity <= 5)
+        const lowStock = await this.prisma.stock.count({
+          where: { shopId: shop.id, quantity: { lte: 5 }, product: { deletedAt: null } },
+        });
+
+        // Kas retail total (all cashboxes)
+        const kasRetail = await this.prisma.cashBox.aggregate({
+          where: { shopId: shop.id },
+          _sum: { balance: true },
+        });
+
+        // BRILink total balance
+        const kasBrilink = await this.prisma.brilinkAccount.aggregate({
+          where: { shopId: shop.id, isActive: true },
+          _sum: { balance: true },
+        });
+
+        // Active shift (kasir online)
+        const activeShifts = await this.prisma.shift.count({
+          where: { shopId: shop.id, status: 'OPEN' },
+        });
+
+        return {
+          id: shop.id,
+          name: shop.name,
+          address: shop.address,
+          phone: shop.phone,
+          stats: {
+            omzetHariIni: todayTrx._sum.totalPrice || 0,
+            trxHariIni: todayTrx._count || 0,
+            kasirTotal: shop._count.users,
+            kasirAktif: activeShifts,
+            produkTotal: shop._count.products,
+            stokRendah: lowStock,
+            kasRetail: kasRetail._sum.balance || 0,
+            kasBrilink: kasBrilink._sum.balance || 0,
+          },
+        };
+      }),
+    );
+
+    // Totals
+    const totals = {
+      omzet: overview.reduce((s, o) => s + o.stats.omzetHariIni, 0),
+      trx: overview.reduce((s, o) => s + o.stats.trxHariIni, 0),
+      kasRetail: overview.reduce((s, o) => s + o.stats.kasRetail, 0),
+      kasBrilink: overview.reduce((s, o) => s + o.stats.kasBrilink, 0),
+      stokRendah: overview.reduce((s, o) => s + o.stats.stokRendah, 0),
+    };
+
+    return { shops: overview, totals, generatedAt: new Date().toISOString() };
+  }
+
+  // ============================================
+  // SHOP SETTINGS
+  // ============================================
+
+  async getSettings(shopId: string) {
+    let settings = await this.prisma.shopSetting.findUnique({ where: { shopId } });
+    if (!settings) {
+      // Auto-create default settings
+      settings = await this.prisma.shopSetting.create({ data: { shopId } });
+    }
+    return settings;
+  }
+
+  async updateSettings(shopId: string, dto: any) {
+    // Ensure settings exist
+    let settings = await this.prisma.shopSetting.findUnique({ where: { shopId } });
+    if (!settings) {
+      settings = await this.prisma.shopSetting.create({ data: { shopId } });
+    }
+
+    const updated = await this.prisma.shopSetting.update({
+      where: { shopId },
+      data: {
+        brilinkEnabled: dto.brilinkEnabled,
+        shiftMode: dto.shiftMode,
+        shiftForceCloseOnSwitch: dto.shiftForceCloseOnSwitch,
+        shiftCorrectionRequired: dto.shiftCorrectionRequired,
+        shiftPhysicalCountRequired: dto.shiftPhysicalCountRequired,
+        shiftGuardEnabled: dto.shiftGuardEnabled,
+        cashOutApprovalEnabled: dto.cashOutApprovalEnabled,
+        paymentCashEnabled: dto.paymentCashEnabled,
+        paymentQrisEnabled: dto.paymentQrisEnabled,
+        paymentHutangEnabled: dto.paymentHutangEnabled,
+        saveBillEnabled: dto.saveBillEnabled,
+        discountPerItemEnabled: dto.discountPerItemEnabled,
+        discountTotalEnabled: dto.discountTotalEnabled,
+        notePerItemEnabled: dto.notePerItemEnabled,
+        notifSoundEnabled: dto.notifSoundEnabled,
+        notifSoundTone: dto.notifSoundTone,
+        receiptConfig: dto.receiptConfig,
+        language: dto.language,
+      },
+    });
+    return { success: true, settings: updated };
   }
 }

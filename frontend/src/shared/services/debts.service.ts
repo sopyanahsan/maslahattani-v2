@@ -166,6 +166,11 @@ const debtsService = {
     return data;
   },
 
+  async update(debtId: string, payload: { dueDate?: string; notes?: string; customerName?: string; customerPhone?: string }) {
+    const { data } = await api.patch(`/debts/${debtId}`, payload);
+    return data;
+  },
+
   async findByCustomer(
     customerName: string,
     shopId: string,

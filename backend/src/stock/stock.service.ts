@@ -49,7 +49,7 @@ export class StockService {
   // STOCK IN (Restok)
   // ============================================
 
-  async stockIn(dto: StockInDto) {
+  async stockIn(dto: StockInDto, userId?: string) {
     // Find stock record
     const stock = await this.prisma.stock.findFirst({
       where: { productId: dto.productId, shopId: dto.shopId },
@@ -73,10 +73,12 @@ export class StockService {
         data: {
           stockId: stock.id,
           type: 'IN',
+          source: 'STOCK_IN',
           quantityBefore: stock.quantity,
           quantityAfter: newQty,
           quantityChange: dto.quantity,
           notes: dto.notes || 'Stok masuk',
+          createdById: userId || null,
         },
       });
 
@@ -99,7 +101,7 @@ export class StockService {
   // STOCK OPNAME (Penyesuaian stok fisik)
   // ============================================
 
-  async opname(dto: StockOpnameDto) {
+  async opname(dto: StockOpnameDto, userId?: string) {
     const results: any[] = [];
 
     await this.prisma.$transaction(async (tx) => {
@@ -126,10 +128,12 @@ export class StockService {
           data: {
             stockId: stock.id,
             type: 'OPNAME',
+            source: 'OPNAME_INLINE',
             quantityBefore: stock.quantity,
             quantityAfter: item.actualQuantity,
             quantityChange: difference,
             notes: item.notes || dto.notes || 'Stok opname',
+            createdById: userId || null,
           },
         });
 
@@ -186,6 +190,7 @@ export class StockService {
     }
 
     if (query.type) where.type = query.type;
+    if (query.source) where.source = query.source;
 
     if (query.startDate || query.endDate) {
       where.createdAt = {};
@@ -200,6 +205,7 @@ export class StockService {
           stock: {
             include: { product: { select: { name: true, sku: true } } },
           },
+          createdBy: { select: { id: true, username: true, email: true, role: true } },
         },
         orderBy: { createdAt: 'desc' },
         skip,

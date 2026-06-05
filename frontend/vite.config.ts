@@ -36,6 +36,10 @@ export default defineConfig({
     },
   },
 
+  optimizeDeps: {
+    include: ['jspdf', 'jspdf-autotable'],
+  },
+
   server: {
     port: 5173,
     host: '0.0.0.0',

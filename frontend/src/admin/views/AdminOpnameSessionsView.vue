@@ -22,6 +22,38 @@
       </button>
     </div>
 
+    <!-- Rekap Opname Bulan Ini -->
+    <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-bold text-slate-800">Rekap Opname Bulan Ini</h2>
+        <span class="text-xs text-slate-500">{{ currentMonthYear }}</span>
+      </div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="bg-white border border-slate-200 rounded-lg p-3">
+          <p class="text-[10px] font-semibold text-red-500 uppercase tracking-wide">Kerugian</p>
+          <p class="text-lg font-bold text-red-600 mt-1">{{ monthlyStats.totalLoss }} item</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">produk kurang (defisit)</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3">
+          <p class="text-[10px] font-semibold text-emerald-500 uppercase tracking-wide">Akurasi Stok</p>
+          <p class="text-lg font-bold text-slate-900 mt-1">
+            {{ monthlyStats.totalItems > 0 ? Math.round((monthlyStats.matched / monthlyStats.totalItems) * 100) + '%' : '—' }}
+          </p>
+          <p class="text-[10px] text-slate-400 mt-0.5">item cocok / dihitung</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3">
+          <p class="text-[10px] font-semibold text-blue-500 uppercase tracking-wide">Jumlah Sesi</p>
+          <p class="text-lg font-bold text-slate-900 mt-1">{{ monthlyStats.totalSessions }}</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">sesi bulan ini</p>
+        </div>
+        <div class="bg-white border border-slate-200 rounded-lg p-3">
+          <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Opname Terakhir</p>
+          <p class="text-lg font-bold text-slate-900 mt-1">{{ monthlyStats.lastOpnameDate || '—' }}</p>
+          <p class="text-[10px] text-slate-400 mt-0.5">{{ monthlyStats.lastOpnameDate ? '' : 'belum ada' }}</p>
+        </div>
+      </div>
+    </div>
+
     <!-- Filter -->
     <div class="flex gap-3">
       <select
@@ -79,6 +111,12 @@
             </p>
             <p v-if="session.participantCount && session.participantCount > 0" class="text-[10px] text-slate-400 mt-0.5">
               {{ session.participantCount }} petugas bergabung
+              <span v-if="session.allCounted" class="ml-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[9px] font-bold">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Siap Review
+              </span>
             </p>
           </div>
           <div class="text-right text-xs text-slate-600">
@@ -110,6 +148,121 @@
         </button>
       </div>
     </div>
+
+    <!-- ============================================ -->
+    <!-- Create Opname Modal (with rack selection)    -->
+    <!-- ============================================ -->
+    <teleport to="body">
+      <div
+        v-if="showCreateModal"
+        class="fixed inset-0 z-50 flex items-center justify-center p-4"
+      >
+        <div class="absolute inset-0 bg-black/40" @click="showCreateModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Mulai Stock Opname
+          </h2>
+
+          <!-- Mode selection -->
+          <div class="space-y-2">
+            <p class="text-xs font-semibold text-slate-700">Cakupan Opname</p>
+            <div class="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                :class="[
+                  'p-3 rounded-lg border-2 text-left transition-all',
+                  createMode === 'all'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-slate-200 hover:border-slate-300'
+                ]"
+                @click="createMode = 'all'; selectedRackIds = []"
+              >
+                <p class="text-xs font-bold text-slate-800">Semua Produk</p>
+                <p class="text-[10px] text-slate-500 mt-0.5">Hitung seluruh produk cabang ini</p>
+              </button>
+              <button
+                type="button"
+                :class="[
+                  'p-3 rounded-lg border-2 text-left transition-all',
+                  createMode === 'by-rack'
+                    ? 'border-violet-500 bg-violet-50'
+                    : 'border-slate-200 hover:border-slate-300'
+                ]"
+                @click="createMode = 'by-rack'"
+              >
+                <p class="text-xs font-bold text-slate-800">Per Rak</p>
+                <p class="text-[10px] text-slate-500 mt-0.5">Pilih rak tertentu saja</p>
+              </button>
+            </div>
+          </div>
+
+          <!-- Rack selection (only if by-rack mode) -->
+          <div v-if="createMode === 'by-rack'" class="space-y-2">
+            <p class="text-xs font-semibold text-slate-700">
+              Pilih Rak
+              <span v-if="selectedRackIds.length > 0" class="text-blue-600">({{ selectedRackIds.length }} dipilih)</span>
+            </p>
+
+            <div v-if="loadingRacks" class="text-center py-4 text-xs text-slate-400">Memuat rak...</div>
+
+            <div v-else-if="availableRacks.length === 0" class="bg-amber-50 border border-amber-200 rounded-lg p-3">
+              <p class="text-xs text-amber-700">Belum ada rak di cabang ini. Buat rak dulu di menu "Label Rak".</p>
+            </div>
+
+            <div v-else class="max-h-48 overflow-y-auto space-y-1 border border-slate-200 rounded-lg p-2">
+              <label
+                v-for="rack in availableRacks"
+                :key="rack.id"
+                :class="[
+                  'flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-colors',
+                  selectedRackIds.includes(rack.id) ? 'bg-violet-50' : 'hover:bg-slate-50'
+                ]"
+              >
+                <input
+                  type="checkbox"
+                  :checked="selectedRackIds.includes(rack.id)"
+                  class="w-4 h-4 text-violet-600 border-slate-300 rounded"
+                  @change="toggleRackSelection(rack.id)"
+                />
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs font-semibold text-slate-800">{{ rack.code }} <span v-if="rack.name" class="font-normal text-slate-500">— {{ rack.name }}</span></p>
+                  <p class="text-[10px] text-slate-400">{{ rack.zoneName }} · {{ rack.productCount }} produk</p>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center justify-end gap-2 pt-2">
+            <button
+              type="button"
+              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-lg
+                     hover:bg-slate-200 transition-colors"
+              @click="showCreateModal = false"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              :disabled="creating || (createMode === 'by-rack' && selectedRackIds.length === 0)"
+              class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg
+                     hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+                     flex items-center gap-1.5"
+              @click="confirmCreateOpname"
+            >
+              <svg v-if="creating" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"/>
+              </svg>
+              {{ creating ? 'Membuat...' : 'Mulai Opname' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
 
     <!-- ============================================ -->
     <!-- Passcode Modal (after creating session)      -->
@@ -362,20 +515,102 @@
         </div>
       </div>
     </teleport>
+
+    <!-- Custom Confirm Modal -->
+    <teleport to="body">
+      <div
+        v-if="showConfirmModal"
+        class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      >
+        <div class="absolute inset-0 bg-black/40" @click="handleConfirmNo"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+          <div class="text-center">
+            <div class="mx-auto w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-3">
+              <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+            </div>
+            <h3 class="text-base font-bold text-slate-900">{{ confirmTitle }}</h3>
+            <p class="text-sm text-slate-500 mt-1.5">{{ confirmMessage }}</p>
+          </div>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              class="flex-1 h-9 text-xs font-semibold text-slate-700 bg-slate-100 rounded-lg
+                     hover:bg-slate-200 transition-colors"
+              @click="handleConfirmNo"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              :class="['flex-1 h-9 text-xs font-semibold text-white rounded-lg transition-colors', confirmBtnClass]"
+              @click="handleConfirmYes"
+            >
+              {{ confirmBtnText }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </teleport>
+
+    <!-- Custom Alert Modal -->
+    <teleport to="body">
+      <div
+        v-if="showAlertModal"
+        class="fixed inset-0 z-[60] flex items-center justify-center p-4"
+      >
+        <div class="absolute inset-0 bg-black/40" @click="showAlertModal = false"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+          <div class="text-center">
+            <div
+              :class="[
+                'mx-auto w-12 h-12 rounded-full flex items-center justify-center mb-3',
+                alertType === 'error' ? 'bg-red-100' : alertType === 'warning' ? 'bg-amber-100' : 'bg-blue-100'
+              ]"
+            >
+              <svg
+                :class="[
+                  'w-6 h-6',
+                  alertType === 'error' ? 'text-red-600' : alertType === 'warning' ? 'text-amber-600' : 'text-blue-600'
+                ]"
+                fill="none" stroke="currentColor" viewBox="0 0 24 24"
+              >
+                <path v-if="alertType === 'error'" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+              </svg>
+            </div>
+            <h3 class="text-base font-bold text-slate-900">{{ alertTitle }}</h3>
+            <p class="text-sm text-slate-500 mt-1.5">{{ alertMessage }}</p>
+          </div>
+          <button
+            type="button"
+            class="w-full h-9 text-xs font-semibold text-white bg-slate-700 rounded-lg
+                   hover:bg-slate-800 transition-colors"
+            @click="showAlertModal = false"
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </teleport>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import opnameService, {
   type OpnameSessionDto,
   type OpnameSessionDetailDto,
   type OpnameListResponse,
   type OpnameStatus,
 } from '@/shared/services/opname.service';
+import rackService, { type RackDto } from '@/shared/services/rack.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 
 // ============================================
 // State
@@ -388,6 +623,19 @@ const creating = ref(false);
 const filterStatus = ref<string>('');
 const currentPage = ref(1);
 
+// Monthly stats
+const monthlyStats = ref({
+  totalLoss: 0,
+  totalItems: 0,
+  matched: 0,
+  totalSessions: 0,
+  lastOpnameDate: '',
+});
+
+const currentMonthYear = computed(() => {
+  return new Date().toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+});
+
 // Detail modal
 const showDetail = ref(false);
 const detail = ref<OpnameSessionDetailDto | null>(null);
@@ -399,12 +647,31 @@ const showPasscodeModal = ref(false);
 const createdPasscode = ref('');
 const copied = ref(false);
 
+// Custom confirm/alert modal
+const showConfirmModal = ref(false);
+const confirmTitle = ref('');
+const confirmMessage = ref('');
+const confirmAction = ref<(() => void) | null>(null);
+const confirmBtnText = ref('Ya');
+const confirmBtnClass = ref('bg-blue-600 hover:bg-blue-700');
+const showAlertModal = ref(false);
+const alertTitle = ref('');
+const alertMessage = ref('');
+const alertType = ref<'error' | 'warning' | 'info'>('info');
+
+// Create opname modal (with rack selection)
+const showCreateModal = ref(false);
+const availableRacks = ref<RackDto[]>([]);
+const selectedRackIds = ref<string[]>([]);
+const createMode = ref<'all' | 'by-rack'>('all');
+const loadingRacks = ref(false);
+
 // ============================================
 // Helpers
 // ============================================
 
 function getShopId(): string | undefined {
-  return authStore.user?.shopId || undefined;
+  return authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
 }
 
 function formatDate(iso: string): string {
@@ -415,6 +682,10 @@ function formatDate(iso: string): string {
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function formatRupiah(amount: number): string {
+  return 'Rp ' + amount.toLocaleString('id-ID');
 }
 
 function formatTime(iso: string): string {
@@ -488,6 +759,51 @@ async function fetchSessions() {
   }
 }
 
+/** Fetch stats separately — all sessions this month (no pagination/filter) */
+async function fetchMonthlyStats() {
+  try {
+    const shopId = getShopId();
+    const response = await opnameService.listSessions({
+      shopId,
+      page: 1,
+      limit: 100, // Get all sessions this month
+    });
+
+    const now = new Date();
+    const thisMonth = now.getMonth();
+    const thisYear = now.getFullYear();
+
+    const completedThisMonth = response.data.filter((s) => {
+      if (s.status !== 'COMPLETED' || !s.completedAt) return false;
+      const d = new Date(s.completedAt);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    });
+
+    const allThisMonth = response.data.filter((s) => {
+      const d = new Date(s.createdAt);
+      return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+    });
+
+    const totalMatched = completedThisMonth.reduce((sum, s) => sum + s.totalMatched, 0);
+    const totalItems = completedThisMonth.reduce((sum, s) => sum + s.totalProducts, 0);
+    const totalDeficit = completedThisMonth.reduce((sum, s) => sum + s.totalDeficit, 0);
+
+    const lastCompleted = completedThisMonth.length > 0
+      ? new Date(completedThisMonth[0].completedAt!).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })
+      : '';
+
+    monthlyStats.value = {
+      totalLoss: totalDeficit, // jumlah item kurang (nanti bisa dikalikan harga rata-rata)
+      totalItems,
+      matched: totalMatched,
+      totalSessions: allThisMonth.length,
+      lastOpnameDate: lastCompleted,
+    };
+  } catch {
+    // Stats gagal tidak blocking
+  }
+}
+
 function resetAndFetch() {
   currentPage.value = 1;
   fetchSessions();
@@ -501,18 +817,52 @@ function goPage(page: number) {
 async function handleCreate() {
   const shopId = getShopId();
   if (!shopId) return;
+
+  // Open create modal with rack options
+  showCreateModal.value = true;
+  createMode.value = 'all';
+  selectedRackIds.value = [];
+
+  // Fetch racks for this shop
+  loadingRacks.value = true;
+  try {
+    availableRacks.value = await rackService.listRacks(shopId);
+  } catch {
+    availableRacks.value = [];
+  } finally {
+    loadingRacks.value = false;
+  }
+}
+
+async function confirmCreateOpname() {
+  const shopId = getShopId();
+  if (!shopId) return;
+
   creating.value = true;
   try {
-    const result = await opnameService.createSession({ shopId });
-    // Show passcode modal
+    const payload: any = { shopId };
+    if (createMode.value === 'by-rack' && selectedRackIds.value.length > 0) {
+      payload.rackIds = selectedRackIds.value;
+    }
+    const result = await opnameService.createSession(payload);
+    showCreateModal.value = false;
     createdPasscode.value = result.passcode;
     showPasscodeModal.value = true;
     copied.value = false;
     await fetchSessions();
   } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal membuat sesi opname.');
+    showAlert('Gagal', err.response?.data?.message ?? 'Gagal membuat sesi opname.', 'error');
   } finally {
     creating.value = false;
+  }
+}
+
+function toggleRackSelection(rackId: string) {
+  const idx = selectedRackIds.value.indexOf(rackId);
+  if (idx === -1) {
+    selectedRackIds.value.push(rackId);
+  } else {
+    selectedRackIds.value.splice(idx, 1);
   }
 }
 
@@ -551,37 +901,87 @@ async function handleComplete(applyAdjustments: boolean) {
 
   const uncounted = detail.value.items.filter((i) => i.actualQty === null).length;
   if (uncounted > 0) {
-    alert(`Masih ada ${uncounted} produk yang belum dihitung.`);
+    showAlert('Belum Lengkap', `Masih ada ${uncounted} produk yang belum dihitung.`, 'warning');
     return;
   }
 
   const msg = applyAdjustments
     ? 'Selesaikan opname DAN update stok sesuai hasil hitung fisik?'
     : 'Selesaikan opname TANPA mengubah stok?';
-  if (!confirm(msg)) return;
 
-  completing.value = true;
-  try {
-    await opnameService.completeSession(detail.value.id, applyAdjustments);
-    showDetail.value = false;
-    await fetchSessions();
-  } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal menyelesaikan opname.');
-  } finally {
-    completing.value = false;
-  }
+  showConfirm(
+    applyAdjustments ? 'Selesai & Update Stok?' : 'Selesaikan Opname?',
+    msg,
+    async () => {
+      completing.value = true;
+      try {
+        await opnameService.completeSession(detail.value!.id, applyAdjustments);
+        showDetail.value = false;
+        await fetchSessions();
+      } catch (err: any) {
+        showAlert('Gagal', err.response?.data?.message ?? 'Gagal menyelesaikan opname.', 'error');
+      } finally {
+        completing.value = false;
+      }
+    },
+    applyAdjustments ? 'Ya, Update Stok' : 'Ya, Selesaikan',
+    applyAdjustments ? 'bg-blue-600 hover:bg-blue-700' : 'bg-slate-700 hover:bg-slate-800',
+  );
 }
 
 async function handleCancel() {
   if (!detail.value) return;
-  if (!confirm('Batalkan sesi opname ini?')) return;
-  try {
-    await opnameService.cancelSession(detail.value.id);
-    showDetail.value = false;
-    await fetchSessions();
-  } catch (err: any) {
-    alert(err.response?.data?.message ?? 'Gagal membatalkan opname.');
-  }
+  showConfirm(
+    'Batalkan Opname?',
+    'Sesi opname ini akan dibatalkan. Data hitung yang sudah ada tidak akan disimpan.',
+    async () => {
+      try {
+        await opnameService.cancelSession(detail.value!.id);
+        showDetail.value = false;
+        await fetchSessions();
+      } catch (err: any) {
+        showAlert('Gagal', err.response?.data?.message ?? 'Gagal membatalkan opname.', 'error');
+      }
+    },
+    'Ya, Batalkan',
+    'bg-red-600 hover:bg-red-700',
+  );
+}
+
+// ============================================
+// Custom Modal Helpers
+// ============================================
+
+function showConfirm(
+  title: string,
+  message: string,
+  action: () => void,
+  btnText: string = 'Ya',
+  btnClass: string = 'bg-blue-600 hover:bg-blue-700',
+) {
+  confirmTitle.value = title;
+  confirmMessage.value = message;
+  confirmAction.value = action;
+  confirmBtnText.value = btnText;
+  confirmBtnClass.value = btnClass;
+  showConfirmModal.value = true;
+}
+
+function handleConfirmYes() {
+  showConfirmModal.value = false;
+  if (confirmAction.value) confirmAction.value();
+}
+
+function handleConfirmNo() {
+  showConfirmModal.value = false;
+  confirmAction.value = null;
+}
+
+function showAlert(title: string, message: string, type: 'error' | 'warning' | 'info' = 'info') {
+  alertTitle.value = title;
+  alertMessage.value = message;
+  alertType.value = type;
+  showAlertModal.value = true;
 }
 
 // ============================================
@@ -589,5 +989,6 @@ async function handleCancel() {
 // ============================================
 onMounted(() => {
   fetchSessions();
+  fetchMonthlyStats();
 });
 </script>

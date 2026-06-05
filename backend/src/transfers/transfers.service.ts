@@ -165,6 +165,18 @@ export class TransfersService {
     if (!fromShop) throw new NotFoundException('Toko asal tidak ditemukan.');
     if (!toShop) throw new NotFoundException('Toko tujuan tidak ditemukan.');
 
+    // Check stock availability (warning, still allows creation)
+    const stockWarnings: Array<{ productId: string; requested: number; available: number }> = [];
+    for (const item of dto.items) {
+      const stock = await this.prisma.stock.findFirst({
+        where: { shopId: dto.fromShopId, productId: item.productId },
+      });
+      const available = stock?.quantity ?? 0;
+      if (available < item.quantity) {
+        stockWarnings.push({ productId: item.productId, requested: item.quantity, available });
+      }
+    }
+
     const transferNumber = this.generateTransferNumber();
 
     const transfer = await this.prisma.stockTransfer.create({
@@ -195,6 +207,7 @@ export class TransfersService {
       fromShopName: transfer.fromShop.name,
       toShopName: transfer.toShop.name,
       itemCount: transfer._count.items,
+      stockWarnings: stockWarnings.length > 0 ? stockWarnings : undefined,
     };
   }
 
@@ -245,14 +258,45 @@ export class TransfersService {
 
   // ============================================
   // SHIP TRANSFER (mark as in-transit)
+  // Validates source shop has sufficient stock before shipping.
   // ============================================
 
   async shipTransfer(id: string) {
-    const transfer = await this.prisma.stockTransfer.findUnique({ where: { id } });
+    const transfer = await this.prisma.stockTransfer.findUnique({
+      where: { id },
+      include: { items: { include: { product: { select: { id: true, name: true } } } } },
+    });
     if (!transfer) throw new NotFoundException('Transfer tidak ditemukan.');
 
     if (transfer.status !== 'APPROVED') {
       throw new BadRequestException('Transfer hanya bisa dikirim setelah di-approve.');
+    }
+
+    // Validate stock availability at source shop
+    const insufficientItems: Array<{ name: string; requested: number; available: number }> = [];
+
+    for (const item of transfer.items) {
+      const stock = await this.prisma.stock.findFirst({
+        where: { shopId: transfer.fromShopId, productId: item.productId },
+      });
+
+      const available = stock?.quantity ?? 0;
+      if (available < item.quantity) {
+        insufficientItems.push({
+          name: item.product.name,
+          requested: item.quantity,
+          available,
+        });
+      }
+    }
+
+    if (insufficientItems.length > 0) {
+      const details = insufficientItems
+        .map((i) => `• ${i.name}: diminta ${i.requested}, tersedia ${i.available}`)
+        .join('\n');
+      throw new BadRequestException(
+        `Stok tidak cukup di cabang asal:\n${details}\n\nKurangi qty atau restok dulu sebelum kirim.`,
+      );
     }
 
     return this.prisma.stockTransfer.update({
@@ -268,7 +312,7 @@ export class TransfersService {
   // RECEIVE TRANSFER (update stock both shops)
   // ============================================
 
-  async receiveTransfer(id: string, dto?: ReceiveTransferDto) {
+  async receiveTransfer(id: string, dto?: ReceiveTransferDto, userId?: string) {
     const transfer = await this.prisma.stockTransfer.findUnique({
       where: { id },
       include: { items: true },
@@ -313,11 +357,13 @@ export class TransfersService {
           data: {
             stockId: sourceStock.id,
             type: 'TRANSFER_OUT',
+            source: 'TRANSFER_OUT',
             quantityBefore: sourceStock.quantity,
             quantityAfter: newSourceQty,
             quantityChange: -item.quantity,
             reference: transfer.id,
             notes: `Transfer keluar ${transfer.transferNumber}: ${item.quantity} unit`,
+            createdById: userId || null,
           },
         });
       }
@@ -348,11 +394,13 @@ export class TransfersService {
         data: {
           stockId: destStock.id,
           type: 'TRANSFER_IN',
+          source: 'TRANSFER_IN',
           quantityBefore: destStock.quantity,
           quantityAfter: newDestQty,
           quantityChange: receivedQty,
           reference: transfer.id,
           notes: `Transfer masuk ${transfer.transferNumber}: ${receivedQty} unit`,
+          createdById: userId || null,
         },
       });
     }

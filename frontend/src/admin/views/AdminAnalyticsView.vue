@@ -2,10 +2,7 @@
   <div class="space-y-6">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div>
-        <h1 class="text-xl font-bold text-slate-950">Analytics</h1>
-        <p class="text-xs text-slate-500">Dashboard analitik bisnis &amp; insight</p>
-      </div>
+      <div></div>
 
       <!-- Period Selector -->
       <div class="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
@@ -355,6 +352,7 @@
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { useShopStore } from '@/shared/stores/shop.store';
 import analyticsService, {
   type AnalyticsPeriod,
@@ -566,4 +564,6 @@ watch([selectedPeriod, shopId], () => {
 onMounted(() => {
   fetchAll();
 });
+
+useAutoRefresh(fetchAll);
 </script>

@@ -184,8 +184,8 @@ export class SuppliersService {
     const items = dto.items.map((item) => ({
       productId: item.productId,
       quantity: item.quantity,
-      unitCost: item.unitCost,
-      subtotal: item.quantity * item.unitCost,
+      unitCost: item.unitCost || 0, // Opsional — bisa diisi nanti saat terima
+      subtotal: item.quantity * (item.unitCost || 0),
     }));
 
     const totalAmount = items.reduce((sum, item) => sum + item.subtotal, 0);
@@ -227,59 +227,188 @@ export class SuppliersService {
     });
   }
 
-  async markReceived(id: string) {
+  async markReceived(id: string, receivedItems?: Array<{ itemId: string; receivedQty: number; actualCost?: number }>) {
     const po = await this.prisma.purchaseOrder.findUnique({
       where: { id },
-      include: { items: true },
+      include: {
+        items: {
+          include: {
+            product: { select: { id: true, name: true, sku: true, cost: true, price: true } },
+          },
+        },
+      },
     });
     if (!po) throw new NotFoundException('PO tidak ditemukan.');
     if (po.status === 'RECEIVED' || po.status === 'CANCELLED') {
       throw new BadRequestException('PO sudah selesai atau dibatalkan.');
     }
 
-    // Update all items receivedQty = quantity
-    await this.prisma.purchaseOrderItem.updateMany({
-      where: { orderId: id },
-      data: { receivedQty: undefined }, // will set per-item below
-    });
-
-    // Update stock for each item
-    for (const item of po.items) {
-      // Update receivedQty
-      await this.prisma.purchaseOrderItem.update({
-        where: { id: item.id },
-        data: { receivedQty: item.quantity },
-      });
-
-      // Add stock
-      const stock = await this.prisma.stock.findFirst({
-        where: { shopId: po.shopId, productId: item.productId },
-      });
-
-      if (stock) {
-        await this.prisma.stock.update({
-          where: { id: stock.id },
-          data: { quantity: { increment: item.quantity } },
-        });
-
-        await this.prisma.stockHistory.create({
-          data: {
-            stockId: stock.id,
-            type: 'IN',
-            quantityBefore: stock.quantity,
-            quantityAfter: stock.quantity + item.quantity,
-            quantityChange: item.quantity,
-            reference: po.id,
-            notes: `PO ${po.orderNumber}: ${item.quantity} unit masuk`,
-          },
-        });
+    // Build receive map with actualCost
+    const receiveMap = new Map<string, { qty: number; actualCost?: number }>();
+    if (receivedItems && receivedItems.length > 0) {
+      for (const ri of receivedItems) {
+        receiveMap.set(ri.itemId, { qty: ri.receivedQty, actualCost: ri.actualCost });
+      }
+    } else {
+      for (const item of po.items) {
+        receiveMap.set(item.id, { qty: item.quantity - item.receivedQty });
       }
     }
 
-    return this.prisma.purchaseOrder.update({
-      where: { id },
-      data: { status: 'RECEIVED', receivedAt: new Date() },
+    // Validate quantities
+    for (const item of po.items) {
+      const entry = receiveMap.get(item.id);
+      if (!entry) continue;
+      const remaining = item.quantity - item.receivedQty;
+      if (entry.qty > remaining) {
+        throw new BadRequestException(
+          `Qty terima (${entry.qty}) melebihi sisa yang belum diterima (${remaining}).`,
+        );
+      }
+      if (entry.qty < 0) {
+        throw new BadRequestException('Qty terima tidak boleh negatif.');
+      }
+    }
+
+    // Track price changes (existing products with different cost)
+    const priceChanges: Array<{
+      productId: string;
+      productName: string;
+      productSku: string;
+      oldCost: number;
+      newCost: number;
+      currentPrice: number;
+      marginPercent: number;
+      suggestedPrice: number;
+    }> = [];
+
+    // Track new products (cost was 0, first time receiving → need to set price)
+    const newProducts: Array<{
+      productId: string;
+      productName: string;
+      productSku: string;
+      cost: number;
+      suggestedPrice: number;
+      defaultMarginPercent: number;
+    }> = [];
+
+    const DEFAULT_MARGIN_PERCENT = 20; // 20% default margin for new products
+
+    // Execute atomically
+    const result = await this.prisma.$transaction(async (tx) => {
+      for (const item of po.items) {
+        const entry = receiveMap.get(item.id);
+        const toReceive = entry?.qty ?? 0;
+        if (toReceive <= 0) continue;
+
+        // Determine actual cost: from input → from PO item → from product
+        const actualCost = entry?.actualCost ?? (item.unitCost > 0 ? item.unitCost : item.product.cost);
+
+        // Update PO item receivedQty + unitCost (in case it was 0 at creation)
+        await tx.purchaseOrderItem.update({
+          where: { id: item.id },
+          data: {
+            receivedQty: item.receivedQty + toReceive,
+            unitCost: actualCost,
+            subtotal: item.quantity * actualCost,
+          },
+        });
+
+        // Find or create stock record
+        let stock = await tx.stock.findFirst({
+          where: { shopId: po.shopId, productId: item.productId },
+        });
+        if (!stock) {
+          stock = await tx.stock.create({
+            data: { shopId: po.shopId, productId: item.productId, quantity: 0, warehouse: 'main' },
+          });
+        }
+
+        const qtyBefore = stock.quantity;
+        const qtyAfter = qtyBefore + toReceive;
+
+        await tx.stock.update({
+          where: { id: stock.id },
+          data: { quantity: qtyAfter },
+        });
+
+        await tx.stockHistory.create({
+          data: {
+            stockId: stock.id,
+            type: 'IN',
+            source: 'PURCHASE_ORDER',
+            quantityBefore: qtyBefore,
+            quantityAfter: qtyAfter,
+            quantityChange: toReceive,
+            reference: po.id,
+            notes: `PO ${po.orderNumber}: terima ${toReceive} unit @ Rp ${actualCost.toLocaleString('id-ID')}`,
+          },
+        });
+
+        // Detect price change or new product pricing
+        if (actualCost > 0) {
+          const oldCost = item.product.cost;
+          const currentPrice = item.product.price;
+
+          if (oldCost === 0 && currentPrice === 0) {
+            // NEW PRODUCT: first time receiving — need to set sell price
+            const suggestedPrice = Math.ceil((actualCost * (1 + DEFAULT_MARGIN_PERCENT / 100)) / 100) * 100;
+            newProducts.push({
+              productId: item.product.id,
+              productName: item.product.name,
+              productSku: item.product.sku,
+              cost: actualCost,
+              suggestedPrice,
+              defaultMarginPercent: DEFAULT_MARGIN_PERCENT,
+            });
+          } else if (actualCost !== oldCost && oldCost > 0) {
+            // EXISTING PRODUCT: cost changed → suggest new price
+            const marginPercent = Math.round(((currentPrice - oldCost) / oldCost) * 100);
+            const suggestedPrice = marginPercent > 0
+              ? Math.ceil((actualCost * (1 + marginPercent / 100)) / 100) * 100
+              : currentPrice;
+
+            priceChanges.push({
+              productId: item.product.id,
+              productName: item.product.name,
+              productSku: item.product.sku,
+              oldCost,
+              newCost: actualCost,
+              currentPrice,
+              marginPercent,
+              suggestedPrice,
+            });
+          }
+        }
+      }
+
+      // Recalculate totalAmount with actual costs
+      const updatedItems = await tx.purchaseOrderItem.findMany({ where: { orderId: id } });
+      const newTotalAmount = updatedItems.reduce((sum, i) => sum + i.subtotal, 0);
+      const allFullyReceived = updatedItems.every((i) => i.receivedQty >= i.quantity);
+      const newStatus = allFullyReceived ? 'RECEIVED' : 'PARTIAL';
+
+      return tx.purchaseOrder.update({
+        where: { id },
+        data: {
+          status: newStatus,
+          totalAmount: newTotalAmount,
+          ...(allFullyReceived ? { receivedAt: new Date() } : {}),
+        },
+        include: {
+          items: { include: { product: { select: { id: true, name: true, sku: true } } } },
+        },
+      });
     });
+
+    return {
+      purchaseOrder: result,
+      message: result.status === 'RECEIVED'
+        ? `PO ${po.orderNumber} selesai! Semua barang diterima & stok diupdate.`
+        : `PO ${po.orderNumber} diterima sebagian. Sisa bisa diterima nanti.`,
+      priceChanges: priceChanges.length > 0 ? priceChanges : undefined,
+      newProducts: newProducts.length > 0 ? newProducts : undefined,
+    };
   }
 
   async cancelPO(id: string) {

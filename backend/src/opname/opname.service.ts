@@ -33,6 +33,7 @@ export class OpnameService {
         where,
         include: {
           conductor: { select: { id: true, username: true, email: true } },
+          items: { select: { actualQty: true } },
           _count: { select: { items: true, participants: true } },
         },
         orderBy: { createdAt: 'desc' },
@@ -43,25 +44,31 @@ export class OpnameService {
     ]);
 
     return {
-      data: data.map((s) => ({
-        id: s.id,
-        sessionNumber: s.sessionNumber,
-        passcode: s.passcode,
-        status: s.status,
-        notes: s.notes,
-        conductorId: s.conductorId,
-        conductorName: s.conductor?.username || s.conductor?.email || '-',
-        shopId: s.shopId,
-        totalProducts: s.totalProducts,
-        totalMatched: s.totalMatched,
-        totalSurplus: s.totalSurplus,
-        totalDeficit: s.totalDeficit,
-        startedAt: s.startedAt?.toISOString() || null,
-        completedAt: s.completedAt?.toISOString() || null,
-        createdAt: s.createdAt.toISOString(),
-        itemCount: s._count.items,
-        participantCount: s._count.participants,
-      })),
+      data: data.map((s) => {
+        const countedItems = s.items.filter((i) => i.actualQty !== null).length;
+        const allCounted = countedItems === s.items.length && s.items.length > 0;
+        return {
+          id: s.id,
+          sessionNumber: s.sessionNumber,
+          passcode: s.passcode,
+          status: s.status,
+          notes: s.notes,
+          conductorId: s.conductorId,
+          conductorName: s.conductor?.username || s.conductor?.email || '-',
+          shopId: s.shopId,
+          totalProducts: s.totalProducts,
+          totalMatched: s.totalMatched,
+          totalSurplus: s.totalSurplus,
+          totalDeficit: s.totalDeficit,
+          startedAt: s.startedAt?.toISOString() || null,
+          completedAt: s.completedAt?.toISOString() || null,
+          createdAt: s.createdAt.toISOString(),
+          itemCount: s._count.items,
+          countedItems,
+          allCounted,
+          participantCount: s._count.participants,
+        };
+      }),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
@@ -135,9 +142,15 @@ export class OpnameService {
     const sessionNumber = this.generateSessionNumber();
     const passcode = await this.generateUniquePasscode();
 
-    // Get all products with stock for this shop
+    // Build stock query — filter by rackIds if provided (opname per rak)
+    const stockWhere: any = { shopId: dto.shopId };
+    if (dto.rackIds && dto.rackIds.length > 0) {
+      stockWhere.rackId = { in: dto.rackIds };
+    }
+
+    // Get products with stock for this shop (optionally filtered by rack)
     const stocks = await this.prisma.stock.findMany({
-      where: { shopId: dto.shopId },
+      where: stockWhere,
       include: { product: { select: { id: true, deletedAt: true } } },
     });
 
@@ -410,6 +423,46 @@ export class OpnameService {
       id: updated.id,
       sessionNumber: updated.sessionNumber,
       status: updated.status,
+    };
+  }
+
+  // ============================================
+  // MARK COUNTING COMPLETE (from webapp petugas)
+  // ============================================
+
+  async markCountingComplete(sessionId: string, participantId: string) {
+    const session = await this.prisma.opnameSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        items: true,
+        participants: true,
+      },
+    });
+
+    if (!session) throw new NotFoundException('Sesi opname tidak ditemukan.');
+
+    // Count progress
+    const totalItems = session.items.length;
+    const countedItems = session.items.filter((i) => i.actualQty !== null).length;
+    const allCounted = countedItems === totalItems;
+
+    // Update participant's completion status (optional: mark finishedAt)
+    // For now we just return the status
+
+    return {
+      success: true,
+      sessionId: session.id,
+      sessionNumber: session.sessionNumber,
+      participantId,
+      progress: {
+        total: totalItems,
+        counted: countedItems,
+        remaining: totalItems - countedItems,
+        allCounted,
+      },
+      message: allCounted
+        ? 'Semua produk sudah dihitung. Admin akan menerima notifikasi untuk review.'
+        : `${countedItems}/${totalItems} produk sudah dihitung.`,
     };
   }
 

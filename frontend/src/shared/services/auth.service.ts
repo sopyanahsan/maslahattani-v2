@@ -31,6 +31,11 @@ export interface ResetPasswordPayload {
   newPassword: string;
 }
 
+export interface LoginPinPayload {
+  username: string;
+  pin: string;
+}
+
 // ============================================
 // Shared types
 // ============================================
@@ -40,12 +45,13 @@ export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 
 export interface AuthUserDto {
   id: string;
-  email: string;
+  email?: string | null;
   username?: string | null;
   role: UserRole;
   status: UserStatus;
   shopId?: string | null;
   mustChangePassword?: boolean;
+  mustChangePin?: boolean;
 }
 
 export interface ShopDto {
@@ -123,6 +129,11 @@ const authService = {
     return data;
   },
 
+  async loginWithPin(payload: LoginPinPayload): Promise<LoginSuccessResponse> {
+    const { data } = await api.post<LoginSuccessResponse>('/auth/login-pin', payload);
+    return data;
+  },
+
   async registerKasir(payload: RegisterPayload): Promise<MessageResponse> {
     const { data } = await api.post('/auth/register-kasir', payload);
     return data;
@@ -159,6 +170,16 @@ const authService = {
 
   async changePassword(newPassword: string): Promise<{ success: boolean; message: string }> {
     const { data } = await api.post('/auth/change-password', { newPassword });
+    return data;
+  },
+
+  async changePin(oldPin: string, newPin: string): Promise<{ success: boolean; message: string }> {
+    const { data } = await api.post('/auth/change-pin', { oldPin, newPin });
+    return data;
+  },
+
+  async setNewPin(newPin: string): Promise<{ success: boolean; message: string }> {
+    const { data } = await api.post('/auth/set-new-pin', { newPin });
     return data;
   },
 };

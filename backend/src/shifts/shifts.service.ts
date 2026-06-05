@@ -70,6 +70,29 @@ export class ShiftsService {
       );
     }
 
+    // "Wajib Tutup Shift Saat Ganti Kasir" (Pengaturan Sistem):
+    // kalau toggle aktif, tolak buka shift selama ada shift kasir LAIN yang
+    // masih OPEN di toko ini — shift sebelumnya wajib ditutup dulu (handover).
+    const forceCloseSetting = await this.prisma.shopSetting.findUnique({
+      where: { shopId },
+      select: { shiftForceCloseOnSwitch: true },
+    });
+    if (forceCloseSetting?.shiftForceCloseOnSwitch ?? true) {
+      const otherOpenShift = await this.prisma.shift.findFirst({
+        where: { shopId, status: ShiftStatus.OPEN, userId: { not: userId } },
+        include: { user: { select: { username: true, email: true } } },
+      });
+      if (otherOpenShift) {
+        const owner =
+          otherOpenShift.user.username ||
+          otherOpenShift.user.email ||
+          'kasir lain';
+        throw new ConflictException(
+          `Shift atas nama "${owner}" masih terbuka. Sesuai pengaturan toko, shift tersebut harus ditutup dulu sebelum ganti kasir.`,
+        );
+      }
+    }
+
     // Ambil semua kategori aktif. Setiap shift baru wajib punya row untuk
     // semua kategori aktif (biar reporting & UI konsisten).
     const activeCategories = await this.prisma.cashBoxCategory.findMany({
@@ -219,7 +242,7 @@ export class ShiftsService {
       string,
       {
         actualCash: number;
-        actualQRIS: number;
+        actualQRIS?: number;
         denominations?: CashDenominations;
       }
     >(
@@ -261,30 +284,28 @@ export class ShiftsService {
     const updatedShift = await this.prisma.$transaction(async (tx) => {
       for (const cashBox of shift.cashBoxes) {
         const expected = expectedByCategory.get(cashBox.categoryId)!;
-        const actual = actualMap.get(cashBox.categoryId) ?? {
-          actualCash: 0,
-          actualQRIS: 0,
-          denominations: undefined,
-        };
+        const provided = actualMap.get(cashBox.categoryId);
+        const actualCash = provided?.actualCash ?? 0;
+        // QRIS bersifat elektronik → kalau kasir tidak input, rekonsiliasi
+        // otomatis ke nilai expected (variance QRIS = 0).
+        const actualQRIS = provided?.actualQRIS ?? expected.expectedQRIS;
+        const denominations = provided?.denominations;
 
         // variance = actual - (starting + expected)
-        // Kalau actual gak di-input (0 default), variance bisa negative besar.
         const varianceCash =
-          actual.actualCash - (cashBox.startingCash + expected.expectedCash);
-        const varianceQRIS = actual.actualQRIS - expected.expectedQRIS;
+          actualCash - (cashBox.startingCash + expected.expectedCash);
+        const varianceQRIS = actualQRIS - expected.expectedQRIS;
 
         await tx.shiftCashBox.update({
           where: { id: cashBox.id },
           data: {
             expectedCash: expected.expectedCash,
             expectedQRIS: expected.expectedQRIS,
-            actualCash: actual.actualCash,
-            actualQRIS: actual.actualQRIS,
+            actualCash,
+            actualQRIS,
             varianceCash,
             varianceQRIS,
-            cashDenominations: actual.denominations
-              ? (actual.denominations as any)
-              : null,
+            cashDenominations: denominations ? (denominations as any) : null,
           },
         });
       }

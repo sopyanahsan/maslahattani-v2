@@ -4,6 +4,7 @@ import authService, {
   type AuthUserDto,
   type LoginPayload,
   type LoginResponse,
+  type LoginPinPayload,
   type ShopDto,
 } from '@/shared/services/auth.service';
 import { useShopStore } from './shop.store';
@@ -219,6 +220,36 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  /**
+   * Login kasir dengan Username + PIN.
+   * Return LoginOutcome (selalu 'success' untuk PIN login).
+   */
+  async function loginWithPin(username: string, pin: string): Promise<LoginOutcome> {
+    loading.value = true;
+    error.value = null;
+
+    try {
+      const response = await authService.loginWithPin({ username, pin });
+      const shopStore = useShopStore();
+
+      setTokens(response.token, response.refreshToken);
+      user.value = response.user;
+      if (response.shop) {
+        shopStore.setCurrentShop(response.shop);
+      }
+      return { status: 'success', user: response.user, shop: response.shop };
+    } catch (err: any) {
+      const message =
+        err.response?.data?.message ||
+        err.message ||
+        'Login gagal. Periksa username dan PIN.';
+      error.value = message;
+      throw new Error(message);
+    } finally {
+      loading.value = false;
+    }
+  }
+
   async function fetchUser(): Promise<void> {
     if (!token.value) return;
 
@@ -275,6 +306,7 @@ export const useAuthStore = defineStore('auth', () => {
     requireShopSelection,
     // Actions
     login,
+    loginWithPin,
     loginStep1,
     loginStep2,
     logout,

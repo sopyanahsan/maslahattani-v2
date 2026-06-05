@@ -16,9 +16,10 @@ import {
   QueryTransfersDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
+import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
 
-@Controller('transfers')
-@UseGuards(JwtAuthGuard)
+@Controller('api/transfers')
+@UseGuards(JwtAuthGuard, ShopScopeGuard)
 export class TransfersController {
   constructor(private readonly transfersService: TransfersService) {}
 
@@ -60,8 +61,9 @@ export class TransfersController {
   }
 
   @Post(':id/receive')
-  async receiveTransfer(@Param('id') id: string, @Body() dto: ReceiveTransferDto) {
-    return this.transfersService.receiveTransfer(id, dto);
+  async receiveTransfer(@Param('id') id: string, @Body() dto: ReceiveTransferDto, @Request() req: any) {
+    const userId = req.user?.sub || req.user?.id;
+    return this.transfersService.receiveTransfer(id, dto, userId);
   }
 
   @Post(':id/cancel')

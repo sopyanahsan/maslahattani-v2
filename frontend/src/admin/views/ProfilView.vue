@@ -166,9 +166,11 @@
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useToast } from '@/shared/composables/useToast';
 import { Camera as CameraIcon } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
+const toast = useToast();
 
 const user = computed(() => authStore.user);
 
@@ -215,6 +217,6 @@ async function handleSavePersonal() {
   // TODO: implement API call to update profile
   await new Promise((r) => setTimeout(r, 600));
   savingPersonal.value = false;
-  alert('Fitur update profil akan segera tersedia.');
+  toast.info('Fitur update profil akan segera tersedia.');
 }
 </script>

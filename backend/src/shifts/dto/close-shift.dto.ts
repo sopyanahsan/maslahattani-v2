@@ -111,9 +111,10 @@ export class ActualCashByCategoryDto {
     example: 350000,
     description: 'Total QRIS yang masuk untuk kategori ini',
   })
+  @IsOptional()
   @IsInt()
   @Min(0)
-  actualQRIS: number;
+  actualQRIS?: number;
 
   @ApiPropertyOptional({
     description:

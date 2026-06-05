@@ -14,10 +14,13 @@
           <component :is="MenuIcon" class="w-5 h-5" />
         </button>
         <div class="flex items-center gap-2">
-          <div class="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center">
+          <div class="w-7 h-7 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
             <component :is="StoreIcon" class="w-4 h-4 text-white" />
           </div>
-          <h1 class="text-sm font-bold text-slate-950 dark:text-slate-100">Maslahat Tani</h1>
+          <div class="min-w-0">
+            <h1 class="text-sm font-bold text-slate-950 dark:text-slate-100 leading-tight truncate">{{ currentShopName || 'Maslahat Tani' }}</h1>
+            <p class="text-[9px] text-slate-400 dark:text-slate-500 leading-tight">{{ todayLabel }}</p>
+          </div>
         </div>
       </div>
       <div class="flex items-center gap-1">
@@ -29,6 +32,19 @@
           @click="toggleTheme"
         >
           <component :is="themeResolved === 'dark' ? SunIcon : MoonIcon" class="w-4 h-4" />
+        </button>
+        <!-- Notification Bell (mobile) -->
+        <button
+          type="button"
+          class="relative p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
+          aria-label="Notifikasi"
+          @click="notifOpen = !notifOpen"
+        >
+          <BellIcon class="w-4 h-4" />
+          <span
+            v-if="alertCount > 0"
+            class="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 border border-white dark:border-slate-900"
+          />
         </button>
         <button
           type="button"
@@ -186,87 +202,17 @@
 
     <!-- Main content -->
     <main class="lg:ml-64 min-h-screen">
-      <!-- Desktop topbar -->
+      <!-- Desktop + Tablet topbar -->
       <header
-        class="hidden lg:flex sticky top-0 z-20 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 items-center justify-between transition-colors"
+        class="hidden md:flex sticky top-0 z-20 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 lg:px-6 items-center justify-between transition-colors"
       >
         <div>
           <h2 class="text-lg font-bold text-slate-950 dark:text-slate-100">{{ pageTitle }}</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">{{ pageSubtitle }}</p>
+          <p class="text-[11px] text-slate-400 dark:text-slate-500">
+            {{ todayLabel }}
+          </p>
         </div>
         <div class="flex items-center gap-3">
-          <!-- Shop selector -->
-          <div v-if="canSwitchShop" class="relative">
-            <button
-              type="button"
-              class="flex items-center gap-2 h-9 px-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
-              @click="shopMenuOpen = !shopMenuOpen"
-            >
-              <component :is="Building2Icon" class="w-4 h-4 text-slate-600 dark:text-slate-400" />
-              <div class="text-left">
-                <p class="text-[10px] uppercase tracking-wide text-slate-500 dark:text-slate-400 leading-tight">
-                  Cabang Aktif
-                </p>
-                <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 leading-tight max-w-[180px] truncate">
-                  {{ currentShopName || 'Belum dipilih' }}
-                </p>
-              </div>
-              <component
-                :is="ChevronDownIcon"
-                :class="['w-4 h-4 text-slate-500 dark:text-slate-400 transition-transform', shopMenuOpen && 'rotate-180']"
-              />
-            </button>
-
-            <div
-              v-if="shopMenuOpen"
-              class="absolute right-0 top-full mt-1 w-72 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg z-30 overflow-hidden"
-            >
-              <div class="px-4 py-2 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800">
-                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  Pilih cabang ({{ availableShops.length }})
-                </p>
-              </div>
-              <div class="max-h-72 overflow-y-auto">
-                <button
-                  v-for="shop in availableShops"
-                  :key="shop.id"
-                  type="button"
-                  :disabled="switchingShop"
-                  :class="[
-                    'w-full px-4 py-2.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-start gap-2 disabled:opacity-60',
-                    currentShopId === shop.id && 'bg-blue-50 dark:bg-blue-950/30',
-                  ]"
-                  @click="handleSwitchShop(shop.id)"
-                >
-                  <component
-                    :is="currentShopId === shop.id ? CheckIcon : StoreIcon"
-                    :class="[
-                      'w-4 h-4 shrink-0 mt-0.5',
-                      currentShopId === shop.id ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500',
-                    ]"
-                  />
-                  <div class="flex-1 min-w-0">
-                    <p
-                      :class="[
-                        'text-sm font-medium truncate',
-                        currentShopId === shop.id ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-slate-100',
-                      ]"
-                    >
-                      {{ shop.name }}
-                    </p>
-                    <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">{{ shop.address }}</p>
-                  </div>
-                </button>
-              </div>
-              <div class="border-t border-slate-100 dark:border-slate-800 px-4 py-2 bg-slate-50 dark:bg-slate-800">
-                <p v-if="switchError" class="text-[11px] text-red-600 dark:text-red-400">{{ switchError }}</p>
-                <p v-else class="text-[10px] text-slate-500 dark:text-slate-400">
-                  Klik untuk ganti konteks. Tab lain mungkin perlu refresh.
-                </p>
-              </div>
-            </div>
-          </div>
-
           <!-- Theme toggle (desktop) -->
           <button
             type="button"
@@ -277,6 +223,108 @@
           >
             <component :is="themeIcon" class="w-4 h-4" />
           </button>
+
+          <!-- Notification Bell -->
+          <div class="relative" ref="notifRef">
+            <button
+              type="button"
+              :class="[
+                'relative h-9 w-9 flex items-center justify-center rounded-md border transition-colors',
+                notifOpen
+                  ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400'
+                  : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+              ]"
+              title="Notifikasi"
+              @click="notifOpen = !notifOpen"
+            >
+              <BellIcon class="w-4 h-4" :class="alertCount > 0 && !notifOpen ? 'animate-[wiggle_1s_ease-in-out]' : ''" />
+              <span
+                v-if="alertCount > 0"
+                class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[9px] font-bold text-white bg-red-500 border-2 border-white dark:border-slate-900 leading-none shadow-sm"
+              >
+                {{ alertCount > 99 ? '99+' : alertCount }}
+              </span>
+            </button>
+
+            <!-- Notification Dropdown -->
+            <Transition name="dropdown">
+              <div
+                v-if="notifOpen"
+                class="absolute right-0 top-full mt-2 w-[340px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl z-40 overflow-hidden"
+              >
+                <!-- Header -->
+                <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
+                  <div class="flex items-center gap-2">
+                    <BellIcon class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                    <p class="text-xs font-bold text-slate-900 dark:text-slate-100">Notifikasi</p>
+                    <span v-if="alertCount > 0" class="px-1.5 py-0.5 text-[9px] font-bold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 rounded-full">{{ alertCount }}</span>
+                  </div>
+                  <button
+                    v-if="alertCount > 0"
+                    type="button"
+                    class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+                    @click="markAllRead"
+                  >
+                    Tandai semua dibaca
+                  </button>
+                </div>
+
+                <!-- Body -->
+                <div class="max-h-[320px] overflow-y-auto">
+                  <div v-if="alertsLoading" class="py-10 flex flex-col items-center gap-2">
+                    <Loader2Icon class="w-5 h-5 animate-spin text-slate-300 dark:text-slate-600" />
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500">Memuat notifikasi...</p>
+                  </div>
+                  <div v-else-if="alertItems.length === 0" class="py-10 flex flex-col items-center gap-2">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <BellIcon class="w-5 h-5 text-slate-300 dark:text-slate-600" />
+                    </div>
+                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Semua aman!</p>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500">Tidak ada alert aktif saat ini.</p>
+                  </div>
+                  <div v-else class="divide-y divide-slate-50 dark:divide-slate-800">
+                    <button
+                      v-for="alert in alertItems.slice(0, 15)"
+                      :key="alert.id"
+                      type="button"
+                      class="w-full px-4 py-3 hover:bg-blue-50/60 dark:hover:bg-blue-950/20 transition-colors text-left group"
+                      @click="handleAlertClick(alert)"
+                    >
+                      <div class="flex items-start gap-3">
+                        <!-- Severity dot with ring -->
+                        <div :class="['mt-1 w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-offset-1 dark:ring-offset-slate-900',
+                          alert.severity === 'critical' ? 'bg-red-500 ring-red-200 dark:ring-red-900' :
+                          alert.severity === 'warning'  ? 'bg-amber-500 ring-amber-200 dark:ring-amber-900' :
+                                                          'bg-blue-400 ring-blue-200 dark:ring-blue-900'
+                        ]" />
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2 mb-0.5">
+                            <p class="text-[11px] font-semibold text-slate-800 dark:text-slate-200 truncate group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">{{ alert.title }}</p>
+                            <span :class="['shrink-0 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-md', alertTypeBadge(alert.type)]">{{ alertTypeShort(alert.type) }}</span>
+                          </div>
+                          <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">{{ alert.shopName }}</p>
+                          <p class="text-[10px] text-slate-400 dark:text-slate-500 truncate">{{ alert.description }}</p>
+                        </div>
+                        <ChevronRightIcon class="w-3 h-3 text-slate-300 dark:text-slate-600 shrink-0 mt-1 group-hover:text-blue-400 transition-colors" />
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 flex items-center justify-between">
+                  <p class="text-[9px] text-slate-400 dark:text-slate-500">Diperbarui setiap 60 detik</p>
+                  <button
+                    type="button"
+                    class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1 transition-colors"
+                    @click="fetchAlerts"
+                  >
+                    <RefreshCwIcon class="w-2.5 h-2.5" /> Refresh
+                  </button>
+                </div>
+              </div>
+            </Transition>
+          </div>
 
           <span class="text-xs text-slate-500 dark:text-slate-400 hidden xl:inline">
             {{ todayLabel }}
@@ -296,15 +344,178 @@
         </div>
       </header>
 
+
+
+      <!-- Branch Context Banner -->
+      <div class="sticky top-16 z-10 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 dark:from-blue-900 dark:via-blue-900 dark:to-blue-950 px-4 lg:px-6 py-2 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" title="Aktif"></div>
+          <div class="min-w-0">
+            <p class="text-xs font-bold text-white truncate">{{ currentShopName || 'Belum dipilih' }}</p>
+            <p class="text-[10px] text-blue-200 dark:text-blue-300 truncate">{{ currentShopAddress }}</p>
+          </div>
+        </div>
+        <button
+          v-if="canSwitchShop"
+          type="button"
+          class="shrink-0 h-7 px-3 text-[10px] font-semibold text-blue-100 bg-white/10 border border-white/20 rounded-md hover:bg-white/20 transition-colors"
+          @click="openSwitchModal"
+        >
+          Ganti Cabang
+        </button>
+      </div>
+
       <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto text-slate-900 dark:text-slate-100">
         <RouterView />
       </div>
     </main>
+
+    <!-- ============================================ -->
+    <!-- Branch Picker Modal (Full list)              -->
+    <!-- ============================================ -->
+    <Teleport to="body">
+      <div v-if="showBranchPickerModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" @click="showBranchPickerModal = false"></div>
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+          <div class="px-6 pt-5 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Ganti Cabang Aktif</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pilih cabang yang ingin dikelola. Semua data akan mengikuti konteks cabang terpilih.</p>
+          </div>
+          <div class="max-h-80 overflow-y-auto p-3 space-y-2">
+            <button
+              v-for="shop in availableShops"
+              :key="shop.id"
+              type="button"
+              :disabled="switchingShop"
+              :class="[
+                'w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left',
+                currentShopId === shop.id
+                  ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-slate-50 dark:hover:bg-slate-800',
+              ]"
+              @click="handleSwitchShop(shop.id)"
+            >
+              <div :class="['w-10 h-10 rounded-xl flex items-center justify-center shrink-0', currentShopId === shop.id ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400']">
+                <component :is="currentShopId === shop.id ? CheckIcon : StoreIcon" class="w-5 h-5" />
+              </div>
+              <div class="flex-1 min-w-0">
+                <p :class="['text-sm font-semibold truncate', currentShopId === shop.id ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-slate-100']">{{ shop.name }}</p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">{{ shop.address }}</p>
+              </div>
+              <span v-if="currentShopId === shop.id" class="text-[9px] font-bold uppercase text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded-full shrink-0">Aktif</span>
+            </button>
+          </div>
+          <div class="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+            <button type="button" class="w-full h-9 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200" @click="showBranchPickerModal = false">Batal</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- ============================================ -->
+    <!-- Switch Branch Confirmation Modal             -->
+    <!-- ============================================ -->
+    <Teleport to="body">
+      <div v-if="showSwitchConfirmation" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50" @click="cancelSwitchShop"></div>
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+          <div class="flex items-start gap-3">
+            <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+              <Building2Icon class="w-5 h-5 text-amber-600" />
+            </div>
+            <div class="min-w-0">
+              <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">
+                Ganti Cabang Aktif?
+              </h3>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Anda akan beralih dari <strong class="text-slate-700 dark:text-slate-200">{{ currentShopName || '—' }}</strong> ke
+                <strong class="text-blue-700 dark:text-blue-400">{{ pendingSwitchShopName }}</strong>.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 space-y-1.5">
+            <p class="text-[11px] font-bold text-amber-800 dark:text-amber-300 uppercase">
+              ⚠️ Yang akan berubah:
+            </p>
+            <ul class="text-[11px] text-amber-700 dark:text-amber-300 space-y-0.5 ml-1">
+              <li>• Data produk &amp; stok yang ditampilkan</li>
+              <li>• Pengaturan sistem (toggle ON/OFF)</li>
+              <li>• Transaksi, hutang, kas, dan laporan</li>
+              <li>• Semua perubahan disimpan ke cabang yang aktif</li>
+            </ul>
+          </div>
+
+          <p v-if="switchError" class="text-xs text-red-600 dark:text-red-400">{{ switchError }}</p>
+
+          <div class="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              :disabled="switchingShop"
+              class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
+              @click="cancelSwitchShop"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              :disabled="switchingShop"
+              class="h-9 px-5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5"
+              @click="confirmSwitchShop"
+            >
+              <Loader2Icon v-if="switchingShop" class="w-3.5 h-3.5 animate-spin" />
+              {{ switchingShop ? 'Memuat...' : 'Ya, Pindah ke ' + pendingSwitchShopName }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+    <!-- Global UI: Confirm + Toast -->
+    <!-- Full-Screen Loading Overlay (Branch Switch) -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div
+          v-if="showSwitchOverlay"
+          class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm"
+        >
+          <div class="text-center space-y-4">
+            <!-- Animated icon -->
+            <div class="relative mx-auto w-16 h-16">
+              <div class="absolute inset-0 border-4 border-blue-100 dark:border-blue-900 rounded-full"></div>
+              <div class="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+              <div class="absolute inset-3 bg-blue-50 dark:bg-blue-950 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                </svg>
+              </div>
+            </div>
+            <!-- Text -->
+            <div>
+              <p class="text-lg font-bold text-slate-900 dark:text-slate-100">Pindah Cabang</p>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
+                Memuat data <strong class="text-blue-600">{{ switchOverlayShopName }}</strong>...
+              </p>
+            </div>
+            <!-- Progress dots -->
+            <div class="flex items-center justify-center gap-1.5">
+              <span class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0s"></span>
+              <span class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.15s"></span>
+              <span class="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style="animation-delay: 0.3s"></span>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+    <GlobalConfirm />
+    <GlobalToast />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref, type Component } from 'vue';
+import { computed, onMounted, onUnmounted, ref, type Component } from 'vue';
+import api from '@/shared/services/api';
+import GlobalConfirm from '@/shared/components/GlobalConfirm.vue';
+import GlobalToast from '@/shared/components/GlobalToast.vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
@@ -325,10 +536,13 @@ import {
   Building2 as Building2Icon,
   ChevronDown as ChevronDownIcon,
   Check as CheckIcon,
+  Loader2 as Loader2Icon,
   // BRILink
   Landmark as LandmarkIcon,
   ArrowRightLeft as TransferIcon,
   Percent as PercentIcon,
+  ClipboardList as ClipboardListIcon,
+  Tag as TagIcon,
   // Shifts & Profile
   Clock as ShiftIcon,
   User as UserIcon,
@@ -336,7 +550,13 @@ import {
   Sun as SunIcon,
   Moon as MoonIcon,
   Monitor as MonitorIcon,
+  Bell as BellIcon,
+  ChevronRight as ChevronRightIcon,
+  RefreshCw as RefreshCwIcon,
 } from 'lucide-vue-next';
+import { useNotifSound } from '@/shared/composables/useNotifSound';
+
+const { play: playNotifSound } = useNotifSound();
 
 const router = useRouter();
 const route = useRoute();
@@ -346,8 +566,18 @@ const { resolved: themeResolved, mode: themeMode, toggle: cycleTheme } = useThem
 
 const sidebarOpen = ref(false);
 const shopMenuOpen = ref(false);
+const showBranchPickerModal = ref(false);
 const switchingShop = ref(false);
 const switchError = ref('');
+
+// Confirmation modal state for switching active branch
+const showSwitchConfirmation = ref(false);
+const pendingSwitchShopId = ref<string | null>(null);
+const pendingSwitchShopName = ref('');
+
+// Full-screen loading overlay (shown after branch switch confirmed)
+const showSwitchOverlay = ref(false);
+const switchOverlayShopName = ref('');
 
 // === Theme ===
 const themeIcon = computed<Component>(() => {
@@ -366,6 +596,10 @@ function toggleTheme() {
 // === Shop selector ===
 const currentShopName = computed(() => shopStore.currentShopName);
 const currentShopId = computed(() => shopStore.currentShopId);
+const currentShopAddress = computed(() => {
+  const shop = availableShops.value.find(s => s.id === currentShopId.value);
+  return shop?.address || '';
+});
 const availableShops = computed(() => shopStore.availableShops);
 
 const canSwitchShop = computed(
@@ -375,26 +609,203 @@ const canSwitchShop = computed(
 async function handleSwitchShop(shopId: string) {
   if (shopId === currentShopId.value) {
     shopMenuOpen.value = false;
+    showBranchPickerModal.value = false;
     return;
   }
+  pendingSwitchShopId.value = shopId;
+  pendingSwitchShopName.value =
+    availableShops.value.find((s) => s.id === shopId)?.name ?? 'cabang ini';
+  shopMenuOpen.value = false;
+  showBranchPickerModal.value = false;
+  showSwitchConfirmation.value = true;
+}
+
+function openSwitchModal() {
+  showBranchPickerModal.value = true;
+}
+
+async function confirmSwitchShop() {
+  if (!pendingSwitchShopId.value) return;
   switchingShop.value = true;
   switchError.value = '';
   try {
-    await shopStore.selectShop(shopId);
+    await shopStore.selectShop(pendingSwitchShopId.value);
     await authStore.fetchUser();
-    shopMenuOpen.value = false;
+    showSwitchConfirmation.value = false;
+    showBranchPickerModal.value = false;
+
+    // Show loading overlay while page reloads data
+    showSwitchOverlay.value = true;
+    switchOverlayShopName.value = pendingSwitchShopName.value;
+
+    pendingSwitchShopId.value = null;
+    pendingSwitchShopName.value = '';
+
+    // Navigate to trigger data reload
     router.replace({
       path: route.path,
       query: { ...route.query, _t: Date.now().toString() },
     });
+
+    // Hide overlay after a short delay (gives time for components to re-fetch)
+    setTimeout(() => {
+      showSwitchOverlay.value = false;
+      switchOverlayShopName.value = '';
+    }, 1800);
   } catch (err: any) {
     switchError.value = err?.message ?? 'Gagal ganti cabang.';
+    showSwitchOverlay.value = false;
   } finally {
     switchingShop.value = false;
   }
 }
 
+function cancelSwitchShop() {
+  showSwitchConfirmation.value = false;
+  pendingSwitchShopId.value = null;
+  pendingSwitchShopName.value = '';
+}
+
+/**
+ * Fetch pending counts and set badges on nav items.
+ * Uses individual API calls until a dedicated badge-counts endpoint exists.
+ */
+async function fetchBadgeCounts() {
+  const shopId = shopStore.currentShopId ?? authStore.user?.shopId;
+  if (!shopId) return;
+
+  try {
+    // Parallel: pending cash-out, overdue debts, pending transfers
+    const [cashFlowRes, debtsRes, transfersRes, shiftsRes] = await Promise.allSettled([
+      api.get('/cash-flows', { params: { shopId, status: 'PENDING', type: 'CASH_OUT', limit: 0 } }),
+      api.get('/debts', { params: { shopId, status: 'OVERDUE', limit: 0 } }),
+      api.get('/transfers', { params: { shopId, status: 'PENDING', limit: 0 } }),
+      api.get('/shifts', { params: { shopId, status: 'CLOSED', limit: 0 } }),
+    ]);
+
+    const getCount = (res: PromiseSettledResult<any>): number => {
+      if (res.status === 'fulfilled') {
+        const d = res.value?.data;
+        return d?.meta?.total ?? d?.total ?? (Array.isArray(d?.data) ? d.data.length : 0);
+      }
+      return 0;
+    };
+
+    const pendingCashOut = getCount(cashFlowRes);
+    const overdueDebts = getCount(debtsRes);
+    const pendingTransfers = getCount(transfersRes);
+    const unfinalizedShifts = getCount(shiftsRes);
+
+    // Set badges on the appropriate nav items
+    function setBadge(path: string, count: number, color?: string) {
+      if (count <= 0) return;
+      for (const group of navGroups.value) {
+        const item = group.items.find((i) => i.to === path);
+        if (item) {
+          item.badge = count;
+          if (color) item.badgeColor = color;
+          break;
+        }
+      }
+    }
+
+    setBadge('/admin/kas-retail', pendingCashOut, 'bg-red-500 text-white');
+    setBadge('/admin/debts', overdueDebts, 'bg-amber-500 text-white');
+    setBadge('/admin/transfers', pendingTransfers, 'bg-blue-500 text-white');
+    setBadge('/admin/shifts', unfinalizedShifts, 'bg-slate-500 text-white');
+  } catch {
+    /* silent — badges are optional enhancements */
+  }
+}
+
+// ============================================
+// NOTIFICATION SYSTEM (Bell icon + sound)
+// ============================================
+const notifOpen = ref(false);
+const notifRef = ref<HTMLElement | null>(null);
+
+function onDocClick(e: MouseEvent) {
+  if (notifRef.value && !notifRef.value.contains(e.target as Node)) {
+    notifOpen.value = false;
+  }
+}
+const alertItems = ref<Array<{ id: string; type: string; severity: string; title: string; description: string; shopId: string; shopName: string }>>([]);
+const alertCount = ref(0);
+const alertsLoading = ref(false);
+let prevAlertCount = 0;
+let notifTimer: ReturnType<typeof setInterval> | null = null;
+
+// Sound tones handled by useNotifSound composable
+
+function alertDotColor(severity: string): string {
+  if (severity === 'critical') return 'bg-red-500';
+  if (severity === 'warning') return 'bg-amber-500';
+  return 'bg-blue-400';
+}
+function alertTypeBadge(type: string): string {
+  const m: Record<string, string> = { LOW_STOCK: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', BRILINK_LOW: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', NO_SHIFT: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', DEBT_OVERDUE: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' };
+  return m[type] || 'bg-slate-100 text-slate-600';
+}
+function alertTypeShort(type: string): string {
+  const m: Record<string, string> = { LOW_STOCK: 'Stok', BRILINK_LOW: 'BRI', NO_SHIFT: 'Shift', DEBT_OVERDUE: 'Hutang' };
+  return m[type] || type;
+}
+
+async function fetchAlerts() {
+  alertsLoading.value = alertItems.value.length === 0;
+  try {
+    const { data } = await api.get('/dashboard/retail/alerts/all');
+    alertItems.value = data.alerts || [];
+    alertCount.value = data.summary?.total || 0;
+
+    // Play sound if new alerts appeared
+    if (alertCount.value > prevAlertCount && prevAlertCount > 0) {
+      playNotifSound();
+    }
+    prevAlertCount = alertCount.value;
+  } catch {
+    // Silent — non-super-admin might get 403
+  } finally {
+    alertsLoading.value = false;
+  }
+}
+
+// playNotifSound is provided by useNotifSound composable above
+
+function startNotifPolling() {
+  fetchAlerts();
+  notifTimer = setInterval(fetchAlerts, 60_000); // 60s
+}
+function stopNotifPolling() {
+  if (notifTimer) { clearInterval(notifTimer); notifTimer = null; }
+}
+
+function handleAlertClick(alert: any) {
+  notifOpen.value = false;
+  // Navigate to relevant page based on alert type
+  const routeMap: Record<string, string> = {
+    LOW_STOCK: '/admin/products',
+    BRILINK_LOW: '/admin/brilink',
+    NO_SHIFT: '/admin/shifts',
+    DEBT_OVERDUE: '/admin/debts',
+  };
+  const target = routeMap[alert.type] || '/admin/dashboard';
+  router.push(target);
+}
+
+function markAllRead() {
+  // Dismiss all alerts visually (reset badge to 0, clear items)
+  alertItems.value = [];
+  alertCount.value = 0;
+  prevAlertCount = 0;
+  notifOpen.value = false;
+  // Persist dismissed state until next poll brings new ones
+  localStorage.setItem('alerts_dismissed_at', new Date().toISOString());
+}
+
 onMounted(async () => {
+  document.addEventListener('click', onDocClick, true);
+  startNotifPolling();
   if (canSwitchShop.value && availableShops.value.length === 0) {
     try {
       await shopStore.fetchShops();
@@ -415,6 +826,14 @@ onMounted(async () => {
       }
     }
   }
+
+  // Fetch badge counts for sidebar notifications
+  await fetchBadgeCounts();
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', onDocClick, true);
+  stopNotifPolling();
 });
 
 // ============================================
@@ -436,39 +855,19 @@ interface NavGroup {
 
 const topItems: NavItem[] = [
   { to: '/admin/home', label: 'Home', icon: HomeIcon },
-  { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
 ];
 
-const navGroups: NavGroup[] = [
+const navGroups = ref<NavGroup[]>([
   {
     title: 'Retail',
     items: [
+      { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
       { to: '/admin/transactions', label: 'Transaksi', icon: ReceiptIcon },
+      { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
+      { to: '/admin/riwayat-stok', label: 'Riwayat Stok', icon: ClipboardListIcon },
       { to: '/admin/debts', label: 'Hutang', icon: DebtIcon },
       { to: '/admin/kas-retail', label: 'Kas Retail', icon: WalletIcon },
-    ],
-  },
-  {
-    title: 'Inventaris',
-    items: [
-      { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
-      { to: '/admin/shops', label: 'Cabang', icon: Building2Icon },
-      { to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon },
-      { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
-      { to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon },
-    ],
-  },
-  {
-    title: 'Keuangan',
-    items: [
       { to: '/admin/reports', label: 'Laporan Retail', icon: ReportIcon },
-    ],
-  },
-  {
-    title: 'Operasional',
-    items: [
-      { to: '/admin/shifts', label: 'Shift', icon: ShiftIcon },
-      { to: '/admin/users', label: 'User & Akun', icon: UsersIcon },
     ],
   },
   {
@@ -480,7 +879,25 @@ const navGroups: NavGroup[] = [
       { to: '/admin/brilink/fee', label: 'Pengaturan Fee', icon: PercentIcon },
     ],
   },
-];
+  {
+    title: 'Operasional',
+    items: [
+      { to: '/admin/shifts', label: 'Shift', icon: ShiftIcon },
+      { to: '/admin/users', label: 'Multi-User', icon: UsersIcon },
+      { to: '/admin/shops', label: 'Cabang', icon: Building2Icon },
+      { to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon },
+      { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
+      { to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon },
+    ],
+  },
+  {
+    title: 'Inventaris',
+    items: [
+      { to: '/admin/cetak-label', label: 'Cetak Label', icon: TagIcon },
+      { to: '/admin/racks', label: 'Label Rak', icon: TagIcon },
+    ],
+  },
+]);
 
 const bottomNav: NavItem[] = [
   { to: '/admin/settings', label: 'Pengaturan', icon: SettingsIcon },
@@ -549,3 +966,22 @@ async function handleLogout() {
   router.push({ name: 'admin-login' });
 }
 </script>
+
+<style scoped>
+.dropdown-enter-active { transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1); }
+.dropdown-leave-active { transition: all 0.12s ease; }
+.dropdown-enter-from  { opacity: 0; transform: translateY(-6px) scale(0.97); }
+.dropdown-leave-to    { opacity: 0; transform: translateY(-4px) scale(0.98); }
+
+.fade-enter-active { transition: opacity 0.3s ease; }
+.fade-leave-active { transition: opacity 0.4s ease 0.2s; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  20%       { transform: rotate(-12deg); }
+  40%       { transform: rotate(12deg); }
+  60%       { transform: rotate(-8deg); }
+  80%       { transform: rotate(8deg); }
+}
+</style>

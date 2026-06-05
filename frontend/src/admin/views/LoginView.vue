@@ -146,7 +146,7 @@ const handleOTP = async () => {
 
     // Redirect after animation completes (2s)
     setTimeout(() => {
-      router.push('/admin/dashboard');
+      router.push('/admin/home');
     }, 2000);
   } catch (err: any) {
     errorMessage.value = err?.response?.data?.message || err?.message || 'Kode OTP tidak valid atau sudah expired.';

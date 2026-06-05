@@ -134,12 +134,48 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'product-categories',
+        name: 'admin-product-categories',
+        component: () => import('@/admin/views/ProductCategoriesView.vue'),
+        meta: {
+          title: 'Kategori Produk',
+          description: 'Kelola kategori produk (Makanan, Minuman, Sembako, dll).',
+        },
+      },
+      {
         path: 'stock',
         name: 'admin-stock',
         component: () => import('@/admin/views/AdminStockView.vue'),
         meta: {
           title: 'Stok & Inventaris',
           description: 'Overview stok, restok, opname, dan riwayat pergerakan.',
+        },
+      },
+      {
+        path: 'riwayat-stok',
+        name: 'admin-riwayat-stok',
+        component: () => import('@/admin/views/RiwayatStokView.vue'),
+        meta: {
+          title: 'Riwayat Stok',
+          description: 'Riwayat lengkap keluar masuk barang — siapa, dari mana, metode bayar.',
+        },
+      },
+      {
+        path: 'cetak-label',
+        name: 'admin-cetak-label',
+        component: () => import('@/admin/views/CetakLabelView.vue'),
+        meta: {
+          title: 'Cetak Label',
+          description: 'Generate & cetak barcode label produk untuk A4 atau printer label.',
+        },
+      },
+      {
+        path: 'racks',
+        name: 'admin-racks',
+        component: () => import('@/admin/views/AdminRacksView.vue'),
+        meta: {
+          title: 'Label Rak',
+          description: 'Kelola zona & rak, mapping produk, cetak label rak (QR Code).',
         },
       },
       {
@@ -224,7 +260,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/admin/views/AdminSettingsView.vue'),
         meta: {
           title: 'Pengaturan',
-          description: 'Konfigurasi toko, struk, bahasa, dan preferensi sistem.',
+          description: 'Konfigurasi toko, struk, bahasa, sistem ON/OFF, dan preferensi.',
         },
       },
 
@@ -268,7 +304,7 @@ const routes: RouteRecordRaw[] = [
         },
       },
 
-      // === BRILink (Phase 2) ===
+      // === BRILink ===
       {
         path: 'brilink',
         name: 'admin-brilink',
@@ -276,61 +312,28 @@ const routes: RouteRecordRaw[] = [
         meta: {
           title: 'BRILink',
           description: 'Dashboard layanan BRILink — transfer, tarik tunai, top-up, dan mutasi.',
-          phase: 2,
         },
       },
+      // Redirects — sub-pages merged into consolidated views
       {
         path: 'brilink/transfer',
-        name: 'admin-brilink-transfer',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
-        meta: {
-          title: 'BRILink — Transfer',
-          description:
-            'Kirim dana antar rekening BRI dan ke bank lain dengan kalkulasi fee otomatis.',
-          phase: 2,
-        },
+        redirect: { name: 'admin-brilink-transaksi' },
       },
       {
         path: 'brilink/cash',
-        name: 'admin-brilink-cash',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
-        meta: {
-          title: 'BRILink — Tarik Tunai',
-          description: 'Layani penarikan tunai pelanggan dari rekening BRI.',
-          phase: 2,
-        },
+        redirect: { name: 'admin-brilink-transaksi' },
       },
       {
         path: 'brilink/topup',
-        name: 'admin-brilink-topup',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
-        meta: {
-          title: 'BRILink — Top Up & Pulsa',
-          description:
-            'Top-up e-wallet, pulsa, paket data, dan token PLN dalam satu antarmuka.',
-          phase: 2,
-        },
+        redirect: { name: 'admin-brilink-transaksi' },
       },
       {
         path: 'brilink/mutations',
-        name: 'admin-brilink-mutations',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
-        meta: {
-          title: 'BRILink — Mutasi',
-          description:
-            'Riwayat transaksi BRILink dengan filter per kategori dan rekonsiliasi saldo BRI.',
-          phase: 2,
-        },
+        redirect: { name: 'admin-kas-rekening-brilink' },
       },
       {
         path: 'brilink/fees',
-        name: 'admin-brilink-fees',
-        component: () => import('@/admin/views/ComingSoonView.vue'),
-        meta: {
-          title: 'BRILink — Pengaturan Fee',
-          description: 'Atur margin fee per nominal dan jenis transaksi.',
-          phase: 2,
-        },
+        redirect: { name: 'admin-brilink-fee' },
       },
     ],
   },
@@ -385,10 +388,9 @@ router.beforeEach(async (to, _from, next) => {
   const allowedRoles = getMeta<string[]>(to, 'roles');
   const allowMissingShop = !!getMeta<boolean>(to, 'allowMissingShop');
 
-  // Guest-only: redirect user yang sudah login ke dashboard
+  // Guest-only: redirect user yang sudah login ke home
   if (guestOnly && authStore.isAuthenticated) {
-    if (authStore.isAdmin) return next({ name: 'admin-dashboard' });
-    // User non-admin akses admin domain → ke home (atau bisa redirect ke webapp)
+    if (authStore.isAdmin) return next({ name: 'admin-home' });
     return next({ name: 'home' });
   }
 
@@ -413,10 +415,9 @@ router.beforeEach(async (to, _from, next) => {
   next();
 });
 
-// Update document title on route change
 router.afterEach((to) => {
   const explicit = getMeta<string>(to, 'title');
-  document.title = explicit ? `${explicit} — Maslahat Tani` : 'Maslahat Tani v2';
+  document.title = explicit ? `${explicit} — Ngalir Admin` : 'Ngalir Admin';
 });
 
 export default router;

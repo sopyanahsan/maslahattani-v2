@@ -29,15 +29,24 @@ enum UserStatus {
 
 model User {
   id                  String    @id @default(cuid())
-  email               String    @unique
+  email               String?   @unique
   username            String?   @unique
   passwordHash        String
+  fullName            String?
+  phone               String?
+  address             String?
+  avatarUrl           String?
   role                Role      @default(KASIR)
   status              UserStatus @default(ACTIVE)
   shop                Shop?     @relation("ShopUsers", fields: [shopId], references: [id])
   shopId              String?
   
   mustChangePassword  Boolean   @default(false)
+  mustChangePin       Boolean   @default(false)
+  pin                 String?   // bcrypt hash of 4-6 digit PIN for kasir login
+  pinChangedAt        DateTime? @map("pin_changed_at")
+  pinAttempts         Int       @default(0) @map("pin_attempts")
+  pinLockedUntil      DateTime? @map("pin_locked_until")
   lastLogin           DateTime?
   lastPasswordReset   DateTime?
   createdAt           DateTime  @default(now())
@@ -47,10 +56,13 @@ model User {
   activityLogs        ActivityLog[]
   transactions        Transaction[]
   shifts              Shift[]
+  cashFlows           CashFlow[]
   ownedShops          Shop[]    @relation("ShopOwner")
   brilinkTransactions BrilinkTransaction[] @relation("BrilinkCashier")
   brilinkMutations    BrilinkMutation[]    @relation("BrilinkMutationCreator")
+  stockHistories      StockHistory[]       @relation("StockHistoryCreator")
   opnameSessions      OpnameSession[]      @relation("OpnameConductor")
+  opnameAssignments   OpnameSession[]      @relation("OpnameAssignee")
   purchaseOrders      PurchaseOrder[]      @relation("POCreator")
   transferRequests    StockTransfer[]      @relation("TransferRequester")
   transferApprovals   StockTransfer[]      @relation("TransferApprover")
@@ -121,6 +133,9 @@ model Shop {
   cashMutations       CashMutation[]
   shifts              Shift[]
   settings            ShopSetting?
+  productCategories   ProductCategory[]
+  cashFlowCategories  CashFlowCategory[]
+  cashFlows           CashFlow[]
   brilinkTransactions BrilinkTransaction[]
   brilinkFees         BrilinkFee[]
   brilinkAccounts     BrilinkAccount[]
@@ -129,6 +144,8 @@ model Shop {
   purchaseOrders      PurchaseOrder[]
   transfersOut        StockTransfer[]      @relation("TransferFrom")
   transfersIn         StockTransfer[]      @relation("TransferTo")
+  rackZones           RackZone[]
+  racks               Rack[]
 
   @@map("shops")
 }
@@ -137,19 +154,39 @@ model ShopSetting {
   id                  String    @id @default(cuid())
   shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId              String    @unique
-  language            String    @default("id") // "id", "en", "su", "jv"
-  receiptConfig       String?   // JSON config for receipt printing
-  /**
-   * Konfigurasi threshold alert untuk Dashboard Retail.
-   * JSON shape: {
-   *   lowStockThreshold: number,            // unit min sebelum stock dianggap menipis (default 5)
-   *   shiftDurationWarningHours: number,    // jam kerja shift sebelum warning (default 8)
-   *   overdueDebtDaysBeforeNotice: number,  // H- berapa hari sebelum dueDate mau di-warn (default 0 = exact)
-   * }
-   * Null = pakai default. Lihat DashboardService.DEFAULT_ALERT_CONFIG.
-   */
+  language            String    @default("id")
+  receiptConfig       String?
   alertConfig         Json?
   brilinkCategoryConfig Json?
+
+  // Module toggles
+  brilinkEnabled              Boolean @default(true)
+
+  // Shift settings
+  shiftMode                   String  @default("FLOWING") // FLOWING | RESET
+  shiftForceCloseOnSwitch     Boolean @default(true)
+  shiftCorrectionRequired     Boolean @default(true)
+  shiftPhysicalCountRequired  Boolean @default(true)
+  shiftGuardEnabled           Boolean @default(true)
+
+  // Kas
+  cashOutApprovalEnabled      Boolean @default(true)
+
+  // Payment methods
+  paymentCashEnabled          Boolean @default(true)
+  paymentQrisEnabled          Boolean @default(true)
+  paymentHutangEnabled        Boolean @default(true)
+
+  // POS features
+  saveBillEnabled             Boolean @default(true)
+  discountPerItemEnabled      Boolean @default(true)
+  discountTotalEnabled        Boolean @default(true)
+  notePerItemEnabled          Boolean @default(true)
+
+  // Notification settings
+  notifSoundEnabled           Boolean @default(true)
+  notifSoundTone              String  @default("chime") // chime | beep | bell | silent
+
   updatedAt           DateTime  @updatedAt
   
   @@map("shop_settings")
@@ -204,10 +241,16 @@ model Product {
   shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId              String
   name                String
-  sku                 String
+  sku                 String                // kode internal toko (auto-generated)
+  barcode             String?               // EAN/UPC dari pabrik (nullable, untuk scan POS)
   price               Int       // in rupiah
   cost                Int       // in rupiah
   supplierId          String?   // future: Supplier model
+  category            ProductCategory? @relation(fields: [categoryId], references: [id])
+  categoryId          String?
+  imageUrl            String?   // Cloudinary URL
+  unit                String?   // satuan: pcs, kg, liter, dll
+  description         String?
   
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -222,7 +265,29 @@ model Product {
 
   @@unique([shopId, sku])
   @@index([shopId])
+  @@index([categoryId])
+  @@index([shopId, barcode])
   @@map("products")
+}
+
+model ProductCategory {
+  id          String    @id @default(cuid())
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId      String
+  name        String    // "Makanan", "Minuman", "Sembako", dll
+  icon        String?   // emoji or Lucide icon name
+  color       String?   // Tailwind color
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  
+  products    Product[]
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([shopId, name])
+  @@index([shopId, isActive])
+  @@map("product_categories")
 }
 
 model Stock {
@@ -233,6 +298,8 @@ model Stock {
   productId           String
   quantity            Int       @default(0)
   warehouse           String?   @default("main")
+  rack                Rack?     @relation(fields: [rackId], references: [id], onDelete: SetNull)
+  rackId              String?
   
   updatedAt           DateTime  @updatedAt
   
@@ -241,6 +308,7 @@ model Stock {
   @@unique([shopId, productId, warehouse])
   @@index([shopId])
   @@index([productId])
+  @@index([rackId])
   @@map("stocks")
 }
 
@@ -253,21 +321,41 @@ enum StockHistoryType {
   ADJUSTMENT
 }
 
+enum StockHistorySource {
+  INITIAL          // saldo awal saat produk dibuat
+  BULK_UPLOAD      // import Excel
+  SEED             // seed data
+  STOCK_IN         // restock manual
+  SALE             // penjualan via POS
+  SALE_VOID        // void penjualan (stok dikembalikan)
+  OPNAME_INLINE    // opname cepat dari /stock
+  OPNAME_SESSION   // opname dari sesi /opname
+  TRANSFER_OUT     // transfer keluar ke cabang lain
+  TRANSFER_IN      // transfer masuk dari cabang lain
+  PURCHASE_ORDER   // PO dari supplier
+  ADJUSTMENT       // penyesuaian manual lainnya
+}
+
 model StockHistory {
   id                  String    @id @default(cuid())
   stock               Stock     @relation(fields: [stockId], references: [id], onDelete: Cascade)
   stockId             String
   type                StockHistoryType
+  source              StockHistorySource?  // alasan/sumber pergerakan stok
+  paymentMethod       PaymentMethod?       // hanya untuk SALE (CASH/QRIS/TRANSFER/HUTANG)
   quantityBefore      Int
   quantityAfter       Int
   quantityChange      Int
-  reference           String?   // transaction_id, opname_id, etc
+  reference           String?   // transaction_id, opname_id, transfer_id, po_id
   notes               String?
+  createdBy           User?     @relation("StockHistoryCreator", fields: [createdById], references: [id])
+  createdById         String?   // user yang melakukan aksi (kasir/admin)
   
   createdAt           DateTime  @default(now())
   
   @@index([stockId])
   @@index([createdAt])
+  @@index([source])
   @@map("stock_histories")
 }
 
@@ -513,6 +601,7 @@ model Shift {
    *   input actualCash/QRIS, sistem hitung variance.
    */
   cashBoxes           ShiftCashBox[]
+  cashFlows           CashFlow[]
 
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -575,6 +664,59 @@ model ShiftCashBox {
 }
 
 // ============================================
+// CASH FLOW (Cash In / Cash Out)
+// ============================================
+
+model CashFlowCategory {
+  id          String    @id @default(cuid())
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId      String
+  name        String
+  type        String    // CASH_IN | CASH_OUT
+  icon        String?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+
+  cashFlows   CashFlow[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([shopId, name, type])
+  @@index([shopId, type, isActive])
+  @@map("cash_flow_categories")
+}
+
+model CashFlow {
+  id          String    @id @default(cuid())
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId      String
+  user        User      @relation(fields: [userId], references: [id])
+  userId      String
+  shift       Shift?    @relation(fields: [shiftId], references: [id])
+  shiftId     String?
+  category    CashFlowCategory @relation(fields: [categoryId], references: [id])
+  categoryId  String
+
+  type        String    // CASH_IN | CASH_OUT
+  amount      Int
+  notes       String?
+
+  // Approval
+  status      String    @default("PENDING") // PENDING | VERIFIED | REJECTED
+  verifiedBy  String?
+  verifiedAt  DateTime?
+  rejectReason String?
+
+  createdAt   DateTime  @default(now())
+
+  @@index([shopId, createdAt])
+  @@index([shiftId])
+  @@index([status])
+  @@map("cash_flows")
+}
+
+// ============================================
 // STOCK OPNAME SESSION MANAGEMENT
 // ============================================
 
@@ -591,6 +733,9 @@ model OpnameSession {
   shopId          String
   conductor       User          @relation("OpnameConductor", fields: [conductorId], references: [id])
   conductorId     String
+  /** Petugas (kasir) yang ditugaskan menghitung fisik. null = belum di-assign */
+  assignee        User?         @relation("OpnameAssignee", fields: [assigneeId], references: [id], onDelete: SetNull)
+  assigneeId      String?
 
   sessionNumber   String        @unique
   /**
@@ -618,6 +763,7 @@ model OpnameSession {
 
   @@index([shopId])
   @@index([conductorId])
+  @@index([assigneeId])
   @@index([status])
   @@index([createdAt])
   @@map("opname_sessions")
@@ -633,6 +779,7 @@ model OpnameItem {
   systemQty       Int           // stok di sistem saat opname dimulai
   actualQty       Int?          // stok fisik yang dihitung
   variance        Int?          // actualQty - systemQty
+  reason          String?       // HILANG | RUSAK | EXPIRED | SALAH_HITUNG | LAINNYA
   notes           String?
   /** Siapa yang menghitung item ini (reference ke OpnameParticipant) */
   countedById     String?
@@ -934,4 +1081,48 @@ model StockTransferItem {
   @@index([transferId])
   @@index([productId])
   @@map("stock_transfer_items")
+}
+
+
+
+// ============================================
+// RACK MANAGEMENT (Zona → Rak)
+// ============================================
+
+model RackZone {
+  id              String    @id @default(cuid())
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  name            String    // e.g. "Minuman Dingin", "Snack", "Kebutuhan Pokok"
+  description     String?
+  sortOrder       Int       @default(0)
+
+  racks           Rack[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([shopId, name])
+  @@index([shopId])
+  @@map("rack_zones")
+}
+
+model Rack {
+  id              String    @id @default(cuid())
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  zone            RackZone  @relation(fields: [zoneId], references: [id], onDelete: Cascade)
+  zoneId          String
+  code            String    // e.g. "A1", "B-03" — unique per shop
+  name            String?   // optional descriptive name e.g. "Rak Atas Kiri"
+
+  stocks          Stock[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([shopId, code])
+  @@index([shopId])
+  @@index([zoneId])
+  @@map("racks")
 }

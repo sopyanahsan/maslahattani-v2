@@ -159,14 +159,50 @@ const supplierService = {
     return data;
   },
 
-  async markReceived(id: string) {
-    const { data } = await api.post(`/suppliers/purchase-orders/${id}/receive`);
+  async markReceived(id: string, items?: Array<{ itemId: string; receivedQty: number; actualCost?: number }>) {
+    const { data } = await api.post(`/suppliers/purchase-orders/${id}/receive`, items ? { items } : {});
     return data;
   },
 
   async cancelPO(id: string) {
     const { data } = await api.post(`/suppliers/purchase-orders/${id}/cancel`);
     return data;
+  },
+
+  // === Price Updates (from PO receive) ===
+
+  async bulkUpdatePrices(updates: Array<{ productId: string; cost: number; price?: number }>) {
+    const { data } = await api.post('/products/bulk-update-prices', { updates });
+    return data;
+  },
+
+  // === Product search (for PO creation) ===
+
+  async searchProducts(shopId: string, search: string): Promise<Array<{ id: string; name: string; sku: string; stock: number }>> {
+    const { data } = await api.get('/products', {
+      params: { shopId, search, limit: 10 },
+    });
+    // Map response to simplified format
+    return (data.data || []).map((p: any) => ({
+      id: p.id,
+      name: p.name,
+      sku: p.sku,
+      stock: p.stocks?.reduce((sum: number, s: any) => sum + s.quantity, 0) ?? 0,
+    }));
+  },
+
+  // === Quick create product (from PO flow) ===
+
+  async quickCreateProduct(payload: { shopId: string; name: string; unit?: string; categoryId?: string }) {
+    const { data } = await api.post('/products/quick-create', payload);
+    return data;
+  },
+
+  // === Product categories (for quick add form) ===
+
+  async getProductCategories(shopId: string): Promise<{ data: Array<{ id: string; name: string }> }> {
+    const { data } = await api.get('/products/categories', { params: { shopId } });
+    return { data: data.data || data || [] };
   },
 };
 

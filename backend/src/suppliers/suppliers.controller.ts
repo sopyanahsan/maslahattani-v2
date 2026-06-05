@@ -15,13 +15,15 @@ import {
   CreateSupplierDto,
   UpdateSupplierDto,
   CreatePurchaseOrderDto,
+  ReceivePurchaseOrderDto,
   QuerySuppliersDto,
   QueryPurchaseOrdersDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
+import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
 
-@Controller('suppliers')
-@UseGuards(JwtAuthGuard)
+@Controller('api/suppliers')
+@UseGuards(JwtAuthGuard, ShopScopeGuard)
 export class SuppliersController {
   constructor(private readonly suppliersService: SuppliersService) {}
 
@@ -78,8 +80,8 @@ export class SuppliersController {
   }
 
   @Post('purchase-orders/:id/receive')
-  async markReceived(@Param('id') id: string) {
-    return this.suppliersService.markReceived(id);
+  async markReceived(@Param('id') id: string, @Body() body: ReceivePurchaseOrderDto) {
+    return this.suppliersService.markReceived(id, body?.items);
   }
 
   @Post('purchase-orders/:id/cancel')

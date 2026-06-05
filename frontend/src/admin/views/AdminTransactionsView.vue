@@ -1,30 +1,33 @@
 <template>
   <div class="space-y-5">
     <!-- Header -->
-    <div>
-      <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Transaksi Retail</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-        Riwayat transaksi retail, filter, detail &amp; void.
-      </p>
-    </div>
+    <div></div>
 
-    <!-- Stats cards -->
-    <div v-if="stats" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Omzet</p>
-        <p class="text-lg font-bold font-mono text-slate-950 dark:text-slate-100 mt-1">{{ formatRupiah(stats.omzet) }}</p>
+    <!-- Stats cards (6 KPI) -->
+    <div v-if="stats" class="grid grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">Omzet</p>
+        <p class="text-base font-bold font-mono text-slate-950 dark:text-slate-100 mt-0.5">{{ formatRupiah(stats.omzet) }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Laba Kotor</p>
-        <p class="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{{ formatRupiah(stats.profit) }}</p>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">Laba Kotor</p>
+        <p class="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">{{ formatRupiah(stats.profit) }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Transaksi</p>
-        <p class="text-lg font-bold font-mono text-slate-950 dark:text-slate-100 mt-1">{{ stats.totalTransaksi }}</p>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">Transaksi</p>
+        <p class="text-base font-bold font-mono text-slate-950 dark:text-slate-100 mt-0.5">{{ stats.totalTransaksi }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Void</p>
-        <p class="text-lg font-bold font-mono text-red-600 dark:text-red-400 mt-1">{{ stats.totalVoid }}</p>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">AOV</p>
+        <p class="text-base font-bold font-mono text-blue-600 dark:text-blue-400 mt-0.5">{{ formatRupiah(stats.totalTransaksi > 0 ? Math.round(stats.omzet / stats.totalTransaksi) : 0) }}</p>
+      </div>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">Diskon</p>
+        <p class="text-base font-bold font-mono text-amber-600 dark:text-amber-400 mt-0.5">{{ formatRupiah(stats.totalDiskon ?? 0) }}</p>
+      </div>
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
+        <p class="text-[10px] text-slate-500 dark:text-slate-400">Void</p>
+        <p class="text-base font-bold font-mono text-red-600 dark:text-red-400 mt-0.5">{{ stats.totalVoid }}</p>
       </div>
     </div>
 
@@ -129,8 +132,10 @@
               <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">No. Transaksi</th>
               <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Kasir</th>
               <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Waktu</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Item</th>
               <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Metode</th>
               <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Total</th>
+              <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Profit</th>
               <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Status</th>
               <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Aksi</th>
             </tr>
@@ -151,6 +156,9 @@
                 {{ formatDateTime(trx.createdAt) }}
               </td>
               <td class="px-4 py-3 text-center">
+                <span class="text-xs font-semibold text-slate-600 dark:text-slate-400">{{ trx.items?.length ?? 0 }}</span>
+              </td>
+              <td class="px-4 py-3 text-center">
                 <span
                   v-for="p in trx.payments"
                   :key="p.id"
@@ -159,6 +167,9 @@
               </td>
               <td class="px-4 py-3 text-right text-sm font-mono font-semibold text-slate-900 dark:text-slate-100">
                 {{ formatRupiah(trx.totalPrice) }}
+              </td>
+              <td class="px-4 py-3 text-right text-xs font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+                {{ formatRupiah(trx.totalPrice - (trx.totalCost || 0)) }}
               </td>
               <td class="px-4 py-3 text-center">
                 <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase', statusBadge(trx.status)]">
@@ -173,6 +184,13 @@
                     @click="openDetail(trx)"
                   >
                     <EyeIcon class="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                  </button>
+                  <button
+                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:border-blue-200 dark:hover:border-blue-800 transition-colors"
+                    title="Cetak Ulang Struk"
+                    @click="handlePrintReceipt(trx)"
+                  >
+                    <PrinterIcon class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
                   </button>
                   <button
                     v-if="trx.status === 'COMPLETED'"
@@ -341,6 +359,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive } from 'vue';
+import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import {
   Loader2 as Loader2Icon,
   AlertCircle as AlertCircleIcon,
@@ -348,8 +367,10 @@ import {
   Eye as EyeIcon,
   XCircle as XCircleIcon,
   Search as SearchIcon,
+  Printer as PrinterIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useToast } from '@/shared/composables/useToast';
 import transactionsService, {
   type TransactionDto,
   type TransactionStatus,
@@ -359,6 +380,7 @@ import transactionsService, {
 } from '@/shared/services/transactions.service';
 
 const authStore = useAuthStore();
+const toast = useToast();
 
 // ============================================
 // State
@@ -512,6 +534,51 @@ function openDetail(trx: TransactionDto) {
   showDetailModal.value = true;
 }
 
+/**
+ * Cetak ulang struk via Bluetooth thermal printer.
+ * Jika printer belum connect → show pairing dialog.
+ * Fallback: download sebagai gambar (browser print).
+ */
+async function handlePrintReceipt(trx: TransactionDto) {
+  try {
+    const { thermalPrint } = await import('@/shared/services/thermal-print.service');
+
+    if (!thermalPrint.isConnected) {
+      await thermalPrint.connect();
+    }
+
+    const shopName = authStore.user?.shopId ? 'Toko' : 'Toko';
+    await thermalPrint.printReceipt({
+      shopName,
+      trxNumber: trx.transactionNumber,
+      date: formatDateTime(trx.createdAt),
+      cashierName: trx.user?.username ?? trx.user?.email ?? 'Kasir',
+      items: (trx.items || []).map((i: any) => ({
+        name: i.product?.name || 'Produk',
+        qty: i.quantity,
+        price: i.unitPrice,
+        subtotal: i.subtotal,
+      })),
+      subtotal: trx.totalPrice,
+      discount: trx.totalDiscount || 0,
+      total: trx.totalPrice,
+      paid: trx.payments?.[0]?.amount || trx.totalPrice,
+      change: Math.max(0, (trx.payments?.[0]?.amount || trx.totalPrice) - trx.totalPrice),
+      method: trx.payments?.[0]?.method || 'CASH',
+    });
+
+    toast.success(`Struk ${trx.transactionNumber} tercetak ke ${thermalPrint.deviceName}`);
+  } catch (err: any) {
+    if (err.message?.includes('cancelled') || err.message?.includes('NotFound')) {
+      // User cancelled pairing — silent
+    } else if (err.message?.includes('Web Bluetooth')) {
+      toast.error('Bluetooth tidak tersedia di browser ini. Gunakan Chrome/Edge.');
+    } else {
+      toast.error(err.message || 'Gagal cetak struk.');
+    }
+  }
+}
+
 function openVoidModal(trx: TransactionDto) {
   voidTrx.value = trx;
   voidError.value = null;
@@ -546,4 +613,6 @@ onMounted(() => {
   fetchTransactions();
   fetchStats();
 });
+
+useAutoRefresh(() => { fetchTransactions(); fetchStats(); });
 </script>

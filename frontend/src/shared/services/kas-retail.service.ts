@@ -6,6 +6,8 @@ export interface CashBoxItem {
   categoryId: string | null;
   label: string;
   balance: number;
+  code?: string;
+  isDefault?: boolean;
   lastAudit: string | null;
   lastAuditBalance: number | null;
 }
@@ -76,6 +78,7 @@ const kasRetailService = {
     startDate?: string;
     endDate?: string;
     categoryId?: string;
+    cashBoxId?: string;
     page?: number;
     limit?: number;
   }): Promise<PaymentHistoryResponse> {

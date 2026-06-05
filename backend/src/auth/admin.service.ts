@@ -26,45 +26,89 @@ export class AdminService {
         role: true,
         status: true,
         shopId: true,
+        shop: { select: { id: true, name: true } },
         lastLogin: true,
         createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    return { data: kasirList, total: kasirList.length };
+    return {
+      data: kasirList.map((k) => ({
+        ...k,
+        shopName: k.shop?.name || null,
+        shop: undefined, // Don't expose full shop object
+      })),
+      total: kasirList.length,
+    };
   }
 
   /**
-   * Create new kasir with auto-generated username suggestion
+   * Create new user (kasir with PIN or admin with password)
    */
   async createKasir(dto: CreateKasirDto) {
-    // Check email exists
-    const existing = await this.prisma.user.findUnique({
-      where: { email: dto.email.toLowerCase() },
-    });
+    const role = dto.role || Role.KASIR;
+    const isAdmin = role === Role.ADMIN;
 
-    if (existing) {
-      throw new ConflictException('Email sudah terdaftar.');
+    // Validate: KASIR needs PIN, ADMIN needs password
+    if (!isAdmin && !dto.pin) {
+      throw new ConflictException('PIN wajib diisi untuk role Kasir.');
+    }
+    if (isAdmin && !dto.password) {
+      throw new ConflictException('Password wajib diisi untuk role Admin.');
     }
 
-    // Generate username from email
-    const suggestedUsername = await this.generateUniqueUsername(dto.email);
+    // Check username exists
+    const existingUsername = await this.prisma.user.findUnique({
+      where: { username: dto.username.toLowerCase() },
+    });
+    if (existingUsername) {
+      throw new ConflictException('Username sudah digunakan.');
+    }
 
-    // Generate temp password
-    const tempPassword = this.generateTempPassword();
-    const passwordHash = await bcrypt.hash(tempPassword, 12);
+    // Check email if provided
+    if (dto.email) {
+      const existingEmail = await this.prisma.user.findUnique({
+        where: { email: dto.email.toLowerCase() },
+      });
+      if (existingEmail) {
+        throw new ConflictException('Email sudah terdaftar.');
+      }
+    }
 
-    // Create user
+    // Prepare credentials based on role
+    let passwordHash: string;
+    let pinHash: string | null = null;
+    let mustChangePassword = false;
+    let mustChangePin = false;
+
+    if (isAdmin) {
+      // ADMIN: uses password for login
+      passwordHash = await bcrypt.hash(dto.password!, 12);
+      mustChangePassword = true; // Force change on first login
+    } else {
+      // KASIR: uses PIN for login
+      pinHash = await bcrypt.hash(dto.pin!, 12);
+      mustChangePin = true; // Force change on first login
+      // Generate placeholder password (kasir doesn't use password)
+      passwordHash = await bcrypt.hash(
+        `ngalir_${Date.now()}_${Math.random()}`,
+        12,
+      );
+    }
+
     const kasir = await this.prisma.user.create({
       data: {
-        email: dto.email.toLowerCase(),
-        username: suggestedUsername,
+        email: dto.email?.toLowerCase() || null,
+        username: dto.username.toLowerCase(),
         passwordHash,
-        role: dto.role || Role.KASIR,
+        pin: pinHash,
+        pinChangedAt: pinHash ? new Date() : null,
+        role,
         status: UserStatus.ACTIVE,
         shopId: dto.shopId || null,
-        mustChangePassword: true,
+        mustChangePassword,
+        mustChangePin,
       },
       select: {
         id: true,
@@ -77,10 +121,12 @@ export class AdminService {
       },
     });
 
+    const roleLabel = isAdmin ? 'Admin' : 'Kasir';
+    const loginMethod = isAdmin ? 'password di /admin/login' : 'PIN di webapp';
+
     return {
       kasir,
-      tempPassword,
-      message: `Kasir berhasil dibuat. Password sementara: ${tempPassword}`,
+      message: `${roleLabel} "${dto.username}" berhasil dibuat. Login dengan username + ${loginMethod}.`,
     };
   }
 
@@ -111,6 +157,39 @@ export class AdminService {
     });
 
     return { kasir: updated };
+  }
+
+  /**
+   * Reset kasir PIN and generate new temp PIN
+   */
+  async resetKasirPin(id: string) {
+    const kasir = await this.prisma.user.findUnique({ where: { id } });
+
+    if (!kasir) {
+      throw new NotFoundException('Kasir tidak ditemukan.');
+    }
+
+    // Generate random 4-digit PIN
+    const newPin = String(Math.floor(1000 + Math.random() * 9000));
+    const pinHash = await bcrypt.hash(newPin, 12);
+
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        pin: pinHash,
+        pinChangedAt: new Date(),
+        pinAttempts: 0,
+        pinLockedUntil: null,
+      },
+    });
+
+    // Invalidate all sessions
+    await this.prisma.session.deleteMany({ where: { userId: id } });
+
+    return {
+      tempPin: newPin,
+      message: `PIN berhasil direset. PIN baru: ${newPin}`,
+    };
   }
 
   /**
