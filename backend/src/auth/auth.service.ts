@@ -587,6 +587,36 @@ export class AuthService {
     return { success: true, message: 'Password berhasil diubah.' };
   }
 
+  /**
+   * Change password with old password verification (self-service from profile page).
+   */
+  async changePasswordWithOld(userId: string, currentPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User tidak ditemukan.');
+
+    // Verify current password
+    const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!isValid) {
+      throw new UnauthorizedException('Password lama salah.');
+    }
+
+    if (newPassword.length < 6) {
+      throw new BadRequestException('Password baru minimal 6 karakter.');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash,
+        mustChangePassword: false,
+        lastPasswordReset: new Date(),
+      },
+    });
+
+    return { success: true, message: 'Password berhasil diubah.' };
+  }
+
   // ============================================
   // GET CURRENT USER
   // ============================================
@@ -606,6 +636,7 @@ export class AuthService {
         shopId: true,
         otpEnabled: true,
         lastLogin: true,
+        lastPasswordReset: true,
         createdAt: true,
       },
     });

@@ -92,6 +92,15 @@ export class AuthController {
     return this.authService.changePassword(req.user.id, dto.newPassword);
   }
 
+  @Post('change-password-with-old')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Change password with old password verification (self-service)' })
+  async changePasswordWithOld(@Request() req: any, @Body() dto: { currentPassword: string; newPassword: string }) {
+    return this.authService.changePasswordWithOld(req.user.id, dto.currentPassword, dto.newPassword);
+  }
+
   @Post('login-pin')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login kasir dengan username + PIN (4-6 digit)' })

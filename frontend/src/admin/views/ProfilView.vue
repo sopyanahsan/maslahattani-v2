@@ -125,7 +125,7 @@
     <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
       <h2 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">Keamanan</h2>
 
-      <!-- Reset password -->
+      <!-- Change password -->
       <div class="flex items-center justify-between py-3 border-b border-slate-200 dark:border-slate-800">
         <div>
           <p class="text-sm font-medium text-slate-900 dark:text-slate-100">Password</p>
@@ -138,7 +138,7 @@
           class="h-9 px-4 text-xs font-semibold border border-slate-300 dark:border-slate-700
                  text-slate-700 dark:text-slate-300 rounded-lg
                  hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-          disabled
+          @click="showChangePassword = true"
         >
           Ganti Password
         </button>
@@ -176,6 +176,63 @@
         </button>
       </div>
     </section>
+
+    <!-- Change Password Modal -->
+    <teleport to="body">
+      <div v-if="showChangePassword" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showChangePassword = false"></div>
+        <form class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleChangePassword">
+          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Ganti Password</h3>
+
+          <div>
+            <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">Password Lama</label>
+            <input
+              v-model="pwForm.currentPassword"
+              type="password"
+              required
+              placeholder="Masukkan password saat ini"
+              class="mt-1 w-full h-9 px-3 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">Password Baru</label>
+            <input
+              v-model="pwForm.newPassword"
+              type="password"
+              required
+              minlength="6"
+              placeholder="Minimal 6 karakter"
+              class="mt-1 w-full h-9 px-3 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">Konfirmasi Password Baru</label>
+            <input
+              v-model="pwForm.confirmPassword"
+              type="password"
+              required
+              minlength="6"
+              placeholder="Ulangi password baru"
+              class="mt-1 w-full h-9 px-3 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <div v-if="pwError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md p-2 text-xs text-red-700 dark:text-red-300">
+            {{ pwError }}
+          </div>
+
+          <div class="flex justify-end gap-2 pt-2">
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700" @click="showChangePassword = false">Batal</button>
+            <button type="submit" :disabled="changingPassword" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
+              <Loader2Icon v-if="changingPassword" class="w-3.5 h-3.5 animate-spin" />
+              {{ changingPassword ? 'Mengubah...' : 'Simpan Password' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </teleport>
   </div>
 </template>
 
@@ -203,6 +260,16 @@ const otpEnabled = ref(false);
 const togglingOtp = ref(false);
 const savingProfile = ref(false);
 const profileError = ref<string | null>(null);
+
+// Change password state
+const showChangePassword = ref(false);
+const changingPassword = ref(false);
+const pwError = ref<string | null>(null);
+const pwForm = reactive({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: '',
+});
 
 // ============================================
 // Computed
@@ -274,6 +341,38 @@ async function handleSaveProfile() {
     profileError.value = err.response?.data?.message || err.message || 'Gagal menyimpan profil.';
   } finally {
     savingProfile.value = false;
+  }
+}
+
+async function handleChangePassword() {
+  pwError.value = null;
+
+  if (pwForm.newPassword.length < 6) {
+    pwError.value = 'Password baru minimal 6 karakter.';
+    return;
+  }
+  if (pwForm.newPassword !== pwForm.confirmPassword) {
+    pwError.value = 'Konfirmasi password tidak cocok.';
+    return;
+  }
+
+  changingPassword.value = true;
+  try {
+    const { data } = await api.post('/auth/change-password-with-old', {
+      currentPassword: pwForm.currentPassword,
+      newPassword: pwForm.newPassword,
+    });
+    toast.success(data.message || 'Password berhasil diubah.');
+    showChangePassword.value = false;
+    pwForm.currentPassword = '';
+    pwForm.newPassword = '';
+    pwForm.confirmPassword = '';
+    // Reload profile to update lastPasswordReset
+    await loadProfile();
+  } catch (err: any) {
+    pwError.value = err.response?.data?.message || err.message || 'Gagal mengubah password.';
+  } finally {
+    changingPassword.value = false;
   }
 }
 
