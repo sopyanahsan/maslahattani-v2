@@ -303,6 +303,11 @@
                     Mencari...
                   </div>
                   <template v-else>
+                    <!-- No results message -->
+                    <div v-if="productSearchResults.length === 0 && productSearchQuery.length >= 2" class="px-3 py-3 text-center text-xs text-slate-400">
+                      Produk "{{ productSearchQuery }}" tidak ditemukan di cabang ini.
+                    </div>
+                    <!-- Result items -->
                     <button
                       v-for="p in productSearchResults"
                       :key="p.id"
@@ -316,11 +321,11 @@
                       </div>
                       <span class="text-[10px] text-slate-500 shrink-0 ml-2">Stok: {{ p.stock }}</span>
                     </button>
-                    <!-- Quick add option -->
+                    <!-- Quick add option (always visible when search query >= 2) -->
                     <button
                       v-if="productSearchQuery.length >= 2"
                       type="button"
-                      class="w-full px-3 py-2.5 text-left hover:bg-emerald-50 transition-colors flex items-center gap-2 border-t border-slate-200"
+                      class="w-full px-3 py-2.5 text-left hover:bg-emerald-50 transition-colors flex items-center gap-2 border-t border-slate-200 sticky bottom-0 bg-white"
                       @mousedown.prevent="openQuickAddProduct"
                     >
                       <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
@@ -330,7 +335,7 @@
                       </div>
                       <div>
                         <p class="text-xs font-semibold text-emerald-700">Tambah "{{ productSearchQuery }}" sebagai produk baru</p>
-                        <p class="text-[10px] text-slate-400">SKU akan di-generate otomatis</p>
+                        <p class="text-[10px] text-slate-400">SKU auto-generate, harga diisi nanti</p>
                       </div>
                     </button>
                   </template>
