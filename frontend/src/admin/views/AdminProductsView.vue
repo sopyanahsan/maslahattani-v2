@@ -740,6 +740,7 @@ import {
   History as HistoryIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import { useConfirm } from '@/shared/composables/useConfirm';
 import { uploadToCloudinary } from '@/shared/services/upload.service';
 import api from '@/shared/services/api';
@@ -749,6 +750,7 @@ import productsService, {
 } from '@/shared/services/products.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const { ask } = useConfirm();
 
 // ============================================
@@ -824,7 +826,7 @@ async function fetchProducts() {
   loading.value = true;
   error.value = null;
   try {
-    const shopId = authStore.user?.shopId;
+    const shopId = authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
     const response = await productsService.list({
       shopId: shopId || undefined,
       search: searchQuery.value || undefined,
@@ -926,7 +928,7 @@ async function handleSubmitForm() {
         description: form.description || undefined,
       });
     } else {
-      const shopId = authStore.user?.shopId;
+      const shopId = authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
       if (!shopId) {
         formError.value = 'Tidak ada cabang aktif. Pilih cabang dulu.';
         return;

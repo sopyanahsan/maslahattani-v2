@@ -57,6 +57,11 @@ export class ShopScopeGuard implements CanActivate {
     }
 
     if (!resolvedShopId) {
+      // Super Admin without a selected shop → let the request through
+      // but don't inject shopId (services will return empty or all data)
+      if (user.role === Role.SUPER_ADMIN) {
+        return true;
+      }
       throw new ForbiddenException(
         'Tidak ada cabang aktif. Pilih cabang dulu sebelum melanjutkan.',
       );
