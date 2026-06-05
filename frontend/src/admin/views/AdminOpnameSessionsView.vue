@@ -600,6 +600,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import opnameService, {
   type OpnameSessionDto,
   type OpnameSessionDetailDto,
@@ -609,6 +610,7 @@ import opnameService, {
 import rackService, { type RackDto } from '@/shared/services/rack.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 
 // ============================================
 // State
@@ -669,7 +671,7 @@ const loadingRacks = ref(false);
 // ============================================
 
 function getShopId(): string | undefined {
-  return authStore.user?.shopId || undefined;
+  return authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
 }
 
 function formatDate(iso: string): string {

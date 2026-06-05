@@ -690,6 +690,7 @@
 import { ref, reactive, onMounted, watch } from 'vue';
 import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import { useConfirm } from '@/shared/composables/useConfirm';
 import { useToast } from '@/shared/composables/useToast';
 import supplierService, {
@@ -700,6 +701,7 @@ import supplierService, {
 } from '@/shared/services/supplier.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const { ask } = useConfirm();
 const toast = useToast();
 
@@ -811,7 +813,7 @@ const applyingPrices = ref(false);
 // ============================================
 
 function getShopId(): string | undefined {
-  return authStore.user?.shopId || undefined;
+  return authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
 }
 
 function formatRupiah(amount: number): string {
