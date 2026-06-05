@@ -106,7 +106,7 @@ export class AuthService {
       where: {
         OR: [
           { email: dto.identifier.toLowerCase() },
-          { username: dto.identifier },
+          { username: dto.identifier.toLowerCase() },
         ],
       },
     });
@@ -125,12 +125,13 @@ export class AuthService {
     }
 
     // ============================================
-    // OTP step (admin/super-admin 2FA mandatory)
+    // OTP step (super-admin 2FA mandatory, admin cabang opsional)
     // ============================================
-    if (user.role === Role.ADMIN || user.role === Role.SUPER_ADMIN) {
+    if (user.role === Role.SUPER_ADMIN) {
+      // Super Admin: OTP wajib
       if (!user.email) {
         throw new UnauthorizedException(
-          'Akun admin tidak memiliki email. Hubungi super-admin untuk fix.',
+          'Akun super-admin tidak memiliki email. Hubungi developer.',
         );
       }
       if (!dto.otp) {

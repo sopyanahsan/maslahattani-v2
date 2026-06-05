@@ -124,12 +124,21 @@ const handleCredentials = async () => {
   errorMessage.value = null;
 
   try {
-    // Step 1: validate credentials + trigger OTP send
+    // Step 1: validate credentials + trigger OTP (for super-admin)
     await authStore.loginStep1(form.identifier, form.password);
+
+    // If user is already authenticated (admin cabang — no OTP needed), redirect
+    if (authStore.isAuthenticated) {
+      step.value = 'success';
+      setTimeout(() => { router.push({ name: 'admin-dashboard' }); }, 1500);
+      return;
+    }
+
+    // Otherwise, OTP was sent (super-admin)
     infoMessage.value = 'Kode OTP telah dikirim ke email Anda.';
     step.value = 'otp';
   } catch (err: any) {
-    errorMessage.value = err?.response?.data?.message || err?.message || 'Email/username atau password salah.';
+    errorMessage.value = err?.response?.data?.message || err?.message || 'Username/email atau password salah.';
   } finally {
     isLoading.value = false;
   }
