@@ -355,7 +355,7 @@ export class BrilinkService {
 
     const result = await this.prisma.$transaction(async (tx) => {
       // 1. Reverse account balance
-      let accountMutation = null;
+      let accountMutation: any = null;
       if (transaction.accountId && accountReversal !== 0) {
         const account = await tx.brilinkAccount.findUnique({
           where: { id: transaction.accountId },
@@ -387,7 +387,7 @@ export class BrilinkService {
       }
 
       // 2. Reverse cash box balance
-      let cashMutation = null;
+      let cashMutation: any = null;
       if (cashReversal !== 0) {
         const cashBalanceBefore = cashBox.balance;
         const cashBalanceAfter = cashBalanceBefore + cashReversal;
