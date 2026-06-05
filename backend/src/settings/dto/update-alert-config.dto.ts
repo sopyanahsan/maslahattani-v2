@@ -41,4 +41,15 @@ export class UpdateAlertConfigDto {
   @Type(() => Number)
   @IsOptional()
   overdueDebtDaysBeforeNotice?: number;
+
+  @ApiPropertyOptional({
+    example: 5,
+    description: 'Jumlah transaksi BRILink gagal per hari sebelum muncul alert.',
+    minimum: 0,
+  })
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  @IsOptional()
+  brilinkFailedTransactionThreshold?: number;
 }
