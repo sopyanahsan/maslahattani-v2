@@ -26,13 +26,21 @@ export class AdminService {
         role: true,
         status: true,
         shopId: true,
+        shop: { select: { id: true, name: true } },
         lastLogin: true,
         createdAt: true,
       },
       orderBy: { createdAt: 'desc' },
     });
 
-    return { data: kasirList, total: kasirList.length };
+    return {
+      data: kasirList.map((k) => ({
+        ...k,
+        shopName: k.shop?.name || null,
+        shop: undefined, // Don't expose full shop object
+      })),
+      total: kasirList.length,
+    };
   }
 
   /**

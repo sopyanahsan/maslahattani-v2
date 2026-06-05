@@ -13,6 +13,7 @@ export interface KasirDto {
   role: string;
   status: UserStatus;
   shopId?: string | null;
+  shopName?: string | null;
   lastLogin?: string | null;
   createdAt: string;
 }

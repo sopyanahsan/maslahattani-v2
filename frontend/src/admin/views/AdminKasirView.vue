@@ -36,8 +36,9 @@
             <tr>
               <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">User</th>
               <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Role</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Cabang</th>
               <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Status</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">PIN</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Login</th>
               <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Last Login</th>
               <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Aksi</th>
             </tr>
@@ -59,11 +60,16 @@
               <td class="px-4 py-3 text-center">
                 <span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', roleBadge(kasir.role)]">{{ roleLabel(kasir.role) }}</span>
               </td>
+              <td class="px-4 py-3">
+                <span v-if="kasir.shopName" class="text-xs text-slate-700 dark:text-slate-300">{{ kasir.shopName }}</span>
+                <span v-else class="text-[10px] text-slate-400 dark:text-slate-600 italic">Belum assign</span>
+              </td>
               <td class="px-4 py-3 text-center">
                 <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase', statusBadge(kasir.status)]">{{ kasir.status }}</span>
               </td>
               <td class="px-4 py-3 text-center">
-                <span class="text-xs text-slate-500">****</span>
+                <span v-if="kasir.role === 'ADMIN'" class="text-[10px] text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-1.5 py-0.5 rounded font-semibold">Password</span>
+                <span v-else class="text-[10px] text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950 px-1.5 py-0.5 rounded font-semibold">PIN</span>
               </td>
               <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400 font-mono">{{ kasir.lastLogin ? formatDateTime(kasir.lastLogin) : 'Belum login' }}</td>
               <td class="px-4 py-3 text-center">
