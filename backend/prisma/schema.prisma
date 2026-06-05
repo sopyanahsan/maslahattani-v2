@@ -43,6 +43,8 @@ model User {
   
   mustChangePassword  Boolean   @default(false)
   mustChangePin       Boolean   @default(false)
+  /** 2FA OTP via email. Default true untuk SUPER_ADMIN, false untuk role lain. */
+  otpEnabled          Boolean   @default(false)
   pin                 String?   // bcrypt hash of 4-6 digit PIN for kasir login
   pinChangedAt        DateTime? @map("pin_changed_at")
   pinAttempts         Int       @default(0) @map("pin_attempts")

@@ -118,4 +118,22 @@ export class AuthController {
   async setNewPin(@Request() req: any, @Body() dto: { newPin: string }) {
     return this.authService.setNewPin(req.user.id, dto.newPin);
   }
+
+  @Post('toggle-otp')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Enable/disable 2FA OTP untuk akun sendiri' })
+  async toggleOtp(@Request() req: any, @Body() dto: { enabled: boolean }) {
+    return this.authService.toggleOtp(req.user.id, dto.enabled);
+  }
+
+  @Post('update-profile')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Update profil (username, fullName, phone, dll)' })
+  async updateProfile(@Request() req: any, @Body() dto: { username?: string; fullName?: string; phone?: string; address?: string }) {
+    return this.authService.updateProfile(req.user.id, dto);
+  }
 }

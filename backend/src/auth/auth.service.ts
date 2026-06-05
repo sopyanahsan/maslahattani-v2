@@ -125,13 +125,12 @@ export class AuthService {
     }
 
     // ============================================
-    // OTP step (super-admin 2FA mandatory, admin cabang opsional)
+    // OTP step (only if user has otpEnabled = true)
     // ============================================
-    if (user.role === Role.SUPER_ADMIN) {
-      // Super Admin: OTP wajib
+    if (user.otpEnabled) {
       if (!user.email) {
         throw new UnauthorizedException(
-          'Akun super-admin tidak memiliki email. Hubungi developer.',
+          'Akun ini memiliki 2FA aktif tapi tidak punya email. Hubungi super-admin.',
         );
       }
       if (!dto.otp) {
@@ -599,9 +598,13 @@ export class AuthService {
         id: true,
         email: true,
         username: true,
+        fullName: true,
+        phone: true,
+        address: true,
         role: true,
         status: true,
         shopId: true,
+        otpEnabled: true,
         lastLogin: true,
         createdAt: true,
       },
@@ -681,5 +684,78 @@ export class AuthService {
         userAgent,
       },
     });
+  }
+
+  // ============================================
+  // TOGGLE OTP (2FA)
+  // ============================================
+
+  async toggleOtp(userId: string, enabled: boolean) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User tidak ditemukan.');
+
+    // Require email to enable OTP
+    if (enabled && !user.email) {
+      throw new BadRequestException(
+        'Untuk mengaktifkan 2FA, akun harus memiliki email terlebih dahulu.',
+      );
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { otpEnabled: enabled },
+    });
+
+    return {
+      success: true,
+      otpEnabled: enabled,
+      message: enabled
+        ? '2FA berhasil diaktifkan. Kode OTP akan dikirim ke email saat login.'
+        : '2FA dinonaktifkan. Login langsung tanpa OTP.',
+    };
+  }
+
+  // ============================================
+  // UPDATE PROFILE
+  // ============================================
+
+  async updateProfile(userId: string, dto: { username?: string; fullName?: string; phone?: string; address?: string }) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User tidak ditemukan.');
+
+    // Validate username uniqueness if changing
+    if (dto.username && dto.username.toLowerCase() !== user.username?.toLowerCase()) {
+      const existing = await this.prisma.user.findUnique({
+        where: { username: dto.username.toLowerCase() },
+      });
+      if (existing) {
+        throw new ConflictException('Username sudah digunakan oleh akun lain.');
+      }
+    }
+
+    const updated = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(dto.username !== undefined && { username: dto.username.toLowerCase() }),
+        ...(dto.fullName !== undefined && { fullName: dto.fullName }),
+        ...(dto.phone !== undefined && { phone: dto.phone }),
+        ...(dto.address !== undefined && { address: dto.address }),
+      },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        fullName: true,
+        phone: true,
+        address: true,
+        role: true,
+      },
+    });
+
+    return {
+      success: true,
+      user: updated,
+      message: 'Profil berhasil diperbarui.',
+    };
   }
 }
