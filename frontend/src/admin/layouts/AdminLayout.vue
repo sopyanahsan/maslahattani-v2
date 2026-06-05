@@ -863,29 +863,11 @@ const navGroups = ref<NavGroup[]>([
     items: [
       { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
       { to: '/admin/transactions', label: 'Transaksi', icon: ReceiptIcon },
+      { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
+      { to: '/admin/riwayat-stok', label: 'Riwayat Stok', icon: ClipboardListIcon },
       { to: '/admin/debts', label: 'Hutang', icon: DebtIcon },
       { to: '/admin/kas-retail', label: 'Kas Retail', icon: WalletIcon },
       { to: '/admin/reports', label: 'Laporan Retail', icon: ReportIcon },
-    ],
-  },
-  {
-    title: 'Inventaris',
-    items: [
-      { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
-      { to: '/admin/riwayat-stok', label: 'Riwayat Stok', icon: ClipboardListIcon },
-      { to: '/admin/cetak-label', label: 'Cetak Label', icon: TagIcon },
-      { to: '/admin/racks', label: 'Label Rak', icon: TagIcon },
-      { to: '/admin/shops', label: 'Cabang', icon: Building2Icon },
-      { to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon },
-      { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
-      { to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon },
-    ],
-  },
-  {
-    title: 'Operasional',
-    items: [
-      { to: '/admin/shifts', label: 'Shift', icon: ShiftIcon },
-      { to: '/admin/users', label: 'Multi-User', icon: UsersIcon },
     ],
   },
   {
@@ -895,6 +877,24 @@ const navGroups = ref<NavGroup[]>([
       { to: '/admin/brilink/transaksi', label: 'Transaksi BRILink', icon: ReceiptIcon },
       { to: '/admin/kas-rekening-brilink', label: 'Kas & Rekening', icon: LandmarkIcon },
       { to: '/admin/brilink/fee', label: 'Pengaturan Fee', icon: PercentIcon },
+    ],
+  },
+  {
+    title: 'Operasional',
+    items: [
+      { to: '/admin/shifts', label: 'Shift', icon: ShiftIcon },
+      { to: '/admin/users', label: 'Multi-User', icon: UsersIcon },
+      { to: '/admin/shops', label: 'Cabang', icon: Building2Icon },
+      { to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon },
+      { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
+      { to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon },
+    ],
+  },
+  {
+    title: 'Inventaris',
+    items: [
+      { to: '/admin/cetak-label', label: 'Cetak Label', icon: TagIcon },
+      { to: '/admin/racks', label: 'Label Rak', icon: TagIcon },
     ],
   },
 ]);
