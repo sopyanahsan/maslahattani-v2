@@ -280,6 +280,7 @@ import {
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useDashboardBrilinkStore } from '@/shared/stores/dashboard-brilink.store';
+import { useRealtimeRefresh } from '@/shared/composables/useRealtimeRefresh';
 import type { DashboardPeriod } from '@/shared/services/dashboard-brilink.service';
 
 import KpiCard from '@/admin/components/dashboard/KpiCard.vue';
@@ -293,6 +294,9 @@ import BrilinkCashierPerformance from '@/admin/components/dashboard-brilink/Bril
 
 const authStore = useAuthStore();
 const store = useDashboardBrilinkStore();
+
+// Auto-refresh saat ada real-time event (tanpa unmount halaman)
+useRealtimeRefresh(() => store.fetchAll());
 
 const periodOptions: { value: DashboardPeriod; label: string }[] = [
   { value: 'today', label: 'Hari Ini' },

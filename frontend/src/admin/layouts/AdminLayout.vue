@@ -334,6 +334,10 @@
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             Live
           </span>
+          <span v-else class="hidden xl:inline-flex items-center gap-1 text-[10px] font-medium text-slate-400 dark:text-slate-500" title="WebSocket terputus">
+            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+            Offline
+          </span>
           <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
           <div class="flex items-center gap-2">
             <div
@@ -371,7 +375,7 @@
       </div>
 
       <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto text-slate-900 dark:text-slate-100">
-        <RouterView :key="route.path + '-' + realtimeVersion" />
+        <RouterView />
       </div>
     </main>
 
@@ -517,7 +521,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, type Component } from 'vue';
+import { computed, onMounted, onUnmounted, provide, ref, type Component } from 'vue';
 import api from '@/shared/services/api';
 import GlobalConfirm from '@/shared/components/GlobalConfirm.vue';
 import GlobalToast from '@/shared/components/GlobalToast.vue';
@@ -568,52 +572,59 @@ const { play: playNotifSound } = useNotifSound();
 // GLOBAL REAL-TIME WEBSOCKET LISTENER
 // ============================================
 // Listens to DATA_CHANGED event from backend.
-// Increments `realtimeVersion` which is used as :key on <RouterView>
-// to trigger soft re-render (onMounted re-fires → data re-fetches).
-const realtimeVersion = ref(0);
+// Provides `realtimeSignal` ref to child pages via provide/inject.
+// Pages watch this signal to re-fetch data WITHOUT unmounting (data stays visible).
+const realtimeSignal = ref(0);
 let realtimeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+// Provide to all child components
+provide('realtimeSignal', realtimeSignal);
 
 const { isConnected: wsConnected } = useRealtimeUpdates({
   events: {
     onDataChanged() {
-      // Debounce: if multiple events fire within 500ms, only trigger once
+      // Only trigger refresh if we're online (can actually fetch)
+      if (!navigator.onLine) return;
       if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
       realtimeDebounceTimer = setTimeout(() => {
-        realtimeVersion.value++;
-        // Also refresh badge counts & alerts
+        realtimeSignal.value++;
         fetchBadgeCounts();
         fetchAlerts();
       }, 500);
     },
     onBrilinkTransactionCreated() {
-      // Specific events also trigger global refresh
+      if (!navigator.onLine) return;
       if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
       realtimeDebounceTimer = setTimeout(() => {
-        realtimeVersion.value++;
+        realtimeSignal.value++;
       }, 500);
     },
     onAccountBalanceChanged() {
+      if (!navigator.onLine) return;
       if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
       realtimeDebounceTimer = setTimeout(() => {
-        realtimeVersion.value++;
+        realtimeSignal.value++;
       }, 500);
     },
     onCashFlowCreated() {
+      if (!navigator.onLine) return;
       if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
       realtimeDebounceTimer = setTimeout(() => {
-        realtimeVersion.value++;
+        realtimeSignal.value++;
       }, 500);
     },
     onCashBoxUpdated() {
+      if (!navigator.onLine) return;
       if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
       realtimeDebounceTimer = setTimeout(() => {
-        realtimeVersion.value++;
+        realtimeSignal.value++;
       }, 500);
     },
     onDashboardRefresh() {
+      if (!navigator.onLine) return;
       if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
       realtimeDebounceTimer = setTimeout(() => {
-        realtimeVersion.value++;
+        realtimeSignal.value++;
       }, 500);
     },
   },

@@ -518,6 +518,7 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed, watch } from 'vue';
 import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
+import { useRealtimeRefresh } from '@/shared/composables/useRealtimeRefresh';
 import {
   Loader2 as Loader2Icon,
   Plus as PlusIcon,
@@ -1078,4 +1079,7 @@ onMounted(() => {
 });
 
 useAutoRefresh(() => { fetchAccounts(); fetchMutasi(1); });
+
+// Auto-refresh saat ada real-time event (data tetap tampil walau offline)
+useRealtimeRefresh(() => { fetchAccounts(); fetchMutasi(1); });
 </script>
