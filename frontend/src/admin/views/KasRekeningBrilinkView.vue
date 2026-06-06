@@ -207,6 +207,8 @@
                 <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Fee</th>
                 <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Flow</th>
                 <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Status</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Rekening</th>
+                <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Admin</th>
                 <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Kasir</th>
               </tr>
             </thead>
@@ -235,6 +237,17 @@
                   <span :class="['inline-flex px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase', riwayatStatusBadge(trx.status)]">
                     {{ riwayatStatusLabel(trx.status) }}
                   </span>
+                </td>
+                <td class="px-3 py-2.5 text-xs text-slate-600 dark:text-slate-400">
+                  <span v-if="trx.accountLabel" class="font-medium text-slate-800 dark:text-slate-200">{{ trx.accountLabel }}</span>
+                  <span v-if="trx.accountNumber" class="text-[10px] font-mono text-slate-400 ml-1">({{ trx.accountNumber.slice(-4) }})</span>
+                  <span v-if="!trx.accountLabel" class="text-slate-400">—</span>
+                </td>
+                <td class="px-3 py-2.5 text-center">
+                  <span v-if="trx.feeMethod" :class="['text-[9px] font-bold px-1.5 py-0.5 rounded', feeMethodBadge(trx.feeMethod)]">
+                    {{ trx.feeMethod }}
+                  </span>
+                  <span v-else class="text-[9px] text-slate-400">—</span>
                 </td>
                 <td class="px-3 py-2.5 text-xs text-slate-600 dark:text-slate-400">{{ trx.cashierName || '—' }}</td>
               </tr>
@@ -834,6 +847,15 @@ function riwayatStatusBadge(s: string): string {
 function riwayatStatusLabel(s: string): string {
   const map: Record<string, string> = { SUCCESS: 'Sukses', FAILED: 'Gagal', VOIDED: 'Void', PENDING: 'Pending' };
   return map[s] || s;
+}
+
+function feeMethodBadge(method: string): string {
+  switch (method) {
+    case 'DALAM': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
+    case 'LUAR': return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300';
+    case 'POTONG': return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300';
+    default: return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
+  }
 }
 
 async function fetchRiwayat(page = 1) {

@@ -51,6 +51,11 @@ export class CreateBrilinkTransactionDto {
   @IsOptional()
   accountId?: string;
 
+  @ApiPropertyOptional({ description: 'Metode fee untuk tarik tunai: DALAM | LUAR | POTONG' })
+  @IsString()
+  @IsOptional()
+  feeMethod?: string;
+
   // === Offline support fields ===
 
   @ApiPropertyOptional({ description: 'UUID dari client untuk dedup (offline)' })

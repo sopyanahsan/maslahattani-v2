@@ -52,6 +52,8 @@ export interface BrilinkTransactionDto {
   cashierName?: string;
   accountId?: string | null;
   accountLabel?: string | null;
+  accountNumber?: string | null;
+  feeMethod?: 'DALAM' | 'LUAR' | 'POTONG' | null;
   voidedAt?: string | null;
   voidReason?: string | null;
   createdAt: string;

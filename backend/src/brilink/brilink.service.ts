@@ -29,23 +29,61 @@ export class BrilinkService {
    * Calculate the dual-impact of a BRILink transaction.
    * - DEBIT: saldo rekening berkurang, kas tunai bertambah (6 kategori)
    * - CREDIT: saldo rekening bertambah, kas tunai berkurang (TARIK_TUNAI only)
+   *
+   * For TARIK_TUNAI, feeMethod determines where profit goes:
+   * - DALAM: fee masuk rekening (nasabah tarik nominal+fee dari rek)
+   * - LUAR: fee dibayar cash terpisah (saldo tetap, fee masuk kas)
+   * - POTONG: fee dipotong dari tunai (nasabah terima nominal-fee)
    */
   private calculateImpact(
     category: BrilinkCategoryEnum,
     amount: number,
     fee: number,
+    feeMethod?: string,
   ) {
     if (category === BrilinkCategoryEnum.TARIK_TUNAI) {
-      return {
-        flowDirection: 'CREDIT',
-        accountImpact: +amount, // saldo rek bertambah
-        cashImpact: -(amount - fee), // kas tunai berkurang (net: keluar amount, terima fee)
-      };
+      switch (feeMethod) {
+        case 'DALAM':
+          // Nasabah tarik (nominal+fee) dari rekening, terima tunai = nominal
+          // Rekening: +(nominal+fee), Kas tunai: -nominal
+          return {
+            flowDirection: 'CREDIT',
+            accountImpact: +(amount + fee),
+            cashImpact: -amount,
+          };
+
+        case 'LUAR':
+          // Nasabah tarik nominal dari rekening, bayar fee cash terpisah
+          // Rekening: +nominal, Kas tunai: -nominal + fee = -(nominal-fee)
+          return {
+            flowDirection: 'CREDIT',
+            accountImpact: +amount,
+            cashImpact: -(amount - fee),
+          };
+
+        case 'POTONG':
+          // Nasabah tarik nominal dari rekening, terima tunai = nominal-fee
+          // Rekening: +nominal, Kas tunai: -(nominal-fee)
+          return {
+            flowDirection: 'CREDIT',
+            accountImpact: +amount,
+            cashImpact: -(amount - fee),
+          };
+
+        default:
+          // Default = LUAR (backward compat)
+          return {
+            flowDirection: 'CREDIT',
+            accountImpact: +amount,
+            cashImpact: -(amount - fee),
+          };
+      }
     } else {
+      // Transfer, Topup, PLN — nasabah bayar tunai (nominal + fee)
       return {
         flowDirection: 'DEBIT',
-        accountImpact: -amount, // saldo rek berkurang
-        cashImpact: +(amount + fee), // kas tunai bertambah (nasabah bayar nominal + fee)
+        accountImpact: -amount,
+        cashImpact: +(amount + fee),
       };
     }
   }
@@ -121,6 +159,8 @@ export class BrilinkService {
         cashierName: trx.cashier?.username || trx.cashier?.email || '-',
         accountId: trx.accountId,
         accountLabel: trx.account?.label || null,
+        accountNumber: trx.account?.accountNumber || null,
+        feeMethod: (trx as any).feeMethod || null,
         voidedAt: trx.voidedAt?.toISOString() || null,
         voidReason: trx.voidReason,
         createdAt: trx.createdAt.toISOString(),
@@ -208,7 +248,7 @@ export class BrilinkService {
     const refNumber = this.generateRefNumber();
 
     // 2. Calculate impact
-    const impact = this.calculateImpact(dto.category, dto.amount, fee);
+    const impact = this.calculateImpact(dto.category, dto.amount, fee, dto.feeMethod);
 
     // 3. Resolve account: use provided accountId, else fall back to
     // default active account (preserves existing kasir flow that doesn't
@@ -310,6 +350,7 @@ export class BrilinkService {
           fee,
           total,
           status: 'SUCCESS',
+          feeMethod: dto.feeMethod || null,
           flowDirection: impact.flowDirection,
           accountImpact: impact.accountImpact,
           cashImpact: impact.cashImpact,

@@ -875,6 +875,12 @@ model BrilinkTransaction {
   total           Int                      // amount + fee
   status          BrilinkTransactionStatus @default(SUCCESS)
 
+  // Fee method for TARIK_TUNAI (how admin fee is charged)
+  // DALAM = fee added to rekening debit (nasabah tarik nominal+fee dari rek)
+  // LUAR = fee paid cash separately (saldo tetap, fee masuk kas tunai)
+  // POTONG = fee deducted from cash given (nasabah terima nominal-fee)
+  feeMethod       String?                  // 'DALAM' | 'LUAR' | 'POTONG' (null for non-tarik)
+
   // Flow & Impact fields
   flowDirection   String?                  // 'DEBIT' | 'CREDIT' (auto-derived from category)
   accountImpact   Int                      @default(0) // signed: negative for debit, positive for credit
