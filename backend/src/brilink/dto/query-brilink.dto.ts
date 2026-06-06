@@ -2,6 +2,13 @@ import { IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { BrilinkCategoryEnum } from './create-brilink-transaction.dto';
 
+export enum BrilinkStatusEnum {
+  SUCCESS = 'SUCCESS',
+  FAILED = 'FAILED',
+  PENDING = 'PENDING',
+  VOIDED = 'VOIDED',
+}
+
 export class QueryBrilinkTransactionsDto {
   @IsString()
   @IsOptional()
@@ -10,6 +17,18 @@ export class QueryBrilinkTransactionsDto {
   @IsEnum(BrilinkCategoryEnum)
   @IsOptional()
   category?: BrilinkCategoryEnum;
+
+  @IsEnum(BrilinkStatusEnum)
+  @IsOptional()
+  status?: BrilinkStatusEnum;
+
+  @IsString()
+  @IsOptional()
+  cashierId?: string;
+
+  @IsString()
+  @IsOptional()
+  search?: string;
 
   @IsString()
   @IsOptional()

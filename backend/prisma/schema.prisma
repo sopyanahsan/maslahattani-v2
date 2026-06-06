@@ -43,6 +43,8 @@ model User {
   
   mustChangePassword  Boolean   @default(false)
   mustChangePin       Boolean   @default(false)
+  /** 2FA OTP via email. Default true untuk SUPER_ADMIN, false untuk role lain. */
+  otpEnabled          Boolean   @default(false)
   pin                 String?   // bcrypt hash of 4-6 digit PIN for kasir login
   pinChangedAt        DateTime? @map("pin_changed_at")
   pinAttempts         Int       @default(0) @map("pin_attempts")
@@ -139,6 +141,9 @@ model Shop {
   brilinkTransactions BrilinkTransaction[]
   brilinkFees         BrilinkFee[]
   brilinkAccounts     BrilinkAccount[]
+  brilinkCashBox      BrilinkCashBox?
+  brilinkReconciliations BrilinkReconciliation[]
+  brilinkProducts     BrilinkProduct[]
   opnameSessions      OpnameSession[]
   suppliers           Supplier[]
   purchaseOrders      PurchaseOrder[]
@@ -186,6 +191,16 @@ model ShopSetting {
   // Notification settings
   notifSoundEnabled           Boolean @default(true)
   notifSoundTone              String  @default("chime") // chime | beep | bell | silent
+
+  /**
+   * KPI targets for BRILink dashboard & transaction page.
+   * JSON shape: {
+   *   dailyTransactionTarget: number,   // target jumlah transaksi per hari (default 50)
+   *   dailyVolumeTarget: number,        // target volume transaksi per hari in Rp (default 50_000_000)
+   *   dailyFeeTarget: number,           // target fee/profit per hari in Rp (default 500_000)
+   * }
+   */
+  brilinkKpiConfig    Json?
 
   updatedAt           DateTime  @updatedAt
   
@@ -833,6 +848,7 @@ enum BrilinkTransactionStatus {
   SUCCESS
   FAILED
   PENDING
+  VOIDED
 }
 
 enum BrilinkFeeType {
@@ -859,6 +875,29 @@ model BrilinkTransaction {
   total           Int                      // amount + fee
   status          BrilinkTransactionStatus @default(SUCCESS)
 
+  // Fee method for TARIK_TUNAI (how admin fee is charged)
+  // DALAM = fee added to rekening debit (nasabah tarik nominal+fee dari rek)
+  // LUAR = fee paid cash separately (saldo tetap, fee masuk kas tunai)
+  // POTONG = fee deducted from cash given (nasabah terima nominal-fee)
+  feeMethod       String?                  // 'DALAM' | 'LUAR' | 'POTONG' (null for non-tarik)
+
+  // Flow & Impact fields
+  flowDirection   String?                  // 'DEBIT' | 'CREDIT' (auto-derived from category)
+  accountImpact   Int                      @default(0) // signed: negative for debit, positive for credit
+  cashImpact      Int                      @default(0) // signed: impact on kas tunai
+
+  // Offline support
+  idempotencyKey  String?                  @unique
+  clientCreatedAt DateTime?
+
+  // Void support
+  voidedAt        DateTime?
+  voidedBy        String?
+  voidReason      String?
+
+  // Link to cash mutation (for traceability)
+  cashMutationId  String?
+
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
 
@@ -866,6 +905,7 @@ model BrilinkTransaction {
   @@index([cashierId])
   @@index([category])
   @@index([createdAt])
+  @@index([status])
   @@map("brilink_transactions")
 }
 
@@ -877,9 +917,10 @@ model BrilinkFee {
   label           String          // "Transfer BRI 1-50jt", etc
   minAmount       Int             @default(0)
   maxAmount       Int             @default(999999999)
+  systemFee       Int             @default(0) // biaya sistem/bank (bukan profit, potongan tetap)
   feeType         BrilinkFeeType  @default(FLAT)
-  feeAmount       Int             @default(0) // flat fee (rupiah)
-  feePercent      Float           @default(0) // percent fee (e.g. 0.5 = 0.5%)
+  feeAmount       Int             @default(0) // admin fee flat (rupiah) — profit agen
+  feePercent      Float           @default(0) // admin fee percent (e.g. 0.5 = 0.5%) — profit agen
   isActive        Boolean         @default(true)
 
   createdAt       DateTime        @default(now())
@@ -900,6 +941,8 @@ enum BrilinkMutationType {
   TRX_DEBIT
   TRX_CREDIT
   ADJUSTMENT
+  TRANSFER_OUT
+  TRANSFER_IN
 }
 
 model BrilinkAccount {
@@ -942,6 +985,142 @@ model BrilinkMutation {
   @@index([accountId])
   @@index([createdAt])
   @@map("brilink_mutations")
+}
+
+
+// ============================================
+// BRILINK CASH BOX (KAS TUNAI BRILINK)
+// ============================================
+//
+// Kas tunai BRILink 100% terpisah dari kas retail (CashBox).
+// 1 shop = 1 BrilinkCashBox.
+// Saldo naik saat nasabah bayar tunai (transfer/topup), turun saat tarik tunai.
+
+enum BrilinkCashMutationType {
+  TRX_IN          // Dari transaksi: nasabah bayar tunai
+  TRX_OUT         // Dari transaksi: agen kasih tunai (tarik tunai)
+  SETOR           // Admin tambah modal kas tunai
+  TARIK           // Admin ambil tunai
+  ADJUSTMENT      // Koreksi dari reconciliation
+  VOID_REVERSE    // Reversal dari void transaksi
+}
+
+model BrilinkCashBox {
+  id                  String    @id @default(cuid())
+  shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId              String    @unique  // 1 kas tunai per shop
+  balance             Int       @default(0)
+  lowBalanceThreshold Int       @default(2000000)
+  lastAudit           DateTime?
+  lastAuditBalance    Int?
+  notes               String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  mutations           BrilinkCashMutation[]
+
+  @@map("brilink_cash_boxes")
+}
+
+model BrilinkCashMutation {
+  id              String                  @id @default(cuid())
+  cashBox         BrilinkCashBox          @relation(fields: [cashBoxId], references: [id], onDelete: Cascade)
+  cashBoxId       String
+  type            BrilinkCashMutationType
+  amount          Int                     // always positive
+  balanceBefore   Int
+  balanceAfter    Int
+  reference       String?                 // brilinkTransaction.id or reconciliation.id
+  description     String
+  notes           String?
+  createdById     String?
+  createdAt       DateTime                @default(now())
+
+  @@index([cashBoxId])
+  @@index([createdAt])
+  @@map("brilink_cash_mutations")
+}
+
+// ============================================
+// BRILINK RECONCILIATION
+// ============================================
+
+model BrilinkReconciliation {
+  id              String    @id @default(cuid())
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  target          String    // 'ACCOUNT' | 'CASHBOX'
+  targetId        String    // accountId or cashBoxId
+  targetLabel     String    // "BRI Utama" or "Kas Tunai"
+  balanceApp      Int       // saldo di app sebelum adjustment
+  balanceReal     Int       // saldo real yang diinput admin
+  adjustment      Int       // selisih (real - app)
+  status          String    // 'MATCHED' | 'ADJUSTED'
+  notes           String?
+  createdById     String
+  createdAt       DateTime  @default(now())
+
+  @@index([shopId])
+  @@index([createdAt])
+  @@map("brilink_reconciliations")
+}
+
+
+// ============================================
+// BRILINK PRODUCTS, OPERATORS & PROVIDERS
+// ============================================
+
+model OperatorPrefix {
+  id        String  @id @default(cuid())
+  prefix    String  @unique  // "0811", "0878", etc
+  operator  String  // TELKOMSEL, XL, INDOSAT, THREE, AXIS, SMARTFREN
+  type      String  @default("GSM")
+
+  @@index([prefix])
+  @@map("operator_prefixes")
+}
+
+model BrilinkProduct {
+  id        String   @id @default(cuid())
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String
+  category  String   // TOPUP_PULSA, TOPUP_DATA, TOPUP_EWALLET, TOPUP_PLN
+  operator  String?  // TELKOMSEL, XL, etc (null for PLN/EWALLET)
+  provider  String?  // GOPAY, OVO, etc (null for pulsa/PLN)
+  name      String   // "Pulsa 10rb", "XL 3GB 30hr", "Token 50rb"
+  nominal   Int?     // 10000, 50000 (null for paket data custom)
+  buyPrice  Int      // harga beli dari BRI/supplier
+  sellPrice Int      // harga jual ke nasabah
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId, category, operator])
+  @@index([shopId, category, provider])
+  @@map("brilink_products")
+}
+
+model BankList {
+  id        String  @id @default(cuid())
+  code      String  @unique  // kode BI: "014", "008"
+  name      String  // "Bank Central Asia"
+  shortName String  // "BCA"
+  isActive  Boolean @default(true)
+
+  @@index([isActive])
+  @@map("bank_list")
+}
+
+model EwalletProvider {
+  id        String  @id @default(cuid())
+  code      String  @unique  // "GOPAY", "OVO"
+  name      String  // "GoPay"
+  icon      String? // optional icon/emoji
+  isActive  Boolean @default(true)
+
+  @@map("ewallet_providers")
 }
 
 

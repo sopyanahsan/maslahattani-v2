@@ -113,55 +113,7 @@
       </section>
 
       <!-- ============================================ -->
-      <!-- TAB: BAHASA                                  -->
-      <!-- ============================================ -->
-      <section
-        v-if="activeTab === 'language'"
-        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden"
-      >
-        <div
-          class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50"
-        >
-          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <GlobeIcon class="w-4 h-4 text-indigo-600 dark:text-indigo-400" /> Bahasa
-          </h3>
-        </div>
-        <form class="p-5 space-y-4" @submit.prevent="handleSaveLanguage">
-          <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-              Bahasa Sistem
-            </label>
-            <select
-              v-model="languageForm.language"
-              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-            >
-              <option value="id">Bahasa Indonesia</option>
-              <option value="en">English</option>
-              <option value="su">Basa Sunda</option>
-              <option value="jv">Basa Jawa</option>
-            </select>
-          </div>
-          <div
-            v-if="langSuccess"
-            class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-md p-2 text-xs text-emerald-700 dark:text-emerald-300"
-          >
-            {{ langSuccess }}
-          </div>
-          <div class="flex justify-end">
-            <button
-              type="submit"
-              :disabled="savingLang"
-              class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5"
-            >
-              <Loader2Icon v-if="savingLang" class="w-3.5 h-3.5 animate-spin" />
-              Simpan
-            </button>
-          </div>
-        </form>
-      </section>
-
-      <!-- ============================================ -->
-      <!-- TAB: STRUK                                   -->
+      <!-- TAB: STRUK & POS                             -->
       <!-- ============================================ -->
       <section
         v-if="activeTab === 'receipt'"
@@ -227,8 +179,62 @@
         </form>
       </section>
 
+      <!-- POS / Kasir Settings (same tab as receipt) -->
+      <section
+        v-if="activeTab === 'receipt'"
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden"
+      >
+        <div
+          class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50"
+        >
+          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <SettingsIcon class="w-4 h-4 text-blue-600 dark:text-blue-400" /> POS / Kasir
+          </h3>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+            Preferensi untuk aplikasi kasir (webapp).
+          </p>
+        </div>
+        <div class="p-5 space-y-4">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">Konfirmasi sebelum checkout</p>
+              <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Tampilkan dialog konfirmasi sebelum transaksi diproses.</p>
+            </div>
+            <button
+              type="button"
+              :class="['w-10 h-5 rounded-full relative transition-colors', posForm.confirmBeforeCheckout ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600']"
+              @click="posForm.confirmBeforeCheckout = !posForm.confirmBeforeCheckout"
+            >
+              <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform', posForm.confirmBeforeCheckout ? 'left-[22px]' : 'left-0.5']" />
+            </button>
+          </div>
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">Tampilkan barcode scanner</p>
+              <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Aktifkan input scan barcode di halaman POS.</p>
+            </div>
+            <button
+              type="button"
+              :class="['w-10 h-5 rounded-full relative transition-colors', posForm.showBarcodeScanner ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600']"
+              @click="posForm.showBarcodeScanner = !posForm.showBarcodeScanner"
+            >
+              <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform', posForm.showBarcodeScanner ? 'left-[22px]' : 'left-0.5']" />
+            </button>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Default metode bayar</label>
+            <select v-model="posForm.defaultPaymentMethod" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none">
+              <option value="CASH">Cash (Tunai)</option>
+              <option value="QRIS">QRIS</option>
+              <option value="TRANSFER">Transfer Bank</option>
+            </select>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Metode bayar yang otomatis terpilih saat checkout.</p>
+          </div>
+        </div>
+      </section>
+
       <!-- ============================================ -->
-      <!-- TAB: NOTIFIKASI & ALERT                      -->
+      <!-- TAB: NOTIFIKASI                              -->
       <!-- ============================================ -->
       <section
         v-if="activeTab === 'alerts'"
@@ -399,10 +405,106 @@
       </section>
 
       <!-- ============================================ -->
-      <!-- TAB: Pengaturan Sistem (Toggles ON/OFF)     -->
+      <!-- TAB: Sistem (Toggles + Keamanan)            -->
       <!-- ============================================ -->
       <section v-if="activeTab === 'system'" class="space-y-5">
         <SystemSettingsView />
+
+        <!-- Keamanan Section -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+              <SettingsIcon class="w-4 h-4 text-red-600 dark:text-red-400" /> Keamanan
+            </h3>
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
+              Pengaturan autentikasi dan keamanan akun.
+            </p>
+          </div>
+          <div class="p-5 space-y-5">
+            <!-- 2FA for Super Admin -->
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">2FA wajib untuk Super Admin</p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Kode OTP dikirim ke email setiap login Super Admin.</p>
+              </div>
+              <button
+                type="button"
+                :class="['w-10 h-5 rounded-full relative transition-colors', securityForm.otpSuperAdmin ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600']"
+                @click="securityForm.otpSuperAdmin = !securityForm.otpSuperAdmin"
+              >
+                <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform', securityForm.otpSuperAdmin ? 'left-[22px]' : 'left-0.5']" />
+              </button>
+            </div>
+
+            <!-- 2FA for Admin Cabang -->
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">2FA untuk Admin Cabang</p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Opsional — admin cabang bisa aktifkan sendiri di Profil.</p>
+              </div>
+              <button
+                type="button"
+                :class="['w-10 h-5 rounded-full relative transition-colors', securityForm.otpAdminCabang ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600']"
+                @click="securityForm.otpAdminCabang = !securityForm.otpAdminCabang"
+              >
+                <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform', securityForm.otpAdminCabang ? 'left-[22px]' : 'left-0.5']" />
+              </button>
+            </div>
+
+            <div class="border-t border-slate-200 dark:border-slate-700 pt-4 space-y-4">
+              <!-- Max PIN attempts -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Max percobaan PIN (sebelum lock)
+                </label>
+                <input
+                  v-model.number="securityForm.maxPinAttempts"
+                  type="number"
+                  min="3"
+                  max="10"
+                  class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none"
+                />
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                  Kasir yang salah PIN sebanyak ini akan di-lock sementara. Default: 5.
+                </p>
+              </div>
+
+              <!-- PIN lock duration -->
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  Durasi lock PIN (menit)
+                </label>
+                <input
+                  v-model.number="securityForm.pinLockDurationMinutes"
+                  type="number"
+                  min="1"
+                  max="60"
+                  class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none"
+                />
+                <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
+                  Berapa lama akun kasir di-lock setelah max percobaan. Default: 15 menit.
+                </p>
+              </div>
+            </div>
+
+            <!-- Force password change for new accounts -->
+            <div class="border-t border-slate-200 dark:border-slate-700 pt-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-xs font-semibold text-slate-700 dark:text-slate-300">Wajib ganti password/PIN saat login pertama</p>
+                  <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Akun baru wajib mengubah kredensial sebelum bisa mengakses sistem.</p>
+                </div>
+                <button
+                  type="button"
+                  :class="['w-10 h-5 rounded-full relative transition-colors', securityForm.forceChangeOnFirstLogin ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600']"
+                  @click="securityForm.forceChangeOnFirstLogin = !securityForm.forceChangeOnFirstLogin"
+                >
+                  <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform', securityForm.forceChangeOnFirstLogin ? 'left-[22px]' : 'left-0.5']" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
     </template>
   </div>
@@ -446,13 +548,12 @@ const loading = ref(false);
 const error = ref<string | null>(null);
 
 // Tabs
-type TabValue = 'shop' | 'language' | 'receipt' | 'alerts' | 'system';
+type TabValue = 'shop' | 'receipt' | 'alerts' | 'system';
 const tabs: Array<{ value: TabValue; label: string; icon: Component }> = [
-  { value: 'shop', label: 'Data Toko', icon: StoreIcon },
-  { value: 'language', label: 'Bahasa', icon: GlobeIcon },
-  { value: 'receipt', label: 'Struk', icon: PrinterIcon },
-  { value: 'alerts', label: 'Notifikasi & Alert', icon: BellIcon },
-  { value: 'system', label: 'Pengaturan Sistem', icon: SettingsIcon },
+  { value: 'shop', label: 'Toko', icon: StoreIcon },
+  { value: 'receipt', label: 'Struk & POS', icon: PrinterIcon },
+  { value: 'alerts', label: 'Notifikasi', icon: BellIcon },
+  { value: 'system', label: 'Sistem', icon: SettingsIcon },
 ];
 const activeTab = ref<TabValue>('shop');
 
@@ -474,6 +575,22 @@ const receiptForm = reactive({
 });
 const savingReceipt = ref(false);
 const receiptSuccess = ref<string | null>(null);
+
+// POS form
+const posForm = reactive({
+  confirmBeforeCheckout: true,
+  showBarcodeScanner: true,
+  defaultPaymentMethod: 'CASH',
+});
+
+// Security form
+const securityForm = reactive({
+  otpSuperAdmin: true,
+  otpAdminCabang: false,
+  maxPinAttempts: 5,
+  pinLockDurationMinutes: 15,
+  forceChangeOnFirstLogin: true,
+});
 
 // Alert form
 const alertForm = reactive({

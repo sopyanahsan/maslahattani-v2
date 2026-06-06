@@ -57,6 +57,11 @@ export class ShopScopeGuard implements CanActivate {
     }
 
     if (!resolvedShopId) {
+      // Super Admin without a selected shop → let the request through
+      // but don't inject shopId (services will return empty or all data)
+      if (user.role === Role.SUPER_ADMIN) {
+        return true;
+      }
       throw new ForbiddenException(
         'Tidak ada cabang aktif. Pilih cabang dulu sebelum melanjutkan.',
       );
@@ -65,13 +70,14 @@ export class ShopScopeGuard implements CanActivate {
     // Inject shopId into request for easy access
     request.shopId = resolvedShopId;
 
-    // Override query.shopId and body.shopId to prevent bypass
+    // Override query.shopId to prevent bypass via query params
     if (request.query) {
       request.query.shopId = resolvedShopId;
     }
-    if (request.body && typeof request.body === 'object') {
-      request.body.shopId = resolvedShopId;
-    }
+    // Note: We intentionally do NOT override body.shopId here because
+    // ValidationPipe with forbidNonWhitelisted=true would reject it
+    // for DTOs that don't declare a shopId field (e.g. ReceiveTransferDto).
+    // Body shopId is already handled by the DTO validation layer.
 
     return true;
   }

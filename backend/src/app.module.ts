@@ -26,6 +26,9 @@ import { DashboardBrilinkModule } from './dashboard-brilink/dashboard-brilink.mo
 import { BrilinkAccountsModule } from './brilink-accounts/brilink-accounts.module';
 import { CashBoxesModule } from './cash-boxes/cash-boxes.module';
 import { RacksModule } from './racks/racks.module';
+import { BrilinkCashboxModule } from './brilink-cashbox/brilink-cashbox.module';
+import { BrilinkReconciliationModule } from './brilink-reconciliation/brilink-reconciliation.module';
+import { BrilinkProductsModule } from './brilink-products/brilink-products.module';
 import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
@@ -36,7 +39,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     }),
     PrismaModule,
     RealtimeModule,
-    ShopsModule, // Harus di-import sebelum AuthModule (yang depend on ShopsService)
+    ShopsModule,
     AuthModule,
     HealthModule,
     TransactionsModule,
@@ -54,6 +57,9 @@ import { RealtimeModule } from './realtime/realtime.module';
     BrilinkModule,
     BrilinkAccountsModule,
     CashBoxesModule,
+    BrilinkCashboxModule,
+    BrilinkReconciliationModule,
+    BrilinkProductsModule,
     OpnameModule,
     RacksModule,
     SuppliersModule,

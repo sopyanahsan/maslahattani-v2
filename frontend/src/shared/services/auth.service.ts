@@ -47,6 +47,7 @@ export interface AuthUserDto {
   id: string;
   email?: string | null;
   username?: string | null;
+  fullName?: string | null;
   role: UserRole;
   status: UserStatus;
   shopId?: string | null;

@@ -160,6 +160,16 @@ const brilinkAccountService = {
     );
     return data;
   },
+
+  async transferInternal(payload: {
+    fromAccountId: string;
+    toAccountId: string;
+    amount: number;
+    notes?: string;
+  }) {
+    const { data } = await api.post('/brilink-accounts/transfer-internal', payload);
+    return data;
+  },
 };
 
 export default brilinkAccountService;

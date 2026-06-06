@@ -2,14 +2,14 @@
   <div class="space-y-5">
     <!-- Action bar (no h1 — title already in topbar) -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div class="flex items-center gap-2 text-xs text-slate-500">
+      <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
         <span v-if="meta">{{ meta.total }} produk</span>
       </div>
       <div class="flex items-center gap-2">
         <button
           type="button"
-          class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white border border-slate-300 rounded-lg
-                 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shrink-0"
+          class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
+                 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5 shrink-0"
           @click="showBulkModal = true"
         >
           <UploadIcon class="w-3.5 h-3.5" />
@@ -35,7 +35,7 @@
           v-model="searchQuery"
           type="text"
           placeholder="Cari nama atau SKU produk..."
-          class="w-full h-9 pl-9 pr-3 text-sm border border-slate-300 rounded-lg
+          class="w-full h-9 pl-9 pr-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
                  focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
           @input="debouncedSearch"
         />
@@ -43,8 +43,8 @@
       <!-- Category filter -->
       <select
         v-model="filterCategory"
-        class="h-9 px-3 text-sm border border-slate-300 rounded-lg
-               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+        class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
+               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800"
         @change="resetAndFetch"
       >
         <option value="">Semua Kategori</option>
@@ -55,8 +55,8 @@
       <!-- Sort -->
       <select
         v-model="sortMode"
-        class="h-9 px-3 text-sm border border-slate-300 rounded-lg
-               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+        class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
+               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800"
         @change="resetAndFetch"
       >
         <option value="name-asc">A-Z (Nama)</option>
@@ -71,7 +71,7 @@
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
       <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-      <span class="ml-2 text-sm text-slate-500">Memuat produk...</span>
+      <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat produk...</span>
     </div>
 
     <!-- Error -->
@@ -89,20 +89,20 @@
     <!-- Empty state -->
     <div
       v-else-if="products.length === 0"
-      class="bg-white border border-dashed border-slate-300 rounded-xl p-10 text-center"
+      class="bg-white border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center"
     >
       <PackageIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
-      <p class="text-sm font-semibold text-slate-700">Belum ada produk</p>
+      <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada produk</p>
       <p class="text-xs text-slate-500 mt-1">
         {{ searchQuery ? 'Tidak ditemukan produk dengan kata kunci tersebut.' : 'Tambah produk pertama untuk mulai berjualan.' }}
       </p>
     </div>
 
     <!-- Product Table -->
-    <div v-else class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[700px]">
-          <thead class="bg-slate-50 border-b border-slate-200">
+          <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide w-12">Img</th>
               <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">SKU</th>
@@ -116,11 +116,11 @@
               <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Aksi</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100">
+          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
             <tr
               v-for="product in products"
               :key="product.id"
-              class="hover:bg-slate-50 transition-colors"
+              class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
               <td class="px-3 py-2.5 text-center">
                 <div class="w-8 h-8 rounded-md bg-slate-100 border border-slate-200 overflow-hidden mx-auto flex items-center justify-center">
@@ -137,7 +137,7 @@
                 </div>
               </td>
               <td class="px-3 py-2.5">
-                <p class="text-sm font-medium text-slate-900">{{ product.name }}</p>
+                <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ product.name }}</p>
               </td>
               <td class="px-3 py-2.5">
                 <span v-if="getCategoryName(product.categoryId)" class="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">{{ getCategoryName(product.categoryId) }}</span>
@@ -146,9 +146,9 @@
               <td class="px-3 py-2.5 text-center">
                 <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold', getTotalStock(product) === 0 ? 'bg-red-100 text-red-700' : getTotalStock(product) <= 5 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700']">{{ getTotalStock(product) }}</span>
               </td>
-              <td class="px-3 py-2.5 text-center text-xs text-slate-500">{{ product.unit || 'pcs' }}</td>
-              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-900">{{ formatRupiah(product.price) }}</td>
-              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-600">{{ formatRupiah(product.cost) }}</td>
+              <td class="px-3 py-2.5 text-center text-xs text-slate-500 dark:text-slate-400">{{ product.unit || 'pcs' }}</td>
+              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(product.price) }}</td>
+              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-600 dark:text-slate-400">{{ formatRupiah(product.cost) }}</td>
               <td class="px-3 py-2.5 text-right">
                 <span :class="['text-xs font-mono font-semibold', getMargin(product) > 0 ? 'text-emerald-600' : 'text-red-600']">{{ getMarginPercent(product) }}%</span>
               </td>
@@ -164,7 +164,7 @@
                   </button>
                   <button
                     class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center
-                           hover:bg-slate-100 transition-colors"
+                           hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                     title="Edit"
                     @click="openEditModal(product)"
                   >
@@ -190,14 +190,14 @@
         v-if="meta && meta.totalPages > 1"
         class="px-4 py-3 border-t border-slate-200 flex items-center justify-between"
       >
-        <p class="text-xs text-slate-500">
+        <p class="text-xs text-slate-500 dark:text-slate-400">
           Halaman {{ meta.page }} dari {{ meta.totalPages }}
         </p>
         <div class="flex items-center gap-1">
           <button
             :disabled="meta.page <= 1"
             class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md
-                   hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                   hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
             @click="goPage(meta!.page - 1)"
           >
             Prev
@@ -205,7 +205,7 @@
           <button
             :disabled="meta.page >= meta.totalPages"
             class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md
-                   hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+                   hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
             @click="goPage(meta!.page + 1)"
           >
             Next
@@ -223,25 +223,25 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
         <!-- Backdrop -->
-        <div class="absolute inset-0 bg-black/40" @click="closeModal"></div>
+        <div class="absolute inset-0 bg-black/50" @click="closeModal"></div>
 
         <!-- Modal -->
         <form
-          class="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto"
+          class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto"
           @submit.prevent="handleSubmitForm"
         >
-          <h2 class="text-base font-bold text-slate-950">
+          <h2 class="text-base font-bold text-slate-950 dark:text-slate-100">
             {{ editingProduct ? 'Edit Produk' : 'Tambah Produk Baru' }}
           </h2>
 
           <!-- 1. Gambar Produk -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Gambar Produk
             </label>
             <div class="flex items-start gap-3">
               <div
-                class="w-20 h-20 rounded-lg border border-slate-200 bg-slate-50 overflow-hidden
+                class="w-20 h-20 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 overflow-hidden
                        flex items-center justify-center shrink-0"
               >
                 <img
@@ -254,7 +254,7 @@
               </div>
               <div class="flex-1 space-y-1.5">
                 <label
-                  class="block h-9 px-3 border border-dashed border-slate-300 rounded-md
+                  class="block h-9 px-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-md
                          text-xs text-slate-600 font-medium cursor-pointer
                          hover:border-blue-400 hover:bg-blue-50/50 transition-colors
                          flex items-center justify-center gap-1.5"
@@ -290,7 +290,7 @@
                   :value="form.imageUrl"
                   type="text"
                   readonly
-                  class="flex-1 h-7 px-2 text-[10px] font-mono text-slate-500 bg-slate-50 border border-slate-200 rounded select-all outline-none"
+                  class="flex-1 h-7 px-2 text-[10px] font-mono text-slate-500 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 rounded select-all outline-none"
                   @focus="($event.target as HTMLInputElement).select()"
                 />
                 <button
@@ -306,7 +306,7 @@
 
           <!-- 2. SKU (auto-generated from nama + kategori) -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               SKU <span class="text-red-500">*</span>
             </label>
             <div class="flex items-center gap-2">
@@ -318,7 +318,7 @@
                 placeholder="Otomatis dari nama & kategori"
                 :class="[
                   'flex-1 h-9 px-3 text-sm font-mono border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none',
-                  editingProduct ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed' : 'border-slate-300',
+                  editingProduct ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700' : 'border-slate-300',
                 ]"
               />
               <button
@@ -338,7 +338,7 @@
 
           <!-- 3. Nama Produk -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Nama Produk <span class="text-red-500">*</span>
             </label>
             <input
@@ -346,7 +346,7 @@
               type="text"
               required
               placeholder="Beras 5kg Premium"
-              class="w-full h-9 px-3 text-sm border border-slate-300 rounded-md
+              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
                      focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               @blur="autoGenerateSku"
             />
@@ -354,7 +354,7 @@
 
           <!-- 3b. Barcode (optional, scannable) -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Barcode <span class="text-[10px] font-normal text-slate-400">(optional, scan / ketik)</span>
             </label>
             <div class="relative">
@@ -363,7 +363,7 @@
                 v-model="form.barcode"
                 type="text"
                 placeholder="8991042001234 (scan barcode pabrik)"
-                class="w-full h-9 pl-9 pr-3 text-sm font-mono border border-slate-300 rounded-md
+                class="w-full h-9 pl-9 pr-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
                        focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               />
             </div>
@@ -374,14 +374,14 @@
 
           <!-- 4. Kategori (dropdown + inline add/delete) -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Kategori
             </label>
             <div class="flex items-center gap-2">
               <select
                 v-model="form.categoryId"
-                class="flex-1 h-9 px-3 text-sm border border-slate-300 rounded-md
-                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+                class="flex-1 h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
+                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800"
               >
                 <option value="">— Tanpa Kategori —</option>
                 <option v-for="cat in categoryList" :key="cat.id" :value="cat.id">
@@ -415,7 +415,7 @@
                   v-model="newCategoryName"
                   type="text"
                   placeholder="Nama kategori baru"
-                  class="flex-1 h-8 px-2.5 text-xs border border-slate-300 rounded-md
+                  class="flex-1 h-8 px-2.5 text-xs border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
                          focus:border-blue-500 outline-none"
                   @keydown.enter.prevent="handleAddCategory"
                 />
@@ -437,7 +437,7 @@
 
           <!-- 5. Stok Awal / Unit -->
           <div v-if="!editingProduct">
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Stok Awal
             </label>
             <div class="flex items-center gap-2">
@@ -446,14 +446,14 @@
                 type="number"
                 min="0"
                 placeholder="0"
-                class="flex-1 h-9 px-3 text-sm font-mono border border-slate-300 rounded-md
+                class="flex-1 h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
                        focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               />
               <input
                 v-model="form.unit"
                 type="text"
                 placeholder="pcs"
-                class="w-20 h-9 px-2.5 text-sm text-center border border-slate-300 rounded-md
+                class="w-20 h-9 px-2.5 text-sm text-center border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
                        focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               />
             </div>
@@ -463,7 +463,7 @@
           <!-- 6. Harga Jual & Modal -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Harga Jual (Rp) <span class="text-red-500">*</span>
               </label>
               <input
@@ -472,12 +472,12 @@
                 min="0"
                 required
                 placeholder="0"
-                class="w-full h-9 px-3 text-sm font-mono border border-slate-300 rounded-md
+                class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
                        focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Modal (Rp) <span class="text-red-500">*</span>
               </label>
               <input
@@ -486,7 +486,7 @@
                 min="0"
                 required
                 placeholder="0"
-                class="w-full h-9 px-3 text-sm font-mono border border-slate-300 rounded-md
+                class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
                        focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
               />
             </div>
@@ -494,14 +494,14 @@
 
           <!-- 7. Deskripsi -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Deskripsi
             </label>
             <textarea
               v-model="form.description"
               rows="2"
               placeholder="Keterangan produk (opsional)"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-md
+              class="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
                      focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
             ></textarea>
           </div>
@@ -518,7 +518,7 @@
           <div class="flex items-center justify-end gap-2 pt-2">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md
+              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 dark:bg-slate-800 rounded-md
                      hover:bg-slate-200 transition-colors"
               @click="closeModal"
             >
@@ -546,14 +546,14 @@
         v-if="showDeleteModal"
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
-        <div class="absolute inset-0 bg-black/40" @click="showDeleteModal = false"></div>
-        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
+        <div class="absolute inset-0 bg-black/50" @click="showDeleteModal = false"></div>
+        <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
           <div class="flex items-start gap-3">
             <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
               <Trash2Icon class="w-5 h-5 text-red-600" />
             </div>
             <div>
-              <h3 class="text-sm font-bold text-slate-900">Hapus Produk?</h3>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Hapus Produk?</h3>
               <p class="text-xs text-slate-600 mt-1">
                 Produk <strong>{{ deletingProduct?.name }}</strong> akan dihapus (soft delete).
                 Data historis tetap tersimpan.
@@ -569,7 +569,7 @@
           <div class="flex items-center justify-end gap-2">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md
+              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 dark:bg-slate-800 rounded-md
                      hover:bg-slate-200 transition-colors"
               @click="showDeleteModal = false"
             >
@@ -595,10 +595,10 @@
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showStockHistoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40" @click="showStockHistoryModal = false"></div>
-        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <div class="absolute inset-0 bg-black/50" @click="showStockHistoryModal = false"></div>
+        <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-slate-900">Riwayat Stok — {{ stockHistoryProduct?.name }}</h3>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Riwayat Stok — {{ stockHistoryProduct?.name }}</h3>
             <button type="button" class="text-slate-400 hover:text-slate-600" @click="showStockHistoryModal = false">✕</button>
           </div>
 
@@ -606,18 +606,18 @@
             <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
           </div>
           <div v-else-if="stockHistoryData.length === 0" class="text-center py-8">
-            <p class="text-xs text-slate-500">Belum ada riwayat stok.</p>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Belum ada riwayat stok.</p>
           </div>
           <div v-else class="space-y-2">
             <div v-for="h in stockHistoryData" :key="h.id"
-              class="flex items-center gap-3 p-3 rounded-lg border border-slate-100">
+              class="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
               <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
                 h.quantityChange > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700']">
                 {{ h.quantityChange > 0 ? '↑' : '↓' }}
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="text-xs font-semibold text-slate-800">{{ sourceLabel(h.source) }}</span>
+                  <span class="text-xs font-semibold text-slate-800 dark:text-slate-200">{{ sourceLabel(h.source) }}</span>
                   <span v-if="h.paymentMethod" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">{{ paymentLabel(h.paymentMethod) }}</span>
                 </div>
                 <p class="text-[10px] text-slate-500 mt-0.5">{{ formatDateTime(h.createdAt) }}<span v-if="h.notes"> · {{ h.notes }}</span></p>
@@ -639,10 +639,10 @@
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showBulkModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40" @click="closeBulkModal"></div>
-        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
-          <h2 class="text-base font-bold text-slate-950">Upload Massal Produk (Excel)</h2>
-          <p class="text-xs text-slate-500">
+        <div class="absolute inset-0 bg-black/50" @click="closeBulkModal"></div>
+        <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
+          <h2 class="text-base font-bold text-slate-950 dark:text-slate-100">Upload Massal Produk (Excel)</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400">
             Upload file <strong>.xlsx</strong> atau <strong>.csv</strong> untuk menambah banyak produk sekaligus. Maksimal 500 produk per upload.
           </p>
 
@@ -668,13 +668,13 @@
           <!-- File Input -->
           <div>
             <label
-              class="block w-full border-2 border-dashed border-slate-300 rounded-lg p-6 text-center cursor-pointer
+              class="block w-full border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-6 text-center cursor-pointer
                      hover:border-blue-400 hover:bg-blue-50/30 transition-colors"
               :class="bulkFile ? 'border-emerald-400 bg-emerald-50/30' : ''"
             >
               <UploadIcon class="w-6 h-6 mx-auto mb-2" :class="bulkFile ? 'text-emerald-500' : 'text-slate-400'" />
               <p v-if="bulkFile" class="text-xs font-semibold text-emerald-700">{{ bulkFile.name }}</p>
-              <p v-else class="text-xs text-slate-500">Klik atau drag file Excel (.xlsx, .csv) ke sini</p>
+              <p v-else class="text-xs text-slate-500 dark:text-slate-400">Klik atau drag file Excel (.xlsx, .csv) ke sini</p>
               <input
                 type="file"
                 accept=".xlsx,.xls,.csv"
@@ -702,7 +702,7 @@
 
           <!-- Actions -->
           <div class="flex items-center justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors" @click="closeBulkModal">
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 dark:bg-slate-800 rounded-md hover:bg-slate-200 transition-colors" @click="closeBulkModal">
               {{ bulkResult ? 'Tutup' : 'Batal' }}
             </button>
             <button
@@ -740,6 +740,7 @@ import {
   History as HistoryIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import { useConfirm } from '@/shared/composables/useConfirm';
 import { uploadToCloudinary } from '@/shared/services/upload.service';
 import api from '@/shared/services/api';
@@ -749,6 +750,7 @@ import productsService, {
 } from '@/shared/services/products.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const { ask } = useConfirm();
 
 // ============================================
@@ -824,7 +826,7 @@ async function fetchProducts() {
   loading.value = true;
   error.value = null;
   try {
-    const shopId = authStore.user?.shopId;
+    const shopId = authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
     const response = await productsService.list({
       shopId: shopId || undefined,
       search: searchQuery.value || undefined,
@@ -926,7 +928,7 @@ async function handleSubmitForm() {
         description: form.description || undefined,
       });
     } else {
-      const shopId = authStore.user?.shopId;
+      const shopId = authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
       if (!shopId) {
         formError.value = 'Tidak ada cabang aktif. Pilih cabang dulu.';
         return;
