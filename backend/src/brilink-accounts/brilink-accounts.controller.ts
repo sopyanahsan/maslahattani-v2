@@ -18,6 +18,7 @@ import {
   MutationActionDto,
   QueryMutationsDto,
   QueryAllMutationsDto,
+  TransferInternalDto,
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
@@ -84,6 +85,22 @@ export class BrilinkAccountsController {
   ) {
     const userId = req.user?.id || req.user?.sub;
     return this.service.tarik(id, dto, userId);
+  }
+
+  @Post('transfer-internal')
+  @ApiOperation({ summary: 'Pindah saldo antar rekening BRI (internal)' })
+  async transferInternal(
+    @Body() dto: TransferInternalDto,
+    @Req() req: any,
+  ) {
+    const userId = req.user?.id || req.user?.sub;
+    return this.service.transferInternal(
+      dto.fromAccountId,
+      dto.toAccountId,
+      dto.amount,
+      dto.notes,
+      userId,
+    );
   }
 
   @Get(':id/mutations')

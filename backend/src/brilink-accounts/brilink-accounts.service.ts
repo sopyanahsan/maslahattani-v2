@@ -185,6 +185,99 @@ export class BrilinkAccountsService {
   }
 
   // ============================================
+  // TRANSFER INTERNAL (antar rekening)
+  // ============================================
+
+  async transferInternal(
+    fromAccountId: string,
+    toAccountId: string,
+    amount: number,
+    notes?: string,
+    userId?: string,
+  ) {
+    if (fromAccountId === toAccountId) {
+      throw new BadRequestException('Rekening asal dan tujuan tidak boleh sama.');
+    }
+
+    const fromAccount = await this.findOne(fromAccountId);
+    const toAccount = await this.findOne(toAccountId);
+
+    if (fromAccount.balance < amount) {
+      throw new BadRequestException(
+        `Saldo rekening "${fromAccount.label}" tidak cukup. Saldo: Rp ${fromAccount.balance.toLocaleString('id-ID')}`,
+      );
+    }
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Debit from source
+      const fromBefore = fromAccount.balance;
+      const fromAfter = fromBefore - amount;
+
+      await tx.brilinkAccount.update({
+        where: { id: fromAccountId },
+        data: { balance: fromAfter },
+      });
+
+      const fromMutation = await tx.brilinkMutation.create({
+        data: {
+          accountId: fromAccountId,
+          type: 'TARIK',
+          amount,
+          balanceBefore: fromBefore,
+          balanceAfter: fromAfter,
+          reference: `TRANSFER-TO-${toAccount.label}`,
+          description: `Pindah saldo ke ${toAccount.label} (${toAccount.accountNumber})`,
+          notes: notes || null,
+          createdById: userId || null,
+        },
+      });
+
+      // Credit to destination
+      const toBefore = toAccount.balance;
+      const toAfter = toBefore + amount;
+
+      await tx.brilinkAccount.update({
+        where: { id: toAccountId },
+        data: { balance: toAfter },
+      });
+
+      const toMutation = await tx.brilinkMutation.create({
+        data: {
+          accountId: toAccountId,
+          type: 'SETOR',
+          amount,
+          balanceBefore: toBefore,
+          balanceAfter: toAfter,
+          reference: `TRANSFER-FROM-${fromAccount.label}`,
+          description: `Pindah saldo dari ${fromAccount.label} (${fromAccount.accountNumber})`,
+          notes: notes || null,
+          createdById: userId || null,
+        },
+      });
+
+      return { fromMutation, toMutation, fromAfter, toAfter };
+    });
+
+    return {
+      from: {
+        accountId: fromAccountId,
+        label: fromAccount.label,
+        balanceAfter: result.fromAfter,
+      },
+      to: {
+        accountId: toAccountId,
+        label: toAccount.label,
+        balanceAfter: result.toAfter,
+      },
+      amount,
+      mutations: {
+        from: result.fromMutation,
+        to: result.toMutation,
+      },
+    };
+  }
+
+  // ============================================
   // MUTATIONS HISTORY
   // ============================================
 

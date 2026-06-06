@@ -68,6 +68,7 @@
             <div class="flex flex-col items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity shrink-0">
               <button type="button" class="w-6 h-6 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" @click="openMutationModal(account, 'setor')" title="Setor">+</button>
               <button type="button" class="w-6 h-6 rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[10px] font-bold flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors" @click="openMutationModal(account, 'tarik')" title="Tarik">−</button>
+              <button type="button" class="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-[10px] font-bold flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors" @click="openTransferModal(account)" title="Pindah Saldo">⇄</button>
             </div>
           </div>
         </div>
@@ -381,6 +382,79 @@
     </Teleport>
 
     <!-- ============================================ -->
+    <!-- MODAL: Pindah Saldo Antar Rekening           -->
+    <!-- ============================================ -->
+    <Teleport to="body">
+      <div v-if="showTransferModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showTransferModal = false" />
+        <form
+          class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4"
+          @submit.prevent="handleTransferSubmit"
+        >
+          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Pindah Saldo Antar Rekening</h3>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-lg p-3">
+            <p class="text-[10px] font-semibold text-blue-700 dark:text-blue-300">Dari:</p>
+            <p class="text-xs font-bold text-blue-900 dark:text-blue-100">{{ transferFrom?.label }}</p>
+            <p class="text-[10px] text-blue-600 dark:text-blue-400 font-mono">Saldo: {{ formatRupiah(transferFrom?.balance ?? 0) }}</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Rekening Tujuan *</label>
+            <select
+              v-model="transferToId"
+              required
+              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none"
+            >
+              <option value="">— Pilih Rekening Tujuan —</option>
+              <option
+                v-for="acc in accounts.filter(a => a.id !== transferFrom?.id && a.isActive)"
+                :key="acc.id"
+                :value="acc.id"
+              >
+                {{ acc.label }} ({{ acc.accountNumber }}) — {{ formatRupiah(acc.balance) }}
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Jumlah (Rp) *</label>
+            <input
+              v-model.number="transferAmount"
+              type="number"
+              min="1"
+              :max="transferFrom?.balance ?? 0"
+              required
+              class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan</label>
+            <input
+              v-model="transferNotes"
+              type="text"
+              placeholder="Opsional"
+              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <div v-if="transferError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">
+            {{ transferError }}
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2">
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700" @click="showTransferModal = false">Batal</button>
+            <button type="submit" :disabled="savingTransfer || !transferToId || transferAmount <= 0" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
+              <Loader2Icon v-if="savingTransfer" class="w-3.5 h-3.5 animate-spin" />
+              Pindah Saldo
+            </button>
+          </div>
+        </form>
+      </div>
+    </Teleport>
+
+    <!-- ============================================ -->
     <!-- MODAL: Mutations History                      -->
     <!-- ============================================ -->
     <Teleport to="body">
@@ -473,10 +547,9 @@ const authStore = useAuthStore();
 const { ask } = useConfirm();
 
 // Tabs
-type TabKey = 'rekening' | 'mutasi' | 'riwayat';
+type TabKey = 'rekening' | 'riwayat';
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'rekening', label: 'Rekening BRI' },
-  { key: 'mutasi', label: 'Mutasi' },
   { key: 'riwayat', label: 'Riwayat Transaksi' },
 ];
 const activeTab = ref<TabKey>('rekening');
@@ -799,6 +872,46 @@ async function fetchMutasi(page = 1) {
 
 function resetMutasiAndFetch() {
   fetchMutasi(1);
+}
+
+// ============================================
+// TRANSFER INTERNAL (Pindah Saldo)
+// ============================================
+const showTransferModal = ref(false);
+const transferFrom = ref<BrilinkAccount | null>(null);
+const transferToId = ref('');
+const transferAmount = ref(0);
+const transferNotes = ref('');
+const savingTransfer = ref(false);
+const transferError = ref<string | null>(null);
+
+function openTransferModal(account: BrilinkAccount) {
+  transferFrom.value = account;
+  transferToId.value = '';
+  transferAmount.value = 0;
+  transferNotes.value = '';
+  transferError.value = null;
+  showTransferModal.value = true;
+}
+
+async function handleTransferSubmit() {
+  if (!transferFrom.value || !transferToId.value || transferAmount.value <= 0) return;
+  savingTransfer.value = true;
+  transferError.value = null;
+  try {
+    await brilinkAccountService.transferInternal({
+      fromAccountId: transferFrom.value.id,
+      toAccountId: transferToId.value,
+      amount: transferAmount.value,
+      notes: transferNotes.value || undefined,
+    });
+    showTransferModal.value = false;
+    await fetchAccounts();
+  } catch (err: any) {
+    transferError.value = err?.response?.data?.message || 'Gagal pindah saldo.';
+  } finally {
+    savingTransfer.value = false;
+  }
 }
 
 // ============================================
