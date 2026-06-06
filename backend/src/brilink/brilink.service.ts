@@ -63,6 +63,17 @@ export class BrilinkService {
 
     if (query.shopId) where.shopId = query.shopId;
     if (query.category) where.category = query.category;
+    if (query.status) where.status = query.status;
+    if (query.cashierId) where.cashierId = query.cashierId;
+
+    if (query.search) {
+      where.OR = [
+        { refNumber: { contains: query.search, mode: 'insensitive' } },
+        { customerName: { contains: query.search, mode: 'insensitive' } },
+        { destination: { contains: query.search, mode: 'insensitive' } },
+        { customerPhone: { contains: query.search, mode: 'insensitive' } },
+      ];
+    }
 
     if (query.startDate || query.endDate) {
       where.createdAt = {};
