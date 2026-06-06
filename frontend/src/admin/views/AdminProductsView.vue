@@ -44,7 +44,7 @@
       <select
         v-model="filterCategory"
         class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
-               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800"
         @change="resetAndFetch"
       >
         <option value="">Semua Kategori</option>
@@ -56,7 +56,7 @@
       <select
         v-model="sortMode"
         class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
-               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800"
         @change="resetAndFetch"
       >
         <option value="name-asc">A-Z (Nama)</option>
@@ -236,12 +236,12 @@
 
           <!-- 1. Gambar Produk -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Gambar Produk
             </label>
             <div class="flex items-start gap-3">
               <div
-                class="w-20 h-20 rounded-lg border border-slate-200 bg-slate-50 overflow-hidden
+                class="w-20 h-20 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 overflow-hidden
                        flex items-center justify-center shrink-0"
               >
                 <img
@@ -254,7 +254,7 @@
               </div>
               <div class="flex-1 space-y-1.5">
                 <label
-                  class="block h-9 px-3 border border-dashed border-slate-300 dark:border-slate-700 rounded-md
+                  class="block h-9 px-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-md
                          text-xs text-slate-600 font-medium cursor-pointer
                          hover:border-blue-400 hover:bg-blue-50/50 transition-colors
                          flex items-center justify-center gap-1.5"
@@ -306,7 +306,7 @@
 
           <!-- 2. SKU (auto-generated from nama + kategori) -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               SKU <span class="text-red-500">*</span>
             </label>
             <div class="flex items-center gap-2">
@@ -318,7 +318,7 @@
                 placeholder="Otomatis dari nama & kategori"
                 :class="[
                   'flex-1 h-9 px-3 text-sm font-mono border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none',
-                  editingProduct ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed' : 'border-slate-300',
+                  editingProduct ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700' : 'border-slate-300',
                 ]"
               />
               <button
@@ -338,7 +338,7 @@
 
           <!-- 3. Nama Produk -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Nama Produk <span class="text-red-500">*</span>
             </label>
             <input
@@ -354,7 +354,7 @@
 
           <!-- 3b. Barcode (optional, scannable) -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Barcode <span class="text-[10px] font-normal text-slate-400">(optional, scan / ketik)</span>
             </label>
             <div class="relative">
@@ -374,14 +374,14 @@
 
           <!-- 4. Kategori (dropdown + inline add/delete) -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Kategori
             </label>
             <div class="flex items-center gap-2">
               <select
                 v-model="form.categoryId"
                 class="flex-1 h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white"
+                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800"
               >
                 <option value="">— Tanpa Kategori —</option>
                 <option v-for="cat in categoryList" :key="cat.id" :value="cat.id">
@@ -437,7 +437,7 @@
 
           <!-- 5. Stok Awal / Unit -->
           <div v-if="!editingProduct">
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Stok Awal
             </label>
             <div class="flex items-center gap-2">
@@ -463,7 +463,7 @@
           <!-- 6. Harga Jual & Modal -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Harga Jual (Rp) <span class="text-red-500">*</span>
               </label>
               <input
@@ -477,7 +477,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                 Modal (Rp) <span class="text-red-500">*</span>
               </label>
               <input
@@ -494,7 +494,7 @@
 
           <!-- 7. Deskripsi -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
               Deskripsi
             </label>
             <textarea

@@ -23,7 +23,7 @@
     </div>
 
     <!-- Rekap Opname Bulan Ini -->
-    <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-5">
+    <div class="bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/50 rounded-xl p-5">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-bold text-slate-800 dark:text-slate-200">Rekap Opname Bulan Ini</h2>
         <span class="text-xs text-slate-500 dark:text-slate-400">{{ currentMonthYear }}</span>
@@ -36,19 +36,19 @@
         </div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
           <p class="text-[10px] font-semibold text-emerald-500 uppercase tracking-wide">Akurasi Stok</p>
-          <p class="text-lg font-bold text-slate-900 mt-1">
+          <p class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">
             {{ monthlyStats.totalItems > 0 ? Math.round((monthlyStats.matched / monthlyStats.totalItems) * 100) + '%' : '—' }}
           </p>
           <p class="text-[10px] text-slate-400 mt-0.5">item cocok / dihitung</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
           <p class="text-[10px] font-semibold text-blue-500 uppercase tracking-wide">Jumlah Sesi</p>
-          <p class="text-lg font-bold text-slate-900 mt-1">{{ monthlyStats.totalSessions }}</p>
+          <p class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">{{ monthlyStats.totalSessions }}</p>
           <p class="text-[10px] text-slate-400 mt-0.5">sesi bulan ini</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
           <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Opname Terakhir</p>
-          <p class="text-lg font-bold text-slate-900 mt-1">{{ monthlyStats.lastOpnameDate || '—' }}</p>
+          <p class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">{{ monthlyStats.lastOpnameDate || '—' }}</p>
           <p class="text-[10px] text-slate-400 mt-0.5">{{ monthlyStats.lastOpnameDate ? '' : 'belum ada' }}</p>
         </div>
       </div>
@@ -72,8 +72,8 @@
     <!-- Sessions List -->
     <div v-if="loading" class="text-center py-10 text-slate-500 text-sm">Memuat...</div>
 
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4">
-      <p class="text-sm text-red-700">{{ error }}</p>
+    <div v-else-if="error" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-4">
+      <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
     </div>
 
     <div v-else-if="sessions.length === 0" class="text-center py-10 text-slate-400 text-sm">
@@ -159,7 +159,7 @@
       >
         <div class="absolute inset-0 bg-black/50" @click="showCreateModal = false"></div>
         <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+          <h2 class="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
@@ -175,7 +175,7 @@
                 :class="[
                   'p-3 rounded-lg border-2 text-left transition-all',
                   createMode === 'all'
-                    ? 'border-blue-500 bg-blue-50'
+                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
                     : 'border-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
                 ]"
                 @click="createMode = 'all'; selectedRackIds = []"
@@ -188,7 +188,7 @@
                 :class="[
                   'p-3 rounded-lg border-2 text-left transition-all',
                   createMode === 'by-rack'
-                    ? 'border-violet-500 bg-violet-50'
+                    ? 'border-violet-500 bg-violet-50 dark:bg-violet-950/30'
                     : 'border-slate-200 hover:border-slate-300 dark:hover:border-slate-600'
                 ]"
                 @click="createMode = 'by-rack'"
@@ -208,8 +208,8 @@
 
             <div v-if="loadingRacks" class="text-center py-4 text-xs text-slate-400">Memuat rak...</div>
 
-            <div v-else-if="availableRacks.length === 0" class="bg-amber-50 border border-amber-200 rounded-lg p-3">
-              <p class="text-xs text-amber-700">Belum ada rak di cabang ini. Buat rak dulu di menu "Label Rak".</p>
+            <div v-else-if="availableRacks.length === 0" class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-lg p-3">
+              <p class="text-xs text-amber-700 dark:text-amber-300">Belum ada rak di cabang ini. Buat rak dulu di menu "Label Rak".</p>
             </div>
 
             <div v-else class="max-h-48 overflow-y-auto space-y-1 border border-slate-200 dark:border-slate-800 rounded-lg p-2">
@@ -218,7 +218,7 @@
                 :key="rack.id"
                 :class="[
                   'flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-colors',
-                  selectedRackIds.includes(rack.id) ? 'bg-violet-50' : 'hover:bg-slate-50 dark:hover:bg-slate-800'
+                  selectedRackIds.includes(rack.id) ? 'bg-violet-50 dark:bg-violet-950/30' : 'hover:bg-slate-50 dark:hover:bg-slate-800'
                 ]"
               >
                 <input
@@ -297,7 +297,7 @@
           </div>
 
           <!-- Info -->
-          <div class="text-left bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-1">
+          <div class="text-left bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-lg p-3 space-y-1">
             <p class="text-[11px] text-blue-800 font-semibold">Cara pakai:</p>
             <ol class="text-[11px] text-blue-700 list-decimal list-inside space-y-0.5">
               <li>Petugas buka webapp di HP/tablet</li>
@@ -401,8 +401,8 @@
                 </div>
               </div>
 
-              <div v-else-if="detail.status === 'IN_PROGRESS'" class="mb-5 bg-amber-50 border border-amber-200 rounded-lg p-3">
-                <p class="text-xs text-amber-700">
+              <div v-else-if="detail.status === 'IN_PROGRESS'" class="mb-5 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-lg p-3">
+                <p class="text-xs text-amber-700 dark:text-amber-300">
                   Belum ada petugas yang bergabung. Bagikan kode
                   <strong class="font-mono">{{ detail.passcode }}</strong>
                   ke petugas untuk mulai menghitung.
@@ -411,15 +411,15 @@
 
               <!-- Summary Cards (for completed) -->
               <div v-if="detail.status === 'COMPLETED'" class="grid grid-cols-3 gap-3 mb-5">
-                <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 text-center">
+                <div class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-lg p-3 text-center">
                   <p class="text-lg font-bold text-emerald-700">{{ detail.totalMatched }}</p>
                   <p class="text-[10px] text-emerald-600 uppercase font-semibold">Cocok</p>
                 </div>
-                <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 text-center">
+                <div class="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-lg p-3 text-center">
                   <p class="text-lg font-bold text-amber-700">{{ detail.totalSurplus }}</p>
                   <p class="text-[10px] text-amber-600 uppercase font-semibold">Surplus</p>
                 </div>
-                <div class="bg-red-50 border border-red-200 rounded-lg p-3 text-center">
+                <div class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-3 text-center">
                   <p class="text-lg font-bold text-red-700">{{ detail.totalDeficit }}</p>
                   <p class="text-[10px] text-red-600 uppercase font-semibold">Kurang</p>
                 </div>
@@ -452,7 +452,7 @@
                           type="number"
                           :value="item.actualQty ?? ''"
                           min="0"
-                          class="w-16 h-7 px-2 text-xs text-right border border-slate-300 rounded
+                          class="w-16 h-7 px-2 text-xs text-right border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded
                                  focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
                           @change="(e) => handleUpdateItem(item.id, parseInt((e.target as HTMLInputElement).value), item.systemQty)"
                         />
