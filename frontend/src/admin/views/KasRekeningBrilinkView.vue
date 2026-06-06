@@ -50,14 +50,14 @@
         <!-- Saldo Rekening Strip (1 baris horizontal, sama style Kas Retail) -->
         <div class="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
           <!-- Total Pill -->
-          <div class="shrink-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/80 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl px-5 py-3 shadow-sm">
+          <div class="shrink-0 min-w-[160px] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/80 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl px-5 py-3 shadow-sm">
             <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">Total BRILink</p>
             <p class="text-lg font-bold font-mono text-slate-900 dark:text-slate-100 whitespace-nowrap leading-tight">{{ formatRupiah(totalBrilinkBalance) }}</p>
           </div>
           <!-- Per-Rekening Pill -->
           <div v-for="account in accounts" :key="account.id"
-            class="shrink-0 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow flex items-center gap-3 group">
-            <div class="min-w-0">
+            class="shrink-0 min-w-[160px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow group">
+            <div class="mb-2">
               <div class="flex items-center gap-1.5 mb-0.5">
                 <p class="text-[11px] font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[130px]">{{ account.label }}</p>
                 <span v-if="account.isDefault" class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" title="Default"></span>
@@ -65,10 +65,10 @@
               <p class="text-[9px] text-slate-400 dark:text-slate-500 font-mono leading-none mb-1">{{ account.accountNumber }}</p>
               <p class="text-sm font-bold font-mono whitespace-nowrap leading-tight" :class="account.balance < account.lowBalanceThreshold ? 'text-red-500 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'">{{ formatRupiah(account.balance) }}</p>
             </div>
-            <div class="flex flex-col items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity shrink-0">
-              <button type="button" class="w-6 h-6 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" @click="openMutationModal(account, 'setor')" title="Setor">+</button>
-              <button type="button" class="w-6 h-6 rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[10px] font-bold flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors" @click="openMutationModal(account, 'tarik')" title="Tarik">−</button>
-              <button type="button" class="w-6 h-6 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-[10px] font-bold flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors" @click="openTransferModal(account)" title="Pindah Saldo">⇄</button>
+            <div class="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
+              <button type="button" class="flex-1 h-6 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" @click="openMutationModal(account, 'setor')" title="Setor">+ Setor</button>
+              <button type="button" class="flex-1 h-6 rounded-md bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[9px] font-bold flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors" @click="openMutationModal(account, 'tarik')" title="Tarik">− Tarik</button>
+              <button type="button" class="flex-1 h-6 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-[9px] font-bold flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors" @click="openTransferModal(account)" title="Pindah">⇄ Pindah</button>
             </div>
           </div>
         </div>
