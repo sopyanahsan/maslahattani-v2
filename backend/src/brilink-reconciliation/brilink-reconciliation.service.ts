@@ -47,7 +47,7 @@ export class BrilinkReconciliationService {
     const status = adjustment === 0 ? 'MATCHED' : 'ADJUSTED';
 
     // If there's an adjustment, update account balance + create mutation
-    let mutation = null;
+    let mutation: any = null;
     if (adjustment !== 0) {
       const balanceAfter = dto.realBalance;
 
@@ -119,7 +119,7 @@ export class BrilinkReconciliationService {
     const status = adjustment === 0 ? 'MATCHED' : 'ADJUSTED';
 
     // If there's an adjustment, update cashbox balance + create mutation
-    let mutation = null;
+    let mutation: any = null;
     if (adjustment !== 0) {
       const balanceAfter = dto.realBalance;
 
