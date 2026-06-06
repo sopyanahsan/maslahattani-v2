@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import {
   CreateBrilinkTransactionDto,
   CreateBrilinkFeeDto,
@@ -20,7 +21,10 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 @Injectable()
 export class BrilinkService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
+  ) {}
 
   // ============================================
   // TRANSACTIONS
@@ -152,6 +156,25 @@ export class BrilinkService {
       const transaction = await this.prisma.brilinkTransaction.create({
         data: baseData,
       });
+
+      // Emit real-time event
+      this.realtimeGateway.emitBrilinkTransactionCreated(shopId, {
+        id: transaction.id,
+        refNumber: transaction.refNumber,
+        category: transaction.category,
+        customerName: transaction.customerName,
+        amount: transaction.amount,
+        fee: transaction.fee,
+        total: transaction.total,
+        status: transaction.status,
+        cashierName: '',
+        createdAt: transaction.createdAt.toISOString(),
+      });
+      this.realtimeGateway.emitDashboardRefresh(shopId, {
+        source: 'brilink_transaction',
+        timestamp: new Date().toISOString(),
+      });
+
       return this.buildTransactionResponse(transaction, null);
     }
 
@@ -191,6 +214,33 @@ export class BrilinkService {
         },
       }),
     ]);
+
+    // Emit real-time events
+    this.realtimeGateway.emitBrilinkTransactionCreated(shopId, {
+      id: transaction.id,
+      refNumber: transaction.refNumber,
+      category: transaction.category,
+      customerName: transaction.customerName,
+      amount: transaction.amount,
+      fee: transaction.fee,
+      total: transaction.total,
+      status: transaction.status,
+      cashierName: '',
+      createdAt: transaction.createdAt.toISOString(),
+    });
+    this.realtimeGateway.emitAccountBalanceChanged(shopId, {
+      accountId: account.id,
+      label: account.label,
+      balanceBefore,
+      balanceAfter,
+      changeAmount: dto.amount,
+      changeType: 'DEBIT',
+      reason: `Transaksi BRILink: ${label} - ${dto.customerName}`,
+    });
+    this.realtimeGateway.emitDashboardRefresh(shopId, {
+      source: 'brilink_transaction',
+      timestamp: new Date().toISOString(),
+    });
 
     return this.buildTransactionResponse(transaction, updatedAccount);
   }

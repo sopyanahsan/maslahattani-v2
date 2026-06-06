@@ -26,6 +26,7 @@ import { DashboardBrilinkModule } from './dashboard-brilink/dashboard-brilink.mo
 import { BrilinkAccountsModule } from './brilink-accounts/brilink-accounts.module';
 import { CashBoxesModule } from './cash-boxes/cash-boxes.module';
 import { RacksModule } from './racks/racks.module';
+import { RealtimeModule } from './realtime/realtime.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { RacksModule } from './racks/racks.module';
       envFilePath: '.env',
     }),
     PrismaModule,
+    RealtimeModule,
     ShopsModule, // Harus di-import sebelum AuthModule (yang depend on ShopsService)
     AuthModule,
     HealthModule,

@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import {
   CreateBrilinkAccountDto,
   UpdateBrilinkAccountDto,
@@ -14,7 +15,10 @@ import {
 
 @Injectable()
 export class BrilinkAccountsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtimeGateway: RealtimeGateway,
+  ) {}
 
   // ============================================
   // CRUD
@@ -146,6 +150,21 @@ export class BrilinkAccountsService {
       }),
     ]);
 
+    // Emit real-time event
+    this.realtimeGateway.emitAccountBalanceChanged(account.shopId, {
+      accountId: id,
+      label: account.label,
+      balanceBefore,
+      balanceAfter,
+      changeAmount: dto.amount,
+      changeType: 'CREDIT',
+      reason: `Setor saldo`,
+    });
+    this.realtimeGateway.emitDashboardRefresh(account.shopId, {
+      source: 'brilink_account_setor',
+      timestamp: new Date().toISOString(),
+    });
+
     return { account: updatedAccount, mutation };
   }
 
@@ -180,6 +199,21 @@ export class BrilinkAccountsService {
         },
       }),
     ]);
+
+    // Emit real-time event
+    this.realtimeGateway.emitAccountBalanceChanged(account.shopId, {
+      accountId: id,
+      label: account.label,
+      balanceBefore,
+      balanceAfter,
+      changeAmount: dto.amount,
+      changeType: 'DEBIT',
+      reason: `Tarik saldo`,
+    });
+    this.realtimeGateway.emitDashboardRefresh(account.shopId, {
+      source: 'brilink_account_tarik',
+      timestamp: new Date().toISOString(),
+    });
 
     return { account: updatedAccount, mutation };
   }
