@@ -28,6 +28,7 @@ import { CashBoxesModule } from './cash-boxes/cash-boxes.module';
 import { RacksModule } from './racks/racks.module';
 import { BrilinkCashboxModule } from './brilink-cashbox/brilink-cashbox.module';
 import { BrilinkReconciliationModule } from './brilink-reconciliation/brilink-reconciliation.module';
+import { BrilinkProductsModule } from './brilink-products/brilink-products.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { BrilinkReconciliationModule } from './brilink-reconciliation/brilink-re
     CashBoxesModule,
     BrilinkCashboxModule,
     BrilinkReconciliationModule,
+    BrilinkProductsModule,
     OpnameModule,
     RacksModule,
     SuppliersModule,

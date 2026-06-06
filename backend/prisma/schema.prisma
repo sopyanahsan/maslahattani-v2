@@ -143,6 +143,7 @@ model Shop {
   brilinkAccounts     BrilinkAccount[]
   brilinkCashBox      BrilinkCashBox?
   brilinkReconciliations BrilinkReconciliation[]
+  brilinkProducts     BrilinkProduct[]
   opnameSessions      OpnameSession[]
   suppliers           Supplier[]
   purchaseOrders      PurchaseOrder[]
@@ -1053,6 +1054,64 @@ model BrilinkReconciliation {
   @@index([shopId])
   @@index([createdAt])
   @@map("brilink_reconciliations")
+}
+
+
+// ============================================
+// BRILINK PRODUCTS, OPERATORS & PROVIDERS
+// ============================================
+
+model OperatorPrefix {
+  id        String  @id @default(cuid())
+  prefix    String  @unique  // "0811", "0878", etc
+  operator  String  // TELKOMSEL, XL, INDOSAT, THREE, AXIS, SMARTFREN
+  type      String  @default("GSM")
+
+  @@index([prefix])
+  @@map("operator_prefixes")
+}
+
+model BrilinkProduct {
+  id        String   @id @default(cuid())
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String
+  category  String   // TOPUP_PULSA, TOPUP_DATA, TOPUP_EWALLET, TOPUP_PLN
+  operator  String?  // TELKOMSEL, XL, etc (null for PLN/EWALLET)
+  provider  String?  // GOPAY, OVO, etc (null for pulsa/PLN)
+  name      String   // "Pulsa 10rb", "XL 3GB 30hr", "Token 50rb"
+  nominal   Int?     // 10000, 50000 (null for paket data custom)
+  buyPrice  Int      // harga beli dari BRI/supplier
+  sellPrice Int      // harga jual ke nasabah
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId, category, operator])
+  @@index([shopId, category, provider])
+  @@map("brilink_products")
+}
+
+model BankList {
+  id        String  @id @default(cuid())
+  code      String  @unique  // kode BI: "014", "008"
+  name      String  // "Bank Central Asia"
+  shortName String  // "BCA"
+  isActive  Boolean @default(true)
+
+  @@index([isActive])
+  @@map("bank_list")
+}
+
+model EwalletProvider {
+  id        String  @id @default(cuid())
+  code      String  @unique  // "GOPAY", "OVO"
+  name      String  // "GoPay"
+  icon      String? // optional icon/emoji
+  isActive  Boolean @default(true)
+
+  @@map("ewallet_providers")
 }
 
 

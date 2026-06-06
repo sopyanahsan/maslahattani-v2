@@ -134,125 +134,8 @@
     <!-- ============================================ -->
     <!-- TAB: Metode Kas                              -->
     <!-- ============================================ -->
-    <template v-if="activeTab === 'metode'">
-      <!-- Loading -->
-      <div v-if="metodeLoading" class="flex items-center justify-center py-16">
-        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-        <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat konfigurasi...</span>
-      </div>
-
-      <template v-else>
-        <div class="flex items-center justify-between mb-2">
-          <p class="text-sm text-slate-600 dark:text-slate-400">
-            Konfigurasi tampilan kategori BRILink di UI kasir.
-          </p>
-          <button
-            type="button"
-            :disabled="savingMetode"
-            class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
-            @click="handleSaveMetode"
-          >
-            <Loader2Icon v-if="savingMetode" class="w-3.5 h-3.5 animate-spin" />
-            Simpan Semua
-          </button>
-        </div>
-
-        <div
-          v-if="metodeSuccess"
-          class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-md p-2 text-xs text-emerald-700 dark:text-emerald-300 mb-3"
-        >
-          {{ metodeSuccess }}
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[600px]">
-              <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide w-12">#</th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Kategori</th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Nama Tampilan</th>
-                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Warna</th>
-                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Aktif</th>
-                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Urutan</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr
-                  v-for="(item, key) in metodeSorted"
-                  :key="key"
-                  class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                >
-                  <td class="px-4 py-3 text-center text-xs text-slate-400 dark:text-slate-500 font-mono">{{ item.sortOrder + 1 }}</td>
-                  <td class="px-4 py-3">
-                    <code class="text-[10px] font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300">{{ key }}</code>
-                  </td>
-                  <td class="px-4 py-3">
-                    <input
-                      v-model="metodeConfig[key].displayName"
-                      type="text"
-                      class="h-8 px-2 text-sm border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none w-full max-w-[180px]"
-                    />
-                  </td>
-                  <td class="px-4 py-3 text-center">
-                    <select
-                      v-model="metodeConfig[key].color"
-                      class="h-8 px-2 text-xs border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none"
-                    >
-                      <option value="blue">Blue</option>
-                      <option value="indigo">Indigo</option>
-                      <option value="amber">Amber</option>
-                      <option value="pink">Pink</option>
-                      <option value="purple">Purple</option>
-                      <option value="cyan">Cyan</option>
-                      <option value="yellow">Yellow</option>
-                      <option value="emerald">Emerald</option>
-                      <option value="red">Red</option>
-                    </select>
-                  </td>
-                  <td class="px-4 py-3 text-center">
-                    <button
-                      type="button"
-                      :class="[
-                        'w-9 h-5 rounded-full relative transition-colors',
-                        metodeConfig[key].isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600',
-                      ]"
-                      @click="metodeConfig[key].isActive = !metodeConfig[key].isActive"
-                    >
-                      <span
-                        :class="[
-                          'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform',
-                          metodeConfig[key].isActive ? 'left-[18px]' : 'left-0.5',
-                        ]"
-                      />
-                    </button>
-                  </td>
-                  <td class="px-4 py-3 text-center">
-                    <div class="flex items-center justify-center gap-1">
-                      <button
-                        type="button"
-                        class="w-6 h-6 text-xs border border-slate-200 dark:border-slate-700 rounded flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30"
-                        :disabled="item.sortOrder <= 0"
-                        @click="moveCategory(String(key), -1)"
-                      >
-                        ↑
-                      </button>
-                      <button
-                        type="button"
-                        class="w-6 h-6 text-xs border border-slate-200 dark:border-slate-700 rounded flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30"
-                        :disabled="item.sortOrder >= 6"
-                        @click="moveCategory(String(key), 1)"
-                      >
-                        ↓
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </template>
+    <template v-if="activeTab === 'metode'"> 
+      <MetodeKasPanel />
     </template>
 
 
@@ -450,6 +333,7 @@ import brilinkAccountService, {
   type MutationsResponse,
 } from '@/shared/services/brilink-account.service';
 import settingsService from '@/shared/services/settings.service';
+import MetodeKasPanel from '@/admin/components/brilink/MetodeKasPanel.vue';
 
 
 const authStore = useAuthStore();
