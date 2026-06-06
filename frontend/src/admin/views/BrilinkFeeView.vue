@@ -136,10 +136,6 @@
               <option value="TRANSFER_BRI">Transfer BRI</option>
               <option value="TRANSFER_OTHER">Transfer Bank Lain</option>
               <option value="TARIK_TUNAI">Tarik Tunai</option>
-              <option value="TOPUP_PULSA">Pulsa</option>
-              <option value="TOPUP_DATA">Paket Data</option>
-              <option value="TOPUP_EWALLET">E-Wallet</option>
-              <option value="TOPUP_PLN">Token PLN</option>
             </select>
           </div>
 
