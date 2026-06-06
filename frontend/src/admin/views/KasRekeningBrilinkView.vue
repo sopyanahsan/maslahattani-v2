@@ -131,12 +131,7 @@
     </template>
 
 
-    <!-- ============================================ -->
-    <!-- TAB: Metode Kas                              -->
-    <!-- ============================================ -->
-    <template v-if="activeTab === 'metode'"> 
-      <MetodeKasPanel />
-    </template>
+
 
 
     <!-- ============================================ -->
@@ -333,17 +328,16 @@ import brilinkAccountService, {
   type MutationsResponse,
 } from '@/shared/services/brilink-account.service';
 import settingsService from '@/shared/services/settings.service';
-import MetodeKasPanel from '@/admin/components/brilink/MetodeKasPanel.vue';
 
 
 const authStore = useAuthStore();
 const { ask } = useConfirm();
 
 // Tabs
-type TabKey = 'rekening' | 'metode';
+type TabKey = 'rekening' | 'mutasi';
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'rekening', label: 'Rekening BRI' },
-  { key: 'metode', label: 'Metode Kas' },
+  { key: 'mutasi', label: 'Mutasi' },
 ];
 const activeTab = ref<TabKey>('rekening');
 
