@@ -78,8 +78,9 @@
                   <th class="px-4 py-2 text-left">Label</th>
                   <th class="px-4 py-2 text-right">Min</th>
                   <th class="px-4 py-2 text-right">Max</th>
-                  <th class="px-4 py-2 text-center">Tipe</th>
-                  <th class="px-4 py-2 text-right">Fee</th>
+                  <th class="px-4 py-2 text-right">Biaya Sistem</th>
+                  <th class="px-4 py-2 text-center">Tipe Admin</th>
+                  <th class="px-4 py-2 text-right">Fee Admin</th>
                   <th class="px-4 py-2 text-center">Aktif</th>
                   <th class="px-4 py-2 text-center">Aksi</th>
                 </tr>
@@ -89,12 +90,13 @@
                   <td class="px-4 py-2.5 text-xs font-medium text-slate-900 dark:text-slate-100">{{ fee.label }}</td>
                   <td class="px-4 py-2.5 text-xs font-mono text-right text-slate-600 dark:text-slate-400">{{ formatRupiah(fee.minAmount) }}</td>
                   <td class="px-4 py-2.5 text-xs font-mono text-right text-slate-600 dark:text-slate-400">{{ formatRupiah(fee.maxAmount) }}</td>
+                  <td class="px-4 py-2.5 text-xs font-mono text-right text-red-600 dark:text-red-400">{{ formatRupiah(fee.systemFee || 0) }}</td>
                   <td class="px-4 py-2.5 text-center">
                     <span :class="['text-[10px] font-bold px-1.5 py-0.5 rounded', fee.feeType === 'FLAT' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300']">
                       {{ fee.feeType }}
                     </span>
                   </td>
-                  <td class="px-4 py-2.5 text-xs font-mono text-right font-semibold text-slate-900 dark:text-slate-100">
+                  <td class="px-4 py-2.5 text-xs font-mono text-right font-semibold text-emerald-600 dark:text-emerald-400">
                     {{ fee.feeType === 'FLAT' ? formatRupiah(fee.feeAmount) : fee.feePercent + '%' }}
                   </td>
                   <td class="px-4 py-2.5 text-center">
@@ -153,6 +155,12 @@
               <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Max Nominal *</label>
               <input v-model.number="feeForm.maxAmount" type="number" min="0" required class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md" />
             </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Biaya Sistem / Potongan Bank (Rp)</label>
+            <input v-model.number="feeForm.systemFee" type="number" min="0" placeholder="0" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md" />
+            <p class="text-[10px] text-slate-400 mt-0.5">Biaya yang dipotong bank/sistem (bukan profit agen). Rp 0 jika tidak ada.</p>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
@@ -245,6 +253,7 @@ const feeForm = reactive({
   label: '',
   minAmount: 0,
   maxAmount: 5000000,
+  systemFee: 0,
   feeType: 'FLAT' as 'FLAT' | 'PERCENT',
   feeAmount: 5000,
   feePercent: 0.5,
@@ -312,6 +321,7 @@ function openFeeModal(fee: BrilinkFeeDto | null) {
     feeForm.label = fee.label;
     feeForm.minAmount = fee.minAmount;
     feeForm.maxAmount = fee.maxAmount;
+    feeForm.systemFee = (fee as any).systemFee || 0;
     feeForm.feeType = fee.feeType;
     feeForm.feeAmount = fee.feeAmount;
     feeForm.feePercent = fee.feePercent;
@@ -321,6 +331,7 @@ function openFeeModal(fee: BrilinkFeeDto | null) {
     feeForm.label = '';
     feeForm.minAmount = 0;
     feeForm.maxAmount = 5000000;
+    feeForm.systemFee = 0;
     feeForm.feeType = 'FLAT';
     feeForm.feeAmount = 5000;
     feeForm.feePercent = 0.5;
@@ -340,6 +351,7 @@ async function handleSaveFee() {
       label: feeForm.label,
       minAmount: feeForm.minAmount,
       maxAmount: feeForm.maxAmount,
+      systemFee: feeForm.systemFee || 0,
       feeType: feeForm.feeType,
       feeAmount: feeForm.feeType === 'FLAT' ? feeForm.feeAmount : 0,
       feePercent: feeForm.feeType === 'PERCENT' ? feeForm.feePercent : 0,

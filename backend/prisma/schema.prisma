@@ -911,9 +911,10 @@ model BrilinkFee {
   label           String          // "Transfer BRI 1-50jt", etc
   minAmount       Int             @default(0)
   maxAmount       Int             @default(999999999)
+  systemFee       Int             @default(0) // biaya sistem/bank (bukan profit, potongan tetap)
   feeType         BrilinkFeeType  @default(FLAT)
-  feeAmount       Int             @default(0) // flat fee (rupiah)
-  feePercent      Float           @default(0) // percent fee (e.g. 0.5 = 0.5%)
+  feeAmount       Int             @default(0) // admin fee flat (rupiah) — profit agen
+  feePercent      Float           @default(0) // admin fee percent (e.g. 0.5 = 0.5%) — profit agen
   isActive        Boolean         @default(true)
 
   createdAt       DateTime        @default(now())
