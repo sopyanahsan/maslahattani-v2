@@ -135,6 +135,126 @@
 
 
     <!-- ============================================ -->
+    <!-- TAB: Riwayat Transaksi BRILink              -->
+    <!-- ============================================ -->
+    <template v-if="activeTab === 'riwayat'">
+      <!-- Filters -->
+      <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
+        <select
+          v-model="riwayatFilter.category"
+          class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none"
+          @change="fetchRiwayat(1)"
+        >
+          <option value="">Semua Kategori</option>
+          <option value="TRANSFER_BRI">Transfer BRI</option>
+          <option value="TRANSFER_OTHER">Transfer Bank Lain</option>
+          <option value="TARIK_TUNAI">Tarik Tunai</option>
+          <option value="TOPUP_PULSA">Pulsa</option>
+          <option value="TOPUP_DATA">Paket Data</option>
+          <option value="TOPUP_EWALLET">E-Wallet</option>
+          <option value="TOPUP_PLN">Token PLN</option>
+        </select>
+        <select
+          v-model="riwayatFilter.status"
+          class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none"
+          @change="fetchRiwayat(1)"
+        >
+          <option value="">Semua Status</option>
+          <option value="SUCCESS">Sukses</option>
+          <option value="VOIDED">Void</option>
+          <option value="FAILED">Gagal</option>
+        </select>
+        <input
+          v-model="riwayatFilter.startDate"
+          type="date"
+          class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none"
+          @change="fetchRiwayat(1)"
+        />
+        <input
+          v-model="riwayatFilter.endDate"
+          type="date"
+          class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none"
+          @change="fetchRiwayat(1)"
+        />
+        <div class="flex-1"></div>
+        <span v-if="riwayatMeta" class="text-xs text-slate-500 dark:text-slate-400 self-center">{{ riwayatMeta.total }} transaksi</span>
+      </div>
+
+      <!-- Loading -->
+      <div v-if="riwayatLoading" class="flex items-center justify-center py-16">
+        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+        <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat riwayat...</span>
+      </div>
+
+      <!-- Empty -->
+      <div v-else-if="riwayatData.length === 0" class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center">
+        <WalletIcon class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada transaksi BRILink</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Transaksi dari webapp kasir akan muncul di sini.</p>
+      </div>
+
+      <!-- Table -->
+      <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[900px]">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+              <tr>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Waktu</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Ref</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Kategori</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Customer</th>
+                <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Nominal</th>
+                <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Fee</th>
+                <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Flow</th>
+                <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Status</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Kasir</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              <tr v-for="trx in riwayatData" :key="trx.id" class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <td class="px-3 py-2.5 text-xs text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap">{{ formatDateTime(trx.createdAt) }}</td>
+                <td class="px-3 py-2.5"><code class="text-[10px] font-mono text-slate-900 dark:text-slate-100">{{ trx.refNumber }}</code></td>
+                <td class="px-3 py-2.5">
+                  <span :class="['inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold uppercase', riwayatCategoryBadge(trx.category)]">
+                    {{ riwayatCategoryShort(trx.category) }}
+                  </span>
+                </td>
+                <td class="px-3 py-2.5">
+                  <p class="text-xs text-slate-900 dark:text-slate-100 truncate max-w-[140px]">{{ trx.customerName }}</p>
+                  <p class="text-[10px] font-mono text-slate-400 truncate max-w-[140px]">{{ trx.destination }}</p>
+                </td>
+                <td class="px-3 py-2.5 text-right text-xs font-mono font-semibold text-slate-900 dark:text-slate-100">{{ formatRupiah(trx.amount) }}</td>
+                <td class="px-3 py-2.5 text-right text-xs font-mono text-emerald-600 dark:text-emerald-400">{{ trx.fee > 0 ? '+' + formatRupiah(trx.fee) : '—' }}</td>
+                <td class="px-3 py-2.5 text-center">
+                  <span v-if="trx.flowDirection" :class="['text-[9px] font-bold px-1.5 py-0.5 rounded', trx.flowDirection === 'CREDIT' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300']">
+                    {{ trx.flowDirection === 'CREDIT' ? '↑ KREDIT' : '↓ DEBIT' }}
+                  </span>
+                  <span v-else class="text-[9px] text-slate-400">—</span>
+                </td>
+                <td class="px-3 py-2.5 text-center">
+                  <span :class="['inline-flex px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase', riwayatStatusBadge(trx.status)]">
+                    {{ riwayatStatusLabel(trx.status) }}
+                  </span>
+                </td>
+                <td class="px-3 py-2.5 text-xs text-slate-600 dark:text-slate-400">{{ trx.cashierName || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        <div v-if="riwayatMeta && riwayatMeta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <p class="text-xs text-slate-500 dark:text-slate-400">Halaman {{ riwayatMeta.page }} dari {{ riwayatMeta.totalPages }}</p>
+          <div class="flex items-center gap-1">
+            <button :disabled="riwayatMeta.page <= 1" class="h-7 px-2.5 text-xs font-medium border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 text-slate-700 dark:text-slate-300" @click="fetchRiwayat(riwayatMeta!.page - 1)">Prev</button>
+            <button :disabled="riwayatMeta.page >= riwayatMeta.totalPages" class="h-7 px-2.5 text-xs font-medium border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 text-slate-700 dark:text-slate-300" @click="fetchRiwayat(riwayatMeta!.page + 1)">Next</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+
+    <!-- ============================================ -->
     <!-- MODAL: Create/Edit Account                   -->
     <!-- ============================================ -->
     <Teleport to="body">
@@ -327,6 +447,12 @@ import brilinkAccountService, {
   type BrilinkMutationItem,
   type MutationsResponse,
 } from '@/shared/services/brilink-account.service';
+import brilinkService, {
+  type BrilinkTransactionDto,
+  type BrilinkListResponse,
+  BRILINK_CATEGORY_LABELS,
+  type BrilinkCategory,
+} from '@/shared/services/brilink.service';
 import settingsService from '@/shared/services/settings.service';
 
 
@@ -334,10 +460,11 @@ const authStore = useAuthStore();
 const { ask } = useConfirm();
 
 // Tabs
-type TabKey = 'rekening' | 'mutasi';
+type TabKey = 'rekening' | 'mutasi' | 'riwayat';
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'rekening', label: 'Rekening BRI' },
   { key: 'mutasi', label: 'Mutasi' },
+  { key: 'riwayat', label: 'Riwayat Transaksi' },
 ];
 const activeTab = ref<TabKey>('rekening');
 
@@ -662,6 +789,78 @@ function resetMutasiAndFetch() {
 }
 
 // ============================================
+// RIWAYAT TRANSAKSI TAB STATE
+// ============================================
+const riwayatData = ref<BrilinkTransactionDto[]>([]);
+const riwayatMeta = ref<BrilinkListResponse['meta'] | null>(null);
+const riwayatLoading = ref(false);
+const riwayatFilter = reactive({
+  category: '',
+  status: '',
+  startDate: '',
+  endDate: '',
+});
+
+function riwayatCategoryBadge(cat: string): string {
+  const map: Record<string, string> = {
+    TRANSFER_BRI: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+    TRANSFER_OTHER: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300',
+    TARIK_TUNAI: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+    TOPUP_PULSA: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300',
+    TOPUP_DATA: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+    TOPUP_EWALLET: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300',
+    TOPUP_PLN: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
+  };
+  return map[cat] || 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300';
+}
+
+function riwayatCategoryShort(cat: string): string {
+  const map: Record<string, string> = {
+    TRANSFER_BRI: 'TF BRI', TRANSFER_OTHER: 'TF Lain', TARIK_TUNAI: 'Tarik',
+    TOPUP_PULSA: 'Pulsa', TOPUP_DATA: 'Data', TOPUP_EWALLET: 'E-Wallet', TOPUP_PLN: 'PLN',
+  };
+  return map[cat] || cat;
+}
+
+function riwayatStatusBadge(s: string): string {
+  switch (s) {
+    case 'SUCCESS': return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300';
+    case 'FAILED': return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
+    case 'VOIDED': return 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300';
+    default: return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300';
+  }
+}
+
+function riwayatStatusLabel(s: string): string {
+  const map: Record<string, string> = { SUCCESS: 'Sukses', FAILED: 'Gagal', VOIDED: 'Void', PENDING: 'Pending' };
+  return map[s] || s;
+}
+
+async function fetchRiwayat(page = 1) {
+  const shopId = getShopId();
+  if (!shopId) return;
+  riwayatLoading.value = true;
+  try {
+    const res = await brilinkService.listTransactions({
+      shopId,
+      category: (riwayatFilter.category as BrilinkCategory) || undefined,
+      status: (riwayatFilter.status as any) || undefined,
+      startDate: riwayatFilter.startDate || undefined,
+      endDate: riwayatFilter.endDate || undefined,
+      page,
+      limit: 20,
+    });
+    riwayatData.value = res.data;
+    riwayatMeta.value = res.meta;
+  } catch {
+    riwayatData.value = [];
+    riwayatMeta.value = null;
+  } finally {
+    riwayatLoading.value = false;
+  }
+}
+
+// ============================================
 // METODE KAS TAB STATE
 // ============================================
 interface BrilinkCategoryItem {
@@ -730,6 +929,9 @@ async function handleSaveMetode() {
 
 // Watch tab changes to load data on demand
 watch(activeTab, (tab) => {
+  if (tab === 'riwayat' && riwayatData.value.length === 0) {
+    fetchRiwayat(1);
+  }
   if (tab === 'metode' && Object.keys(metodeConfig).length === 0) {
     fetchMetodeConfig();
   }
