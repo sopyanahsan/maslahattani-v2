@@ -941,6 +941,8 @@ enum BrilinkMutationType {
   TRX_DEBIT
   TRX_CREDIT
   ADJUSTMENT
+  TRANSFER_OUT
+  TRANSFER_IN
 }
 
 model BrilinkAccount {

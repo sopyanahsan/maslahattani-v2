@@ -221,7 +221,7 @@ export class BrilinkAccountsService {
       const fromMutation = await tx.brilinkMutation.create({
         data: {
           accountId: fromAccountId,
-          type: 'TARIK',
+          type: 'TRANSFER_OUT',
           amount,
           balanceBefore: fromBefore,
           balanceAfter: fromAfter,
@@ -244,7 +244,7 @@ export class BrilinkAccountsService {
       const toMutation = await tx.brilinkMutation.create({
         data: {
           accountId: toAccountId,
-          type: 'SETOR',
+          type: 'TRANSFER_IN',
           amount,
           balanceBefore: toBefore,
           balanceAfter: toAfter,
