@@ -280,6 +280,218 @@
     </template>
 
     <!-- ============================================ -->
+    <!-- TAB: Reconciliation                           -->
+    <!-- ============================================ -->
+    <template v-if="activeTab === 'reconciliation'">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Rekonsiliasi Rekening -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-5">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">Rekonsiliasi Rekening BRI</h3>
+
+          <div class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Pilih Rekening</label>
+              <select
+                v-model="reconAccountId"
+                class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                @change="onReconAccountChange"
+              >
+                <option value="">— Pilih —</option>
+                <option v-for="acc in accounts" :key="acc.id" :value="acc.id">{{ acc.label }} ({{ acc.accountNumber }})</option>
+              </select>
+            </div>
+
+            <div v-if="reconAccountId" class="space-y-3">
+              <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
+                <p class="text-[10px] text-slate-500 dark:text-slate-400">Saldo di App</p>
+                <p class="text-lg font-bold font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(reconAccountBalance) }}</p>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Saldo Real (cek m-banking) <span class="text-red-500">*</span></label>
+                <input
+                  v-model.number="reconAccountReal"
+                  type="number"
+                  min="0"
+                  placeholder="Masukkan saldo real"
+                  class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <div v-if="reconAccountReal !== null && reconAccountReal !== undefined">
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                  Selisih:
+                  <span :class="['font-bold font-mono', reconAccountDiff === 0 ? 'text-emerald-600' : reconAccountDiff > 0 ? 'text-blue-600' : 'text-red-600']">
+                    {{ reconAccountDiff > 0 ? '+' : '' }}{{ formatRupiah(reconAccountDiff) }}
+                  </span>
+                  <span v-if="reconAccountDiff === 0" class="text-emerald-600"> ✓ Cocok</span>
+                </p>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan</label>
+                <input
+                  v-model="reconAccountNotes"
+                  type="text"
+                  placeholder="Cek m-banking jam 21:00"
+                  class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                />
+              </div>
+
+              <button
+                type="button"
+                :disabled="reconAccountReal === null || reconAccountReal === undefined || reconSavingAccount"
+                class="w-full h-9 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-1.5"
+                @click="handleReconcileAccount"
+              >
+                <Loader2Icon v-if="reconSavingAccount" class="w-3.5 h-3.5 animate-spin" />
+                Simpan Reconciliation
+              </button>
+
+              <div v-if="reconAccountSuccess" class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-md p-2 text-xs text-emerald-700 dark:text-emerald-300">
+                {{ reconAccountSuccess }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Rekonsiliasi Kas Tunai -->
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm p-5">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">Rekonsiliasi Kas Tunai BRILink</h3>
+
+          <div v-if="reconCashboxLoading" class="flex items-center justify-center py-8">
+            <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+          </div>
+
+          <div v-else class="space-y-3">
+            <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3">
+              <p class="text-[10px] text-slate-500 dark:text-slate-400">Saldo Kas Tunai di App</p>
+              <p class="text-lg font-bold font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(reconCashboxBalance) }}</p>
+              <p v-if="reconCashboxLastAudit" class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">
+                Terakhir audit: {{ formatDateTime(reconCashboxLastAudit) }}
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Saldo Real (hitung fisik) <span class="text-red-500">*</span></label>
+              <input
+                v-model.number="reconCashboxReal"
+                type="number"
+                min="0"
+                placeholder="Masukkan saldo fisik"
+                class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <div v-if="reconCashboxReal !== null && reconCashboxReal !== undefined">
+              <p class="text-xs text-slate-500 dark:text-slate-400">
+                Selisih:
+                <span :class="['font-bold font-mono', reconCashboxDiff === 0 ? 'text-emerald-600' : reconCashboxDiff > 0 ? 'text-blue-600' : 'text-red-600']">
+                  {{ reconCashboxDiff > 0 ? '+' : '' }}{{ formatRupiah(reconCashboxDiff) }}
+                </span>
+                <span v-if="reconCashboxDiff === 0" class="text-emerald-600"> ✓ Cocok</span>
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan</label>
+              <input
+                v-model="reconCashboxNotes"
+                type="text"
+                placeholder="Hitung fisik malam"
+                class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            <button
+              type="button"
+              :disabled="reconCashboxReal === null || reconCashboxReal === undefined || reconSavingCashbox"
+              class="w-full h-9 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center justify-center gap-1.5"
+              @click="handleReconcileCashbox"
+            >
+              <Loader2Icon v-if="reconSavingCashbox" class="w-3.5 h-3.5 animate-spin" />
+              Simpan Reconciliation
+            </button>
+
+            <div v-if="reconCashboxSuccess" class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-md p-2 text-xs text-emerald-700 dark:text-emerald-300">
+              {{ reconCashboxSuccess }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Riwayat Reconciliation -->
+      <div class="mt-5">
+        <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-3">Riwayat Reconciliation</h3>
+
+        <div v-if="reconHistoryLoading" class="flex items-center justify-center py-8">
+          <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+        </div>
+
+        <div
+          v-else-if="reconHistory.length === 0"
+          class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-8 text-center"
+        >
+          <p class="text-xs text-slate-500 dark:text-slate-400">Belum ada riwayat reconciliation.</p>
+        </div>
+
+        <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[700px]">
+              <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+                <tr>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Tanggal</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Target</th>
+                  <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Saldo App</th>
+                  <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Saldo Real</th>
+                  <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Adj</th>
+                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Status</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Catatan</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                <tr
+                  v-for="rec in reconHistory"
+                  :key="rec.id"
+                  class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                >
+                  <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400 font-mono">{{ formatDateTime(rec.createdAt) }}</td>
+                  <td class="px-4 py-3 text-xs text-slate-700 dark:text-slate-300">{{ rec.targetLabel }}</td>
+                  <td class="px-4 py-3 text-right text-xs font-mono text-slate-700 dark:text-slate-300">{{ formatRupiah(rec.balanceApp) }}</td>
+                  <td class="px-4 py-3 text-right text-xs font-mono text-slate-700 dark:text-slate-300">{{ formatRupiah(rec.balanceReal) }}</td>
+                  <td class="px-4 py-3 text-right">
+                    <span :class="['text-xs font-bold font-mono', rec.adjustment === 0 ? 'text-slate-400' : rec.adjustment > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400']">
+                      {{ rec.adjustment > 0 ? '+' : '' }}{{ formatRupiah(rec.adjustment) }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-center">
+                    <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase', rec.status === 'MATCHED' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300']">
+                      {{ rec.status === 'MATCHED' ? 'Cocok' : 'Adjusted' }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-xs text-slate-500 dark:text-slate-400 max-w-[150px] truncate">{{ rec.notes || '—' }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div
+            v-if="reconHistoryMeta && reconHistoryMeta.totalPages > 1"
+            class="px-4 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between"
+          >
+            <p class="text-xs text-slate-500 dark:text-slate-400">Hal. {{ reconHistoryMeta.page }} / {{ reconHistoryMeta.totalPages }}</p>
+            <div class="flex gap-1">
+              <button :disabled="reconHistoryMeta.page <= 1" class="h-7 px-2 text-xs border border-slate-200 dark:border-slate-700 rounded disabled:opacity-40" @click="fetchReconHistory(reconHistoryMeta!.page - 1)">Prev</button>
+              <button :disabled="reconHistoryMeta.page >= reconHistoryMeta.totalPages" class="h-7 px-2 text-xs border border-slate-200 dark:border-slate-700 rounded disabled:opacity-40" @click="fetchReconHistory(reconHistoryMeta!.page + 1)">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </template>
+
+
+    <!-- ============================================ -->
     <!-- TAB: Metode Kas                              -->
     <!-- ============================================ -->
     <template v-if="activeTab === 'metode'">
@@ -590,16 +802,22 @@ import brilinkAccountService, {
   type BrilinkMutationItem,
   type MutationsResponse,
 } from '@/shared/services/brilink-account.service';
+import brilinkCashboxService, {
+  type BrilinkCashBox,
+  type ReconciliationRecord,
+  type ReconciliationHistoryResponse,
+} from '@/shared/services/brilink-cashbox.service';
 import settingsService from '@/shared/services/settings.service';
 
 
 const authStore = useAuthStore();
 
 // Tabs
-type TabKey = 'rekening' | 'mutasi' | 'metode';
+type TabKey = 'rekening' | 'mutasi' | 'reconciliation' | 'metode';
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'rekening', label: 'Rekening BRI' },
   { key: 'mutasi', label: 'Mutasi' },
+  { key: 'reconciliation', label: 'Reconciliation' },
   { key: 'metode', label: 'Metode Kas' },
 ];
 const activeTab = ref<TabKey>('rekening');
@@ -981,10 +1199,148 @@ async function handleSaveMetode() {
   }
 }
 
+// ============================================
+// RECONCILIATION TAB STATE
+// ============================================
+const reconAccountId = ref('');
+const reconAccountBalance = ref(0);
+const reconAccountReal = ref<number | null>(null);
+const reconAccountNotes = ref('');
+const reconSavingAccount = ref(false);
+const reconAccountSuccess = ref<string | null>(null);
+
+const reconCashboxLoading = ref(false);
+const reconCashboxBalance = ref(0);
+const reconCashboxLastAudit = ref<string | null>(null);
+const reconCashboxId = ref('');
+const reconCashboxReal = ref<number | null>(null);
+const reconCashboxNotes = ref('');
+const reconSavingCashbox = ref(false);
+const reconCashboxSuccess = ref<string | null>(null);
+
+const reconHistory = ref<ReconciliationRecord[]>([]);
+const reconHistoryMeta = ref<ReconciliationHistoryResponse['meta'] | null>(null);
+const reconHistoryLoading = ref(false);
+
+const reconAccountDiff = computed(() => {
+  if (reconAccountReal.value === null || reconAccountReal.value === undefined) return 0;
+  return reconAccountReal.value - reconAccountBalance.value;
+});
+
+const reconCashboxDiff = computed(() => {
+  if (reconCashboxReal.value === null || reconCashboxReal.value === undefined) return 0;
+  return reconCashboxReal.value - reconCashboxBalance.value;
+});
+
+function onReconAccountChange() {
+  const acc = accounts.value.find((a) => a.id === reconAccountId.value);
+  reconAccountBalance.value = acc?.balance ?? 0;
+  reconAccountReal.value = null;
+  reconAccountNotes.value = '';
+  reconAccountSuccess.value = null;
+}
+
+async function fetchCashBoxForRecon() {
+  const shopId = getShopId();
+  if (!shopId) return;
+  reconCashboxLoading.value = true;
+  try {
+    const cb = await brilinkCashboxService.getCashBox(shopId);
+    reconCashboxBalance.value = cb.balance;
+    reconCashboxLastAudit.value = cb.lastAudit;
+    reconCashboxId.value = cb.id;
+  } catch {
+    reconCashboxBalance.value = 0;
+  } finally {
+    reconCashboxLoading.value = false;
+  }
+}
+
+async function handleReconcileAccount() {
+  const shopId = getShopId();
+  if (!shopId || !reconAccountId.value || reconAccountReal.value === null) return;
+  reconSavingAccount.value = true;
+  reconAccountSuccess.value = null;
+  try {
+    const result = await brilinkCashboxService.reconcile(shopId, {
+      target: 'ACCOUNT',
+      targetId: reconAccountId.value,
+      realBalance: reconAccountReal.value,
+      notes: reconAccountNotes.value || undefined,
+    });
+    reconAccountSuccess.value = result.status === 'MATCHED'
+      ? '✓ Saldo cocok, tercatat.'
+      : `✓ Adjusted ${result.adjustment > 0 ? '+' : ''}${formatRupiah(result.adjustment)}. Saldo diperbarui.`;
+    reconAccountBalance.value = reconAccountReal.value;
+    reconAccountReal.value = null;
+    reconAccountNotes.value = '';
+    await fetchAccounts();
+    await fetchReconHistory(1);
+  } catch (err: any) {
+    reconAccountSuccess.value = null;
+    alert(err?.response?.data?.message || 'Gagal reconcile.');
+  } finally {
+    reconSavingAccount.value = false;
+  }
+}
+
+async function handleReconcileCashbox() {
+  const shopId = getShopId();
+  if (!shopId || reconCashboxReal.value === null) return;
+  reconSavingCashbox.value = true;
+  reconCashboxSuccess.value = null;
+  try {
+    const result = await brilinkCashboxService.reconcile(shopId, {
+      target: 'CASHBOX',
+      targetId: reconCashboxId.value,
+      realBalance: reconCashboxReal.value,
+      notes: reconCashboxNotes.value || undefined,
+    });
+    reconCashboxSuccess.value = result.status === 'MATCHED'
+      ? '✓ Saldo cocok, tercatat.'
+      : `✓ Adjusted ${result.adjustment > 0 ? '+' : ''}${formatRupiah(result.adjustment)}. Saldo diperbarui.`;
+    reconCashboxBalance.value = reconCashboxReal.value;
+    reconCashboxReal.value = null;
+    reconCashboxNotes.value = '';
+    await fetchReconHistory(1);
+  } catch (err: any) {
+    reconCashboxSuccess.value = null;
+    alert(err?.response?.data?.message || 'Gagal reconcile.');
+  } finally {
+    reconSavingCashbox.value = false;
+  }
+}
+
+async function fetchReconHistory(page = 1) {
+  const shopId = getShopId();
+  if (!shopId) return;
+  reconHistoryLoading.value = true;
+  try {
+    const res = await brilinkCashboxService.getReconciliationHistory({
+      shopId,
+      page,
+      limit: 10,
+    });
+    reconHistory.value = res.data;
+    reconHistoryMeta.value = res.meta;
+  } catch {
+    reconHistory.value = [];
+    reconHistoryMeta.value = null;
+  } finally {
+    reconHistoryLoading.value = false;
+  }
+}
+
 // Watch tab changes to load data on demand
 watch(activeTab, (tab) => {
   if (tab === 'mutasi' && mutasiData.value.length === 0) {
     fetchMutasi(1);
+  }
+  if (tab === 'reconciliation') {
+    fetchCashBoxForRecon();
+    if (reconHistory.value.length === 0) {
+      fetchReconHistory(1);
+    }
   }
   if (tab === 'metode' && Object.keys(metodeConfig).length === 0) {
     fetchMetodeConfig();
