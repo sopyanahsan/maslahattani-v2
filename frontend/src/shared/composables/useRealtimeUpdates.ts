@@ -12,6 +12,7 @@ export const REALTIME_EVENTS = {
   CASH_FLOW_CREATED: 'CASH_FLOW_CREATED',
   CASH_BOX_UPDATED: 'CASH_BOX_UPDATED',
   DASHBOARD_REFRESH: 'DASHBOARD_REFRESH',
+  DATA_CHANGED: 'DATA_CHANGED',
 } as const;
 
 export type RealtimeEventName = keyof typeof REALTIME_EVENTS;
@@ -60,6 +61,13 @@ export interface DashboardRefreshPayload {
   timestamp: string;
 }
 
+export interface DataChangedPayload {
+  module: string;
+  action: 'created' | 'updated' | 'deleted';
+  entityId?: string;
+  timestamp: string;
+}
+
 // ============================================
 // COMPOSABLE OPTIONS
 // ============================================
@@ -74,6 +82,7 @@ export interface UseRealtimeOptions {
     onCashFlowCreated: EventCallback<CashFlowCreatedPayload>;
     onCashBoxUpdated: EventCallback<CashBoxUpdatedPayload>;
     onDashboardRefresh: EventCallback<DashboardRefreshPayload>;
+    onDataChanged: EventCallback<DataChangedPayload>;
   }>;
   /** Auto-connect on mount (default: true) */
   autoConnect?: boolean;
@@ -202,6 +211,7 @@ export function useRealtimeUpdates(options: UseRealtimeOptions = {}) {
       { name: REALTIME_EVENTS.CASH_FLOW_CREATED, cb: events.onCashFlowCreated },
       { name: REALTIME_EVENTS.CASH_BOX_UPDATED, cb: events.onCashBoxUpdated },
       { name: REALTIME_EVENTS.DASHBOARD_REFRESH, cb: events.onDashboardRefresh },
+      { name: REALTIME_EVENTS.DATA_CHANGED, cb: events.onDataChanged },
     ];
 
     for (const { name, cb } of eventMap) {

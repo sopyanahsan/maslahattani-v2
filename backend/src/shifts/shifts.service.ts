@@ -6,6 +6,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { ShiftStatus, Role, PaymentMethod } from '@prisma/client';
 import {
   OpenShiftDto,
@@ -44,7 +45,10 @@ const SHIFT_INCLUDE = {
 
 @Injectable()
 export class ShiftsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
+  ) {}
 
   /**
    * Buka shift baru. Untuk setiap kategori cashbox aktif:
@@ -139,6 +143,9 @@ export class ShiftsService {
       },
       include: SHIFT_INCLUDE,
     });
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(shopId, 'shifts', 'created', shift.id);
 
     return {
       shift,
@@ -341,6 +348,9 @@ export class ShiftsService {
       (sum, s) => sum + Math.abs(s.varianceCash) + Math.abs(s.varianceQRIS),
       0,
     );
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(shift.shopId, 'shifts', 'updated', shiftId);
 
     return {
       shift: updatedShift,

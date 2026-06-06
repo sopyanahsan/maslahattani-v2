@@ -4,13 +4,7 @@
     <!-- TOP BAR: Title + Period Selector + Refresh   -->
     <!-- ============================================ -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div>
-        <!-- Real-time indicator -->
-        <span v-if="wsConnected" class="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          Live
-        </span>
-      </div>
+      <div></div>
 
       <div class="flex items-center gap-2">
         <!-- Period selector -->
@@ -286,7 +280,6 @@ import {
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useDashboardBrilinkStore } from '@/shared/stores/dashboard-brilink.store';
-import { useRealtimeUpdates } from '@/shared/composables/useRealtimeUpdates';
 import type { DashboardPeriod } from '@/shared/services/dashboard-brilink.service';
 
 import KpiCard from '@/admin/components/dashboard/KpiCard.vue';
@@ -300,21 +293,6 @@ import BrilinkCashierPerformance from '@/admin/components/dashboard-brilink/Bril
 
 const authStore = useAuthStore();
 const store = useDashboardBrilinkStore();
-
-// Real-time WebSocket updates — auto-refresh dashboard data ketika ada event
-const { isConnected: wsConnected } = useRealtimeUpdates({
-  events: {
-    onBrilinkTransactionCreated() {
-      store.fetchAll();
-    },
-    onAccountBalanceChanged() {
-      store.fetchAll();
-    },
-    onDashboardRefresh() {
-      store.fetchAll();
-    },
-  },
-});
 
 const periodOptions: { value: DashboardPeriod; label: string }[] = [
   { value: 'today', label: 'Hari Ini' },

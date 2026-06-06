@@ -433,7 +433,6 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed, watch } from 'vue';
 import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
-import { useRealtimeUpdates } from '@/shared/composables/useRealtimeUpdates';
 import {
   Loader2 as Loader2Icon,
   Plus as PlusIcon,
@@ -864,21 +863,4 @@ onMounted(() => {
 });
 
 useAutoRefresh(() => { fetchAccounts(); fetchMutasi(1); });
-
-// Real-time WebSocket updates — instant refresh saat ada perubahan saldo/transaksi
-useRealtimeUpdates({
-  events: {
-    onAccountBalanceChanged() {
-      fetchAccounts();
-      fetchMutasi(1);
-    },
-    onBrilinkTransactionCreated() {
-      fetchAccounts();
-      fetchMutasi(1);
-    },
-    onCashFlowCreated() {
-      fetchAccounts();
-    },
-  },
-});
 </script>

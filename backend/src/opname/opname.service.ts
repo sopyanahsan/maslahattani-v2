@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import {
   CreateOpnameSessionDto,
   UpdateOpnameItemDto,
@@ -13,7 +14,10 @@ import {
 
 @Injectable()
 export class OpnameService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
+  ) {}
 
   // ============================================
   // LIST SESSIONS
@@ -183,6 +187,9 @@ export class OpnameService {
         _count: { select: { items: true } },
       },
     });
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(dto.shopId, 'opname', 'created', session.id);
 
     return {
       id: session.id,
@@ -388,6 +395,12 @@ export class OpnameService {
         totalDeficit,
       },
     });
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(session.shopId, 'opname', 'updated', id);
+    if (applyAdjustments) {
+      this.realtimeGateway.emitDataChanged(session.shopId, 'stock', 'updated');
+    }
 
     return {
       id: updated.id,

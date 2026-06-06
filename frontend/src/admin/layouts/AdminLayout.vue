@@ -329,6 +329,11 @@
           <span class="text-xs text-slate-500 dark:text-slate-400 hidden xl:inline">
             {{ todayLabel }}
           </span>
+          <!-- WebSocket Live indicator -->
+          <span v-if="wsConnected" class="hidden xl:inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400" title="Real-time aktif">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Live
+          </span>
           <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
           <div class="flex items-center gap-2">
             <div
@@ -366,7 +371,7 @@
       </div>
 
       <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto text-slate-900 dark:text-slate-100">
-        <RouterView />
+        <RouterView :key="route.path + '-' + realtimeVersion" />
       </div>
     </main>
 
@@ -520,6 +525,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
 import { useTheme } from '@/shared/composables/useTheme';
+import { useRealtimeUpdates } from '@/shared/composables/useRealtimeUpdates';
 import {
   Menu as MenuIcon,
   Store as StoreIcon,
@@ -557,6 +563,61 @@ import {
 import { useNotifSound } from '@/shared/composables/useNotifSound';
 
 const { play: playNotifSound } = useNotifSound();
+
+// ============================================
+// GLOBAL REAL-TIME WEBSOCKET LISTENER
+// ============================================
+// Listens to DATA_CHANGED event from backend.
+// Increments `realtimeVersion` which is used as :key on <RouterView>
+// to trigger soft re-render (onMounted re-fires → data re-fetches).
+const realtimeVersion = ref(0);
+let realtimeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+const { isConnected: wsConnected } = useRealtimeUpdates({
+  events: {
+    onDataChanged() {
+      // Debounce: if multiple events fire within 500ms, only trigger once
+      if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(() => {
+        realtimeVersion.value++;
+        // Also refresh badge counts & alerts
+        fetchBadgeCounts();
+        fetchAlerts();
+      }, 500);
+    },
+    onBrilinkTransactionCreated() {
+      // Specific events also trigger global refresh
+      if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(() => {
+        realtimeVersion.value++;
+      }, 500);
+    },
+    onAccountBalanceChanged() {
+      if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(() => {
+        realtimeVersion.value++;
+      }, 500);
+    },
+    onCashFlowCreated() {
+      if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(() => {
+        realtimeVersion.value++;
+      }, 500);
+    },
+    onCashBoxUpdated() {
+      if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(() => {
+        realtimeVersion.value++;
+      }, 500);
+    },
+    onDashboardRefresh() {
+      if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(() => {
+        realtimeVersion.value++;
+      }, 500);
+    },
+  },
+});
 
 const router = useRouter();
 const route = useRoute();

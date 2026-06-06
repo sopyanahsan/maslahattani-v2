@@ -11,6 +11,33 @@ export const REALTIME_EVENTS = {
   CASH_FLOW_CREATED: 'CASH_FLOW_CREATED',
   CASH_BOX_UPDATED: 'CASH_BOX_UPDATED',
 
+  // Retail Transactions
+  TRANSACTION_CREATED: 'TRANSACTION_CREATED',
+  TRANSACTION_VOIDED: 'TRANSACTION_VOIDED',
+
+  // Shifts
+  SHIFT_OPENED: 'SHIFT_OPENED',
+  SHIFT_CLOSED: 'SHIFT_CLOSED',
+
+  // Stock & Products
+  STOCK_UPDATED: 'STOCK_UPDATED',
+  PRODUCT_UPDATED: 'PRODUCT_UPDATED',
+
+  // Debts & Payments
+  DEBT_CREATED: 'DEBT_CREATED',
+  DEBT_PAID: 'DEBT_PAID',
+
+  // Suppliers & Transfers
+  PURCHASE_ORDER_CREATED: 'PURCHASE_ORDER_CREATED',
+  STOCK_TRANSFER_CREATED: 'STOCK_TRANSFER_CREATED',
+
+  // Opname
+  OPNAME_STARTED: 'OPNAME_STARTED',
+  OPNAME_FINALIZED: 'OPNAME_FINALIZED',
+
+  // Generic — catch-all signal for any data change
+  DATA_CHANGED: 'DATA_CHANGED',
+
   // Dashboard
   DASHBOARD_REFRESH: 'DASHBOARD_REFRESH',
 } as const;
@@ -62,5 +89,17 @@ export interface CashBoxUpdatedPayload {
 
 export interface DashboardRefreshPayload {
   source: string;
+  timestamp: string;
+}
+
+/** Generic payload untuk DATA_CHANGED — dipakai semua module */
+export interface DataChangedPayload {
+  /** Module yang berubah: 'transactions', 'shifts', 'stock', 'products', 'debts', 'payments', etc */
+  module: string;
+  /** Action type: 'created', 'updated', 'deleted' */
+  action: 'created' | 'updated' | 'deleted';
+  /** Optional entity ID */
+  entityId?: string;
+  /** Timestamp */
   timestamp: string;
 }

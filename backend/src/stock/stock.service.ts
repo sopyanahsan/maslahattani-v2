@@ -4,13 +4,17 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { StockInDto } from './dto/stock-in.dto';
 import { StockOpnameDto } from './dto/stock-opname.dto';
 import { QueryStockHistoryDto } from './dto/query-stock.dto';
 
 @Injectable()
 export class StockService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
+  ) {}
 
   // ============================================
   // GET ALL STOCK (by shop)
@@ -85,6 +89,9 @@ export class StockService {
       return { quantity: newQty };
     });
 
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(dto.shopId, 'stock', 'updated', dto.productId);
+
     return {
       success: true,
       message: `Stok "${stock.product.name}" berhasil ditambah ${dto.quantity} unit.`,
@@ -150,6 +157,9 @@ export class StockService {
 
     const totalDifference = results.reduce((sum, r) => sum + Math.abs(r.difference), 0);
     const matchCount = results.filter((r) => r.status === 'MATCH').length;
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(dto.shopId, 'stock', 'updated');
 
     return {
       success: true,

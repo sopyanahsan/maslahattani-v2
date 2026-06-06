@@ -4,12 +4,16 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { CashMutationDto, CashMutationType, AuditCashDto } from './dto/cash-mutation.dto';
 import { QueryCashMutationDto } from './dto/query-payment.dto';
 
 @Injectable()
 export class PaymentsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
+  ) {}
 
   // ============================================
   // GET CASH BOX (Total kas retail)
@@ -125,6 +129,9 @@ export class PaymentsService {
         },
       }),
     ]);
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(dto.shopId, 'payments', 'created');
 
     return {
       success: true,

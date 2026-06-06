@@ -6,6 +6,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { OtpService } from '../auth/otp.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { VoidTransactionDto } from './dto/void-transaction.dto';
@@ -16,6 +17,7 @@ import { TransactionStatus, PaymentStatus } from '@prisma/client';
 export class TransactionsService {
   constructor(
     private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
     private otpService: OtpService,
   ) {}
 
@@ -240,6 +242,9 @@ export class TransactionsService {
 
     const change = dto.amountPaid ? dto.amountPaid - totalPrice : 0;
 
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(shopId, 'transactions', 'created', transaction.id);
+
     // ============================================
     // AUTO-CREATE DEBT (Hutang flow)
     // ============================================
@@ -374,6 +379,9 @@ export class TransactionsService {
 
       return updated;
     });
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(transaction.shopId, 'transactions', 'updated', transactionId);
 
     return {
       success: true,
