@@ -46,12 +46,12 @@
             class="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 border border-white dark:border-slate-900"
           />
         </button>
-        <!-- Live indicator (mobile) -->
+        <!-- Online indicator (mobile) -->
         <span v-if="wsConnected" class="inline-flex items-center gap-0.5 text-[9px] font-semibold text-emerald-500 dark:text-emerald-400 px-1">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
         </span>
-        <span v-else class="inline-flex items-center gap-0.5 text-[9px] font-semibold text-slate-400 px-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+        <span v-else class="inline-flex items-center gap-0.5 text-[9px] font-semibold text-amber-500 px-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
         </span>
         <button
           type="button"
@@ -336,14 +336,15 @@
           <span class="text-xs text-slate-500 dark:text-slate-400 hidden xl:inline">
             {{ todayLabel }}
           </span>
-          <!-- WebSocket Live indicator -->
+          <!-- WebSocket indicator -->
           <span v-if="wsConnected" class="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400" title="Real-time aktif">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            Live
+            Online
           </span>
-          <span v-else class="inline-flex items-center gap-1 text-[10px] font-medium text-slate-400 dark:text-slate-500" title="WebSocket terputus">
-            <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+          <span v-else class="inline-flex items-center gap-1 text-[10px] font-medium text-amber-500 dark:text-amber-400" title="Mode offline — data tersimpan lokal">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
             Offline
+            <span v-if="offlinePendingCount > 0" class="ml-0.5 px-1 py-0 text-[9px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-full">{{ offlinePendingCount }} pending</span>
           </span>
           <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
           <div class="flex items-center gap-2">
@@ -537,6 +538,7 @@ import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
 import { useTheme } from '@/shared/composables/useTheme';
 import { useRealtimeUpdates } from '@/shared/composables/useRealtimeUpdates';
+import { useOfflineQueue } from '@/shared/composables/useOfflineQueue';
 import {
   Menu as MenuIcon,
   Store as StoreIcon,
@@ -597,6 +599,8 @@ const { isConnected: wsConnected } = useRealtimeUpdates({
         realtimeSignal.value++;
         fetchBadgeCounts();
         fetchAlerts();
+        // Also sync offline queue if any
+        if (offlinePendingCount.value > 0) syncOfflineQueue();
       }, 500);
     },
     onBrilinkTransactionCreated() {
@@ -636,6 +640,14 @@ const { isConnected: wsConnected } = useRealtimeUpdates({
     },
   },
 });
+
+// ============================================
+// OFFLINE QUEUE (auto-sync saat online kembali)
+// ============================================
+const { pendingCount: offlinePendingCount, syncNow: syncOfflineQueue } = useOfflineQueue();
+
+// Provide offline queue info to child pages
+provide('offlinePendingCount', offlinePendingCount);
 
 const router = useRouter();
 const route = useRoute();

@@ -1,4 +1,9 @@
 import axios from 'axios';
+import {
+  getCacheKey,
+  setCacheEntry,
+  getCacheEntryStale,
+} from '@/shared/utils/offlineCache';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
@@ -20,13 +25,64 @@ api.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Response interceptor: handle 401 & token refresh
+// Response interceptor: cache GET responses + handle 401 + offline fallback
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Cache successful GET responses
+    if (response.config.method === 'get' && response.status >= 200 && response.status < 300) {
+      const url = response.config.url || '';
+      const params = response.config.params;
+      const key = getCacheKey(url, params);
+      setCacheEntry(key, response.data);
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
 
-    // If 401 and not already retried, attempt refresh
+    // ============================================
+    // OFFLINE FALLBACK: return cached data for GET
+    // ============================================
+    if (!error.response && originalRequest?.method === 'get') {
+      // Network error (offline, timeout, DNS fail)
+      const url = originalRequest.url || '';
+      const params = originalRequest.params;
+      const key = getCacheKey(url, params);
+      const cached = getCacheEntryStale(key);
+
+      if (cached) {
+        // Return cached data as a fake successful response
+        return {
+          data: cached,
+          status: 200,
+          statusText: 'OK (cached)',
+          headers: {},
+          config: originalRequest,
+          _fromCache: true,
+        };
+      }
+      // No cache — reject with friendly error
+      return Promise.reject({
+        ...error,
+        message: 'Tidak ada koneksi internet. Data belum tersedia offline.',
+        isOffline: true,
+      });
+    }
+
+    // ============================================
+    // OFFLINE for mutations (POST/PUT/DELETE)
+    // ============================================
+    if (!error.response && originalRequest?.method !== 'get') {
+      return Promise.reject({
+        ...error,
+        message: 'Tidak ada koneksi. Aksi disimpan sebagai pending.',
+        isOffline: true,
+      });
+    }
+
+    // ============================================
+    // 401 TOKEN REFRESH
+    // ============================================
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
