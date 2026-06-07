@@ -988,7 +988,7 @@ const navGroups = computed<NavGroup[]>(() => {
   const operasionalItems: NavItem[] = [];
   if (can('shifts.view')) operasionalItems.push({ to: '/admin/shifts', label: 'Shift', icon: ShiftIcon });
   if (can('users.view')) operasionalItems.push({ to: '/admin/users', label: 'Multi-User', icon: UsersIcon });
-  if ((can('shops.view') || isSuperAdmin.value) && availableShops.value.length > 1) operasionalItems.push({ to: '/admin/shops', label: 'Cabang', icon: Building2Icon });
+  if (can('shops.view') || isSuperAdmin.value) operasionalItems.push({ to: '/admin/shops', label: 'Cabang', icon: Building2Icon });
   if (operasionalItems.length > 0) groups.push({ title: 'Operasional', items: operasionalItems });
 
   return groups;
