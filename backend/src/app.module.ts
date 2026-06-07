@@ -30,6 +30,7 @@ import { BrilinkCashboxModule } from './brilink-cashbox/brilink-cashbox.module';
 import { BrilinkReconciliationModule } from './brilink-reconciliation/brilink-reconciliation.module';
 import { BrilinkProductsModule } from './brilink-products/brilink-products.module';
 import { RealtimeModule } from './realtime/realtime.module';
+import { PermissionsModule } from './permissions/permissions.module';
 
 @Module({
   imports: [
@@ -39,6 +40,7 @@ import { RealtimeModule } from './realtime/realtime.module';
     }),
     PrismaModule,
     RealtimeModule,
+    PermissionsModule,
     ShopsModule,
     AuthModule,
     HealthModule,

@@ -84,6 +84,15 @@ export const useAuthStore = defineStore('auth', () => {
       // shop store belum di-init (mis. di module init), abaikan
     }
 
+    // Clear permissions
+    try {
+      const { usePermissionsStore } = require('@/shared/stores/permissions.store');
+      const permStore = usePermissionsStore();
+      permStore.clear();
+    } catch {
+      // permissions store belum di-init, abaikan
+    }
+
     // Clear shift state juga supaya tidak bocor antar user
     try {
       const shiftStore = useShiftStore();
@@ -270,6 +279,11 @@ export const useAuthStore = defineStore('auth', () => {
       if (me.currentShop) {
         shopStore.setCurrentShop(me.currentShop);
       }
+
+      // Fetch permissions for current user role (RBAC)
+      const { usePermissionsStore } = await import('@/shared/stores/permissions.store');
+      const permStore = usePermissionsStore();
+      await permStore.fetchPermissions();
     } catch {
       // Token invalid atau network error → clear auth
       clearAuth();

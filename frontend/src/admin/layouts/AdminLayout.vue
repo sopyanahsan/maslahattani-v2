@@ -533,6 +533,7 @@ import { useShopStore } from '@/shared/stores/shop.store';
 import { useTheme } from '@/shared/composables/useTheme';
 import { useRealtimeUpdates } from '@/shared/composables/useRealtimeUpdates';
 import { useOfflineQueue } from '@/shared/composables/useOfflineQueue';
+import { usePermissionsStore } from '@/shared/stores/permissions.store';
 import {
   Menu as MenuIcon,
   Store as StoreIcon,
@@ -559,6 +560,7 @@ import {
   // Shifts & Profile
   Clock as ShiftIcon,
   User as UserIcon,
+  Shield as ShieldIcon,
   // Theme
   Sun as SunIcon,
   Moon as MoonIcon,
@@ -691,7 +693,7 @@ const currentShopAddress = computed(() => {
 const availableShops = computed(() => shopStore.availableShops);
 
 const canSwitchShop = computed(
-  () => authStore.isSuperAdmin || availableShops.value.length > 1,
+  () => (authStore.isSuperAdmin || availableShops.value.length > 1) && availableShops.value.length > 1,
 );
 
 async function handleSwitchShop(shopId: string) {
@@ -939,57 +941,70 @@ const topItems: NavItem[] = [
 const isSuperAdmin = computed(() => authStore.user?.role === 'SUPER_ADMIN');
 const isAdminOrAbove = computed(() => ['SUPER_ADMIN', 'ADMIN'].includes(authStore.user?.role || ''));
 
+// Permission-based sidebar filtering
+const permStore = usePermissionsStore();
+
 const navGroups = computed<NavGroup[]>(() => {
-  const groups: NavGroup[] = [
-    {
-      title: 'Retail',
-      items: [
-        { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
-        { to: '/admin/transactions', label: 'Transaksi', icon: ReceiptIcon },
-        { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
-        { to: '/admin/riwayat-stok', label: 'Riwayat Stok', icon: ClipboardListIcon },
-        { to: '/admin/debts', label: 'Hutang', icon: DebtIcon },
-        { to: '/admin/kas-retail', label: 'Kas Retail', icon: WalletIcon },
-        { to: '/admin/reports', label: 'Laporan Retail', icon: ReportIcon },
-      ],
-    },
-    {
-      title: 'BRILink',
-      items: [
-        { to: '/admin/brilink', label: 'Dashboard BRILink', icon: DashboardIcon },
-        { to: '/admin/brilink/transaksi', label: 'Transaksi BRILink', icon: ReceiptIcon },
-        { to: '/admin/kas-rekening-brilink', label: 'Kas & Rekening', icon: LandmarkIcon },
-        { to: '/admin/brilink/fee', label: 'Pengaturan Fee', icon: PercentIcon },
-        { to: '/admin/brilink/laporan', label: 'Laporan BRILink', icon: ReportIcon },
-      ],
-    },
-    {
-      title: 'Inventaris',
-      items: [
-        { to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon },
-        { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
-        { to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon },
-        { to: '/admin/cetak-label', label: 'Cetak Label', icon: TagIcon },
-        { to: '/admin/racks', label: 'Label Rak', icon: TagIcon },
-      ],
-    },
-    {
-      title: 'Operasional',
-      items: [
-        { to: '/admin/shifts', label: 'Shift', icon: ShiftIcon },
-        { to: '/admin/users', label: 'Multi-User', icon: UsersIcon },
-        ...(isSuperAdmin.value ? [{ to: '/admin/shops', label: 'Cabang', icon: Building2Icon }] : []),
-      ],
-    },
+  const can = (p: string) => permStore.can(p);
+
+  const groups: NavGroup[] = [];
+
+  // --- RETAIL ---
+  const retailItems: NavItem[] = [
+    { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
   ];
+  if (can('transactions.view')) retailItems.push({ to: '/admin/transactions', label: 'Transaksi', icon: ReceiptIcon });
+  if (can('products.view')) retailItems.push({ to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon });
+  if (can('products.view')) retailItems.push({ to: '/admin/riwayat-stok', label: 'Riwayat Stok', icon: ClipboardListIcon });
+  if (can('debts.view')) retailItems.push({ to: '/admin/debts', label: 'Hutang', icon: DebtIcon });
+  retailItems.push({ to: '/admin/kas-retail', label: 'Kas Retail', icon: WalletIcon });
+  if (can('reports.view')) retailItems.push({ to: '/admin/reports', label: 'Laporan Retail', icon: ReportIcon });
+  groups.push({ title: 'Retail', items: retailItems });
+
+  // --- BRILINK ---
+  if (can('brilink.view')) {
+    const brilinkItems: NavItem[] = [
+      { to: '/admin/brilink', label: 'Dashboard BRILink', icon: DashboardIcon },
+      { to: '/admin/brilink/transaksi', label: 'Transaksi BRILink', icon: ReceiptIcon },
+      { to: '/admin/kas-rekening-brilink', label: 'Kas & Rekening', icon: LandmarkIcon },
+    ];
+    if (can('brilink.fee')) brilinkItems.push({ to: '/admin/brilink/fee', label: 'Pengaturan Fee', icon: PercentIcon });
+    if (can('reports.view')) brilinkItems.push({ to: '/admin/brilink/laporan', label: 'Laporan BRILink', icon: ReportIcon });
+    groups.push({ title: 'BRILink', items: brilinkItems });
+  }
+
+  // --- INVENTARIS ---
+  const inventarisItems: NavItem[] = [];
+  if (can('inventory.opname')) inventarisItems.push({ to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon });
+  if (can('inventory.suppliers')) inventarisItems.push({ to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon });
+  if (can('inventory.transfers')) inventarisItems.push({ to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon });
+  if (can('products.view')) {
+    inventarisItems.push({ to: '/admin/cetak-label', label: 'Cetak Label', icon: TagIcon });
+    inventarisItems.push({ to: '/admin/racks', label: 'Label Rak', icon: TagIcon });
+  }
+  if (inventarisItems.length > 0) groups.push({ title: 'Inventaris', items: inventarisItems });
+
+  // --- OPERASIONAL ---
+  const operasionalItems: NavItem[] = [];
+  if (can('shifts.view')) operasionalItems.push({ to: '/admin/shifts', label: 'Shift', icon: ShiftIcon });
+  if (can('users.view')) operasionalItems.push({ to: '/admin/users', label: 'Multi-User', icon: UsersIcon });
+  if ((can('shops.view') || isSuperAdmin.value) && availableShops.value.length > 1) operasionalItems.push({ to: '/admin/shops', label: 'Cabang', icon: Building2Icon });
+  if (operasionalItems.length > 0) groups.push({ title: 'Operasional', items: operasionalItems });
 
   return groups;
 });
 
-const bottomNav = computed<NavItem[]>(() => [
-  { to: '/admin/settings', label: 'Pengaturan', icon: SettingsIcon },
-  { to: '/admin/profil', label: 'Profil', icon: UserIcon },
-]);
+const bottomNav = computed<NavItem[]>(() => {
+  const items: NavItem[] = [];
+  if (permStore.can('settings.shop') || isSuperAdmin.value) {
+    items.push({ to: '/admin/settings', label: 'Pengaturan', icon: SettingsIcon });
+  }
+  if (isSuperAdmin.value) {
+    items.push({ to: '/admin/super-admin-settings', label: 'Super Admin', icon: ShieldIcon });
+  }
+  items.push({ to: '/admin/profil', label: 'Profil', icon: UserIcon });
+  return items;
+});
 
 function onNavClick(e: MouseEvent, navigate: (e?: MouseEvent) => void) {
   navigate(e);

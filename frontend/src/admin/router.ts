@@ -272,6 +272,16 @@ const routes: RouteRecordRaw[] = [
           description: 'Konfigurasi toko, struk, bahasa, sistem ON/OFF, dan preferensi.',
         },
       },
+      {
+        path: 'super-admin-settings',
+        name: 'super-admin-settings',
+        component: () => import('@/admin/views/SuperAdminSettingsView.vue'),
+        meta: {
+          title: 'Pengaturan Super Admin',
+          description: 'Role & Permission, Audit Log, System Settings, Danger Zone.',
+          roles: ['SUPER_ADMIN'],
+        },
+      },
 
       // === Inventaris (Coming Soon) ===
       {

@@ -1305,3 +1305,26 @@ model Rack {
   @@index([zoneId])
   @@map("racks")
 }
+
+
+// ============================================
+// ROLE PERMISSIONS (RBAC)
+// ============================================
+//
+// Super Admin bisa toggle permission per-role.
+// Default permissions di-seed saat pertama kali.
+// Kalau row tidak ada untuk suatu permission → fallback ke default (deny).
+
+model RolePermission {
+  id          String    @id @default(cuid())
+  role        Role
+  permission  String    // e.g. "transactions.void", "products.delete", "users.manage"
+  enabled     Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([role, permission])
+  @@index([role])
+  @@map("role_permissions")
+}
