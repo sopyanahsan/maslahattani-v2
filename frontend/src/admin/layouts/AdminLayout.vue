@@ -139,13 +139,13 @@
                 <component :is="item.icon" class="w-4 h-4 shrink-0" />
                 <span class="truncate">{{ item.label }}</span>
                 <span
-                  v-if="item.badge"
+                  v-if="badgeCounts[item.to]?.count"
                   :class="[
                     'ml-auto px-1.5 py-0.5 text-[10px] font-semibold rounded-full',
-                    item.badgeColor || 'bg-amber-500 text-white',
+                    badgeCounts[item.to]?.color || 'bg-amber-500 text-white',
                   ]"
                 >
-                  {{ item.badge }}
+                  {{ badgeCounts[item.to].count }}
                 </span>
               </a>
             </RouterLink>
@@ -655,6 +655,9 @@ const showBranchPickerModal = ref(false);
 const switchingShop = ref(false);
 const switchError = ref('');
 
+// Badge counts for sidebar items (reactive, updated by fetchBadgeCounts)
+const badgeCounts = ref<Record<string, { count: number; color: string }>>({});
+
 // Confirmation modal state for switching active branch
 const showSwitchConfirmation = ref(false);
 const pendingSwitchShopId = ref<string | null>(null);
@@ -781,23 +784,13 @@ async function fetchBadgeCounts() {
     const pendingTransfers = getCount(transfersRes);
     const unfinalizedShifts = getCount(shiftsRes);
 
-    // Set badges on the appropriate nav items
-    function setBadge(path: string, count: number, color?: string) {
-      if (count <= 0) return;
-      for (const group of navGroups.value) {
-        const item = group.items.find((i) => i.to === path);
-        if (item) {
-          item.badge = count;
-          if (color) item.badgeColor = color;
-          break;
-        }
-      }
-    }
-
-    setBadge('/admin/kas-retail', pendingCashOut, 'bg-red-500 text-white');
-    setBadge('/admin/debts', overdueDebts, 'bg-amber-500 text-white');
-    setBadge('/admin/transfers', pendingTransfers, 'bg-blue-500 text-white');
-    setBadge('/admin/shifts', unfinalizedShifts, 'bg-slate-500 text-white');
+    // Set badges via separate reactive state
+    badgeCounts.value = {
+      '/admin/kas-retail': { count: pendingCashOut, color: 'bg-red-500 text-white' },
+      '/admin/debts': { count: overdueDebts, color: 'bg-amber-500 text-white' },
+      '/admin/transfers': { count: pendingTransfers, color: 'bg-blue-500 text-white' },
+      '/admin/shifts': { count: unfinalizedShifts, color: 'bg-slate-500 text-white' },
+    };
   } catch {
     /* silent — badges are optional enhancements */
   }
@@ -942,53 +935,61 @@ const topItems: NavItem[] = [
   { to: '/admin/home', label: 'Home', icon: HomeIcon },
 ];
 
-const navGroups = ref<NavGroup[]>([
-  {
-    title: 'Retail',
-    items: [
-      { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
-      { to: '/admin/transactions', label: 'Transaksi', icon: ReceiptIcon },
-      { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
-      { to: '/admin/riwayat-stok', label: 'Riwayat Stok', icon: ClipboardListIcon },
-      { to: '/admin/debts', label: 'Hutang', icon: DebtIcon },
-      { to: '/admin/kas-retail', label: 'Kas Retail', icon: WalletIcon },
-      { to: '/admin/reports', label: 'Laporan Retail', icon: ReportIcon },
-    ],
-  },
-  {
-    title: 'BRILink',
-    items: [
-      { to: '/admin/brilink', label: 'Dashboard BRILink', icon: DashboardIcon },
-      { to: '/admin/brilink/transaksi', label: 'Transaksi BRILink', icon: ReceiptIcon },
-      { to: '/admin/kas-rekening-brilink', label: 'Kas & Rekening', icon: LandmarkIcon },
-      { to: '/admin/brilink/fee', label: 'Pengaturan Fee', icon: PercentIcon },
-      { to: '/admin/brilink/laporan', label: 'Laporan BRILink', icon: ReportIcon },
-    ],
-  },
-  {
-    title: 'Operasional',
-    items: [
-      { to: '/admin/shifts', label: 'Shift', icon: ShiftIcon },
-      { to: '/admin/users', label: 'Multi-User', icon: UsersIcon },
-      { to: '/admin/shops', label: 'Cabang', icon: Building2Icon },
-      { to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon },
-      { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
-      { to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon },
-    ],
-  },
-  {
-    title: 'Inventaris',
-    items: [
-      { to: '/admin/cetak-label', label: 'Cetak Label', icon: TagIcon },
-      { to: '/admin/racks', label: 'Label Rak', icon: TagIcon },
-    ],
-  },
-]);
+// Role-aware navigation: certain groups/items only show for specific roles
+const isSuperAdmin = computed(() => authStore.user?.role === 'SUPER_ADMIN');
+const isAdminOrAbove = computed(() => ['SUPER_ADMIN', 'ADMIN'].includes(authStore.user?.role || ''));
 
-const bottomNav: NavItem[] = [
+const navGroups = computed<NavGroup[]>(() => {
+  const groups: NavGroup[] = [
+    {
+      title: 'Retail',
+      items: [
+        { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
+        { to: '/admin/transactions', label: 'Transaksi', icon: ReceiptIcon },
+        { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
+        { to: '/admin/riwayat-stok', label: 'Riwayat Stok', icon: ClipboardListIcon },
+        { to: '/admin/debts', label: 'Hutang', icon: DebtIcon },
+        { to: '/admin/kas-retail', label: 'Kas Retail', icon: WalletIcon },
+        { to: '/admin/reports', label: 'Laporan Retail', icon: ReportIcon },
+      ],
+    },
+    {
+      title: 'BRILink',
+      items: [
+        { to: '/admin/brilink', label: 'Dashboard BRILink', icon: DashboardIcon },
+        { to: '/admin/brilink/transaksi', label: 'Transaksi BRILink', icon: ReceiptIcon },
+        { to: '/admin/kas-rekening-brilink', label: 'Kas & Rekening', icon: LandmarkIcon },
+        { to: '/admin/brilink/fee', label: 'Pengaturan Fee', icon: PercentIcon },
+        { to: '/admin/brilink/laporan', label: 'Laporan BRILink', icon: ReportIcon },
+      ],
+    },
+    {
+      title: 'Inventaris',
+      items: [
+        { to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon },
+        { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
+        { to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon },
+        { to: '/admin/cetak-label', label: 'Cetak Label', icon: TagIcon },
+        { to: '/admin/racks', label: 'Label Rak', icon: TagIcon },
+      ],
+    },
+    {
+      title: 'Operasional',
+      items: [
+        { to: '/admin/shifts', label: 'Shift', icon: ShiftIcon },
+        { to: '/admin/users', label: 'Multi-User', icon: UsersIcon },
+        ...(isSuperAdmin.value ? [{ to: '/admin/shops', label: 'Cabang', icon: Building2Icon }] : []),
+      ],
+    },
+  ];
+
+  return groups;
+});
+
+const bottomNav = computed<NavItem[]>(() => [
   { to: '/admin/settings', label: 'Pengaturan', icon: SettingsIcon },
   { to: '/admin/profil', label: 'Profil', icon: UserIcon },
-];
+]);
 
 function onNavClick(e: MouseEvent, navigate: (e?: MouseEvent) => void) {
   navigate(e);
