@@ -42,8 +42,10 @@ export class PermissionGuard implements CanActivate {
     const request = context.switchToHttp().getRequest();
     const user = request.user;
 
+    // If no user yet (JwtAuthGuard hasn't run or no auth), skip permission check.
+    // Let JwtAuthGuard handle authentication rejection.
     if (!user || !user.role) {
-      throw new ForbiddenException('User tidak terautentikasi.');
+      return true;
     }
 
     const role = user.role as Role;
