@@ -731,17 +731,17 @@ async function confirmSwitchShop() {
     pendingSwitchShopId.value = null;
     pendingSwitchShopName.value = '';
 
-    // Navigate to trigger data reload
-    router.replace({
-      path: route.path,
-      query: { ...route.query, _t: Date.now().toString() },
-    });
+    // Trigger all pages to re-fetch data for new shop
+    realtimeSignal.value++;
+    // Also refresh badges & alerts for new shop
+    fetchBadgeCounts();
+    fetchAlerts();
 
-    // Hide overlay after a short delay (gives time for components to re-fetch)
+    // Hide overlay after data has time to reload
     setTimeout(() => {
       showSwitchOverlay.value = false;
       switchOverlayShopName.value = '';
-    }, 1800);
+    }, 1200);
   } catch (err: any) {
     switchError.value = err?.message ?? 'Gagal ganti cabang.';
     showSwitchOverlay.value = false;
