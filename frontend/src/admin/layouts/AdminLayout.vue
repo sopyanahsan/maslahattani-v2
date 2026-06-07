@@ -693,7 +693,7 @@ const currentShopAddress = computed(() => {
 const availableShops = computed(() => shopStore.availableShops);
 
 const canSwitchShop = computed(
-  () => (authStore.isSuperAdmin || availableShops.value.length > 1) && availableShops.value.length > 1,
+  () => authStore.isSuperAdmin || availableShops.value.length > 1,
 );
 
 async function handleSwitchShop(shopId: string) {
@@ -886,7 +886,7 @@ function markAllRead() {
 onMounted(async () => {
   document.addEventListener('click', onDocClick, true);
   startNotifPolling();
-  if (canSwitchShop.value && availableShops.value.length === 0) {
+  if (canSwitchShop.value || availableShops.value.length === 0) {
     try {
       await shopStore.fetchShops();
     } catch {
