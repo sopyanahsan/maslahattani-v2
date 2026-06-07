@@ -217,19 +217,12 @@ export class SettingsService {
 
     return merged;
   }
-}
-
 
   // ============================================
   // SYSTEM SETTINGS (global, Super Admin only)
   // ============================================
 
-  private readonly SYSTEM_SETTINGS_KEY = 'global_system_settings';
-
   async getSystemSettings(): Promise<Record<string, any>> {
-    // Use first ShopSetting row's alertConfig JSON as a workaround,
-    // or better: store in a dedicated key-value store.
-    // For now, use a simple approach: store in first shop's alertConfig.systemSettings
     const firstSetting = await this.prisma.shopSetting.findFirst({
       select: { alertConfig: true },
     });
@@ -243,7 +236,6 @@ export class SettingsService {
   }
 
   async updateSystemSettings(body: Record<string, any>) {
-    // Store in first shop's alertConfig under system* keys
     const firstSetting = await this.prisma.shopSetting.findFirst();
     if (!firstSetting) {
       return { success: false, message: 'No shop settings found.' };
@@ -269,3 +261,4 @@ export class SettingsService {
       maxPinAttempts: updated.systemMaxPinAttempts,
     };
   }
+}
