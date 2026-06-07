@@ -46,6 +46,13 @@
             class="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 border border-white dark:border-slate-900"
           />
         </button>
+        <!-- Live indicator (mobile) -->
+        <span v-if="wsConnected" class="inline-flex items-center gap-0.5 text-[9px] font-semibold text-emerald-500 dark:text-emerald-400 px-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        </span>
+        <span v-else class="inline-flex items-center gap-0.5 text-[9px] font-semibold text-slate-400 px-1">
+          <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+        </span>
         <button
           type="button"
           class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
@@ -330,11 +337,11 @@
             {{ todayLabel }}
           </span>
           <!-- WebSocket Live indicator -->
-          <span v-if="wsConnected" class="hidden xl:inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400" title="Real-time aktif">
+          <span v-if="wsConnected" class="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400" title="Real-time aktif">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             Live
           </span>
-          <span v-else class="hidden xl:inline-flex items-center gap-1 text-[10px] font-medium text-slate-400 dark:text-slate-500" title="WebSocket terputus">
+          <span v-else class="inline-flex items-center gap-1 text-[10px] font-medium text-slate-400 dark:text-slate-500" title="WebSocket terputus">
             <span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
             Offline
           </span>
