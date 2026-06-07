@@ -313,27 +313,96 @@ const saving = ref(false);
 const saveSuccess = ref(false);
 const saveError = ref('');
 
+// Fallback permission groups (mirror backend constants)
+const FALLBACK_GROUPS: PermissionGroup[] = [
+  { group: 'Transaksi', permissions: [
+    { key: 'transactions.view', label: 'Lihat transaksi', defaultAdmin: true },
+    { key: 'transactions.void', label: 'Void transaksi', defaultAdmin: false },
+    { key: 'transactions.export', label: 'Export transaksi', defaultAdmin: false },
+  ]},
+  { group: 'Produk', permissions: [
+    { key: 'products.view', label: 'Lihat produk', defaultAdmin: true },
+    { key: 'products.create', label: 'Tambah produk', defaultAdmin: true },
+    { key: 'products.update', label: 'Edit produk', defaultAdmin: true },
+    { key: 'products.delete', label: 'Hapus produk', defaultAdmin: false },
+  ]},
+  { group: 'Hutang', permissions: [
+    { key: 'debts.view', label: 'Lihat hutang', defaultAdmin: true },
+    { key: 'debts.create', label: 'Buat hutang', defaultAdmin: true },
+    { key: 'debts.pay', label: 'Bayar hutang', defaultAdmin: true },
+    { key: 'debts.delete', label: 'Hapus hutang', defaultAdmin: false },
+  ]},
+  { group: 'BRILink', permissions: [
+    { key: 'brilink.view', label: 'Lihat BRILink', defaultAdmin: true },
+    { key: 'brilink.create', label: 'Buat transaksi BRILink', defaultAdmin: true },
+    { key: 'brilink.void', label: 'Void transaksi BRILink', defaultAdmin: false },
+    { key: 'brilink.fee', label: 'Atur fee BRILink', defaultAdmin: true },
+  ]},
+  { group: 'Laporan', permissions: [
+    { key: 'reports.view', label: 'Lihat laporan', defaultAdmin: true },
+    { key: 'reports.export', label: 'Export laporan (PDF/Excel)', defaultAdmin: false },
+  ]},
+  { group: 'Shift', permissions: [
+    { key: 'shifts.view', label: 'Lihat shift', defaultAdmin: true },
+    { key: 'shifts.finalize', label: 'Finalisasi shift', defaultAdmin: true },
+  ]},
+  { group: 'User & Akun', permissions: [
+    { key: 'users.view', label: 'Lihat daftar user', defaultAdmin: true },
+    { key: 'users.manage', label: 'Kelola user (tambah/edit/nonaktifkan)', defaultAdmin: false },
+  ]},
+  { group: 'Inventaris', permissions: [
+    { key: 'inventory.opname', label: 'Stock Opname', defaultAdmin: true },
+    { key: 'inventory.suppliers', label: 'Supplier & PO', defaultAdmin: true },
+    { key: 'inventory.transfers', label: 'Transfer Stok', defaultAdmin: true },
+  ]},
+  { group: 'Pengaturan', permissions: [
+    { key: 'settings.shop', label: 'Pengaturan toko (fee, struk, toggle)', defaultAdmin: true },
+    { key: 'settings.system', label: 'System settings (Super Admin only)', defaultAdmin: false },
+  ]},
+  { group: 'Cabang', permissions: [
+    { key: 'shops.view', label: 'Lihat daftar cabang', defaultAdmin: false },
+    { key: 'shops.manage', label: 'Kelola cabang (tambah/edit/hapus)', defaultAdmin: false },
+  ]},
+];
+
+function buildDefaults(): Record<string, boolean> {
+  const defaults: Record<string, boolean> = {};
+  for (const group of FALLBACK_GROUPS) {
+    for (const perm of group.permissions) {
+      defaults[perm.key] = perm.defaultAdmin;
+    }
+  }
+  return defaults;
+}
+
 async function fetchRolePermissions() {
   permLoading.value = true;
   saveSuccess.value = false;
   saveError.value = '';
   try {
     const [groupsRes, permRes] = await Promise.all([
-      permissionsService.getPermissionGroups(),
-      permissionsService.getRolePermissions(selectedRole.value),
+      permissionsService.getPermissionGroups().catch(() => null),
+      permissionsService.getRolePermissions(selectedRole.value).catch(() => null),
     ]);
-    permissionGroups.value = groupsRes.groups;
-    rolePermissions.value = permRes.permissions;
+
+    permissionGroups.value = groupsRes?.groups || FALLBACK_GROUPS;
+    rolePermissions.value = permRes?.permissions
+      ? { ...permRes.permissions }
+      : buildDefaults();
   } catch {
-    permissionGroups.value = [];
-    rolePermissions.value = {};
+    permissionGroups.value = FALLBACK_GROUPS;
+    rolePermissions.value = buildDefaults();
   } finally {
     permLoading.value = false;
   }
 }
 
 function togglePermission(key: string) {
-  rolePermissions.value[key] = !rolePermissions.value[key];
+  // Spread to trigger Vue reactivity properly
+  rolePermissions.value = {
+    ...rolePermissions.value,
+    [key]: !rolePermissions.value[key],
+  };
   saveSuccess.value = false;
 }
 
