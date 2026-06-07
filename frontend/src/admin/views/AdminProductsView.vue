@@ -823,7 +823,8 @@ let searchTimer: ReturnType<typeof setTimeout> | null = null;
 // ============================================
 
 async function fetchProducts() {
-  loading.value = true;
+  // Only show loading on first load (prevent flicker on auto-refresh)
+  if (products.value.length === 0) loading.value = true;
   error.value = null;
   try {
     const shopId = authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
@@ -839,7 +840,10 @@ async function fetchProducts() {
     products.value = response.data;
     meta.value = response.meta;
   } catch (err: any) {
-    error.value = err.response?.data?.message ?? err.message ?? 'Gagal memuat produk.';
+    // Keep existing data on error (don't blank out)
+    if (products.value.length === 0) {
+      error.value = err.response?.data?.message ?? err.message ?? 'Gagal memuat produk.';
+    }
   } finally {
     loading.value = false;
   }

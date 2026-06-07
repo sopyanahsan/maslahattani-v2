@@ -422,11 +422,12 @@ function debtStatusLabel(status: string): string {
 
 async function fetchDebts() {
   const shopId = getShopId(); if (!shopId) return;
-  loading.value = true; error.value = null;
+  if (debts.value.length === 0) loading.value = true;
+  error.value = null;
   try {
     const res = await debtsService.list({ shopId, status: (filterStatus.value as DebtStatus) || undefined, customerName: searchCustomer.value || undefined, sortBy: (filterSort.value as any) || undefined, page: currentPage.value, limit: 20 });
     debts.value = res.data; meta.value = res.meta; summary.value = res.summary;
-  } catch (err: any) { error.value = err?.response?.data?.message || err?.message || 'Gagal memuat.'; } finally { loading.value = false; }
+  } catch (err: any) { if (debts.value.length === 0) error.value = err?.response?.data?.message || err?.message || 'Gagal memuat.'; } finally { loading.value = false; }
 }
 function resetAndFetch() { currentPage.value = 1; fetchDebts(); }
 function goPage(p: number) { currentPage.value = p; fetchDebts(); }

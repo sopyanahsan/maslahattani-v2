@@ -302,7 +302,7 @@ const cashBoxForm = reactive({ label: '', balance: 0 });
 async function fetchCashBox() { const s = getShopId(); if (!s) return; try { cashBox.value = await kasRetailService.getCashBox(s); } catch { /* */ } }
 async function fetchHistory() {
   const s = getShopId(); if (!s) return;
-  historyLoading.value = true;
+  if (historyData.value.length === 0) historyLoading.value = true;
   try {
     // Determine if filter value is a categoryId or cashBoxId
     const filterVal = mutasiCategoryFilter.value || undefined;
@@ -319,7 +319,7 @@ async function fetchHistory() {
       page: 1, limit: 20,
     });
     historyData.value = res.data; historyMeta.value = res.meta;
-  } catch { historyData.value = []; }
+  } catch { if (historyData.value.length === 0) historyData.value = []; }
   finally { historyLoading.value = false; }
 }
 async function fetchHistoryPage(p: number) {

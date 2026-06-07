@@ -55,6 +55,19 @@
   }
 }
 
+/* === Anti-flicker: smooth data transitions === */
+/* Prevents visual "jump" when data updates in-place (realtime/auto-refresh) */
+@layer utilities {
+  .data-fade {
+    animation: dataFadeIn 0.15s ease-out;
+  }
+}
+
+@keyframes dataFadeIn {
+  from { opacity: 0.6; }
+  to   { opacity: 1; }
+}
+
 /* === Custom scrollbar === */
 ::-webkit-scrollbar {
   width: 8px;

@@ -468,7 +468,7 @@ function statusLabel(status: string): string {
 async function fetchTransactions() {
   const shopId = getShopId();
   if (!shopId) return;
-  loading.value = true;
+  if (transactions.value.length === 0) loading.value = true;
   error.value = null;
   try {
     const res = await transactionsService.list({
@@ -484,7 +484,9 @@ async function fetchTransactions() {
     transactions.value = res.data;
     meta.value = res.meta;
   } catch (err: any) {
-    error.value = err?.response?.data?.message || err?.message || 'Gagal memuat transaksi.';
+    if (transactions.value.length === 0) {
+      error.value = err?.response?.data?.message || err?.message || 'Gagal memuat transaksi.';
+    }
   } finally {
     loading.value = false;
   }

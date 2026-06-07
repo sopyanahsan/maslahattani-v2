@@ -852,7 +852,7 @@ function mutationTypeLabel(type: string): string {
 async function fetchMutasi(page = 1) {
   const shopId = getShopId();
   if (!shopId) return;
-  mutasiLoading.value = true;
+  if (mutasiData.value.length === 0) mutasiLoading.value = true;
   try {
     const res = await brilinkAccountService.getAllMutations({
       shopId,
@@ -866,8 +866,7 @@ async function fetchMutasi(page = 1) {
     mutasiData.value = res.data;
     mutasiMeta.value = res.meta;
   } catch {
-    mutasiData.value = [];
-    mutasiMeta.value = null;
+    if (mutasiData.value.length === 0) mutasiData.value = [];
   } finally {
     mutasiLoading.value = false;
   }
