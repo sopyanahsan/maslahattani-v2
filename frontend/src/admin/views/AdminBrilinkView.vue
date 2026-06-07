@@ -296,7 +296,7 @@ const authStore = useAuthStore();
 const store = useDashboardBrilinkStore();
 
 // Auto-refresh saat ada real-time event (tanpa unmount halaman)
-useRealtimeRefresh(() => store.fetchAll());
+useRealtimeRefresh(() => store.fetchAll(true));
 
 const periodOptions: { value: DashboardPeriod; label: string }[] = [
   { value: 'today', label: 'Hari Ini' },

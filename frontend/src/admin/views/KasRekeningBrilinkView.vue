@@ -655,11 +655,13 @@ const totalBrilinkBalance = computed(() => accounts.value.reduce((sum, acc) => s
 async function fetchAccounts() {
   const shopId = getShopId();
   if (!shopId) return;
-  accountsLoading.value = true;
+  // Only show loading on first load (prevent flicker on refresh)
+  if (accounts.value.length === 0) accountsLoading.value = true;
   try {
     accounts.value = await brilinkAccountService.list(shopId);
   } catch {
-    accounts.value = [];
+    // Keep existing data on error (don't blank out)
+    if (accounts.value.length === 0) accounts.value = [];
   } finally {
     accountsLoading.value = false;
   }
