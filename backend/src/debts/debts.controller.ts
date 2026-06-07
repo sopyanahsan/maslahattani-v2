@@ -12,6 +12,7 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
+import { RequirePermission } from '../permissions/require-permission.guard';
 import { DebtsService } from './debts.service';
 import { CreateDebtDto } from './dto/create-debt.dto';
 import { PayDebtDto } from './dto/pay-debt.dto';
@@ -26,6 +27,7 @@ export class DebtsController {
   constructor(private readonly debtsService: DebtsService) {}
 
   @Post()
+  @RequirePermission('debts.create')
   @ApiOperation({ summary: 'Catat hutang baru (dengan DP opsional)' })
   async create(@Body() dto: CreateDebtDto) {
     return this.debtsService.create(dto);
@@ -59,6 +61,7 @@ export class DebtsController {
   }
 
   @Put(':id/payment')
+  @RequirePermission('debts.pay')
   @ApiOperation({ summary: 'Bayar hutang (cicilan / lunas)' })
   async payDebt(@Param('id') id: string, @Body() dto: PayDebtDto) {
     return this.debtsService.payDebt(id, dto);

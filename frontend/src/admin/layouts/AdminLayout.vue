@@ -693,7 +693,7 @@ const currentShopAddress = computed(() => {
 const availableShops = computed(() => shopStore.availableShops);
 
 const canSwitchShop = computed(
-  () => authStore.isSuperAdmin || availableShops.value.length > 1,
+  () => authStore.isSuperAdmin,
 );
 
 async function handleSwitchShop(shopId: string) {

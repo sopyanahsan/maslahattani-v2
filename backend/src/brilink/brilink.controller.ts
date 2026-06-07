@@ -21,6 +21,7 @@ import {
 } from './dto';
 import { JwtAuthGuard } from '../auth/guards';
 import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
+import { RequirePermission } from '../permissions/require-permission.guard';
 
 @ApiTags('BRILink')
 @Controller('api/brilink')
@@ -84,6 +85,7 @@ export class BrilinkController {
   }
 
   @Post('transactions/:id/void')
+  @RequirePermission('brilink.void')
   @ApiOperation({ summary: 'Void transaksi BRILink (reverse saldo rekening + kas tunai)' })
   async voidTransaction(
     @Param('id') id: string,
@@ -115,18 +117,21 @@ export class BrilinkController {
   }
 
   @Post('fees')
+  @RequirePermission('brilink.fee')
   @ApiOperation({ summary: 'Buat fee rule baru' })
   async createFee(@Body() dto: CreateBrilinkFeeDto) {
     return this.brilinkService.createFee(dto);
   }
 
   @Patch('fees/:id')
+  @RequirePermission('brilink.fee')
   @ApiOperation({ summary: 'Update fee rule' })
   async updateFee(@Param('id') id: string, @Body() dto: UpdateBrilinkFeeDto) {
     return this.brilinkService.updateFee(id, dto);
   }
 
   @Delete('fees/:id')
+  @RequirePermission('brilink.fee')
   @ApiOperation({ summary: 'Hapus fee rule' })
   async deleteFee(@Param('id') id: string) {
     return this.brilinkService.deleteFee(id);

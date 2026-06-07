@@ -19,6 +19,7 @@ import { Response } from 'express';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/guards/roles.guard';
 import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
+import { RequirePermission } from '../permissions/require-permission.guard';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -37,6 +38,7 @@ export class ProductsController {
   @Post()
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @RequirePermission('products.create')
   @ApiOperation({ summary: 'Tambah produk baru (admin only)' })
   async create(@Body() dto: CreateProductDto) {
     return this.productsService.create(dto);
@@ -128,6 +130,7 @@ export class ProductsController {
   @Put(':id')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @RequirePermission('products.update')
   @ApiOperation({ summary: 'Update produk (admin only)' })
   async update(@Param('id') id: string, @Body() dto: UpdateProductDto) {
     return this.productsService.update(id, dto);
@@ -136,6 +139,7 @@ export class ProductsController {
   @Delete(':id')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @RequirePermission('products.delete')
   @ApiOperation({ summary: 'Hapus produk / soft delete (admin only)' })
   async remove(@Param('id') id: string) {
     return this.productsService.remove(id);

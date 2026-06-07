@@ -3,6 +3,7 @@ import {
   Post,
   Get,
   Body,
+  Query,
   UseGuards,
   Request,
   HttpCode,
@@ -16,11 +17,17 @@ import { LoginPinDto, ChangePinDto } from './dto/login-pin.dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { RolesGuard, Roles } from './guards/roles.guard';
+import { PrismaService } from '../prisma/prisma.service';
+import { Role } from '@prisma/client';
 
 @ApiTags('Auth')
 @Controller('api/auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Post('register-kasir')
   @ApiOperation({ summary: 'Register kasir baru via email (Step 1: kirim OTP)' })
@@ -144,5 +151,57 @@ export class AuthController {
   @ApiOperation({ summary: 'Update profil (username, fullName, phone, dll)' })
   async updateProfile(@Request() req: any, @Body() dto: { username?: string; fullName?: string; phone?: string; address?: string }) {
     return this.authService.updateProfile(req.user.id, dto);
+  }
+
+  // ============================================
+  // AUDIT LOG (Super Admin only)
+  // ============================================
+
+  @Get('activity-logs')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SUPER_ADMIN)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Get activity logs (Super Admin only, paginated)' })
+  async getActivityLogs(
+    @Query('limit') limit?: string,
+    @Query('page') page?: string,
+    @Query('userId') userId?: string,
+    @Query('action') action?: string,
+  ) {
+    const take = Math.min(Number(limit) || 50, 100);
+    const skip = ((Number(page) || 1) - 1) * take;
+
+    const where: any = {};
+    if (userId) where.userId = userId;
+    if (action) where.action = action;
+
+    const [data, total] = await Promise.all([
+      this.prisma.activityLog.findMany({
+        where,
+        include: {
+          user: { select: { id: true, username: true, email: true, role: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take,
+      }),
+      this.prisma.activityLog.count({ where }),
+    ]);
+
+    return {
+      data: data.map((log) => ({
+        id: log.id,
+        userId: log.userId,
+        userName: log.user?.username || log.user?.email || '-',
+        userRole: log.user?.role || '-',
+        action: log.action,
+        resource: log.resource,
+        resourceId: log.resourceId,
+        details: log.details,
+        ipAddress: log.ipAddress,
+        createdAt: log.createdAt.toISOString(),
+      })),
+      meta: { total, page: Number(page) || 1, limit: take, totalPages: Math.ceil(total / take) },
+    };
   }
 }

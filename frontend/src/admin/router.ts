@@ -421,7 +421,11 @@ router.beforeEach(async (to, _from, next) => {
   // Role-based access control
   if (requiresAuth && allowedRoles && authStore.user) {
     if (!allowedRoles.includes(authStore.user.role)) {
-      // Role mismatch (misal kasir nyangkut di admin domain)
+      // Kasir trying to access admin panel → redirect to webapp
+      if (authStore.user.role === 'KASIR' || authStore.user.role === 'CASHIER_SUPERVISOR') {
+        return next({ path: '/kasir/login' });
+      }
+      // Other role mismatch
       authStore.clearAuth();
       return next({ name: 'admin-login' });
     }
