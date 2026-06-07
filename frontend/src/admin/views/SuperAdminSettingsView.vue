@@ -63,15 +63,15 @@
               <button
                 type="button"
                 :class="[
-                  'relative w-10 h-5 rounded-full transition-colors shrink-0',
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0',
                   rolePermissions[perm.key] ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600',
                 ]"
                 @click="togglePermission(perm.key)"
               >
                 <span
                   :class="[
-                    'absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform',
-                    rolePermissions[perm.key] ? 'translate-x-5' : 'translate-x-0.5',
+                    'inline-block h-4 w-4 rounded-full bg-white shadow-sm transition-transform',
+                    rolePermissions[perm.key] ? 'translate-x-6' : 'translate-x-1',
                   ]"
                 />
               </button>
