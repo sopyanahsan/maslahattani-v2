@@ -962,6 +962,7 @@ const navGroups = ref<NavGroup[]>([
       { to: '/admin/brilink/transaksi', label: 'Transaksi BRILink', icon: ReceiptIcon },
       { to: '/admin/kas-rekening-brilink', label: 'Kas & Rekening', icon: LandmarkIcon },
       { to: '/admin/brilink/fee', label: 'Pengaturan Fee', icon: PercentIcon },
+      { to: '/admin/brilink/laporan', label: 'Laporan BRILink', icon: ReportIcon },
     ],
   },
   {

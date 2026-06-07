@@ -107,6 +107,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'brilink/laporan',
+        name: 'admin-brilink-report',
+        component: () => import('@/admin/views/BrilinkReportView.vue'),
+        meta: {
+          title: 'Laporan BRILink',
+          description: 'Laporan volume, fee, trend harian, dan performa kasir BRILink.',
+        },
+      },
+      {
         path: 'dashboard',
         name: 'admin-dashboard',
         component: () => import('@/admin/views/DashboardView.vue'),

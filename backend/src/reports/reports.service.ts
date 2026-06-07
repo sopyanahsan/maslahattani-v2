@@ -171,47 +171,119 @@ export class ReportsService {
 
   /**
    * Laporan BRILink:
-   * - Summary: totalTransactions, volume, feeEarnings, avgFee
-   * - Category breakdown
+   * - Summary: totalTransactions, volume, feeEarnings, avgFee, voidedCount
+   * - Category breakdown (per kategori: count, volume, fee, percentVolume)
+   * - Daily trend (volume + fee per hari)
+   * - Per-kasir performance
+   * - Top customers
    */
   async getBrilinkReport(shopId: string, startDate?: string, endDate?: string) {
     const where: any = { shopId, status: 'SUCCESS' };
 
     if (startDate || endDate) {
       where.createdAt = {};
-      if (startDate) where.createdAt.gte = new Date(startDate);
-      if (endDate) where.createdAt.lte = new Date(endDate + 'T23:59:59.999Z');
+      if (startDate) where.createdAt.gte = new Date(startDate + 'T00:00:00.000+07:00');
+      if (endDate) where.createdAt.lte = new Date(endDate + 'T23:59:59.999+07:00');
     }
 
-    const totals = await this.prisma.brilinkTransaction.aggregate({
-      where,
-      _sum: { amount: true, fee: true },
-      _count: true,
-    });
+    const [totals, voidedCount, grouped, transactions, cashierGrouped, topCustomers] = await Promise.all([
+      this.prisma.brilinkTransaction.aggregate({
+        where,
+        _sum: { amount: true, fee: true },
+        _count: true,
+      }),
+      this.prisma.brilinkTransaction.count({
+        where: { shopId, status: 'VOIDED', ...(where.createdAt ? { createdAt: where.createdAt } : {}) },
+      }),
+      this.prisma.brilinkTransaction.groupBy({
+        by: ['category'],
+        where,
+        _sum: { amount: true, fee: true },
+        _count: true,
+        orderBy: { _sum: { amount: 'desc' } },
+      }),
+      this.prisma.brilinkTransaction.findMany({
+        where,
+        select: { createdAt: true, amount: true, fee: true },
+        orderBy: { createdAt: 'asc' },
+      }),
+      this.prisma.brilinkTransaction.groupBy({
+        by: ['cashierId'],
+        where,
+        _sum: { amount: true, fee: true },
+        _count: true,
+        orderBy: { _count: { cashierId: 'desc' } },
+        take: 10,
+      }),
+      this.prisma.brilinkTransaction.groupBy({
+        by: ['customerName'],
+        where,
+        _sum: { amount: true, fee: true },
+        _count: true,
+        orderBy: { _count: { customerName: 'desc' } },
+        take: 10,
+      }),
+    ]);
 
     const totalTransactions = totals._count || 0;
     const volume = totals._sum.amount || 0;
     const feeEarnings = totals._sum.fee || 0;
     const avgFee = totalTransactions > 0 ? Math.round(feeEarnings / totalTransactions) : 0;
 
-    // Category breakdown
-    const grouped = await this.prisma.brilinkTransaction.groupBy({
-      by: ['category'],
-      where,
-      _sum: { amount: true, fee: true },
-      _count: true,
-    });
-
     const categoryBreakdown = grouped.map((g) => ({
       category: g.category,
       count: g._count,
       volume: g._sum.amount || 0,
       fee: g._sum.fee || 0,
+      percentVolume: volume > 0 ? Math.round(((g._sum.amount || 0) / volume) * 1000) / 10 : 0,
     }));
 
+    // Daily trend
+    const dailyMap = new Map<string, { volume: number; fee: number; count: number }>();
+    for (const trx of transactions) {
+      const wibDate = new Date(trx.createdAt.getTime() + 7 * 60 * 60 * 1000);
+      const day = wibDate.toISOString().slice(0, 10);
+      const existing = dailyMap.get(day) || { volume: 0, fee: 0, count: 0 };
+      existing.volume += trx.amount;
+      existing.fee += trx.fee;
+      existing.count += 1;
+      dailyMap.set(day, existing);
+    }
+    const dailyTrend = Array.from(dailyMap.entries()).map(([date, data]) => ({
+      date,
+      volume: data.volume,
+      fee: data.fee,
+      transactions: data.count,
+    }));
+
+    // Per-kasir
+    const cashierIds = cashierGrouped.map((c) => c.cashierId);
+    const cashiers = await this.prisma.user.findMany({
+      where: { id: { in: cashierIds } },
+      select: { id: true, username: true, email: true },
+    });
+    const cashierPerformance = cashierGrouped.map((c) => {
+      const user = cashiers.find((u) => u.id === c.cashierId);
+      return {
+        cashierId: c.cashierId,
+        cashierName: user?.username || user?.email || '-',
+        count: c._count,
+        volume: c._sum.amount || 0,
+        fee: c._sum.fee || 0,
+      };
+    });
+
     return {
-      summary: { totalTransactions, volume, feeEarnings, avgFee },
+      summary: { totalTransactions, volume, feeEarnings, avgFee, voidedCount },
       categoryBreakdown,
+      dailyTrend,
+      cashierPerformance,
+      topCustomers: topCustomers.map((tc) => ({
+        customerName: tc.customerName,
+        count: tc._count,
+        volume: tc._sum.amount || 0,
+        fee: tc._sum.fee || 0,
+      })),
     };
   }
 }

@@ -67,10 +67,34 @@ export interface BrilinkReportSummary {
   volume: number;
   feeEarnings: number;
   avgFee: number;
+  voidedCount: number;
 }
 
 export interface BrilinkCategoryBreakdownItem {
   category: string;
+  count: number;
+  volume: number;
+  fee: number;
+  percentVolume: number;
+}
+
+export interface BrilinkDailyTrendItem {
+  date: string;
+  volume: number;
+  fee: number;
+  transactions: number;
+}
+
+export interface BrilinkCashierItem {
+  cashierId: string;
+  cashierName: string;
+  count: number;
+  volume: number;
+  fee: number;
+}
+
+export interface BrilinkTopCustomerItem {
+  customerName: string;
   count: number;
   volume: number;
   fee: number;
@@ -79,6 +103,9 @@ export interface BrilinkCategoryBreakdownItem {
 export interface BrilinkReportResponse {
   summary: BrilinkReportSummary;
   categoryBreakdown: BrilinkCategoryBreakdownItem[];
+  dailyTrend: BrilinkDailyTrendItem[];
+  cashierPerformance: BrilinkCashierItem[];
+  topCustomers: BrilinkTopCustomerItem[];
 }
 
 // ============================================
