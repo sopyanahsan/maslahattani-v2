@@ -46,13 +46,7 @@
             class="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 border border-white dark:border-slate-900"
           />
         </button>
-        <!-- Online indicator (mobile) -->
-        <span v-if="wsConnected" class="inline-flex items-center gap-0.5 text-[9px] font-semibold text-emerald-500 dark:text-emerald-400 px-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-        </span>
-        <span v-else class="inline-flex items-center gap-0.5 text-[9px] font-semibold text-amber-500 px-1">
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
-        </span>
+
         <button
           type="button"
           class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
@@ -336,12 +330,12 @@
           <span class="text-xs text-slate-500 dark:text-slate-400 hidden xl:inline">
             {{ todayLabel }}
           </span>
-          <!-- WebSocket indicator -->
-          <span v-if="wsConnected" class="inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400" title="Real-time aktif">
+          <!-- WebSocket indicator (md+ only, mobile uses banner dot) -->
+          <span v-if="wsConnected" class="hidden md:inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400" title="Real-time aktif">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             Online
           </span>
-          <span v-else class="inline-flex items-center gap-1 text-[10px] font-medium text-amber-500 dark:text-amber-400" title="Mode offline — data tersimpan lokal">
+          <span v-else class="hidden md:inline-flex items-center gap-1 text-[10px] font-medium text-amber-500 dark:text-amber-400" title="Mode offline — data tersimpan lokal">
             <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
             Offline
             <span v-if="offlinePendingCount > 0" class="ml-0.5 px-1 py-0 text-[9px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-full">{{ offlinePendingCount }} pending</span>
@@ -366,7 +360,7 @@
       <!-- Branch Context Banner -->
       <div class="sticky top-16 z-10 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 dark:from-blue-900 dark:via-blue-900 dark:to-blue-950 px-4 lg:px-6 py-2 flex items-center justify-between shadow-sm">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" title="Aktif"></div>
+          <div :class="['w-2 h-2 rounded-full shrink-0', wsConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400']" :title="wsConnected ? 'Online' : 'Offline'"></div>
           <div class="min-w-0">
             <p class="text-xs font-bold text-white truncate">{{ currentShopName || 'Belum dipilih' }}</p>
             <p class="text-[10px] text-blue-200 dark:text-blue-300 truncate">{{ currentShopAddress }}</p>
