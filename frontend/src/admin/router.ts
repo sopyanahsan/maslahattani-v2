@@ -30,12 +30,12 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'UI Showcase — Posify' },
   },
 
-  // === Owner Dashboard (platform owner only) ===
+  // === Owner Dashboard (platform owner only — tenantId must be null) ===
   {
     path: '/owner',
     name: 'owner-dashboard',
     component: () => import('@/owner/OwnerDashboard.vue'),
-    meta: { title: 'Posify Owner Dashboard', requiresAuth: true, roles: ['SUPER_ADMIN'] },
+    meta: { title: 'Posify Owner Dashboard', requiresAuth: true, roles: ['SUPER_ADMIN'], platformOwnerOnly: true },
   },
 
   // === Admin Auth (Guest Only) ===
@@ -451,6 +451,14 @@ router.beforeEach(async (to, _from, next) => {
       // Other role mismatch
       authStore.clearAuth();
       return next({ name: 'admin-login' });
+    }
+  }
+
+  // Platform owner only: must be SUPER_ADMIN without tenantId
+  const platformOwnerOnly = !!getMeta<boolean>(to, 'platformOwnerOnly');
+  if (platformOwnerOnly && authStore.user) {
+    if (authStore.user.role !== 'SUPER_ADMIN' || (authStore.user as any).tenantId) {
+      return next({ name: 'admin-home' });
     }
   }
 

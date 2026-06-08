@@ -994,6 +994,8 @@ const navGroups = computed<NavGroup[]>(() => {
   return groups;
 });
 
+const isPlatformOwner = computed(() => isSuperAdmin.value && !authStore.user?.shopId && !(authStore.user as any)?.tenantId);
+
 const bottomNav = computed<NavItem[]>(() => {
   const items: NavItem[] = [];
   if (permStore.can('settings.shop') || isSuperAdmin.value) {
@@ -1001,6 +1003,9 @@ const bottomNav = computed<NavItem[]>(() => {
   }
   if (isSuperAdmin.value) {
     items.push({ to: '/admin/super-admin-settings', label: 'Super Admin', icon: ShieldIcon });
+  }
+  if (isPlatformOwner.value) {
+    items.push({ to: '/owner', label: 'Owner Dashboard', icon: Building2Icon });
   }
   items.push({ to: '/admin/profil', label: 'Profil', icon: UserIcon });
   return items;
