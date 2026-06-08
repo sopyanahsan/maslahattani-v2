@@ -139,27 +139,27 @@
             <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between border-b border-slate-100 pb-4 gap-2">
               <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide w-full sm:w-24 shrink-0">H1</span>
               <h1 class="text-2xl sm:text-3xl lg:text-[32px] font-bold text-slate-950 flex-1">Dashboard Admin</h1>
-              <span class="text-xs font-mono text-[#00A19B]">Inter Bold / 32px</span>
+              <span class="text-xs font-mono text-[#00A19B]">Josefin Sans Bold / 32px</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between border-b border-slate-100 pb-4 gap-2">
               <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide w-full sm:w-24 shrink-0">H2</span>
               <h2 class="text-xl sm:text-2xl font-bold text-slate-950 flex-1">Ringkasan Hari Ini</h2>
-              <span class="text-xs font-mono text-[#00A19B]">Inter Bold / 24px</span>
+              <span class="text-xs font-mono text-[#00A19B]">Josefin Sans Bold / 24px</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between border-b border-slate-100 pb-4 gap-2">
               <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide w-full sm:w-24 shrink-0">H3</span>
               <h3 class="text-lg sm:text-xl font-semibold text-slate-900 flex-1">Transaksi Terakhir</h3>
-              <span class="text-xs font-mono text-[#00A19B]">Inter Semibold / 20px</span>
+              <span class="text-xs font-mono text-[#00A19B]">Josefin Sans Semibold / 20px</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between border-b border-slate-100 pb-4 gap-2">
               <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide w-full sm:w-24 shrink-0">Body</span>
               <p class="text-sm text-slate-800 flex-1">Menampilkan data penjualan hari ini dari semua transaksi yang tercatat.</p>
-              <span class="text-xs font-mono text-[#00A19B]">Inter Regular / 14px</span>
+              <span class="text-xs font-mono text-[#00A19B]">Josefin Sans Regular / 14px</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2">
               <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide w-full sm:w-24 shrink-0">Mono</span>
               <p class="text-sm font-mono font-medium text-slate-950 flex-1 bg-slate-50 px-3 py-2 rounded">Rp 2.500.000</p>
-              <span class="text-xs font-mono text-[#00A19B]">JetBrains Mono / 14px</span>
+              <span class="text-xs font-mono text-[#00A19B]">Source Sans Pro / 14px</span>
             </div>
           </div>
         </section>
