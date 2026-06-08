@@ -1,7 +1,7 @@
 {
-  "name": "maslahat-tani-backend",
+  "name": "posify-backend",
   "version": "2.0.0",
-  "description": "Backend API untuk Maslahat Tani v2",
+  "description": "Backend API untuk Posify - Sistem POS Modern",
   "main": "dist/main.js",
   "scripts": {
     "build": "nest build",

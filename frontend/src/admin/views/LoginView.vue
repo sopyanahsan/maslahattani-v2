@@ -19,7 +19,7 @@
             <ShieldIcon class="w-6 h-6 text-blue-500" />
           </div>
           <h1 class="text-2xl font-semibold text-white tracking-tight">Admin Panel</h1>
-          <p class="text-slate-400 mt-1 text-sm">Maslahat Tani</p>
+          <p class="text-slate-400 mt-1 text-sm">Posify</p>
         </div>
 
         <div class="bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-8 shadow-2xl">
@@ -120,7 +120,7 @@
     </Transition>
 
     <div v-if="step !== 'success'" class="absolute bottom-6 text-center text-xs text-slate-500 space-y-2">
-      <p>Maslahat Tani POS System v2.0</p>
+      <p>Posify POS System v2.0</p>
       <a href="/webapp/login" class="text-blue-400 hover:underline font-medium">Login sebagai Kasir →</a>
     </div>
   </div>

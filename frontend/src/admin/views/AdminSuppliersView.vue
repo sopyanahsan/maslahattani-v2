@@ -1239,7 +1239,7 @@ function generatePOText(): string {
   }
 
   lines.push('');
-  lines.push(`— Maslahat Tani`);
+  lines.push(`— Posify`);
 
   return lines.filter(Boolean).join('\n');
 }

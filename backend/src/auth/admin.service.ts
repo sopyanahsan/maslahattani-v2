@@ -92,7 +92,7 @@ export class AdminService {
       mustChangePin = true; // Force change on first login
       // Generate placeholder password (kasir doesn't use password)
       passwordHash = await bcrypt.hash(
-        `ngalir_${Date.now()}_${Math.random()}`,
+        `posify_${Date.now()}_${Math.random()}`,
         12,
       );
     }

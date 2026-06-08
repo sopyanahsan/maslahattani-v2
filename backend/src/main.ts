@@ -25,8 +25,8 @@ async function bootstrap() {
 
   // Swagger
   const config = new DocumentBuilder()
-    .setTitle('Maslahat Tani API')
-    .setDescription('API untuk Maslahat Tani v2 - POS & BRILink System')
+    .setTitle('Posify API')
+    .setDescription('API untuk Posify - Sistem POS Modern untuk UMKM')
     .setVersion('2.0.0')
     .addBearerAuth()
     .build();

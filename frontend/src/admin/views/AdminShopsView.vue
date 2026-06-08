@@ -113,7 +113,7 @@
           <h2 class="text-base font-bold text-slate-950 dark:text-slate-100">{{ editingShop ? 'Edit Cabang' : 'Tambah Cabang Baru' }}</h2>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Cabang <span class="text-red-500">*</span></label>
-            <input v-model="form.name" type="text" required placeholder="Maslahat Tani Cabang X" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+            <input v-model="form.name" type="text" required placeholder="Nama Cabang" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Alamat <span class="text-red-500">*</span></label>

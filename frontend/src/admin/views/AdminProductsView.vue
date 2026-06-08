@@ -1246,7 +1246,7 @@ async function handleImageUpload(event: Event) {
   formError.value = null;
 
   try {
-    const result = await uploadToCloudinary(file, 'ngalir/products');
+    const result = await uploadToCloudinary(file, 'posify/products');
     form.imageUrl = result.url;
   } catch (err: any) {
     formError.value = err.message || 'Gagal upload gambar.';

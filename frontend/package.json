@@ -1,7 +1,7 @@
 {
-  "name": "maslahat-tani-frontend",
+  "name": "posify-frontend",
   "version": "2.0.0",
-  "description": "Frontend untuk Maslahat Tani v2 - Admin Panel & Kasir Webapp (Vue 3 + Vite)",
+  "description": "Frontend untuk Posify - Admin Panel & Kasir Webapp (Vue 3 + Vite)",
   "private": true,
   "type": "module",
   "scripts": {

@@ -196,7 +196,7 @@ router.beforeEach(async (to, _from, next) => {
 
 router.afterEach((to) => {
   const explicit = getMeta<string>(to, 'title');
-  document.title = explicit ? `${explicit} — Ngalir` : 'Ngalir';
+  document.title = explicit ? `${explicit} — Posify` : 'Posify';
 });
 
 export default router;

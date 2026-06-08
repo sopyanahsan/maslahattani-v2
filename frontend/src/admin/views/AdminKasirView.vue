@@ -363,7 +363,7 @@ function initials(text: string): string {
 function hasRealEmail(email?: string | null): boolean {
   if (!email) return false;
   // Legacy placeholders from earlier code that auto-generated fake emails
-  if (email.endsWith('@ngalir.local')) return false;
+  if (email.endsWith('@posify.local')) return false;
   return true;
 }
 function formatDateTime(iso: string): string { return new Date(iso).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }

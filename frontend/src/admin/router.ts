@@ -15,13 +15,13 @@ const routes: RouteRecordRaw[] = [
     path: '/',
     name: 'home',
     component: () => import('@/admin/views/HomeView.vue'),
-    meta: { title: 'Maslahat Tani v2' },
+    meta: { title: 'Posify' },
   },
   {
     path: '/showcase',
     name: 'showcase',
     component: () => import('@/admin/views/ShowcaseView.vue'),
-    meta: { title: 'UI Showcase — Maslahat Tani' },
+    meta: { title: 'UI Showcase — Posify' },
   },
 
   // === Admin Auth (Guest Only) ===
@@ -440,7 +440,7 @@ router.beforeEach(async (to, _from, next) => {
 
 router.afterEach((to) => {
   const explicit = getMeta<string>(to, 'title');
-  document.title = explicit ? `${explicit} — Ngalir Admin` : 'Ngalir Admin';
+  document.title = explicit ? `${explicit} — Posify` : 'Posify';
 });
 
 export default router;

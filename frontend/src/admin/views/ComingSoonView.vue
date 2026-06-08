@@ -65,7 +65,7 @@ const route = useRoute();
 
 const title = computed(() => {
   const meta = (route.meta?.title as string | undefined) || 'Halaman';
-  return meta.replace(/\s*[—-]\s*Maslahat Tani.*$/i, '').trim() || meta;
+  return meta.replace(/\s*[—-]\s*Posify.*$/i, '').trim() || meta;
 });
 
 const description = computed(() => {

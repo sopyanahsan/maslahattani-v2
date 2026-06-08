@@ -9,7 +9,7 @@
         >
           <span class="material-symbols-outlined">menu</span>
         </button>
-        <h1 class="text-base font-bold text-slate-950 dark:text-white">Maslahat Tani</h1>
+        <h1 class="text-base font-bold text-slate-950 dark:text-white">Posify</h1>
       </div>
       <div class="flex items-center gap-2">
         <!-- Dark Mode Toggle (Mobile) -->
@@ -39,7 +39,7 @@
       <div class="p-6 border-b border-slate-800">
         <div class="flex items-center justify-between">
           <div>
-            <h1 class="text-lg font-bold text-white">Maslahat Tani</h1>
+            <h1 class="text-lg font-bold text-white">Posify</h1>
             <p class="text-slate-400 text-xs mt-0.5">Design System Showcase</p>
           </div>
           <!-- Dark Mode Toggle (Desktop Sidebar) -->
@@ -84,7 +84,7 @@
           Design System Showcase
         </h1>
         <p class="text-sm sm:text-base text-slate-600 dark:text-slate-400 mt-2">
-          Visual identity dan UI components untuk Maslahat Tani v2 — POS + BRILink Agent System
+          Visual identity dan UI components untuk Posify — Sistem POS Modern untuk UMKM
         </p>
         <!-- Dark Mode Status Badge -->
         <div class="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
@@ -444,7 +444,7 @@
           <div class="h-2 w-2 bg-blue-200 rounded-full"></div>
           <div class="h-2 w-2 bg-blue-200 rounded-full"></div>
         </div>
-        <p class="text-sm text-slate-600">Maslahat Tani • Design System v1.0</p>
+        <p class="text-sm text-slate-600">Posify • Design System v1.0</p>
         <p class="text-xs text-slate-500 mt-1">© 2026 — Vue 3 + Vite + Tailwind</p>
       </footer>
     </main>

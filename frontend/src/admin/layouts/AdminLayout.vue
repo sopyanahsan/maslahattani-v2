@@ -18,7 +18,7 @@
             <component :is="StoreIcon" class="w-4 h-4 text-white" />
           </div>
           <div class="min-w-0">
-            <h1 class="text-sm font-bold text-slate-950 dark:text-slate-100 leading-tight truncate">{{ currentShopName || 'Maslahat Tani' }}</h1>
+            <h1 class="text-sm font-bold text-slate-950 dark:text-slate-100 leading-tight truncate">{{ currentShopName || 'Posify' }}</h1>
             <p class="text-[9px] text-slate-400 dark:text-slate-500 leading-tight">{{ todayLabel }}</p>
           </div>
         </div>
@@ -77,7 +77,7 @@
             <component :is="StoreIcon" class="w-5 h-5 text-white" />
           </div>
           <div>
-            <p class="text-sm font-bold leading-tight">Maslahat Tani</p>
+            <p class="text-sm font-bold leading-tight">Posify</p>
             <p class="text-[11px] text-slate-400 leading-tight">Admin Dashboard</p>
           </div>
         </div>
@@ -1051,7 +1051,7 @@ const roleLabel = computed(() => {
 const pageTitle = computed(() => {
   const meta = route.meta?.title as string | undefined;
   if (meta) {
-    return meta.replace(/\s*[—-]\s*Maslahat Tani.*$/i, '').trim() || meta;
+    return meta.replace(/\s*[—-]\s*Posify.*$/i, '').trim() || meta;
   }
   return 'Admin';
 });
