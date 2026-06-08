@@ -31,6 +31,7 @@ import { BrilinkReconciliationModule } from './brilink-reconciliation/brilink-re
 import { BrilinkProductsModule } from './brilink-products/brilink-products.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { PermissionsModule } from './permissions/permissions.module';
+import { SubscriptionModule } from './subscription/subscription.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { PermissionsModule } from './permissions/permissions.module';
     PrismaModule,
     RealtimeModule,
     PermissionsModule,
+    SubscriptionModule,
     ShopsModule,
     AuthModule,
     HealthModule,

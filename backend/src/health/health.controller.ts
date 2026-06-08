@@ -1,9 +1,11 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
+import { SkipSubscription } from '../subscription/skip-subscription.decorator';
 
 @ApiTags('Health')
 @Controller('api/health')
+@SkipSubscription()
 export class HealthController {
   constructor(private prisma: PrismaService) {}
 

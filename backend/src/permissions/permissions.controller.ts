@@ -12,12 +12,14 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/guards/roles.guard';
 import { PermissionsService } from './permissions.service';
+import { SkipSubscription } from '../subscription/skip-subscription.decorator';
 import { Role } from '@prisma/client';
 import { PERMISSION_GROUPS } from './permissions.constants';
 
 @ApiTags('Permissions / RBAC')
 @Controller('api/permissions')
 @UseGuards(JwtAuthGuard)
+@SkipSubscription()
 @ApiBearerAuth()
 export class PermissionsController {
   constructor(private readonly permissionsService: PermissionsService) {}

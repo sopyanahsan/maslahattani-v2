@@ -19,10 +19,12 @@ import { ChangePasswordDto } from './dto/change-password.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard, Roles } from './guards/roles.guard';
 import { PrismaService } from '../prisma/prisma.service';
+import { SkipSubscription } from '../subscription/skip-subscription.decorator';
 import { Role } from '@prisma/client';
 
 @ApiTags('Auth')
 @Controller('api/auth')
+@SkipSubscription()
 export class AuthController {
   constructor(
     private readonly authService: AuthService,

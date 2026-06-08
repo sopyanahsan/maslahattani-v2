@@ -23,6 +23,7 @@ interface TokenPayload {
   email: string | null;
   role: Role;
   shopId?: string;
+  tenantId?: string;
 }
 
 @Injectable()
