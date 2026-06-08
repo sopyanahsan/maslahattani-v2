@@ -20,7 +20,7 @@
         >
           <span class="material-symbols-outlined text-[20px]">{{ isDark ? 'light_mode' : 'dark_mode' }}</span>
         </button>
-        <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 rounded text-[10px] font-medium">Option A</span>
+        <span class="px-2 py-1 bg-[#00A19B]/10 text-[#00A19B] rounded text-[10px] font-medium">Option A</span>
       </div>
     </div>
 
@@ -60,7 +60,7 @@
           class="flex items-center gap-3 px-4 py-2.5 text-sm rounded-md transition"
           :class="
             idx === 0
-              ? 'bg-blue-600 text-white font-medium'
+              ? 'bg-[#00A19B] text-white font-medium'
               : 'text-slate-400 hover:bg-slate-800 hover:text-white'
           "
           @click="closeSidebarOnMobile"
@@ -88,7 +88,7 @@
         </p>
         <!-- Dark Mode Status Badge -->
         <div class="mt-4 inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
-          :class="isDark ? 'bg-slate-800 text-yellow-400 border border-slate-700' : 'bg-blue-50 text-blue-700 border border-blue-200'"
+          :class="isDark ? 'bg-slate-800 text-[#00A19B] border border-slate-700' : 'bg-[#00A19B]/10 text-[#00A19B] border border-[#00A19B]/20'"
         >
           <span class="material-symbols-outlined text-[16px]">{{ isDark ? 'dark_mode' : 'light_mode' }}</span>
           {{ isDark ? 'Dark Mode Active' : 'Light Mode Active' }}
@@ -139,27 +139,27 @@
             <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between border-b border-slate-100 pb-4 gap-2">
               <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide w-full sm:w-24 shrink-0">H1</span>
               <h1 class="text-2xl sm:text-3xl lg:text-[32px] font-bold text-slate-950 flex-1">Dashboard Admin</h1>
-              <span class="text-xs font-mono text-blue-600">Inter Bold / 32px</span>
+              <span class="text-xs font-mono text-[#00A19B]">Inter Bold / 32px</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between border-b border-slate-100 pb-4 gap-2">
               <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide w-full sm:w-24 shrink-0">H2</span>
               <h2 class="text-xl sm:text-2xl font-bold text-slate-950 flex-1">Ringkasan Hari Ini</h2>
-              <span class="text-xs font-mono text-blue-600">Inter Bold / 24px</span>
+              <span class="text-xs font-mono text-[#00A19B]">Inter Bold / 24px</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between border-b border-slate-100 pb-4 gap-2">
               <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide w-full sm:w-24 shrink-0">H3</span>
               <h3 class="text-lg sm:text-xl font-semibold text-slate-900 flex-1">Transaksi Terakhir</h3>
-              <span class="text-xs font-mono text-blue-600">Inter Semibold / 20px</span>
+              <span class="text-xs font-mono text-[#00A19B]">Inter Semibold / 20px</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between border-b border-slate-100 pb-4 gap-2">
               <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide w-full sm:w-24 shrink-0">Body</span>
               <p class="text-sm text-slate-800 flex-1">Menampilkan data penjualan hari ini dari semua transaksi yang tercatat.</p>
-              <span class="text-xs font-mono text-blue-600">Inter Regular / 14px</span>
+              <span class="text-xs font-mono text-[#00A19B]">Inter Regular / 14px</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-baseline sm:justify-between gap-2">
               <span class="text-xs font-semibold text-slate-500 uppercase tracking-wide w-full sm:w-24 shrink-0">Mono</span>
               <p class="text-sm font-mono font-medium text-slate-950 flex-1 bg-slate-50 px-3 py-2 rounded">Rp 2.500.000</p>
-              <span class="text-xs font-mono text-blue-600">JetBrains Mono / 14px</span>
+              <span class="text-xs font-mono text-[#00A19B]">JetBrains Mono / 14px</span>
             </div>
           </div>
         </section>
@@ -173,32 +173,32 @@
             <div>
               <p class="text-xs font-semibold text-slate-700 mb-3 uppercase tracking-wide">Variants</p>
               <div class="flex flex-wrap gap-2 sm:gap-3">
-                <button class="h-10 px-4 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition shadow-sm">Primary</button>
-                <button class="h-10 px-4 bg-slate-100 text-slate-900 text-sm font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition">Secondary</button>
+                <button class="h-10 px-4 bg-[#00A19B] text-white text-sm font-semibold rounded-md hover:opacity-90 transition shadow-sm">Primary</button>
+                <button class="h-10 px-4 bg-[#C4C4C4] text-[#000000] text-sm font-semibold rounded-md border border-[#C4C4C4] hover:opacity-80 transition">Secondary</button>
                 <button class="h-10 px-4 bg-red-600 text-white text-sm font-semibold rounded-md hover:bg-red-700 transition shadow-sm">Danger</button>
                 <button class="h-10 px-4 bg-red-50 text-red-600 text-sm font-semibold rounded-md border border-red-200 hover:bg-red-100 transition">Danger Outline</button>
-                <button class="h-10 px-4 bg-transparent text-blue-600 text-sm font-semibold rounded-md border border-blue-200 hover:bg-blue-50 transition">Ghost</button>
-                <button class="h-10 px-4 bg-slate-200 text-slate-400 text-sm font-semibold rounded-md cursor-not-allowed opacity-60" disabled>Disabled</button>
+                <button class="h-10 px-4 bg-transparent text-[#00A19B] text-sm font-semibold rounded-md border border-[#00A19B] hover:bg-[#00A19B]/10 transition">Ghost</button>
+                <button class="h-10 px-4 bg-[#C4C4C4] text-[#ffffff] text-sm font-semibold rounded-md cursor-not-allowed opacity-60" disabled>Disabled</button>
               </div>
             </div>
             <div>
               <p class="text-xs font-semibold text-slate-700 mb-3 uppercase tracking-wide">Sizes</p>
               <div class="flex flex-wrap items-end gap-2 sm:gap-3">
-                <button class="h-8 px-3 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700 transition">Small</button>
-                <button class="h-10 px-4 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition">Medium</button>
-                <button class="h-12 px-6 bg-blue-600 text-white text-base font-semibold rounded-lg hover:bg-blue-700 transition">Large</button>
+                <button class="h-8 px-3 bg-[#00A19B] text-white text-xs font-semibold rounded-md hover:opacity-90 transition">Small</button>
+                <button class="h-10 px-4 bg-[#00A19B] text-white text-sm font-semibold rounded-md hover:opacity-90 transition">Medium</button>
+                <button class="h-12 px-6 bg-[#00A19B] text-white text-base font-semibold rounded-lg hover:opacity-90 transition">Large</button>
               </div>
             </div>
             <div>
               <p class="text-xs font-semibold text-slate-700 mb-3 uppercase tracking-wide">With Icons & Loading</p>
               <div class="flex flex-wrap gap-2 sm:gap-3">
-                <button class="h-10 px-4 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition inline-flex items-center gap-2">
+                <button class="h-10 px-4 bg-[#00A19B] text-white text-sm font-semibold rounded-md hover:opacity-90 transition inline-flex items-center gap-2">
                   <span class="material-symbols-outlined text-[18px]">add</span> Tambah Produk
                 </button>
-                <button class="h-10 px-4 bg-emerald-600 text-white text-sm font-semibold rounded-md hover:bg-emerald-700 transition inline-flex items-center gap-2">
+                <button class="h-10 px-4 bg-[#000000] text-white text-sm font-semibold rounded-md hover:opacity-80 transition inline-flex items-center gap-2">
                   <span class="material-symbols-outlined text-[18px]">check</span> Simpan
                 </button>
-                <button class="h-10 px-4 bg-blue-600 text-white text-sm font-semibold rounded-md opacity-80 cursor-wait inline-flex items-center gap-2">
+                <button class="h-10 px-4 bg-[#00A19B] text-white text-sm font-semibold rounded-md opacity-80 cursor-wait inline-flex items-center gap-2">
                   <span class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span> Menyimpan...
                 </button>
               </div>
@@ -214,10 +214,10 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-lg shadow-sm">
               <div class="flex justify-between items-start mb-3">
-                <span class="p-2 bg-blue-100 rounded-lg">
-                  <span class="material-symbols-outlined text-blue-600 text-[20px]">payments</span>
+                <span class="p-2 bg-[#00A19B]/10 rounded-lg">
+                  <span class="material-symbols-outlined text-[#00A19B] text-[20px]">payments</span>
                 </span>
-                <span class="text-emerald-600 text-xs font-semibold flex items-center gap-1">
+                <span class="text-[#00A19B] text-xs font-semibold flex items-center gap-1">
                   <span class="material-symbols-outlined text-[14px]">trending_up</span>12%
                 </span>
               </div>
@@ -226,8 +226,8 @@
             </div>
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-4 sm:p-6 rounded-lg shadow-sm">
               <div class="flex justify-between items-start mb-3">
-                <span class="p-2 bg-indigo-100 dark:bg-indigo-900/50 rounded-lg">
-                  <span class="material-symbols-outlined text-indigo-600 text-[20px]">receipt_long</span>
+                <span class="p-2 bg-[#000000]/10 rounded-lg">
+                  <span class="material-symbols-outlined text-[#000000] dark:text-white text-[20px]">receipt_long</span>
                 </span>
               </div>
               <p class="text-xs text-slate-600 mb-1">Total Transaksi</p>
@@ -243,15 +243,15 @@
               <p class="text-xl sm:text-2xl font-bold font-mono text-slate-950">Rp 850.000</p>
               <p class="text-xs text-amber-600 mt-1.5 font-medium">3 pelanggan</p>
             </div>
-            <div class="bg-slate-900 p-4 sm:p-6 rounded-lg text-white">
+            <div class="bg-[#000000] p-4 sm:p-6 rounded-lg text-white">
               <div class="flex justify-between items-start mb-3">
                 <span class="p-2 bg-white/10 rounded-lg">
-                  <span class="material-symbols-outlined text-amber-400 text-[20px]">inventory_2</span>
+                  <span class="material-symbols-outlined text-[#00A19B] text-[20px]">inventory_2</span>
                 </span>
               </div>
-              <p class="text-xs text-slate-400 mb-1">Stok Habis</p>
+              <p class="text-xs text-[#C4C4C4] mb-1">Stok Habis</p>
               <p class="text-xl sm:text-2xl font-bold font-mono">5 Produk</p>
-              <p class="text-xs text-slate-400 mt-1.5">Perlu restok</p>
+              <p class="text-xs text-[#C4C4C4] mt-1.5">Perlu restok</p>
             </div>
           </div>
         </section>
@@ -265,11 +265,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
               <div>
                 <label class="block text-xs font-semibold text-slate-900 mb-1.5">Nama Produk</label>
-                <input type="text" placeholder="Masukkan nama produk" class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition" />
+                <input type="text" placeholder="Masukkan nama produk" class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:border-[#00A19B] focus:ring-2 focus:ring-[#00A19B]/20 transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-900 mb-1.5">Kategori</label>
-                <select class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition">
+                <select class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:border-[#00A19B] focus:ring-2 focus:ring-[#00A19B]/20 transition">
                   <option>Pilih kategori...</option>
                   <option>Makanan</option>
                   <option>Minuman</option>
@@ -279,12 +279,12 @@
                 <label class="block text-xs font-semibold text-slate-900 mb-1.5">Pencarian</label>
                 <div class="relative">
                   <span class="material-symbols-outlined absolute left-3 top-2.5 text-slate-400 text-[18px]">search</span>
-                  <input type="text" placeholder="Cari produk..." class="w-full h-10 pl-10 pr-3 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition" />
+                  <input type="text" placeholder="Cari produk..." class="w-full h-10 pl-10 pr-3 text-sm border border-slate-200 rounded-md bg-white focus:outline-none focus:border-[#00A19B] focus:ring-2 focus:ring-[#00A19B]/20 transition" />
                 </div>
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-900 mb-1.5">Harga Jual</label>
-                <input type="text" value="Rp 15.000" class="w-full h-10 px-3 text-sm font-mono border border-slate-200 rounded-md bg-white focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 transition" />
+                <input type="text" value="Rp 15.000" class="w-full h-10 px-3 text-sm font-mono border border-slate-200 rounded-md bg-white focus:outline-none focus:border-[#00A19B] focus:ring-2 focus:ring-[#00A19B]/20 transition" />
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-900 mb-1.5">Email (Error)</label>
@@ -329,7 +329,7 @@
                       <span :class="`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${row.statusBadge}`">{{ row.status }}</span>
                     </td>
                     <td class="px-4 py-2.5 text-center">
-                      <button class="text-blue-600 hover:text-blue-700 text-xs font-semibold">Detail</button>
+                      <button class="text-[#00A19B] hover:opacity-80 text-xs font-semibold">Detail</button>
                     </td>
                   </tr>
                 </tbody>
@@ -392,14 +392,14 @@
               <span class="text-4xl sm:text-5xl mb-3 opacity-50">📭</span>
               <p class="text-base font-semibold text-slate-900 mb-1">Belum Ada Transaksi</p>
               <p class="text-sm text-slate-600 max-w-[260px] mb-4">Mulai dengan membuat transaksi baru atau import data</p>
-              <button class="h-10 px-4 bg-blue-600 text-white text-sm font-semibold rounded-md hover:bg-blue-700 transition inline-flex items-center gap-2">
+              <button class="h-10 px-4 bg-[#00A19B] text-white text-sm font-semibold rounded-md hover:opacity-90 transition inline-flex items-center gap-2">
                 <span class="material-symbols-outlined text-[18px]">add</span> Buat Transaksi
               </button>
             </div>
             <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg h-64 flex flex-col items-center justify-center">
               <div class="relative w-12 h-12">
                 <div class="absolute inset-0 border-4 border-slate-100 dark:border-slate-800 rounded-full"></div>
-                <div class="absolute inset-0 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <div class="absolute inset-0 border-4 border-[#00A19B] border-t-transparent rounded-full animate-spin"></div>
               </div>
               <p class="mt-4 text-sm text-slate-600 animate-pulse">Memuat data...</p>
             </div>
@@ -412,25 +412,25 @@
             10. Toast / Notifications
           </h2>
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
-            <div class="flex items-center gap-3 p-4 bg-slate-900 text-white rounded-lg shadow-lg border-l-4 border-emerald-500">
-              <span class="material-symbols-outlined text-emerald-500">check_circle</span>
+            <div class="flex items-center gap-3 p-4 bg-[#000000] text-white rounded-lg shadow-lg border-l-4 border-[#00A19B]">
+              <span class="material-symbols-outlined text-[#00A19B]">check_circle</span>
               <div class="flex-1">
                 <p class="text-sm font-semibold">Transaksi Berhasil!</p>
-                <p class="text-xs text-slate-400">Struk sudah dikirim ke WhatsApp pembeli.</p>
+                <p class="text-xs text-[#C4C4C4]">Struk sudah dikirim ke WhatsApp pembeli.</p>
               </div>
             </div>
-            <div class="flex items-center gap-3 p-4 bg-slate-900 text-white rounded-lg shadow-lg border-l-4 border-red-500">
+            <div class="flex items-center gap-3 p-4 bg-[#000000] text-white rounded-lg shadow-lg border-l-4 border-red-500">
               <span class="material-symbols-outlined text-red-500">error</span>
               <div class="flex-1">
                 <p class="text-sm font-semibold">Saldo Tidak Cukup</p>
-                <p class="text-xs text-slate-400">Cek saldo BRI Anda sebelum transaksi.</p>
+                <p class="text-xs text-[#C4C4C4]">Cek saldo BRI Anda sebelum transaksi.</p>
               </div>
             </div>
-            <div class="flex items-center gap-3 p-4 bg-slate-900 text-white rounded-lg shadow-lg border-l-4 border-amber-500">
+            <div class="flex items-center gap-3 p-4 bg-[#000000] text-white rounded-lg shadow-lg border-l-4 border-amber-500">
               <span class="material-symbols-outlined text-amber-500">warning</span>
               <div class="flex-1">
                 <p class="text-sm font-semibold">Peringatan Stok</p>
-                <p class="text-xs text-slate-400">Stok Beras 5kg tersisa 3 buah.</p>
+                <p class="text-xs text-[#C4C4C4]">Stok Beras 5kg tersisa 3 buah.</p>
               </div>
             </div>
           </div>
@@ -440,9 +440,9 @@
       <!-- Footer -->
       <footer class="mt-16 border-t border-slate-200 dark:border-slate-800 pt-8 pb-6 text-center">
         <div class="flex items-center justify-center gap-2 mb-3">
-          <div class="h-2 w-10 bg-blue-600 rounded-full"></div>
-          <div class="h-2 w-2 bg-blue-200 rounded-full"></div>
-          <div class="h-2 w-2 bg-blue-200 rounded-full"></div>
+          <div class="h-2 w-10 bg-[#00A19B] rounded-full"></div>
+          <div class="h-2 w-2 bg-[#C4C4C4] rounded-full"></div>
+          <div class="h-2 w-2 bg-[#C4C4C4] rounded-full"></div>
         </div>
         <p class="text-sm text-slate-600">Posify • Design System v1.0</p>
         <p class="text-xs text-slate-500 mt-1">© 2026 — Vue 3 + Vite + Tailwind</p>
@@ -481,23 +481,24 @@ const navItems = [
 ];
 
 const brandColors = [
-  { name: 'Primary', hex: '#2563EB', bg: 'bg-blue-600' },
-  { name: 'Primary Dark', hex: '#1E40AF', bg: 'bg-blue-800' },
-  { name: 'Primary Light', hex: '#DBEAFE', bg: 'bg-blue-100', border: 'border border-slate-200' },
+  { name: 'Primary', hex: '#00A19B', bg: 'bg-[#00A19B]' },
+  { name: 'Dark', hex: '#000000', bg: 'bg-[#000000]' },
+  { name: 'Light', hex: '#FFFFFF', bg: 'bg-[#FFFFFF]', border: 'border border-slate-200' },
+  { name: 'Neutral', hex: '#C4C4C4', bg: 'bg-[#C4C4C4]' },
 ];
 
 const semanticColors = [
-  { name: 'Success', hex: '#059669', bg: 'bg-emerald-600' },
+  { name: 'Success', hex: '#00A19B', bg: 'bg-[#00A19B]' },
   { name: 'Warning', hex: '#D97706', bg: 'bg-amber-600' },
   { name: 'Danger', hex: '#DC2626', bg: 'bg-red-600' },
-  { name: 'Info', hex: '#6366F1', bg: 'bg-indigo-500' },
+  { name: 'Info', hex: '#C4C4C4', bg: 'bg-[#C4C4C4]' },
 ];
 
 const neutralColors = [
-  { name: 'Background', hex: '#F8FAFC', bg: 'bg-slate-50', border: 'border border-slate-200' },
-  { name: 'Border', hex: '#E2E8F0', bg: 'bg-slate-200' },
-  { name: 'Text Primary', hex: '#0F172A', bg: 'bg-slate-950' },
-  { name: 'Text Secondary', hex: '#64748B', bg: 'bg-slate-500' },
+  { name: 'Background', hex: '#FFFFFF', bg: 'bg-[#FFFFFF]', border: 'border border-slate-200' },
+  { name: 'Border', hex: '#C4C4C4', bg: 'bg-[#C4C4C4]' },
+  { name: 'Text Primary', hex: '#000000', bg: 'bg-[#000000]' },
+  { name: 'Text Secondary', hex: '#C4C4C4', bg: 'bg-[#C4C4C4]' },
 ];
 
 const tableData = [
