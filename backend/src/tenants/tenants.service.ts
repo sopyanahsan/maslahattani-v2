@@ -171,8 +171,6 @@ export class TenantsService {
     const rand = Math.random().toString(36).substring(2, 6);
     return `${slug}-${rand}`;
   }
-}
-
 
   // ============================================
   // OWNER DASHBOARD METHODS
@@ -327,3 +325,5 @@ export class TenantsService {
       pendingPayments,
     };
   }
+
+}
