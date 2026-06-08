@@ -287,6 +287,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'billing',
+        name: 'admin-billing',
+        component: () => import('@/admin/views/BillingView.vue'),
+        meta: {
+          title: 'Billing & Langganan',
+          description: 'Pilih paket, bayar, dan kelola langganan Posify.',
+        },
+      },
+      {
         path: 'super-admin-settings',
         name: 'super-admin-settings',
         component: () => import('@/admin/views/SuperAdminSettingsView.vue'),
