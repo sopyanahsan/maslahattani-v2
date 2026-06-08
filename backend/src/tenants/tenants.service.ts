@@ -172,3 +172,158 @@ export class TenantsService {
     return `${slug}-${rand}`;
   }
 }
+
+
+  // ============================================
+  // OWNER DASHBOARD METHODS
+  // ============================================
+
+  async listTenants(page = 1, limit = 20, search?: string, status?: string) {
+    const skip = (page - 1) * limit;
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { ownerName: { contains: search, mode: 'insensitive' } },
+        { ownerEmail: { contains: search, mode: 'insensitive' } },
+        { ownerPhone: { contains: search } },
+      ];
+    }
+
+    if (status) {
+      where.subscription = { status };
+    }
+
+    const [data, total] = await Promise.all([
+      this.prisma.tenant.findMany({
+        where,
+        include: {
+          subscription: true,
+          _count: { select: { shops: true, users: true } },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.tenant.count({ where }),
+    ]);
+
+    return {
+      data: data.map((t) => ({
+        id: t.id,
+        name: t.name,
+        slug: t.slug,
+        ownerName: t.ownerName,
+        ownerPhone: t.ownerPhone,
+        ownerEmail: t.ownerEmail,
+        isActive: t.isActive,
+        shopCount: t._count.shops,
+        userCount: t._count.users,
+        subscription: t.subscription ? {
+          plan: t.subscription.plan,
+          cycle: t.subscription.cycle,
+          status: t.subscription.status,
+          endDate: t.subscription.endDate?.toISOString() || null,
+        } : null,
+        createdAt: t.createdAt.toISOString(),
+      })),
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async getTenantDetail(id: string) {
+    const tenant = await this.prisma.tenant.findUnique({
+      where: { id },
+      include: {
+        subscription: true,
+        shops: { select: { id: true, name: true, address: true } },
+        users: { select: { id: true, email: true, username: true, role: true, status: true } },
+        payments: { orderBy: { createdAt: 'desc' }, take: 10 },
+      },
+    });
+
+    if (!tenant) throw new BadRequestException('Tenant tidak ditemukan.');
+    return tenant;
+  }
+
+  async activateTenant(tenantId: string, plan: string, cycle: string) {
+    const result = await this.subscriptionService.activateSubscription(tenantId, plan, cycle);
+    return { success: true, subscription: result };
+  }
+
+  async suspendTenant(tenantId: string) {
+    await this.subscriptionService.suspendTenant(tenantId);
+    return { success: true, message: 'Tenant suspended.' };
+  }
+
+  async listPendingPayments(page = 1) {
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const [data, total] = await Promise.all([
+      this.prisma.saasPayment.findMany({
+        where: { status: 'PENDING' },
+        include: { tenant: { select: { id: true, name: true, ownerName: true, ownerPhone: true } } },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.saasPayment.count({ where: { status: 'PENDING' } }),
+    ]);
+
+    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+  }
+
+  async verifyPayment(paymentId: string, notes?: string) {
+    const payment = await this.prisma.saasPayment.findUnique({ where: { id: paymentId } });
+    if (!payment) throw new BadRequestException('Payment tidak ditemukan.');
+    if (payment.status !== 'PENDING') throw new BadRequestException('Payment sudah diproses.');
+
+    // Update payment status
+    await this.prisma.saasPayment.update({
+      where: { id: paymentId },
+      data: { status: 'VERIFIED', verifiedAt: new Date(), verifiedBy: 'owner', notes },
+    });
+
+    // Activate subscription
+    await this.subscriptionService.activateSubscription(
+      payment.tenantId,
+      payment.plan,
+      payment.cycle,
+    );
+
+    return { success: true, message: 'Payment verified & subscription activated.' };
+  }
+
+  async rejectPayment(paymentId: string, reason: string) {
+    const payment = await this.prisma.saasPayment.findUnique({ where: { id: paymentId } });
+    if (!payment) throw new BadRequestException('Payment tidak ditemukan.');
+
+    await this.prisma.saasPayment.update({
+      where: { id: paymentId },
+      data: { status: 'REJECTED', rejectedAt: new Date(), rejectedReason: reason },
+    });
+
+    return { success: true, message: 'Payment rejected.' };
+  }
+
+  async getPlatformStats() {
+    const [totalTenants, activeSubs, trialSubs, expiredSubs, totalRevenue, pendingPayments] = await Promise.all([
+      this.prisma.tenant.count(),
+      this.prisma.subscription.count({ where: { status: { in: ['ACTIVE', 'LIFETIME'] } } }),
+      this.prisma.subscription.count({ where: { status: 'TRIAL' } }),
+      this.prisma.subscription.count({ where: { status: { in: ['EXPIRED', 'SUSPENDED'] } } }),
+      this.prisma.saasPayment.aggregate({ where: { status: 'VERIFIED' }, _sum: { amount: true } }),
+      this.prisma.saasPayment.count({ where: { status: 'PENDING' } }),
+    ]);
+
+    return {
+      totalTenants,
+      activeSubs,
+      trialSubs,
+      expiredSubs,
+      totalRevenue: totalRevenue._sum.amount || 0,
+      pendingPayments,
+    };
+  }
