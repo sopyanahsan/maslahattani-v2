@@ -39,7 +39,7 @@
         <input
           v-model="filterSearch"
           type="text"
-          placeholder="Cari no. transaksi..."
+          placeholder="Cari no. transaksi / nama pembeli..."
           class="h-9 pl-9 pr-3 w-52 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
                  focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
           @input="debouncedFetch"
@@ -130,6 +130,7 @@
           <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">No. Transaksi</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Pembeli</th>
               <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Kasir</th>
               <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Waktu</th>
               <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Item</th>
@@ -148,6 +149,10 @@
             >
               <td class="px-4 py-3">
                 <code class="text-xs font-mono text-slate-900 dark:text-slate-100">{{ trx.transactionNumber }}</code>
+              </td>
+              <td class="px-4 py-3">
+                <span v-if="trx.customerName" class="text-xs font-medium text-slate-800 dark:text-slate-200">{{ trx.customerName }}</span>
+                <span v-else class="text-[10px] text-slate-400 italic">Umum</span>
               </td>
               <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
                 {{ trx.user?.username ?? trx.user?.email ?? '—' }}
@@ -254,6 +259,13 @@
             <div>
               <p class="text-slate-500 dark:text-slate-400">Kasir</p>
               <p class="font-semibold text-slate-900 dark:text-slate-100">{{ detailTrx.user?.username ?? detailTrx.user?.email ?? '—' }}</p>
+            </div>
+            <div>
+              <p class="text-slate-500 dark:text-slate-400">Pembeli</p>
+              <p class="font-semibold text-slate-900 dark:text-slate-100">
+                {{ detailTrx.customerName || 'Umum' }}
+                <span v-if="detailTrx.customerPhone" class="text-slate-500 font-normal"> · {{ detailTrx.customerPhone }}</span>
+              </p>
             </div>
             <div>
               <p class="text-slate-500 dark:text-slate-400">Waktu</p>

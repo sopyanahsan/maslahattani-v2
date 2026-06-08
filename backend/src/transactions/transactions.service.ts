@@ -441,9 +441,12 @@ export class TransactionsService {
     if (query.status) where.status = query.status;
     if (query.userId) where.userId = query.userId;
 
-    // Search by transactionNumber (partial match, case-insensitive)
+    // Search by transactionNumber or customerName (partial match, case-insensitive)
     if (query.search) {
-      where.transactionNumber = { contains: query.search, mode: 'insensitive' };
+      where.OR = [
+        { transactionNumber: { contains: query.search, mode: 'insensitive' } },
+        { customerName: { contains: query.search, mode: 'insensitive' } },
+      ];
     }
 
     // Filter by payment method (requires join via payments relation)
