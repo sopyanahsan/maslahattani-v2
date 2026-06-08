@@ -34,6 +34,9 @@ export interface CreateTransactionPayload {
   paymentMethod: PaymentMethod;
   amountPaid?: number;
   paymentReference?: string;
+  customerName?: string;
+  customerPhone?: string;
+  createDebtForRemainder?: boolean;
   idempotencyKey?: string;
   clientCreatedAt?: string;
 }

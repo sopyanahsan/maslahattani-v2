@@ -54,6 +54,31 @@ export class CustomersService {
   }
 
   // ============================================
+  // AUTOCOMPLETE (for POS / BRILink forms)
+  // ============================================
+
+  async autocomplete(shopId: string, q: string) {
+    const trimmed = (q || '').trim();
+    if (!trimmed || trimmed.length < 2) return [];
+
+    const results = await this.prisma.customer.findMany({
+      where: {
+        shopId,
+        isActive: true,
+        OR: [
+          { name: { contains: trimmed, mode: 'insensitive' } },
+          { phone: { contains: trimmed, mode: 'insensitive' } },
+        ],
+      },
+      select: { id: true, name: true, phone: true },
+      orderBy: { name: 'asc' },
+      take: 10,
+    });
+
+    return results;
+  }
+
+  // ============================================
   // CHECK DUPLICATE NAME (for frontend real-time check)
   // ============================================
 

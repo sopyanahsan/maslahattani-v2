@@ -44,6 +44,40 @@
         <div class="flex justify-between text-sm font-bold text-blue-600 pt-1 border-t border-slate-200"><span>Total</span><span class="font-mono">{{ formatRupiah(grandTotal) }}</span></div>
       </div>
 
+      <!-- Customer Info (autocomplete) -->
+      <div>
+        <p class="text-[10px] font-semibold text-slate-600 mb-1">Pembeli <span class="text-slate-400 font-normal">(opsional)</span></p>
+        <div class="relative">
+          <input
+            v-model="customerName"
+            type="text"
+            placeholder="Ketik nama customer..."
+            class="w-full h-8 px-3 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none"
+            @input="searchCustomer"
+            @focus="showSuggestions = true"
+          />
+          <!-- Autocomplete dropdown -->
+          <div v-if="showSuggestions && customerSuggestions.length > 0" class="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-32 overflow-y-auto">
+            <button
+              v-for="s in customerSuggestions"
+              :key="s.id"
+              type="button"
+              class="w-full px-3 py-2 text-left hover:bg-blue-50 transition-colors border-b border-slate-50 last:border-0"
+              @click="selectCustomer(s)"
+            >
+              <p class="text-xs font-medium text-slate-800">{{ s.name }}</p>
+              <p v-if="s.phone" class="text-[10px] text-slate-400">{{ s.phone }}</p>
+            </button>
+          </div>
+        </div>
+        <input
+          v-model="customerPhone"
+          type="text"
+          placeholder="No. HP (opsional)"
+          class="w-full h-8 px-3 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none mt-1.5"
+        />
+      </div>
+
       <!-- Payment Method -->
       <div>
         <p class="text-[10px] font-semibold text-slate-600 mb-1">Metode Bayar</p>
@@ -100,6 +134,9 @@ import { useRouter } from 'vue-router';
 import type { CartItem } from '@/shared/services/pos.service';
 import posService from '@/shared/services/pos.service';
 import { addPendingTransaction } from '@/shared/services/offline-store';
+import api from '@/shared/services/api';
+import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 
 const props = defineProps<{ cart: CartItem[]; totalPrice: number }>();
 const emit = defineEmits<{
@@ -109,11 +146,47 @@ const emit = defineEmits<{
 }>();
 
 const router = useRouter();
+const authStore = useAuthStore();
+const shopStore = useShopStore();
+
 const paymentMethod = ref<'CASH' | 'QRIS'>('CASH');
 const selectedKas = ref('default');
 const kasOptions = ref([{ id: 'default', label: 'Kas Retail / Toko' }]);
 const amountPaid = ref(0);
 const checking = ref(false);
+
+// Customer autocomplete
+const customerName = ref('');
+const customerPhone = ref('');
+const customerSuggestions = ref<{ id: string; name: string; phone: string | null }[]>([]);
+const showSuggestions = ref(false);
+let customerSearchTimer: any = null;
+
+async function searchCustomer() {
+  showSuggestions.value = true;
+  const q = customerName.value.trim();
+  if (q.length < 2) {
+    customerSuggestions.value = [];
+    return;
+  }
+  clearTimeout(customerSearchTimer);
+  customerSearchTimer = setTimeout(async () => {
+    try {
+      const shopId = authStore.user?.shopId ?? shopStore.currentShopId ?? '';
+      const { data } = await api.get('/customers/autocomplete', { params: { shopId, q } });
+      customerSuggestions.value = data;
+    } catch {
+      customerSuggestions.value = [];
+    }
+  }, 300);
+}
+
+function selectCustomer(c: { id: string; name: string; phone: string | null }) {
+  customerName.value = c.name;
+  customerPhone.value = c.phone || '';
+  showSuggestions.value = false;
+  customerSuggestions.value = [];
+}
 
 const discount = computed(() => props.cart.reduce((sum, i) => sum + (i.discount || 0), 0));
 const grandTotal = computed(() => Math.max(0, props.totalPrice - discount.value));
@@ -128,11 +201,14 @@ function formatRupiah(n: number): string { return 'Rp ' + n.toLocaleString('id-I
 
 async function handleCheckout() {
   checking.value = true;
+  showSuggestions.value = false;
   const idempotencyKey = crypto.randomUUID();
   const payload = {
     items: props.cart.map(i => ({ productId: i.productId, quantity: i.quantity, discount: i.discount > 0 ? i.discount : undefined })),
     paymentMethod: paymentMethod.value,
     amountPaid: paymentMethod.value === 'CASH' ? amountPaid.value || grandTotal.value : undefined,
+    customerName: customerName.value.trim() || undefined,
+    customerPhone: customerPhone.value.trim() || undefined,
     idempotencyKey,
     clientCreatedAt: new Date().toISOString(),
   };

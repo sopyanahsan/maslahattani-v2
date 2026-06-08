@@ -37,6 +37,19 @@ export class CustomersController {
     return this.customersService.checkName(shopId, name, excludeId);
   }
 
+  /**
+   * Autocomplete search for POS/BRILink transaction forms.
+   * GET /api/customers/autocomplete?shopId=xxx&q=ahmad
+   * Returns max 10 results, name + phone only.
+   */
+  @Get('autocomplete')
+  async autocomplete(
+    @Query('shopId') shopId: string,
+    @Query('q') q: string,
+  ) {
+    return this.customersService.autocomplete(shopId, q);
+  }
+
   @Post()
   async createCustomer(@Body() dto: CreateCustomerDto) {
     return this.customersService.createCustomer(dto);

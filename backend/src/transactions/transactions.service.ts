@@ -173,6 +173,39 @@ export class TransactionsService {
     const clientCreatedAt = dto.clientCreatedAt ? new Date(dto.clientCreatedAt) : null;
 
     // ============================================
+    // AUTO-CREATE / FIND CUSTOMER
+    // ============================================
+    let customerId: string | null = null;
+    const trimmedName = dto.customerName?.trim() || null;
+    const trimmedPhone = dto.customerPhone?.trim() || null;
+
+    if (trimmedName) {
+      // Find existing customer by name (unique per shop)
+      let customer = await this.prisma.customer.findUnique({
+        where: { shopId_name: { shopId, name: trimmedName } },
+      });
+
+      if (!customer) {
+        // Auto-create new customer
+        customer = await this.prisma.customer.create({
+          data: {
+            shopId,
+            name: trimmedName,
+            phone: trimmedPhone,
+          },
+        });
+      } else if (trimmedPhone && !customer.phone) {
+        // Update phone if customer exists but phone was empty
+        customer = await this.prisma.customer.update({
+          where: { id: customer.id },
+          data: { phone: trimmedPhone },
+        });
+      }
+
+      customerId = customer.id;
+    }
+
+    // ============================================
     // CREATE (transaksi + items + payment + stock update) atomik
     // ============================================
     const transaction = await this.prisma.$transaction(async (tx) => {
@@ -187,6 +220,9 @@ export class TransactionsService {
           status: TransactionStatus.COMPLETED,
           idempotencyKey: dto.idempotencyKey,
           clientCreatedAt,
+          customerId,
+          customerName: trimmedName,
+          customerPhone: trimmedPhone,
           items: {
             create: transactionItems,
           },

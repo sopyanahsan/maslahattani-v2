@@ -284,7 +284,35 @@ export class BrilinkService {
       // In production this could be a soft warning returned to client
     }
 
-    // 5. Execute all in a single transaction
+    // 5. Resolve/create Customer
+    let customerId: string | null = null;
+    const trimmedCustName = dto.customerName?.trim() || '';
+    const trimmedCustPhone = dto.customerPhone?.trim() || null;
+
+    if (trimmedCustName) {
+      let customer = await this.prisma.customer.findUnique({
+        where: { shopId_name: { shopId, name: trimmedCustName } },
+      });
+
+      if (!customer) {
+        customer = await this.prisma.customer.create({
+          data: {
+            shopId,
+            name: trimmedCustName,
+            phone: trimmedCustPhone,
+          },
+        });
+      } else if (trimmedCustPhone && !customer.phone) {
+        customer = await this.prisma.customer.update({
+          where: { id: customer.id },
+          data: { phone: trimmedCustPhone },
+        });
+      }
+
+      customerId = customer.id;
+    }
+
+    // 6. Execute all in a single transaction
     const result = await this.prisma.$transaction(async (tx) => {
       // 5a. Update account balance
       const accountBalanceBefore = account.balance;
@@ -345,6 +373,7 @@ export class BrilinkService {
           accountId: resolvedAccountId,
           refNumber,
           category: dto.category,
+          customerId,
           customerName: dto.customerName,
           customerPhone: dto.customerPhone,
           destination: dto.destination,
