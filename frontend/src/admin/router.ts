@@ -13,6 +13,12 @@ import { useAuthStore } from '@/shared/stores/auth.store';
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
+    name: 'landing',
+    component: () => import('@/landing/LandingPage.vue'),
+    meta: { title: 'Posify — Sistem POS Modern untuk UMKM' },
+  },
+  {
+    path: '/home',
     name: 'home',
     component: () => import('@/admin/views/HomeView.vue'),
     meta: { title: 'Posify' },
