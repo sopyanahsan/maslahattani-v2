@@ -1,20 +1,23 @@
-# PRD: SaaS Multi-Tenant + Subscription System
+# PRD: SaaS Multi-Tenant + Subscription System — POSIFY
 
 ## Overview
-Transformasi Ngalir POS dari single-deploy menjadi platform SaaS multi-tenant berlangganan.
-Semua tenant di-host di 1 VPS (shared infrastructure), data ter-isolasi per tenant.
+Transformasi **Posify** (sebelumnya Ngalir) dari single-deploy menjadi platform SaaS multi-tenant berlangganan.
+Semua tenant di-host di 1 VPS RumahZone (shared infrastructure), data ter-isolasi per tenant.
+
+**Brand:** Posify — Sistem POS & BRILink Modern untuk UMKM Indonesia
 
 ---
 
-## 1. Arsitektur Hosting (1 VPS)
+## 1. Arsitektur Hosting (1 VPS RumahZone)
 
 ```
-VPS (Ubuntu/Debian)
+VPS RumahZone
 ├── Nginx (reverse proxy + SSL)
-│   ├── app.ngalir.id → Frontend admin
-│   ├── kasir.ngalir.id → Webapp kasir
-│   ├── api.ngalir.id → Backend NestJS
-│   └── owner.ngalir.id → Dashboard SaaS Owner (kamu)
+│   ├── posify.id → Landing page
+│   ├── app.posify.id → Frontend admin panel
+│   ├── kasir.posify.id → Webapp kasir (POS)
+│   ├── api.posify.id → Backend NestJS
+│   └── owner.posify.id → Dashboard SaaS Owner
 ├── PostgreSQL (1 database, multi-tenant via tenant_id)
 ├── Redis (session, cache, rate-limit)
 ├── Node.js (NestJS backend, single instance)
@@ -22,100 +25,186 @@ VPS (Ubuntu/Debian)
 └── Let's Encrypt (SSL gratis)
 ```
 
-### Kenapa 1 DB multi-tenant (bukan DB per tenant)?
-- Hemat RAM & storage di VPS
-- Lebih gampang maintain (1x migration = semua tenant update)
-- Query cross-tenant untuk analytics owner dashboard
-- Scale nanti: bisa pisah ke DB terpisah kalau udah ribuan tenant
-
 ---
 
 ## 2. Paket & Harga
 
-| Plan | Harga/bln | Harga/thn | Lifetime | Limit |
-|------|-----------|-----------|----------|-------|
-| **Trial** | Gratis | - | - | 14 hari, 1 cabang, 2 user, 50 produk |
-| **Basic** | Rp 99.000 | Rp 999.000 | Rp 1.499.000 | 1 cabang, 3 kasir, 500 produk, Retail only |
-| **Pro** | Rp 199.000 | Rp 1.999.000 | Rp 2.999.000 | 3 cabang, 10 kasir, unlimited produk, + BRILink |
-| **Enterprise** | Rp 499.000 | Rp 4.999.000 | Rp 7.499.000 | Unlimited, semua fitur, priority support |
+| Plan | Harga/bln | Harga/thn | Lifetime |
+|------|-----------|-----------|----------|
+| **Trial** | Gratis | - | - |
+| **Basic** | Rp 49.000 | Rp 499.000 | Rp 400.000 |
+| **Pro** | Rp 99.000 | Rp 999.000 | Rp 700.000 |
+| **Enterprise** | Rp 199.000 | Rp 1.999.000 | Rp 1.200.000 |
 
-### Lifetime Plan:
-- Bayar 1x = langganan selamanya (endDate = null, tidak pernah expire)
-- Harga ~15x bulanan (break-even 15 bulan)
+### Limit per Plan:
+
+| Fitur | Trial | Basic | Pro | Enterprise |
+|-------|-------|-------|-----|------------|
+| Durasi | 14 hari | - | - | - |
+| Cabang | 1 | 1 | 3 | Unlimited |
+| Kasir | 2 | 3 | 10 | Unlimited |
+| Produk | 50 | 500 | Unlimited | Unlimited |
+| BRILink | ❌ | ❌ | ✅ | ✅ |
+| Export PDF/Excel | ❌ | ❌ | ✅ | ✅ |
+| Stock Opname | ❌ | ✅ | ✅ | ✅ |
+| Supplier & PO | ❌ | ❌ | ✅ | ✅ |
+| Transfer Stok | ❌ | ❌ | ✅ | ✅ |
+| Priority Support | ❌ | ❌ | ❌ | ✅ |
+
+### Lifetime:
+- Bayar 1x = selamanya (endDate = null)
 - Tetap dapat update fitur & maintenance
-- Cocok untuk toko yang sudah yakin mau pakai jangka panjang
+- Harga jauh lebih murah dari tahunan (incentive early adopter)
 
 ---
 
-## 3. Enforcement Logic
+## 3. Metode Pembayaran (Phase 1: Manual)
 
-### Di setiap API request:
-```
-1. Extract tenantId dari user JWT
-2. Cek subscription status:
-   - ACTIVE / TRIAL → lanjut
-   - EXPIRED (masih grace) → lanjut + warning
-   - SUSPENDED / CANCELLED → block 403
-3. Cek plan limits:
-   - Tambah cabang? Cek maxBranches
-   - Tambah kasir? Cek maxUsers
-   - Tambah produk? Cek maxProducts
-4. Cek fitur per plan:
-   - BRILink → hanya PRO & ENTERPRISE
-   - Export PDF/Excel → hanya PRO+
-   - Multi-cabang → hanya PRO+
-```
+| Metode | Detail |
+|--------|--------|
+| **SeaBank** | Transfer ke rekening Posify |
+| **BCA** | Transfer ke rekening Posify |
+| **E-Wallet** | DANA / OVO / GoPay via QRIS statis |
 
-### Grace Period:
+### Flow:
 ```
-endDate lewat → EXPIRED (7 hari grace)
-graceEndsAt lewat → SUSPENDED (akses diblokir, data aman)
+Billing → Pilih Plan → Dapat instruksi transfer + kode unik
+  → Bayar → Kirim bukti WA → Owner verify → Aktif
 ```
 
 ---
 
-## 4. Dashboard SaaS Owner (owner.ngalir.id)
+## 4. Landing Page (posify.id)
 
-### Menu:
+1. **Hero** — "Kelola Toko Lebih Cerdas dengan Posify" + CTA register
+2. **Fitur** — 6 cards (POS, BRILink, Multi-Cabang, Laporan, Opname, Multi-User)
+3. **Screenshot** — Preview UI
+4. **Pricing** — Toggle bulanan/tahunan/lifetime
+5. **FAQ**
+6. **CTA Footer** — Register / WA
+
+---
+
+## 5. Owner Dashboard (owner.posify.id)
+
 1. **Dashboard** — Total tenant, MRR, revenue chart
-2. **Tenants** — List/filter semua toko, detail, edit plan
-3. **Subscriptions** — Due dates, siapa mau expire
-4. **Payments** — Verifikasi manual, riwayat
-5. **Plans** — CRUD paket (ubah harga/limit)
-6. **Notifications** — Kirim reminder bayar
-7. **System** — VPS health, DB size, maintenance mode
+2. **Tenants** — CRUD semua toko
+3. **Subscriptions** — Status, due dates
+4. **Payments** — Verify manual, riwayat
+5. **Plans** — CRUD paket harga
+6. **WA Reminder** — Queue reminder, mark sent
+7. **System** — VPS health, maintenance mode
 
 ---
 
-## 5. Flow Registrasi
+## 6. Database Schema
 
-```
-Landing page → "Coba Gratis 14 Hari"
-  → Isi: Nama Toko, Nama Pemilik, No WA, Password
-  → Sistem buat: Tenant + Subscription(TRIAL) + User + Shop
-  → Redirect ke admin panel
-  → H-3 reminder → H+0 expire → H+7 suspend
+```prisma
+model Tenant {
+  id            String    @id @default(cuid())
+  name          String
+  slug          String    @unique
+  ownerName     String
+  ownerPhone    String
+  ownerEmail    String    @unique
+  subscription  Subscription?
+  shops         Shop[]
+  users         User[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Subscription {
+  id            String    @id @default(cuid())
+  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  tenantId      String    @unique
+  plan          PlanType  // TRIAL, BASIC, PRO, ENTERPRISE
+  cycle         CycleType // MONTHLY, YEARLY, LIFETIME
+  status        SubStatus // TRIAL, ACTIVE, EXPIRED, SUSPENDED, LIFETIME
+  startDate     DateTime
+  endDate       DateTime? // null = lifetime
+  graceEndsAt   DateTime?
+  maxBranches   Int       @default(1)
+  maxUsers      Int       @default(2)
+  maxProducts   Int       @default(50)
+  brilinkEnabled    Boolean @default(false)
+  exportEnabled     Boolean @default(false)
+  opnameEnabled     Boolean @default(false)
+  supplierEnabled   Boolean @default(false)
+  transferEnabled   Boolean @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Payment {
+  id            String    @id @default(cuid())
+  tenantId      String
+  amount        Int
+  method        String    // SEABANK, BCA, QRIS
+  cycle         CycleType
+  plan          PlanType
+  status        PaymentStatus // PENDING, VERIFIED, REJECTED
+  proofUrl      String?
+  verifiedAt    DateTime?
+  verifiedBy    String?
+  notes         String?
+  createdAt     DateTime  @default(now())
+}
+
+enum PlanType { TRIAL, BASIC, PRO, ENTERPRISE }
+enum CycleType { MONTHLY, YEARLY, LIFETIME }
+enum SubStatus { TRIAL, ACTIVE, EXPIRED, SUSPENDED, CANCELLED, LIFETIME }
+enum PaymentStatus { PENDING, VERIFIED, REJECTED }
 ```
 
 ---
 
-## 6. Flow Pembayaran (Phase 1: Manual)
+## 7. Implementation Phases
 
-```
-Tenant → Halaman Billing → Pilih Plan + Cycle
-  → Dapat instruksi transfer (BRI/BCA + kode unik)
-  → Transfer → Kirim bukti WA/upload
-  → Owner verify di dashboard → Langganan aktif
-```
+### Phase 1 (MVP Launch) — 2 minggu
+- [ ] Rebrand Ngalir → Posify (title, logo placeholder, colors)
+- [ ] Database: Tenant + Subscription + Payment
+- [ ] Backend: Subscription guard middleware
+- [ ] Backend: Plan limit enforcement
+- [ ] Frontend: Billing page + expired page
+- [ ] Landing page (posify.id)
+- [ ] Owner Dashboard (owner.posify.id) — CRUD tenant + verify payment
+- [ ] Registration flow (create tenant + trial)
+- [ ] Deploy ke VPS RumahZone
+
+### Phase 2 (Growth) — Bulan ke-2
+- [ ] WA API (auto-reminder)
+- [ ] Payment gateway (auto-verify)
+- [ ] Onboarding wizard
+- [ ] Referral system
+
+### Phase 3 (Scale) — Bulan ke-3+
+- [ ] Custom subdomain per tenant
+- [ ] Mobile app
+- [ ] Marketplace addon
 
 ---
 
-## 7. Pertanyaan untuk Diskusi
+## 8. Rebrand: Ngalir → Posify
 
-1. **Domain**: Sudah punya? Mau pakai apa? (ngalir.id?)
-2. **Landing page**: Perlu atau langsung form register?
-3. **Bank transfer**: Bank apa? (BRI saja / BRI+BCA?)
-4. **WA Notification**: Manual atau API (Fonnte)?
-5. **Lifetime harga**: 15x bulanan OK? Atau adjust?
-6. **Trial period**: 14 hari cukup?
-7. **VPS provider**: Pakai apa? Specs?
+| Item | Dari | Ke |
+|------|------|-----|
+| Nama | Ngalir / Maslahat Tani | **Posify** |
+| Domain | maslahattani.my.id | **posify.id** |
+| Title | "Ngalir Admin" | "Posify" |
+| Tagline | - | "Sistem POS Modern untuk UMKM" |
+| Email | - | hello@posify.id |
+| WA | - | +62xxx (WA Business) |
+
+---
+
+## Keputusan Final:
+
+- ✅ Brand: **Posify**
+- ✅ VPS: RumahZone (1 server shared)
+- ✅ Bank: SeaBank + BCA + E-Wallet (QRIS)
+- ✅ Trial: 14 hari gratis
+- ✅ Lifetime: Basic 400rb, Pro 700rb, Enterprise 1.2jt
+- ✅ Landing page: posify.id (fitur + pricing + register)
+- ✅ WA: manual dulu
+- ✅ Owner Dashboard: owner.posify.id
