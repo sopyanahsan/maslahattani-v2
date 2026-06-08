@@ -32,6 +32,7 @@ import { BrilinkProductsModule } from './brilink-products/brilink-products.modul
 import { RealtimeModule } from './realtime/realtime.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { SubscriptionModule } from './subscription/subscription.module';
+import { TenantsModule } from './tenants/tenants.module';
 
 @Module({
   imports: [
@@ -43,6 +44,7 @@ import { SubscriptionModule } from './subscription/subscription.module';
     RealtimeModule,
     PermissionsModule,
     SubscriptionModule,
+    TenantsModule,
     ShopsModule,
     AuthModule,
     HealthModule,
