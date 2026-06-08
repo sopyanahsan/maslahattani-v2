@@ -26,6 +26,7 @@ import { DashboardBrilinkModule } from './dashboard-brilink/dashboard-brilink.mo
 import { BrilinkAccountsModule } from './brilink-accounts/brilink-accounts.module';
 import { CashBoxesModule } from './cash-boxes/cash-boxes.module';
 import { RacksModule } from './racks/racks.module';
+import { CustomersModule } from './customers/customers.module';
 import { BrilinkCashboxModule } from './brilink-cashbox/brilink-cashbox.module';
 import { BrilinkReconciliationModule } from './brilink-reconciliation/brilink-reconciliation.module';
 import { BrilinkProductsModule } from './brilink-products/brilink-products.module';
@@ -68,6 +69,7 @@ import { TenantsModule } from './tenants/tenants.module';
     BrilinkProductsModule,
     OpnameModule,
     RacksModule,
+    CustomersModule,
     SuppliersModule,
     TransfersModule,
     AnalyticsModule,

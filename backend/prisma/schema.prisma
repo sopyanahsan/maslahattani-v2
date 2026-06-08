@@ -155,6 +155,7 @@ model Shop {
   transfersIn         StockTransfer[]      @relation("TransferTo")
   rackZones           RackZone[]
   racks               Rack[]
+  customers           Customer[]
 
   @@map("shops")
 }
@@ -1449,4 +1450,27 @@ model SaasPayment {
   @@index([status])
   @@index([createdAt])
   @@map("saas_payments")
+}
+
+
+// ============================================
+// CUSTOMERS (Anti-Double Name)
+// ============================================
+
+model Customer {
+  id          String   @id @default(cuid())
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId      String
+  name        String
+  phone       String?
+  address     String?
+  notes       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([shopId, name])
+  @@index([shopId])
+  @@index([name])
+  @@map("customers")
 }

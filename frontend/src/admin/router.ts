@@ -211,6 +211,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'customers',
+        name: 'admin-customers',
+        component: () => import('@/admin/views/AdminCustomersView.vue'),
+        meta: {
+          title: 'Customer',
+          description: 'Kelola data pelanggan — anti-double name per cabang.',
+        },
+      },
+      {
         path: 'payments',
         name: 'admin-payments',
         component: () => import('@/admin/views/AdminPaymentsView.vue'),

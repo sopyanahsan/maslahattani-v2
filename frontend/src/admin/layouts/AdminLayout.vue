@@ -957,6 +957,7 @@ const navGroups = computed<NavGroup[]>(() => {
   if (can('products.view')) retailItems.push({ to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon });
   if (can('products.view')) retailItems.push({ to: '/admin/riwayat-stok', label: 'Riwayat Stok', icon: ClipboardListIcon });
   if (can('debts.view')) retailItems.push({ to: '/admin/debts', label: 'Hutang', icon: DebtIcon });
+  retailItems.push({ to: '/admin/customers', label: 'Customer', icon: UsersIcon });
   retailItems.push({ to: '/admin/kas-retail', label: 'Kas Retail', icon: WalletIcon });
   if (can('reports.view')) retailItems.push({ to: '/admin/reports', label: 'Laporan Retail', icon: ReportIcon });
   groups.push({ title: 'Retail', items: retailItems });
