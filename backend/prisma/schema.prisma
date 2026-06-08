@@ -40,6 +40,8 @@ model User {
   status              UserStatus @default(ACTIVE)
   shop                Shop?     @relation("ShopUsers", fields: [shopId], references: [id])
   shopId              String?
+  tenant              Tenant?   @relation(fields: [tenantId], references: [id])
+  tenantId            String?
   
   mustChangePassword  Boolean   @default(false)
   mustChangePin       Boolean   @default(false)
@@ -118,6 +120,8 @@ model Shop {
   phone               String
   owner               User?     @relation("ShopOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   ownerId             String?
+  tenant              Tenant?   @relation(fields: [tenantId], references: [id])
+  tenantId            String?
   parentShop          Shop?     @relation("ShopToParent", fields: [parentShopId], references: [id], onDelete: SetNull)
   parentShopId        String?
   childShops          Shop[]    @relation("ShopToParent")
@@ -1327,4 +1331,122 @@ model RolePermission {
   @@unique([role, permission])
   @@index([role])
   @@map("role_permissions")
+}
+
+
+// ============================================
+// SAAS MULTI-TENANT + SUBSCRIPTION
+// ============================================
+
+enum PlanType {
+  TRIAL
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum CycleType {
+  MONTHLY
+  YEARLY
+  LIFETIME
+}
+
+enum SubStatus {
+  TRIAL
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+  CANCELLED
+  LIFETIME
+}
+
+enum SaasPaymentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+model Tenant {
+  id            String    @id @default(cuid())
+  name          String    // Nama toko/bisnis
+  slug          String    @unique // URL-friendly (auto-generated dari name)
+  ownerName     String    // Nama pemilik
+  ownerPhone    String    // No WA pemilik
+  ownerEmail    String    @unique // Email pemilik (untuk login)
+  isActive      Boolean   @default(true) // Soft-disable oleh owner platform
+
+  subscription  Subscription?
+  shops         Shop[]
+  users         User[]
+  payments      SaasPayment[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([ownerEmail])
+  @@index([isActive])
+  @@map("tenants")
+}
+
+model Subscription {
+  id            String    @id @default(cuid())
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId      String    @unique
+
+  plan          PlanType  @default(TRIAL)
+  cycle         CycleType @default(MONTHLY)
+  status        SubStatus @default(TRIAL)
+
+  startDate     DateTime  @default(now())
+  endDate       DateTime? // null = lifetime (tidak pernah expire)
+  graceEndsAt   DateTime? // endDate + 7 hari
+
+  // Plan limits
+  maxBranches   Int       @default(1)
+  maxUsers      Int       @default(2)
+  maxProducts   Int       @default(50)
+
+  // Feature flags per plan
+  brilinkEnabled    Boolean @default(false)
+  exportEnabled     Boolean @default(false)
+  opnameEnabled     Boolean @default(false)
+  supplierEnabled   Boolean @default(false)
+  transferEnabled   Boolean @default(false)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status])
+  @@index([endDate])
+  @@map("subscriptions")
+}
+
+model SaasPayment {
+  id            String             @id @default(cuid())
+  tenant        Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId      String
+
+  amount        Int                // Rupiah
+  method        String             // SEABANK, BCA, QRIS, DANA, OVO, GOPAY
+  plan          PlanType
+  cycle         CycleType
+
+  status        SaasPaymentStatus  @default(PENDING)
+  proofUrl      String?            // URL bukti transfer (upload)
+  uniqueCode    String?            // Kode unik transfer (3 digit terakhir)
+  notes         String?
+
+  verifiedAt    DateTime?
+  verifiedBy    String?            // Owner platform yang verify
+  rejectedAt    DateTime?
+  rejectedReason String?
+
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("saas_payments")
 }
