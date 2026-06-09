@@ -6,7 +6,13 @@
 import type {
   SalesReportResponse,
   BrilinkReportResponse,
+  ProductReportResponse,
 } from './reports.service';
+
+// Extended type for export (includes product report data)
+export interface SalesExportData extends SalesReportResponse {
+  productReport?: ProductReportResponse | null;
+}
 
 // ============================================
 // HELPERS
@@ -68,7 +74,7 @@ function spacer(colspan: number): string {
 // ============================================
 
 export async function exportSalesExcel(
-  report: SalesReportResponse,
+  report: SalesExportData,
   startDate?: string, endDate?: string, shopName?: string,
 ): Promise<void> {
   // Sheet 1: Ringkasan + Laba Rugi + Metode Bayar
@@ -92,11 +98,37 @@ export async function exportSalesExcel(
   report.methodBreakdown.forEach(m => { s1 += td([m.method, m.count, fmtRp(m.totalAmount)], [2]); });
   s1 += '</table>';
 
-  // Sheet 2: Top Produk
+  // Sheet 2: Top Produk + Kategori + Slow Moving + Low Stock
   let s2 = '<table>';
-  s2 += title('TOP 10 PRODUK TERLARIS', 4);
+  // Use productReport if available, otherwise fall back to salesReport.topProducts
+  const topProducts = report.productReport?.topSelling || report.topProducts.map(p => ({ name: p.productName, sku: p.sku, qtySold: p.totalQty, revenue: p.totalRevenue, productId: p.productId }));
+  s2 += title('TOP 10 PRODUK TERLARIS', 5);
   s2 += th(['#', 'Produk', 'SKU', 'Qty Terjual', 'Revenue']);
-  report.topProducts.forEach((p, i) => { s2 += td([i + 1, p.productName, p.sku, p.totalQty, fmtRp(p.totalRevenue)], [3, 4]); });
+  topProducts.forEach((p: any, i: number) => { s2 += td([i + 1, p.name || p.productName, p.sku, p.qtySold || p.totalQty, fmtRp(p.revenue || p.totalRevenue)], [3, 4]); });
+
+  // Slow Moving
+  if (report.productReport?.slowMoving?.length) {
+    s2 += spacer(5);
+    s2 += title('PRODUK SLOW MOVING (TIDAK LAKU)', 4);
+    s2 += th(['Produk', 'SKU', 'Harga', 'Qty Terjual']);
+    report.productReport.slowMoving.forEach((p: any) => { s2 += td([p.name, p.sku, fmtRp(p.price || 0), p.qtySold], [2, 3]); });
+  }
+
+  // Kategori
+  if (report.productReport?.categoryBreakdown?.length) {
+    s2 += spacer(5);
+    s2 += title('PENJUALAN PER KATEGORI', 4);
+    s2 += th(['Kategori', 'Jumlah Produk', 'Qty Terjual', 'Revenue']);
+    report.productReport.categoryBreakdown.forEach((c: any) => { s2 += td([c.name, c.productCount, c.qty, fmtRp(c.revenue)], [2, 3]); });
+  }
+
+  // Low Stock
+  if (report.productReport?.lowStock?.length) {
+    s2 += spacer(5);
+    s2 += title(`STOK MENIPIS (≤ ${report.productReport.lowStockThreshold} pcs)`, 3);
+    s2 += th(['Produk', 'SKU', 'Sisa Stok']);
+    report.productReport.lowStock.forEach((s2Item: any) => { s2 += td([s2Item.name, s2Item.sku, s2Item.currentStock], [2]); });
+  }
   s2 += '</table>';
 
   // Sheet 3: Trend Harian
@@ -108,7 +140,7 @@ export async function exportSalesExcel(
 
   downloadAsExcel(`Laporan_Retail_${getFilenameDate(startDate, endDate)}.xls`, [
     { name: 'Ringkasan', html: s1 },
-    { name: 'Top Produk', html: s2 },
+    { name: 'Produk', html: s2 },
     { name: 'Trend Harian', html: s3 },
   ]);
 }
@@ -169,7 +201,7 @@ export async function exportBrilinkExcel(
 // ============================================
 
 export async function exportSalesPDF(
-  report: SalesReportResponse,
+  report: SalesExportData,
   startDate?: string, endDate?: string, shopName?: string,
 ): Promise<void> {
   const { jsPDF } = await import('jspdf');
@@ -226,16 +258,49 @@ export async function exportSalesPDF(
   }
 
   // Top Products
-  if (report.topProducts.length > 0) {
+  const pdfTopProducts = report.productReport?.topSelling || report.topProducts.map(p => ({ name: p.productName, sku: p.sku, qtySold: p.totalQty, revenue: p.totalRevenue }));
+  if (pdfTopProducts.length > 0) {
     if (y > 220) { doc.addPage(); y = 15; }
     doc.setFontSize(11); doc.setFont('helvetica', 'bold');
     doc.text('Top 10 Produk Terlaris', 14, y); y += 2;
     autoTable(doc, {
       startY: y,
       head: [['#', 'Produk', 'SKU', 'Qty', 'Revenue']],
-      body: report.topProducts.map((p, i) => [String(i + 1), p.productName, p.sku, String(p.totalQty), fmtRp(p.totalRevenue)]),
+      body: pdfTopProducts.map((p: any, i: number) => [String(i + 1), p.name || p.productName, p.sku, String(p.qtySold || p.totalQty), fmtRp(p.revenue || p.totalRevenue)]),
       theme: 'grid', headStyles: { fillColor: [0, 161, 155], fontSize: 9 },
       bodyStyles: { fontSize: 8 }, columnStyles: { 0: { cellWidth: 8 }, 4: { halign: 'right' } },
+      margin: { left: 14, right: 14 },
+    });
+    y = (doc as any).lastAutoTable.finalY + 8;
+  }
+
+  // Kategori Produk
+  if (report.productReport?.categoryBreakdown?.length) {
+    if (y > 200) { doc.addPage(); y = 15; }
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+    doc.text('Penjualan per Kategori', 14, y); y += 2;
+    autoTable(doc, {
+      startY: y,
+      head: [['Kategori', 'Produk', 'Qty Terjual', 'Revenue']],
+      body: report.productReport.categoryBreakdown.map((c: any) => [c.name, String(c.productCount), String(c.qty), fmtRp(c.revenue)]),
+      theme: 'grid', headStyles: { fillColor: [0, 161, 155], fontSize: 9 },
+      bodyStyles: { fontSize: 8 }, columnStyles: { 1: { halign: 'center' }, 2: { halign: 'center' }, 3: { halign: 'right' } },
+      margin: { left: 14, right: 14 },
+    });
+    y = (doc as any).lastAutoTable.finalY + 8;
+  }
+
+  // Stok Menipis
+  if (report.productReport?.lowStock?.length) {
+    if (y > 220) { doc.addPage(); y = 15; }
+    doc.setFontSize(11); doc.setFont('helvetica', 'bold');
+    doc.text(`Stok Menipis (≤ ${report.productReport.lowStockThreshold} pcs)`, 14, y); y += 2;
+    autoTable(doc, {
+      startY: y,
+      head: [['Produk', 'SKU', 'Sisa Stok']],
+      body: report.productReport.lowStock.map((s: any) => [s.name, s.sku, String(s.currentStock)]),
+      theme: 'grid', headStyles: { fillColor: [217, 119, 6], fontSize: 9 },
+      bodyStyles: { fontSize: 8 }, columnStyles: { 2: { halign: 'center' } },
       margin: { left: 14, right: 14 },
     });
     y = (doc as any).lastAutoTable.finalY + 8;

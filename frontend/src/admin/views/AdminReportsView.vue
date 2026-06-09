@@ -432,10 +432,15 @@ async function handleExport(format: 'pdf' | 'excel') {
   exporting.value = true;
   try {
     const shopName = shopStore.currentShopName || 'Toko';
+    // Merge productReport data into salesReport for complete export
+    const exportData = {
+      ...salesReport.value,
+      productReport: productReport.value || null,
+    };
     if (format === 'pdf') {
-      await exportSalesPDF(salesReport.value, startDate.value, endDate.value, shopName);
+      await exportSalesPDF(exportData, startDate.value, endDate.value, shopName);
     } else {
-      await exportSalesExcel(salesReport.value, startDate.value, endDate.value, shopName);
+      await exportSalesExcel(exportData, startDate.value, endDate.value, shopName);
     }
   } catch (e) {
     console.error('Export error:', e);
