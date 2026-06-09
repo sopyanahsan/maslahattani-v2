@@ -149,8 +149,6 @@ const props = withDefaults(
 // For "today" period: only show 06:00 - 21:00 (6am - 9pm)
 const START_HOUR = 6;
 const END_HOUR = 21;
-// Fixed Y-axis max for daily view (500rb), auto-scale for week/month
-const FIXED_Y_MAX = 500_000;
 
 interface ChartDataItem {
   label: string;
@@ -200,21 +198,27 @@ const filteredData = computed<ChartDataItem[]>(() => {
 });
 
 const yMax = computed(() => {
+  const dataMax = Math.max(1, ...filteredData.value.map(d => d.revenue), ...filteredData.value.map(d => d.profit));
   if (props.period === 'today') {
-    // Use fixed 500rb or actual max if higher
-    const dataMax = Math.max(1, ...filteredData.value.map(d => d.revenue), ...filteredData.value.map(d => d.profit));
-    return Math.max(FIXED_Y_MAX, dataMax);
+    // Auto-scale: use data max with nice rounding, minimum 100rb
+    const minY = 100_000;
+    const actual = Math.max(minY, dataMax);
+    const magnitude = Math.pow(10, Math.floor(Math.log10(actual)));
+    return Math.ceil(actual / magnitude) * magnitude;
   }
   // Auto-scale for week/month
-  const dataMax = Math.max(1, ...filteredData.value.map(d => d.revenue), ...filteredData.value.map(d => d.profit));
   // Round up to nice number
   const magnitude = Math.pow(10, Math.floor(Math.log10(dataMax)));
   return Math.ceil(dataMax / magnitude) * magnitude;
 });
 
-const hasData = computed(
-  () => props.labels.length > 0,
-);
+const hasData = computed(() => {
+  if (props.labels.length === 0) return false;
+  // Check if there's any actual revenue or profit data (not all zeros)
+  const totalRevenue = props.revenue.reduce((sum, v) => sum + v, 0);
+  const totalProfit = props.profit.reduce((sum, v) => sum + v, 0);
+  return totalRevenue > 0 || totalProfit > 0;
+});
 
 const subtitle = computed(() => {
   if (props.period === 'today') return `Per jam, ${START_HOUR}:00 — ${END_HOUR}:00 (Asia/Jakarta)`;
@@ -223,8 +227,8 @@ const subtitle = computed(() => {
 });
 
 function barHeight(v: number): string {
-  if (yMax.value === 0 || v === 0) return '2px';
-  return `${Math.max(0.5, (v / yMax.value) * 100)}%`;
+  if (yMax.value === 0 || v === 0) return '0px';
+  return `${Math.max(1, (v / yMax.value) * 100)}%`;
 }
 
 function shouldShowLabel(idx: number): boolean {
