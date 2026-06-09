@@ -29,17 +29,7 @@
         <div class="w-8 h-8 border-4 border-slate-200 dark:border-slate-700 border-t-[#00A19B] rounded-full animate-spin" />
       </div>
 
-      <!-- Empty -->
-      <div
-        v-else-if="!hasData"
-        class="h-64 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500"
-      >
-        <svg class="w-10 h-10 mb-2 opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 13l4-4 4 4 4-8 4 4" /><path stroke-linecap="round" stroke-width="1.5" d="M3 18h18" /></svg>
-        <p class="text-sm font-semibold">Belum ada transaksi</p>
-        <p class="text-[11px] mt-0.5">Data akan muncul setelah ada transaksi.</p>
-      </div>
-
-      <!-- Line Chart (SVG) -->
+      <!-- Line Chart (ALWAYS render - even if all zeros) -->
       <div v-else>
         <div class="flex gap-2">
           <!-- Y-axis labels -->
@@ -64,64 +54,65 @@
 
             <!-- SVG lines -->
             <svg
-              class="absolute inset-0 w-full h-full overflow-visible"
+              class="absolute inset-0 w-full h-full"
+              viewBox="0 0 1000 400"
               preserveAspectRatio="none"
             >
               <!-- Revenue area fill -->
               <path
                 :d="revenueAreaPath"
-                fill="url(#revenueGradient)"
-                opacity="0.15"
+                fill="url(#revenueGrad)"
               />
               <!-- Profit area fill -->
               <path
                 :d="profitAreaPath"
-                fill="url(#profitGradient)"
-                opacity="0.1"
+                fill="url(#profitGrad)"
               />
               <!-- Revenue line -->
-              <path
-                :d="revenueLinePath"
+              <polyline
+                :points="revenuePolyline"
                 fill="none"
                 stroke="#00A19B"
-                stroke-width="2.5"
+                stroke-width="3"
                 stroke-linecap="round"
                 stroke-linejoin="round"
               />
               <!-- Profit line -->
-              <path
-                :d="profitLinePath"
+              <polyline
+                :points="profitPolyline"
                 fill="none"
                 stroke="#34D399"
-                stroke-width="2"
+                stroke-width="2.5"
                 stroke-linecap="round"
                 stroke-linejoin="round"
-                stroke-dasharray="6 3"
+                stroke-dasharray="8 4"
               />
               <!-- Revenue dots -->
               <circle
-                v-for="(pt, i) in revenuePoints"
+                v-for="(pt, i) in revenueCoords"
                 :key="`rv-${i}`"
                 :cx="pt.x"
                 :cy="pt.y"
-                r="3"
+                r="4"
                 fill="#00A19B"
+                stroke="white"
+                stroke-width="2"
                 class="opacity-0 hover:opacity-100 transition-opacity"
               />
               <!-- Gradient defs -->
               <defs>
-                <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#00A19B" stop-opacity="0.4" />
-                  <stop offset="100%" stop-color="#00A19B" stop-opacity="0" />
+                <linearGradient id="revenueGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#00A19B" stop-opacity="0.25" />
+                  <stop offset="100%" stop-color="#00A19B" stop-opacity="0.02" />
                 </linearGradient>
-                <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#34D399" stop-opacity="0.3" />
-                  <stop offset="100%" stop-color="#34D399" stop-opacity="0" />
+                <linearGradient id="profitGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#34D399" stop-opacity="0.15" />
+                  <stop offset="100%" stop-color="#34D399" stop-opacity="0.01" />
                 </linearGradient>
               </defs>
             </svg>
 
-            <!-- Hover columns (invisible, for tooltip) -->
+            <!-- Hover columns (invisible) -->
             <div class="absolute inset-0 flex z-10">
               <div
                 v-for="(item, idx) in filteredData"
@@ -130,6 +121,11 @@
               >
                 <!-- Vertical hover line -->
                 <div class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-px bg-slate-300 dark:bg-slate-600 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                <!-- Dot indicator on hover -->
+                <div
+                  class="absolute left-1/2 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-[#00A19B] border-2 border-white dark:border-slate-900 shadow opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+                  :style="{ top: `${getYPercent(item.revenue)}%` }"
+                />
                 <!-- Tooltip -->
                 <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-20 pointer-events-none">
                   <div class="bg-slate-900 dark:bg-slate-700 text-white rounded-lg px-3 py-2 text-[10px] whitespace-nowrap shadow-lg">
@@ -145,6 +141,16 @@
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- "Belum ada data" overlay if all zero (subtle, not blocking) -->
+            <div
+              v-if="allZero"
+              class="absolute inset-0 flex items-center justify-center pointer-events-none"
+            >
+              <p class="text-xs text-slate-400 dark:text-slate-500 bg-white/80 dark:bg-slate-900/80 px-3 py-1 rounded-md">
+                Belum ada transaksi di periode ini
+              </p>
             </div>
           </div>
         </div>
@@ -186,9 +192,10 @@ const props = withDefaults(
   },
 );
 
-// For "today" period: only show 06:00 - 21:00
 const START_HOUR = 6;
 const END_HOUR = 21;
+const SVG_WIDTH = 1000;
+const SVG_HEIGHT = 400;
 
 interface ChartDataItem {
   label: string;
@@ -212,6 +219,7 @@ const filteredData = computed<ChartDataItem[]>(() => {
         profit: props.profit[i] ?? 0,
       });
     }
+    // Always generate 16 slots (06-21) even if backend returned nothing
     if (items.length === 0) {
       for (let h = START_HOUR; h <= END_HOUR; h++) {
         items.push({
@@ -225,6 +233,25 @@ const filteredData = computed<ChartDataItem[]>(() => {
     return items;
   }
 
+  // Week/Month: always map all labels
+  if (props.labels.length === 0) {
+    // Fallback: generate 7 or 30 empty labels
+    const count = props.period === 'week' ? 7 : 30;
+    const items: ChartDataItem[] = [];
+    for (let i = count - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const label = d.toISOString().slice(0, 10);
+      items.push({
+        label: formatFullLabel(label),
+        shortLabel: formatShortLabel(label),
+        revenue: 0,
+        profit: 0,
+      });
+    }
+    return items;
+  }
+
   return props.labels.map((label, i) => ({
     label: formatFullLabel(label),
     shortLabel: formatShortLabel(label),
@@ -233,25 +260,23 @@ const filteredData = computed<ChartDataItem[]>(() => {
   }));
 });
 
+const allZero = computed(() => {
+  return filteredData.value.every((d) => d.revenue === 0 && d.profit === 0);
+});
+
 const yMax = computed(() => {
   const dataMax = Math.max(
-    1,
     ...filteredData.value.map((d) => d.revenue),
     ...filteredData.value.map((d) => d.profit),
   );
-  // Minimum scale 100rb for daily
-  const minY = props.period === 'today' ? 100_000 : 1;
-  const actual = Math.max(minY, dataMax);
-  // Round up to nice number
-  const magnitude = Math.pow(10, Math.floor(Math.log10(actual)));
-  return Math.ceil(actual / magnitude) * magnitude;
-});
-
-const hasData = computed(() => {
-  if (props.labels.length === 0) return false;
-  const totalRevenue = props.revenue.reduce((sum, v) => sum + v, 0);
-  const totalProfit = props.profit.reduce((sum, v) => sum + v, 0);
-  return totalRevenue > 0 || totalProfit > 0;
+  if (dataMax <= 0) {
+    // Default scale when no data
+    return 500_000;
+  }
+  // Round up to nice number with 20% headroom
+  const withHeadroom = dataMax * 1.2;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(withHeadroom)));
+  return Math.ceil(withHeadroom / magnitude) * magnitude;
 });
 
 const subtitle = computed(() => {
@@ -261,41 +286,48 @@ const subtitle = computed(() => {
 });
 
 // ============================================
-// SVG LINE PATH GENERATION
+// SVG COORDINATE CALCULATION
 // ============================================
 
-interface Point {
-  x: string;
-  y: string;
+interface Coord {
+  x: number;
+  y: number;
 }
 
-function getPoints(values: number[]): Point[] {
+function valuesToCoords(values: number[]): Coord[] {
   const count = values.length;
   if (count === 0) return [];
+  const padding = 20; // padding from edges
+  const usableWidth = SVG_WIDTH - padding * 2;
   return values.map((v, i) => ({
-    x: `${(i / Math.max(1, count - 1)) * 100}%`,
-    y: `${100 - (v / yMax.value) * 100}%`,
+    x: padding + (count === 1 ? usableWidth / 2 : (i / (count - 1)) * usableWidth),
+    y: SVG_HEIGHT - (v / yMax.value) * SVG_HEIGHT,
   }));
 }
 
-const revenuePoints = computed(() => getPoints(filteredData.value.map((d) => d.revenue)));
-const profitPoints = computed(() => getPoints(filteredData.value.map((d) => d.profit)));
+const revenueCoords = computed(() => valuesToCoords(filteredData.value.map((d) => d.revenue)));
+const profitCoords = computed(() => valuesToCoords(filteredData.value.map((d) => d.profit)));
 
-function buildLinePath(points: Point[]): string {
-  if (points.length === 0) return '';
-  return points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
+const revenuePolyline = computed(() => revenueCoords.value.map((p) => `${p.x},${p.y}`).join(' '));
+const profitPolyline = computed(() => profitCoords.value.map((p) => `${p.x},${p.y}`).join(' '));
+
+const revenueAreaPath = computed(() => {
+  const pts = revenueCoords.value;
+  if (pts.length === 0) return '';
+  const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+  return `${line} L${pts[pts.length - 1].x},${SVG_HEIGHT} L${pts[0].x},${SVG_HEIGHT} Z`;
+});
+
+const profitAreaPath = computed(() => {
+  const pts = profitCoords.value;
+  if (pts.length === 0) return '';
+  const line = pts.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y}`).join(' ');
+  return `${line} L${pts[pts.length - 1].x},${SVG_HEIGHT} L${pts[0].x},${SVG_HEIGHT} Z`;
+});
+
+function getYPercent(value: number): number {
+  return 100 - (value / yMax.value) * 100;
 }
-
-function buildAreaPath(points: Point[]): string {
-  if (points.length === 0) return '';
-  const line = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
-  return `${line} L 100% 100% L 0% 100% Z`;
-}
-
-const revenueLinePath = computed(() => buildLinePath(revenuePoints.value));
-const profitLinePath = computed(() => buildLinePath(profitPoints.value));
-const revenueAreaPath = computed(() => buildAreaPath(revenuePoints.value));
-const profitAreaPath = computed(() => buildAreaPath(profitPoints.value));
 
 // ============================================
 // HELPERS
@@ -310,7 +342,7 @@ function shouldShowLabel(idx: number): boolean {
 
 function formatFullLabel(label: string): string {
   if (label.length === 10 && label.includes('-')) {
-    return new Date(label).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+    return new Date(label + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
   }
   return label;
 }
@@ -318,7 +350,7 @@ function formatFullLabel(label: string): string {
 function formatShortLabel(label: string): string {
   if (label.length === 10 && label.includes('-')) {
     const parts = label.split('-');
-    return `${parts[2]}/${parts[1]}`;
+    return `${parseInt(parts[2])}/${parseInt(parts[1])}`;
   }
   if (label.includes(':')) return label.split(':')[0];
   return label;
@@ -327,7 +359,7 @@ function formatShortLabel(label: string): string {
 function formatCompact(amount: number): string {
   if (amount >= 1_000_000_000) return `${(amount / 1_000_000_000).toFixed(1)}M`;
   if (amount >= 1_000_000) return `${(amount / 1_000_000).toFixed(1)}jt`;
-  if (amount >= 1_000) return `${(amount / 1_000).toFixed(0)}rb`;
+  if (amount >= 1_000) return `${Math.round(amount / 1_000)}rb`;
   return String(amount);
 }
 
