@@ -50,6 +50,15 @@ export class CustomersController {
     return this.customersService.autocomplete(shopId, q);
   }
 
+  /**
+   * Customer detail with purchase history stats.
+   * GET /api/customers/:id/detail
+   */
+  @Get(':id/detail')
+  async getCustomerDetail(@Param('id') id: string) {
+    return this.customersService.getCustomerDetail(id);
+  }
+
   @Post()
   async createCustomer(@Body() dto: CreateCustomerDto) {
     return this.customersService.createCustomer(dto);

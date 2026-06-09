@@ -189,4 +189,103 @@ export class CustomersService {
     await this.prisma.customer.delete({ where: { id } });
     return { success: true, message: 'Customer berhasil dihapus.' };
   }
+
+  // ============================================
+  // CUSTOMER DETAIL (CRM: history & stats)
+  // ============================================
+
+  async getCustomerDetail(id: string) {
+    const customer = await this.prisma.customer.findUnique({ where: { id } });
+    if (!customer) throw new NotFoundException('Customer tidak ditemukan.');
+
+    // Retail transactions
+    const retailTransactions = await this.prisma.transaction.findMany({
+      where: { customerId: id, status: 'COMPLETED' },
+      include: {
+        items: { include: { product: { select: { name: true, sku: true } } } },
+        payments: { select: { method: true, amount: true } },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+
+    // BRILink transactions
+    const brilinkTransactions = await this.prisma.brilinkTransaction.findMany({
+      where: { customerId: id, status: 'SUCCESS' },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+
+    // Stats
+    const retailTotal = retailTransactions.reduce((sum, t) => sum + t.totalPrice, 0);
+    const brilinkTotal = brilinkTransactions.reduce((sum, t) => sum + t.total, 0);
+    const totalVisits = retailTransactions.length + brilinkTransactions.length;
+    const avgPerVisit = totalVisits > 0 ? Math.round((retailTotal + brilinkTotal) / totalVisits) : 0;
+    const lastVisit = [...retailTransactions, ...brilinkTransactions]
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0]?.createdAt || null;
+
+    // Top products (from retail)
+    const productMap = new Map<string, { name: string; qty: number; total: number }>();
+    for (const trx of retailTransactions) {
+      for (const item of trx.items) {
+        const key = item.productId;
+        const existing = productMap.get(key);
+        if (existing) {
+          existing.qty += item.quantity;
+          existing.total += item.subtotal;
+        } else {
+          productMap.set(key, {
+            name: item.product.name,
+            qty: item.quantity,
+            total: item.subtotal,
+          });
+        }
+      }
+    }
+    const topProducts = [...productMap.values()]
+      .sort((a, b) => b.qty - a.qty)
+      .slice(0, 10);
+
+    return {
+      customer: {
+        id: customer.id,
+        shopId: customer.shopId,
+        name: customer.name,
+        phone: customer.phone,
+        address: customer.address,
+        notes: customer.notes,
+        isActive: customer.isActive,
+        createdAt: customer.createdAt.toISOString(),
+      },
+      stats: {
+        totalVisits,
+        retailCount: retailTransactions.length,
+        brilinkCount: brilinkTransactions.length,
+        retailTotal,
+        brilinkTotal,
+        grandTotal: retailTotal + brilinkTotal,
+        avgPerVisit,
+        lastVisit: lastVisit ? new Date(lastVisit).toISOString() : null,
+      },
+      topProducts,
+      recentRetail: retailTransactions.slice(0, 20).map((t) => ({
+        id: t.id,
+        transactionNumber: (t as any).transactionNumber,
+        totalPrice: t.totalPrice,
+        itemCount: t.items.length,
+        paymentMethod: t.payments[0]?.method || null,
+        createdAt: t.createdAt.toISOString(),
+      })),
+      recentBrilink: brilinkTransactions.slice(0, 20).map((t) => ({
+        id: t.id,
+        refNumber: t.refNumber,
+        category: t.category,
+        amount: t.amount,
+        fee: t.fee,
+        total: t.total,
+        destination: t.destination,
+        createdAt: t.createdAt.toISOString(),
+      })),
+    };
+  }
 }

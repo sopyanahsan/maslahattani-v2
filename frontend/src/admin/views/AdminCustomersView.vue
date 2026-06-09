@@ -49,8 +49,8 @@
         :key="c.id"
         class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between hover:border-slate-300 dark:hover:border-slate-600 transition-colors"
       >
-        <div>
-          <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">{{ c.name }}</p>
+        <div class="cursor-pointer" @click="$router.push(`/admin/customers/${c.id}`)">
+          <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 hover:text-[#00A19B] transition-colors">{{ c.name }}</p>
           <p class="text-xs text-slate-500 mt-0.5">
             {{ c.phone || '-' }} &middot; {{ c.address || 'Alamat belum diisi' }}
           </p>

@@ -220,6 +220,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'customers/:id',
+        name: 'admin-customer-detail',
+        component: () => import('@/admin/views/AdminCustomerDetailView.vue'),
+        meta: {
+          title: 'Detail Customer',
+          description: 'Riwayat pembelian, statistik, dan produk favorit customer.',
+        },
+      },
+      {
         path: 'payments',
         name: 'admin-payments',
         component: () => import('@/admin/views/AdminPaymentsView.vue'),
