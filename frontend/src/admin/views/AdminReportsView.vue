@@ -69,11 +69,39 @@
           <button type="button" class="h-7 px-2.5 text-[10px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800" @click="exportSales">Export CSV</button>
         </div>
         <div class="p-5">
+          <!-- KPI Cards -->
           <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
             <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center"><p class="text-[10px] text-slate-500 dark:text-slate-400">Omzet</p><p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">{{ formatRupiah(salesReport.summary.omzet) }}</p></div>
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center"><p class="text-[10px] text-slate-500 dark:text-slate-400">Profit</p><p class="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{{ formatRupiah(salesReport.summary.profit) }}</p></div>
+            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center"><p class="text-[10px] text-slate-500 dark:text-slate-400">Laba Kotor</p><p class="text-sm font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1">{{ formatRupiah(salesReport.summary.profit) }}</p></div>
             <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center"><p class="text-[10px] text-slate-500 dark:text-slate-400">Transaksi</p><p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">{{ salesReport.summary.totalTransactions }}</p></div>
-            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center"><p class="text-[10px] text-slate-500 dark:text-slate-400">Margin</p><p class="text-sm font-bold font-mono text-indigo-600 dark:text-indigo-400 mt-1">{{ salesReport.summary.marginPercent }}%</p></div>
+            <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-3 text-center"><p class="text-[10px] text-slate-500 dark:text-slate-400">Margin</p><p class="text-sm font-bold font-mono text-[#00A19B] mt-1">{{ salesReport.summary.marginPercent }}%</p></div>
+          </div>
+
+          <!-- Laba Rugi Summary -->
+          <div class="bg-slate-50 dark:bg-slate-800 rounded-lg p-4 mb-4">
+            <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-3">Laba Rugi</p>
+            <div class="space-y-2">
+              <div class="flex justify-between text-xs"><span class="text-slate-600 dark:text-slate-400">Omzet (Penjualan)</span><span class="font-mono font-semibold text-slate-900 dark:text-slate-100">{{ formatRupiah(salesReport.summary.omzet) }}</span></div>
+              <div class="flex justify-between text-xs"><span class="text-slate-600 dark:text-slate-400">HPP (Harga Pokok)</span><span class="font-mono text-red-500">- {{ formatRupiah(salesReport.summary.modal) }}</span></div>
+              <div class="flex justify-between text-xs"><span class="text-slate-600 dark:text-slate-400">Diskon</span><span class="font-mono text-amber-500">- {{ formatRupiah(salesReport.summary.diskon) }}</span></div>
+              <div class="border-t border-slate-200 dark:border-slate-700 pt-2 flex justify-between text-sm"><span class="font-bold text-slate-900 dark:text-slate-100">Laba Kotor</span><span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ formatRupiah(salesReport.summary.profit) }}</span></div>
+              <div class="flex justify-between text-[10px]"><span class="text-slate-400">Void</span><span class="font-mono text-slate-400">{{ salesReport.summary.totalVoided }} transaksi</span></div>
+            </div>
+          </div>
+
+          <!-- Breakdown per Metode Bayar -->
+          <div v-if="salesReport.methodBreakdown && salesReport.methodBreakdown.length > 0" class="mb-4">
+            <p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide mb-3">Breakdown Metode Bayar</p>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <div v-for="m in salesReport.methodBreakdown" :key="m.method" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-3 text-center">
+                <span :class="['inline-flex px-2 py-0.5 rounded text-[9px] font-bold uppercase mb-2', methodBadgeClass(m.method)]">{{ m.method }}</span>
+                <p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(m.totalAmount) }}</p>
+                <p class="text-[10px] text-slate-400 mt-0.5">{{ m.count }} trx</p>
+                <div class="mt-2 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                  <div class="h-full rounded-full transition-all" :class="methodBarClass(m.method)" :style="{ width: methodPercent(m.totalAmount) + '%' }"></div>
+                </div>
+              </div>
+            </div>
           </div>
           <div v-if="salesReport.topProducts.length > 0" class="mt-4">
             <div class="flex items-center justify-between mb-2"><p class="text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Top 10 Produk</p><button type="button" class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:underline" @click="exportTopProducts">Export</button></div>
@@ -112,6 +140,33 @@ const quickRanges = [{ label: 'Hari Ini', days: 0 }, { label: '7 Hari', days: 7 
 
 function getShopId(): string | undefined { return authStore.user?.shopId || undefined; }
 function formatRupiah(n: number): string { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n); }
+
+function methodBadgeClass(method: string): string {
+  switch (method) {
+    case 'CASH': return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300';
+    case 'QRIS': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
+    case 'TRANSFER': return 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300';
+    case 'HUTANG': return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300';
+    default: return 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300';
+  }
+}
+
+function methodBarClass(method: string): string {
+  switch (method) {
+    case 'CASH': return 'bg-emerald-500';
+    case 'QRIS': return 'bg-blue-500';
+    case 'TRANSFER': return 'bg-indigo-500';
+    case 'HUTANG': return 'bg-amber-500';
+    default: return 'bg-slate-400';
+  }
+}
+
+function methodPercent(amount: number): number {
+  if (!salesReport.value) return 0;
+  const total = salesReport.value.summary.omzet;
+  if (total === 0) return 0;
+  return Math.round((amount / total) * 100);
+}
 
 function applyRange(days: number) {
   const now = new Date();
