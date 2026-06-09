@@ -49,4 +49,40 @@ export class ReportsController {
   ) {
     return this.reportsService.getBrilinkReport(shopId, startDate, endDate);
   }
+
+  @Get('products')
+  @ApiOperation({
+    summary: 'Laporan Produk: top selling, slow moving, highest margin',
+  })
+  async getProductReport(
+    @Query('shopId') shopId: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.reportsService.getProductReport(shopId, startDate, endDate);
+  }
+
+  @Get('customers')
+  @ApiOperation({
+    summary: 'Laporan Customer: top spender, repeat vs new, frequency',
+  })
+  async getCustomerReport(
+    @Query('shopId') shopId: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.reportsService.getCustomerReport(shopId, startDate, endDate);
+  }
+
+  @Get('sales/comparison')
+  @ApiOperation({
+    summary: 'Perbandingan penjualan: periode ini vs periode sebelumnya',
+  })
+  async getSalesComparison(
+    @Query('shopId') shopId: string,
+    @Query('startDate') startDate: string,
+    @Query('endDate') endDate: string,
+  ) {
+    return this.reportsService.getSalesComparison(shopId, startDate, endDate);
+  }
 }

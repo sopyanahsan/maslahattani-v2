@@ -286,4 +286,231 @@ export class ReportsService {
       })),
     };
   }
+
+  // ============================================
+  // PRODUCT REPORT
+  // ============================================
+
+  async getProductReport(shopId: string, startDate?: string, endDate?: string) {
+    const trxWhere: any = { shopId, status: TransactionStatus.COMPLETED };
+    if (startDate || endDate) {
+      trxWhere.createdAt = {};
+      if (startDate) trxWhere.createdAt.gte = new Date(startDate);
+      if (endDate) trxWhere.createdAt.lte = new Date(endDate + 'T23:59:59.999Z');
+    }
+
+    // All transaction items in period
+    const itemsGrouped = await this.prisma.transactionItem.groupBy({
+      by: ['productId'],
+      where: { transaction: trxWhere },
+      _sum: { quantity: true, subtotal: true },
+      _count: true,
+    });
+
+    // All products in shop
+    const allProducts = await this.prisma.product.findMany({
+      where: { shopId, deletedAt: null },
+      select: { id: true, name: true, sku: true, price: true, cost: true },
+    });
+
+    const salesMap = new Map(itemsGrouped.map((ig) => [ig.productId, ig]));
+
+    // Top Selling (by revenue)
+    const topSelling = [...itemsGrouped]
+      .sort((a, b) => (b._sum.subtotal || 0) - (a._sum.subtotal || 0))
+      .slice(0, 10)
+      .map((ig) => {
+        const p = allProducts.find((pr) => pr.id === ig.productId);
+        return {
+          productId: ig.productId,
+          name: p?.name ?? 'Unknown',
+          sku: p?.sku ?? '-',
+          qtySold: ig._sum.quantity || 0,
+          revenue: ig._sum.subtotal || 0,
+          transactions: ig._count,
+        };
+      });
+
+    // Slow Moving (products with 0 or lowest sales)
+    const slowMoving = allProducts
+      .map((p) => {
+        const sale = salesMap.get(p.id);
+        return {
+          productId: p.id,
+          name: p.name,
+          sku: p.sku,
+          price: p.price,
+          qtySold: sale?._sum.quantity || 0,
+          revenue: sale?._sum.subtotal || 0,
+        };
+      })
+      .sort((a, b) => a.qtySold - b.qtySold)
+      .slice(0, 10);
+
+    // Highest Margin
+    const highestMargin = allProducts
+      .filter((p) => p.price > 0 && p.cost > 0)
+      .map((p) => {
+        const sale = salesMap.get(p.id);
+        const margin = p.price - p.cost;
+        const marginPercent = Math.round((margin / p.price) * 100);
+        return {
+          productId: p.id,
+          name: p.name,
+          sku: p.sku,
+          price: p.price,
+          cost: p.cost,
+          margin,
+          marginPercent,
+          qtySold: sale?._sum.quantity || 0,
+          totalProfit: (sale?._sum.quantity || 0) * margin,
+        };
+      })
+      .sort((a, b) => b.totalProfit - a.totalProfit)
+      .slice(0, 10);
+
+    return {
+      totalProducts: allProducts.length,
+      productsWithSales: itemsGrouped.length,
+      productsWithoutSales: allProducts.length - itemsGrouped.length,
+      topSelling,
+      slowMoving,
+      highestMargin,
+    };
+  }
+
+  // ============================================
+  // CUSTOMER REPORT
+  // ============================================
+
+  async getCustomerReport(shopId: string, startDate?: string, endDate?: string) {
+    const trxWhere: any = { shopId, status: TransactionStatus.COMPLETED, customerId: { not: null } };
+    if (startDate || endDate) {
+      trxWhere.createdAt = {};
+      if (startDate) trxWhere.createdAt.gte = new Date(startDate);
+      if (endDate) trxWhere.createdAt.lte = new Date(endDate + 'T23:59:59.999Z');
+    }
+
+    // Group transactions by customer
+    const customerGrouped = await this.prisma.transaction.groupBy({
+      by: ['customerId'],
+      where: trxWhere,
+      _sum: { totalPrice: true, totalCost: true },
+      _count: true,
+      orderBy: { _sum: { totalPrice: 'desc' } },
+      take: 20,
+    });
+
+    // Enrich with customer names
+    const customerIds = customerGrouped.map((cg) => cg.customerId!).filter(Boolean);
+    const customers = await this.prisma.customer.findMany({
+      where: { id: { in: customerIds } },
+      select: { id: true, name: true, phone: true, createdAt: true },
+    });
+
+    // Top Spenders
+    const topSpenders = customerGrouped.map((cg) => {
+      const c = customers.find((cu) => cu.id === cg.customerId);
+      return {
+        customerId: cg.customerId,
+        name: c?.name ?? 'Unknown',
+        phone: c?.phone ?? null,
+        totalSpent: cg._sum.totalPrice || 0,
+        totalProfit: (cg._sum.totalPrice || 0) - (cg._sum.totalCost || 0),
+        transactionCount: cg._count,
+        avgPerVisit: cg._count > 0 ? Math.round((cg._sum.totalPrice || 0) / cg._count) : 0,
+      };
+    });
+
+    // Repeat vs New (based on transaction count in period)
+    const repeatCustomers = customerGrouped.filter((cg) => cg._count > 1).length;
+    const newCustomers = customerGrouped.filter((cg) => cg._count === 1).length;
+
+    // Total unique customers
+    const totalUniqueCustomers = await this.prisma.transaction.groupBy({
+      by: ['customerId'],
+      where: trxWhere,
+      _count: true,
+    });
+
+    // Customers created in this period (truly new)
+    const newlyCreatedWhere: any = { shopId };
+    if (startDate || endDate) {
+      newlyCreatedWhere.createdAt = {};
+      if (startDate) newlyCreatedWhere.createdAt.gte = new Date(startDate);
+      if (endDate) newlyCreatedWhere.createdAt.lte = new Date(endDate + 'T23:59:59.999Z');
+    }
+    const newlyCreatedCount = await this.prisma.customer.count({ where: newlyCreatedWhere });
+
+    return {
+      summary: {
+        totalUniqueCustomers: totalUniqueCustomers.length,
+        repeatCustomers,
+        newCustomers,
+        newlyRegistered: newlyCreatedCount,
+      },
+      topSpenders,
+    };
+  }
+
+  // ============================================
+  // SALES COMPARISON (period vs previous period)
+  // ============================================
+
+  async getSalesComparison(shopId: string, startDate: string, endDate: string) {
+    const start = new Date(startDate);
+    const end = new Date(endDate + 'T23:59:59.999Z');
+
+    // Calculate previous period (same duration, before start)
+    const durationMs = end.getTime() - start.getTime();
+    const prevEnd = new Date(start.getTime() - 1);
+    const prevStart = new Date(prevEnd.getTime() - durationMs);
+
+    const [current, previous] = await Promise.all([
+      this.prisma.transaction.aggregate({
+        where: { shopId, status: TransactionStatus.COMPLETED, createdAt: { gte: start, lte: end } },
+        _sum: { totalPrice: true, totalCost: true, totalDiscount: true },
+        _count: true,
+      }),
+      this.prisma.transaction.aggregate({
+        where: { shopId, status: TransactionStatus.COMPLETED, createdAt: { gte: prevStart, lte: prevEnd } },
+        _sum: { totalPrice: true, totalCost: true, totalDiscount: true },
+        _count: true,
+      }),
+    ]);
+
+    const curOmzet = current._sum.totalPrice || 0;
+    const prevOmzet = previous._sum.totalPrice || 0;
+    const curProfit = curOmzet - (current._sum.totalCost || 0);
+    const prevProfit = prevOmzet - (previous._sum.totalCost || 0);
+    const curTrx = current._count || 0;
+    const prevTrx = previous._count || 0;
+
+    function pctChange(cur: number, prev: number): number {
+      if (prev === 0) return cur > 0 ? 100 : 0;
+      return Math.round(((cur - prev) / prev) * 100 * 10) / 10;
+    }
+
+    return {
+      current: {
+        period: `${startDate} — ${endDate}`,
+        omzet: curOmzet,
+        profit: curProfit,
+        transactions: curTrx,
+        aov: curTrx > 0 ? Math.round(curOmzet / curTrx) : 0,
+      },
+      previous: {
+        period: `${prevStart.toISOString().slice(0, 10)} — ${prevEnd.toISOString().slice(0, 10)}`,
+        omzet: prevOmzet,
+        profit: prevProfit,
+        transactions: prevTrx,
+        aov: prevTrx > 0 ? Math.round(prevOmzet / prevTrx) : 0,
+      },
+      change: {
+        omzet: pctChange(curOmzet, prevOmzet),
+        profit: pctChange(curProfit, prevProfit),
+        transactions: pctChange(curTrx, prevTrx),
+      },
+    };
+  }
 }
