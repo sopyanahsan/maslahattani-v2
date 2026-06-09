@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
 import api from '@/shared/services/api';
+import { setShopTimezone } from '@/shared/utils/formatDate';
 
 export interface ShopSettings {
   brilinkEnabled: boolean;
@@ -17,6 +18,7 @@ export interface ShopSettings {
   discountPerItemEnabled: boolean;
   discountTotalEnabled: boolean;
   notePerItemEnabled: boolean;
+  timezone: string;
 }
 
 const DEFAULT_SETTINGS: ShopSettings = {
@@ -34,6 +36,7 @@ const DEFAULT_SETTINGS: ShopSettings = {
   discountPerItemEnabled: true,
   discountTotalEnabled: true,
   notePerItemEnabled: true,
+  timezone: 'Asia/Jakarta',
 };
 
 /** Toggle fields that the store watches for changes. */
@@ -52,6 +55,7 @@ const TOGGLE_KEYS: (keyof ShopSettings)[] = [
   'discountPerItemEnabled',
   'discountTotalEnabled',
   'notePerItemEnabled',
+  'timezone',
 ];
 
 /** Human-readable labels for change notification. */
@@ -102,6 +106,7 @@ export const useSettingsStore = defineStore('settings', () => {
   const isDiscountPerItemEnabled = computed(() => settings.value.discountPerItemEnabled);
   const isDiscountTotalEnabled = computed(() => settings.value.discountTotalEnabled);
   const isNotePerItemEnabled = computed(() => settings.value.notePerItemEnabled);
+  const timezone = computed(() => settings.value.timezone || 'Asia/Jakarta');
 
   // ============================================
   // Actions
@@ -140,6 +145,9 @@ export const useSettingsStore = defineStore('settings', () => {
         }
       }
       settings.value = newSettings;
+
+      // Sync timezone to localStorage for utility functions
+      setShopTimezone(newSettings.timezone || 'Asia/Jakarta');
 
       // Update snapshot to current server state
       lastKnownSnapshot.value = { ...serverToggles };
@@ -229,6 +237,7 @@ export const useSettingsStore = defineStore('settings', () => {
     isDiscountPerItemEnabled,
     isDiscountTotalEnabled,
     isNotePerItemEnabled,
+    timezone,
     fetchSettings,
     dismissChange,
     startPolling,

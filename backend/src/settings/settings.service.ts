@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateLanguageDto, UpdateReceiptConfigDto } from './dto/update-settings.dto';
+import { UpdateLanguageDto, UpdateReceiptConfigDto, UpdateTimezoneDto } from './dto/update-settings.dto';
 import { UpdateShopDto, CreateShopDto } from './dto/update-shop.dto';
 
 /** Default BRILink category config — 7 categories with display info. */
@@ -68,6 +68,26 @@ export class SettingsService {
     });
 
     return { success: true, message: `Bahasa berhasil diubah ke "${dto.language}".`, setting };
+  }
+
+  // ============================================
+  // UPDATE TIMEZONE
+  // ============================================
+
+  async updateTimezone(dto: UpdateTimezoneDto) {
+    const validTimezones = ['Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura'];
+    if (!validTimezones.includes(dto.timezone)) {
+      throw new NotFoundException('Zona waktu tidak valid. Pilih: Asia/Jakarta (WIB), Asia/Makassar (WITA), atau Asia/Jayapura (WIT).');
+    }
+
+    const setting = await this.prisma.shopSetting.upsert({
+      where: { shopId: dto.shopId },
+      update: { timezone: dto.timezone },
+      create: { shopId: dto.shopId, language: 'id', timezone: dto.timezone },
+    });
+
+    const label = dto.timezone === 'Asia/Jakarta' ? 'WIB' : dto.timezone === 'Asia/Makassar' ? 'WITA' : 'WIT';
+    return { success: true, message: `Zona waktu berhasil diubah ke ${label}.`, setting };
   }
 
   // ============================================

@@ -165,6 +165,7 @@ model ShopSetting {
   shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId              String    @unique
   language            String    @default("id")
+  timezone            String    @default("Asia/Jakarta") // WIB=Asia/Jakarta, WITA=Asia/Makassar, WIT=Asia/Jayapura
   receiptConfig       String?
   alertConfig         Json?
   brilinkCategoryConfig Json?

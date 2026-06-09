@@ -16,7 +16,7 @@ import { RolesGuard, Roles } from '../auth/guards/roles.guard';
 import { RequirePermission } from '../permissions/require-permission.guard';
 import { SettingsService } from './settings.service';
 import { DashboardService } from '../dashboard/dashboard.service';
-import { UpdateLanguageDto, UpdateReceiptConfigDto } from './dto/update-settings.dto';
+import { UpdateLanguageDto, UpdateReceiptConfigDto, UpdateTimezoneDto } from './dto/update-settings.dto';
 import { UpdateShopDto, CreateShopDto } from './dto/update-shop.dto';
 import { UpdateAlertConfigDto } from './dto/update-alert-config.dto';
 import { Role } from '@prisma/client';
@@ -42,6 +42,12 @@ export class SettingsController {
   @ApiOperation({ summary: 'Update bahasa system' })
   async updateLanguage(@Body() dto: UpdateLanguageDto) {
     return this.settingsService.updateLanguage(dto);
+  }
+
+  @Put('timezone')
+  @ApiOperation({ summary: 'Update zona waktu cabang (WIB/WITA/WIT)' })
+  async updateTimezone(@Body() dto: UpdateTimezoneDto) {
+    return this.settingsService.updateTimezone(dto);
   }
 
   @Put('receipt-config')

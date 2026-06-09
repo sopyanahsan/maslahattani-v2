@@ -1,12 +1,29 @@
 /**
- * Format ISO datetime string to WIB (Asia/Jakarta) display.
- * Handles Prisma's TIMESTAMP WITHOUT TIMEZONE (stored as UTC but without 'Z' suffix).
- * Always forces Asia/Jakarta timezone for consistent display.
+ * Format ISO datetime string to shop timezone display.
+ * Uses timezone from settings store, falls back to Asia/Jakarta.
+ *
+ * IMPORTANT: Prisma stores UTC in TIMESTAMP WITHOUT TIMEZONE columns.
+ * If the ISO string doesn't have 'Z' or '+', we append 'Z' to force UTC parse.
  */
+
+/** Get current shop timezone from localStorage cache (avoid importing store in utility) */
+function getShopTimezone(): string {
+  // Read from localStorage (synced by settings store on fetch)
+  return localStorage.getItem('shop_timezone') || 'Asia/Jakarta';
+}
+
+/** Set timezone to localStorage (called by settings store) */
+export function setShopTimezone(tz: string) {
+  localStorage.setItem('shop_timezone', tz);
+}
+
+function parseISO(iso: string): Date {
+  return iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z');
+}
+
 export function formatDateTimeWIB(iso: string): string {
-  const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z');
-  return d.toLocaleString('id-ID', {
-    timeZone: 'Asia/Jakarta',
+  return parseISO(iso).toLocaleString('id-ID', {
+    timeZone: getShopTimezone(),
     day: 'numeric',
     month: 'short',
     hour: '2-digit',
@@ -15,9 +32,8 @@ export function formatDateTimeWIB(iso: string): string {
 }
 
 export function formatDateTimeFullWIB(iso: string): string {
-  const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z');
-  return d.toLocaleString('id-ID', {
-    timeZone: 'Asia/Jakarta',
+  return parseISO(iso).toLocaleString('id-ID', {
+    timeZone: getShopTimezone(),
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -27,9 +43,8 @@ export function formatDateTimeFullWIB(iso: string): string {
 }
 
 export function formatDateWIB(iso: string): string {
-  const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z');
-  return d.toLocaleDateString('id-ID', {
-    timeZone: 'Asia/Jakarta',
+  return parseISO(iso).toLocaleDateString('id-ID', {
+    timeZone: getShopTimezone(),
     day: 'numeric',
     month: 'short',
     year: 'numeric',
@@ -37,10 +52,16 @@ export function formatDateWIB(iso: string): string {
 }
 
 export function formatTimeWIB(iso: string): string {
-  const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z');
-  return d.toLocaleTimeString('id-ID', {
-    timeZone: 'Asia/Jakarta',
+  return parseISO(iso).toLocaleTimeString('id-ID', {
+    timeZone: getShopTimezone(),
     hour: '2-digit',
     minute: '2-digit',
   });
 }
+
+/** Timezone options for settings UI */
+export const TIMEZONE_OPTIONS = [
+  { value: 'Asia/Jakarta', label: 'WIB (Waktu Indonesia Barat)', offset: 'UTC+7' },
+  { value: 'Asia/Makassar', label: 'WITA (Waktu Indonesia Tengah)', offset: 'UTC+8' },
+  { value: 'Asia/Jayapura', label: 'WIT (Waktu Indonesia Timur)', offset: 'UTC+9' },
+];

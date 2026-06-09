@@ -29,3 +29,17 @@ export class UpdateReceiptConfigDto {
   @IsString()
   footerMessage?: string;
 }
+
+
+export class UpdateTimezoneDto {
+  @ApiProperty({ example: 'shop-id-123' })
+  @IsString()
+  shopId: string;
+
+  @ApiProperty({
+    example: 'Asia/Jakarta',
+    description: 'IANA timezone: Asia/Jakarta (WIB), Asia/Makassar (WITA), Asia/Jayapura (WIT)',
+  })
+  @IsString()
+  timezone: string;
+}
