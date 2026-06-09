@@ -536,6 +536,7 @@ async function handleSubmit() {
       fee: response.summary.fee,
       total: response.summary.total,
       date: new Date().toLocaleString('id-ID', {
+        timeZone: 'Asia/Jakarta',
         day: '2-digit',
         month: 'short',
         year: 'numeric',
