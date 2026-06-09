@@ -1277,7 +1277,9 @@ function formatRupiah(amount: number): string {
 }
 
 function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString('id-ID', {
+  const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z');
+  return d.toLocaleString('id-ID', {
+    timeZone: 'Asia/Jakarta',
     day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
   });
 }

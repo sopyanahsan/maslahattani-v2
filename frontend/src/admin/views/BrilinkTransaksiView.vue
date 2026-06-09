@@ -541,7 +541,11 @@ function formatCompact(amount: number): string {
 }
 
 function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString('id-ID', {
+  // Force Asia/Jakarta timezone — Prisma stores UTC in TIMESTAMP WITHOUT TZ
+  // so we need explicit timeZone to avoid browser treating it as local
+  const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z');
+  return d.toLocaleString('id-ID', {
+    timeZone: 'Asia/Jakarta',
     day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
   });
 }
