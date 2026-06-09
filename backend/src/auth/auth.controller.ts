@@ -119,6 +119,15 @@ export class AuthController {
     return this.authService.loginWithPin(dto, ipAddress, userAgent);
   }
 
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Login/Register via Google (Firebase ID Token)' })
+  async loginWithGoogle(@Body() body: { idToken: string }, @Request() req: any) {
+    const ipAddress = req.ip || req.connection?.remoteAddress;
+    const userAgent = req.headers['user-agent'];
+    return this.authService.loginWithGoogle(body.idToken, ipAddress, userAgent);
+  }
+
   @Post('change-pin')
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()

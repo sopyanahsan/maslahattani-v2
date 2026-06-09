@@ -12,6 +12,7 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { ShopsService } from '../shops/shops.service';
 import { OtpService } from './otp.service';
+import { FirebaseAdminService } from './firebase-admin.service';
 import { RegisterKasirDto, VerifyOtpDto } from './dto/register.dto';
 import { LoginDto, RefreshTokenDto } from './dto/login.dto';
 import { LoginPinDto, ChangePinDto } from './dto/login-pin.dto';
@@ -34,6 +35,7 @@ export class AuthService {
     private configService: ConfigService,
     private otpService: OtpService,
     private shopsService: ShopsService,
+    private firebaseAdmin: FirebaseAdminService,
   ) {}
 
   // ============================================
@@ -516,6 +518,152 @@ export class AuthService {
         mustChangePin: user.mustChangePin,
       },
       shop,
+    };
+  }
+
+  // ============================================
+  // LOGIN WITH GOOGLE (Firebase)
+  // ============================================
+
+  async loginWithGoogle(idToken: string, ipAddress?: string, userAgent?: string) {
+    // Verify Firebase ID Token
+    const decoded = await this.firebaseAdmin.verifyIdToken(idToken);
+    if (!decoded) {
+      throw new UnauthorizedException('Token Google tidak valid atau expired.');
+    }
+
+    const email = decoded.email;
+    const name = decoded.name || decoded.email?.split('@')[0] || 'User';
+    const picture = decoded.picture || null;
+
+    if (!email) {
+      throw new BadRequestException('Akun Google tidak memiliki email.');
+    }
+
+    // Find existing user by email
+    let user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (user) {
+      // Existing user → login directly
+      if (user.status !== UserStatus.ACTIVE) {
+        throw new ForbiddenException('Akun dinonaktifkan. Hubungi admin.');
+      }
+    } else {
+      // New user → auto-register as SUPER_ADMIN with trial
+      // Create Tenant + User + Shop + Subscription (same as tenant register flow)
+      const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 30) + '-' + Math.random().toString(36).substring(2, 6);
+      const passwordHash = await bcrypt.hash(Math.random().toString(36).slice(2, 14), 12);
+
+      const result = await this.prisma.$transaction(async (tx) => {
+        const tenant = await tx.tenant.create({
+          data: {
+            name: `Toko ${name}`,
+            slug,
+            ownerName: name,
+            ownerEmail: email,
+            ownerPhone: '-',
+          },
+        });
+
+        const newUser = await tx.user.create({
+          data: {
+            email,
+            username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9.]/g, ''),
+            passwordHash,
+            fullName: name,
+            avatarUrl: picture,
+            role: 'SUPER_ADMIN',
+            status: 'ACTIVE',
+            tenantId: tenant.id,
+            otpEnabled: false,
+          },
+        });
+
+        const shop = await tx.shop.create({
+          data: {
+            name: `Toko ${name}`,
+            address: '-',
+            phone: '-',
+            ownerId: newUser.id,
+            tenantId: tenant.id,
+          },
+        });
+
+        await tx.user.update({
+          where: { id: newUser.id },
+          data: { shopId: shop.id },
+        });
+
+        await tx.shopSetting.create({
+          data: { shopId: shop.id, language: 'id' },
+        });
+
+        return { tenant, user: newUser, shop };
+      });
+
+      // Create trial subscription
+      try {
+        const { SubscriptionService } = await import('../subscription/subscription.service');
+        // Use the injected service if available, or create trial inline
+        await this.prisma.subscription.create({
+          data: {
+            tenantId: result.tenant.id,
+            plan: 'BASIC',
+            cycle: 'MONTHLY',
+            status: 'TRIAL',
+            startDate: new Date(),
+            endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+          },
+        });
+      } catch {
+        // Silent — subscription creation is non-blocking
+      }
+
+      user = result.user;
+    }
+
+    // Generate JWT tokens
+    const shop = user.shopId ? await this.prisma.shop.findUnique({
+      where: { id: user.shopId },
+      select: { id: true, name: true, address: true, phone: true },
+    }) : null;
+
+    const payload: TokenPayload = {
+      sub: user.id,
+      email: user.email || '',
+      role: user.role,
+      shopId: user.shopId || undefined,
+    };
+
+    const token = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(
+      { sub: user.id, type: 'refresh' },
+      {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: Number(this.configService.get('JWT_REFRESH_EXPIRATION', '2592000')),
+      },
+    );
+
+    // Update last login
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() },
+    });
+
+    return {
+      token,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        fullName: user.fullName,
+        role: user.role,
+        shopId: user.shopId,
+        avatarUrl: user.avatarUrl,
+      },
+      shop,
+      isNewUser: !user.lastLogin, // first time login = new registration
     };
   }
 
