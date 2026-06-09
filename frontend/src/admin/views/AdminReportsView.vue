@@ -16,6 +16,35 @@
       <div class="flex items-center gap-1.5">
         <button v-for="r in quickRanges" :key="r.label" type="button" :class="['h-7 px-2.5 text-[11px] font-medium rounded-md transition-colors', activeRange === r.label ? 'bg-[#00A19B] text-white' : 'border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800']" @click="applyRange(r.days, r.label)">{{ r.label }}</button>
       </div>
+      <!-- Export Buttons -->
+      <div v-if="salesReport" class="flex items-center gap-1.5 sm:ml-auto">
+        <button
+          type="button"
+          :disabled="exporting"
+          class="h-8 px-3 text-[11px] font-semibold border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 rounded-md hover:bg-red-100 disabled:opacity-50 flex items-center gap-1.5"
+          @click="handleExport('pdf')"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+          {{ exporting ? 'Exporting...' : 'PDF' }}
+        </button>
+        <button
+          type="button"
+          :disabled="exporting"
+          class="h-8 px-3 text-[11px] font-semibold border border-emerald-200 dark:border-emerald-800 text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 rounded-md hover:bg-emerald-100 disabled:opacity-50 flex items-center gap-1.5"
+          @click="handleExport('excel')"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          {{ exporting ? 'Exporting...' : 'Excel' }}
+        </button>
+        <button
+          type="button"
+          class="h-8 px-3 text-[11px] font-semibold border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5"
+          @click="handleExportCSV"
+        >
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          CSV
+        </button>
+      </div>
     </div>
 
     <!-- Tabs -->
@@ -246,10 +275,14 @@
 <script setup lang="ts">
 import { onMounted, ref, computed } from 'vue';
 import { useAuthStore } from '@/shared/stores/auth.store';
-import reportsService, { type SalesReportResponse, type ProductReportResponse, type CustomerReportResponse, type SalesComparisonResponse } from '@/shared/services/reports.service';
+import { useShopStore } from '@/shared/stores/shop.store';
+import reportsService, { exportToCSV, type SalesReportResponse, type ProductReportResponse, type CustomerReportResponse, type SalesComparisonResponse } from '@/shared/services/reports.service';
+import { exportSalesExcel, exportSalesPDF } from '@/shared/services/export.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const loading = ref(false);
+const exporting = ref(false);
 const activeTab = ref<'sales' | 'labarugi' | 'products' | 'customers'>('sales');
 const activeRange = ref('30 Hari');
 const startDate = ref('');
@@ -365,6 +398,38 @@ function shouldShowTrendLabel(idx: number): boolean {
   if (total <= 10) return true;
   if (total <= 15) return idx % 2 === 0;
   return idx % 3 === 0;
+}
+
+// ============================================
+// EXPORT FUNCTIONS
+// ============================================
+
+async function handleExport(format: 'pdf' | 'excel') {
+  if (!salesReport.value) return;
+  exporting.value = true;
+  try {
+    const shopName = shopStore.currentShopName || 'Toko';
+    if (format === 'pdf') {
+      await exportSalesPDF(salesReport.value, startDate.value, endDate.value, shopName);
+    } else {
+      await exportSalesExcel(salesReport.value, startDate.value, endDate.value, shopName);
+    }
+  } catch (e) {
+    console.error('Export error:', e);
+  } finally {
+    exporting.value = false;
+  }
+}
+
+function handleExportCSV() {
+  if (!salesReport.value) return;
+  const s = salesReport.value.summary;
+  // Export summary + daily trend as CSV
+  const headers = ['Tanggal', 'Omzet', 'Profit', 'Transaksi'];
+  const rows = salesReport.value.dailyTrend.map(d => [d.date, d.omzet, d.profit, d.transactions]);
+  // Prepend summary row
+  rows.unshift(['TOTAL', s.omzet, s.profit, s.totalTransactions]);
+  exportToCSV(`laporan-retail-${startDate.value || 'all'}-${endDate.value || 'all'}.csv`, headers, rows);
 }
 
 onMounted(() => { applyRange(30, '30 Hari'); });
