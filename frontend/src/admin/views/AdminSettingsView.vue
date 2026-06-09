@@ -113,6 +113,47 @@
       </section>
 
       <!-- ============================================ -->
+      <!-- ZONA WAKTU (inside Toko tab)                  -->
+      <!-- ============================================ -->
+      <section
+        v-if="activeTab === 'shop'"
+        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden"
+      >
+        <div class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            Zona Waktu
+          </h3>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Atur zona waktu sesuai lokasi cabang.</p>
+        </div>
+        <div class="p-5 space-y-4">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <button
+              v-for="tz in timezoneOptions"
+              :key="tz.value"
+              type="button"
+              :class="[
+                'p-4 rounded-lg border-2 text-left transition-all',
+                currentTimezone === tz.value
+                  ? 'border-[#00A19B] bg-[#00A19B]/5 dark:bg-[#00A19B]/10'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+              ]"
+              @click="handleChangeTimezone(tz.value)"
+            >
+              <p class="text-sm font-bold text-slate-900 dark:text-slate-100">{{ tz.label }}</p>
+              <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">{{ tz.offset }}</p>
+              <p v-if="currentTimezone === tz.value" class="text-[10px] font-semibold text-[#00A19B] mt-1">Aktif</p>
+            </button>
+          </div>
+          <div v-if="tzSuccess" class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-md p-2 text-xs text-emerald-700 dark:text-emerald-300">
+            {{ tzSuccess }}
+          </div>
+          <div v-if="tzError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">
+            {{ tzError }}
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================ -->
       <!-- TAB: STRUK & POS                             -->
       <!-- ============================================ -->
       <section
@@ -523,6 +564,8 @@ import {
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
+import { useSettingsStore } from '@/shared/stores/settings.store';
+import api from '@/shared/services/api';
 import settingsService from '@/shared/services/settings.service';
 import SystemSettingsView from '@/admin/views/SystemSettingsView.vue';
 import dashboardService from '@/shared/services/dashboard.service';
@@ -532,6 +575,7 @@ const { preview: previewTone } = useNotifSound();
 
 const authStore = useAuthStore();
 const shopStore = useShopStore();
+const settingsStore = useSettingsStore();
 
 /**
  * Sumber shopId yang reliable:
@@ -566,6 +610,34 @@ const shopSuccess = ref<string | null>(null);
 const languageForm = reactive({ language: 'id' });
 const savingLang = ref(false);
 const langSuccess = ref<string | null>(null);
+
+// Timezone
+const timezoneOptions = [
+  { value: 'Asia/Jakarta', label: 'WIB', offset: 'UTC+7 — Jawa, Sumatera, Kalbar' },
+  { value: 'Asia/Makassar', label: 'WITA', offset: 'UTC+8 — Kalimantan, Bali, Sulawesi, NTT/NTB' },
+  { value: 'Asia/Jayapura', label: 'WIT', offset: 'UTC+9 — Papua, Maluku' },
+];
+const currentTimezone = ref('Asia/Jakarta');
+const tzSuccess = ref<string | null>(null);
+const tzError = ref<string | null>(null);
+
+async function handleChangeTimezone(tz: string) {
+  tzSuccess.value = null;
+  tzError.value = null;
+  try {
+    const sid = shopId.value;
+    if (!sid) return;
+    const { data } = await api.put('/settings/timezone', { shopId: sid, timezone: tz });
+    currentTimezone.value = tz;
+    tzSuccess.value = data.message || 'Zona waktu berhasil diubah.';
+    // Sync to settings store + localStorage
+    settingsStore.settings.timezone = tz;
+    localStorage.setItem('shop_timezone', tz);
+    setTimeout(() => { tzSuccess.value = null; }, 3000);
+  } catch (e: any) {
+    tzError.value = e.response?.data?.message || 'Gagal mengubah zona waktu.';
+  }
+}
 
 // Receipt form
 const receiptForm = reactive({
@@ -638,6 +710,7 @@ async function fetchSettings() {
     shopForm.address = data.shop.address;
     shopForm.phone = data.shop.phone;
     languageForm.language = data.settings?.language ?? 'id';
+    currentTimezone.value = data.settings?.timezone ?? 'Asia/Jakarta';
     if (data.settings?.receiptConfig) {
       try {
         const rc =
