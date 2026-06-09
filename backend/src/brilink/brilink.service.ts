@@ -857,7 +857,7 @@ export class BrilinkService {
       }> = await this.prisma.$queryRawUnsafe(
         `
         SELECT
-          EXTRACT(HOUR FROM ("createdAt" AT TIME ZONE 'Asia/Jakarta'))::int as hour,
+          EXTRACT(HOUR FROM ("createdAt" + interval '7 hours'))::int as hour,
           "category",
           COUNT(*)::bigint as count
         FROM "brilink_transactions"
@@ -898,7 +898,7 @@ export class BrilinkService {
       }> = await this.prisma.$queryRawUnsafe(
         `
         SELECT
-          TO_CHAR(DATE_TRUNC('week', ("createdAt" AT TIME ZONE 'Asia/Jakarta')::date), 'YYYY-MM-DD') as week_label,
+          TO_CHAR(DATE_TRUNC('week', ("createdAt" + interval '7 hours')::date), 'YYYY-MM-DD') as week_label,
           "category",
           COUNT(*)::bigint as count
         FROM "brilink_transactions"
@@ -950,7 +950,7 @@ export class BrilinkService {
     }> = await this.prisma.$queryRawUnsafe(
       `
       SELECT
-        TO_CHAR(("createdAt" AT TIME ZONE 'Asia/Jakarta')::date, 'YYYY-MM-DD') as day_label,
+        TO_CHAR(("createdAt" + interval '7 hours')::date, 'YYYY-MM-DD') as day_label,
         "category",
         COUNT(*)::bigint as count
       FROM "brilink_transactions"
@@ -1002,7 +1002,7 @@ export class BrilinkService {
       }> = await this.prisma.$queryRawUnsafe(
         `
         SELECT
-          EXTRACT(HOUR FROM ("createdAt" AT TIME ZONE 'Asia/Jakarta'))::int as hour,
+          EXTRACT(HOUR FROM ("createdAt" + interval '7 hours'))::int as hour,
           COALESCE(SUM("fee"), 0)::bigint as total_fee
         FROM "brilink_transactions"
         WHERE "shopId" = $1
@@ -1037,7 +1037,7 @@ export class BrilinkService {
       }> = await this.prisma.$queryRawUnsafe(
         `
         SELECT
-          TO_CHAR(DATE_TRUNC('week', ("createdAt" AT TIME ZONE 'Asia/Jakarta')::date), 'YYYY-MM-DD') as week_label,
+          TO_CHAR(DATE_TRUNC('week', ("createdAt" + interval '7 hours')::date), 'YYYY-MM-DD') as week_label,
           COALESCE(SUM("fee"), 0)::bigint as total_fee
         FROM "brilink_transactions"
         WHERE "shopId" = $1
@@ -1082,7 +1082,7 @@ export class BrilinkService {
     }> = await this.prisma.$queryRawUnsafe(
       `
       SELECT
-        TO_CHAR(("createdAt" AT TIME ZONE 'Asia/Jakarta')::date, 'YYYY-MM-DD') as day_label,
+        TO_CHAR(("createdAt" + interval '7 hours')::date, 'YYYY-MM-DD') as day_label,
         COALESCE(SUM("fee"), 0)::bigint as total_fee
       FROM "brilink_transactions"
       WHERE "shopId" = $1

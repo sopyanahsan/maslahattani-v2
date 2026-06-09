@@ -186,7 +186,7 @@ export class DashboardBrilinkService {
       }> = await this.prisma.$queryRawUnsafe(
         `
         SELECT
-          EXTRACT(HOUR FROM ("createdAt" AT TIME ZONE 'Asia/Jakarta'))::int as hour,
+          EXTRACT(HOUR FROM ("createdAt" + interval '7 hours'))::int as hour,
           "category",
           COUNT(*)::bigint as count
         FROM "brilink_transactions"
@@ -233,7 +233,7 @@ export class DashboardBrilinkService {
     }> = await this.prisma.$queryRawUnsafe(
       `
       SELECT
-        TO_CHAR(("createdAt" AT TIME ZONE 'Asia/Jakarta')::date, 'YYYY-MM-DD') as day_label,
+        TO_CHAR(("createdAt" + interval '7 hours')::date, 'YYYY-MM-DD') as day_label,
         "category",
         COUNT(*)::bigint as count
       FROM "brilink_transactions"
