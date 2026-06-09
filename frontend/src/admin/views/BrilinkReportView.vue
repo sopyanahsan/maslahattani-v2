@@ -42,28 +42,28 @@
       <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 text-center">
           <p class="text-[10px] text-slate-500 uppercase">Total Transaksi</p>
-          <p class="text-lg font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">{{ report.summary.totalTransactions.toLocaleString('id-ID') }}</p>
+          <p class="text-lg font-bold font-mono text-slate-900 dark:text-slate-100 mt-1">{{ (report.summary?.totalTransactions ?? 0).toLocaleString('id-ID') }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 text-center">
           <p class="text-[10px] text-slate-500 uppercase">Volume</p>
-          <p class="text-lg font-bold font-mono text-blue-600 mt-1">{{ formatRupiah(report.summary.volume) }}</p>
+          <p class="text-lg font-bold font-mono text-blue-600 mt-1">{{ formatRupiah(report.summary?.volume ?? 0) }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 text-center">
           <p class="text-[10px] text-slate-500 uppercase">Fee Earnings</p>
-          <p class="text-lg font-bold font-mono text-emerald-600 mt-1">{{ formatRupiah(report.summary.feeEarnings) }}</p>
+          <p class="text-lg font-bold font-mono text-emerald-600 mt-1">{{ formatRupiah(report.summary?.feeEarnings ?? 0) }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 text-center">
           <p class="text-[10px] text-slate-500 uppercase">Avg Fee/Trx</p>
-          <p class="text-lg font-bold font-mono text-[#00A19B] mt-1">{{ formatRupiah(report.summary.avgFee) }}</p>
+          <p class="text-lg font-bold font-mono text-[#00A19B] mt-1">{{ formatRupiah(report.summary?.avgFee ?? 0) }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4 text-center">
           <p class="text-[10px] text-slate-500 uppercase">Void</p>
-          <p class="text-lg font-bold font-mono text-red-500 mt-1">{{ report.summary.voidedCount }}</p>
+          <p class="text-lg font-bold font-mono text-red-500 mt-1">{{ report.summary?.voidedCount ?? 0 }}</p>
         </div>
       </div>
 
       <!-- Grafik Trend Volume + Fee -->
-      <div v-if="report.dailyTrend.length > 1" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+      <div v-if="report.dailyTrend.length > 0" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Grafik Trend Harian</h3>
           <div class="flex items-center gap-3">
