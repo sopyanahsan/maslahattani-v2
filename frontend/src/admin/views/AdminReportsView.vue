@@ -232,6 +232,29 @@
             </table>
           </div>
         </div>
+
+        <!-- Kategori Produk -->
+        <div v-if="productReport.categoryBreakdown && productReport.categoryBreakdown.length > 0" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-violet-50 dark:bg-violet-950/20"><h3 class="text-sm font-bold text-violet-800 dark:text-violet-300">Penjualan per Kategori Produk</h3></div>
+          <div class="overflow-x-auto">
+            <table class="w-full"><thead class="border-b border-slate-200 dark:border-slate-800"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">Kategori</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Produk</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Qty Terjual</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Revenue</th></tr></thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800"><tr v-for="c in productReport.categoryBreakdown" :key="c.categoryId" class="hover:bg-slate-50 dark:hover:bg-slate-800/50"><td class="px-4 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200">{{ c.name }}</td><td class="px-4 py-2.5 text-right text-xs font-mono text-slate-500">{{ c.productCount }}</td><td class="px-4 py-2.5 text-right text-xs font-mono">{{ c.qty }}</td><td class="px-4 py-2.5 text-right text-xs font-mono font-semibold text-slate-900 dark:text-slate-100">{{ formatRupiah(c.revenue) }}</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Stok Menipis -->
+        <div v-if="productReport.lowStock && productReport.lowStock.length > 0" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-amber-50 dark:bg-amber-950/20">
+            <h3 class="text-sm font-bold text-amber-800 dark:text-amber-300">Stok Menipis (≤ {{ productReport.lowStockThreshold }} pcs)</h3>
+            <p class="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">Produk yang perlu segera di-restock</p>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full"><thead class="border-b border-slate-200 dark:border-slate-800"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">Produk</th><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">SKU</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Sisa Stok</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Threshold</th></tr></thead>
+              <tbody class="divide-y divide-slate-100 dark:divide-slate-800"><tr v-for="s in productReport.lowStock" :key="s.productId" class="hover:bg-amber-50/50 dark:hover:bg-amber-950/10"><td class="px-4 py-2.5 text-xs font-semibold text-slate-800 dark:text-slate-200">{{ s.name }}</td><td class="px-4 py-2.5 text-xs font-mono text-slate-400">{{ s.sku }}</td><td class="px-4 py-2.5 text-right"><span :class="['text-xs font-mono font-bold', s.currentStock === 0 ? 'text-red-600' : 'text-amber-600']">{{ s.currentStock }}</span></td><td class="px-4 py-2.5 text-right text-xs font-mono text-slate-400">≤ {{ s.threshold }}</td></tr></tbody>
+            </table>
+          </div>
+        </div>
       </template>
 
       <!-- ============================================ -->

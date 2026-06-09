@@ -369,6 +369,63 @@ export class ReportsService {
       .sort((a, b) => b.totalProfit - a.totalProfit)
       .slice(0, 10);
 
+    // Category breakdown (sales per product category)
+    const allProductsFull = await this.prisma.product.findMany({
+      where: { shopId, deletedAt: null },
+      select: { id: true, categoryId: true },
+    });
+    const categories = await this.prisma.productCategory.findMany({
+      where: { shopId },
+      select: { id: true, name: true },
+    });
+
+    const categoryMap = new Map<string, { name: string; qty: number; revenue: number; productCount: number }>();
+    for (const cat of categories) {
+      categoryMap.set(cat.id, { name: cat.name, qty: 0, revenue: 0, productCount: 0 });
+    }
+    // uncategorized
+    categoryMap.set('_uncategorized', { name: 'Tanpa Kategori', qty: 0, revenue: 0, productCount: 0 });
+
+    for (const p of allProductsFull) {
+      const catId = p.categoryId || '_uncategorized';
+      const catEntry = categoryMap.get(catId);
+      if (catEntry) catEntry.productCount += 1;
+      const sale = salesMap.get(p.id);
+      if (sale && catEntry) {
+        catEntry.qty += sale._sum.quantity || 0;
+        catEntry.revenue += sale._sum.subtotal || 0;
+      }
+    }
+
+    const categoryBreakdown = [...categoryMap.entries()]
+      .map(([id, data]) => ({ categoryId: id, ...data }))
+      .filter((c) => c.productCount > 0)
+      .sort((a, b) => b.revenue - a.revenue);
+
+    // Low stock products (below threshold from alertConfig)
+    const alertConfig = await this.prisma.shopSetting.findUnique({
+      where: { shopId },
+      select: { alertConfig: true },
+    });
+    const threshold = (alertConfig?.alertConfig as any)?.lowStockThreshold ?? 5;
+
+    const lowStockProducts = await this.prisma.stock.findMany({
+      where: { shopId, quantity: { lte: threshold } },
+      include: { product: { select: { id: true, name: true, sku: true, price: true, deletedAt: true } } },
+      orderBy: { quantity: 'asc' },
+      take: 20,
+    });
+
+    const lowStock = lowStockProducts
+      .filter((s) => s.product && !s.product.deletedAt)
+      .map((s) => ({
+        productId: s.product.id,
+        name: s.product.name,
+        sku: s.product.sku,
+        currentStock: s.quantity,
+        threshold,
+      }));
+
     return {
       totalProducts: allProducts.length,
       productsWithSales: itemsGrouped.length,
@@ -376,6 +433,9 @@ export class ReportsService {
       topSelling,
       slowMoving,
       highestMargin,
+      categoryBreakdown,
+      lowStock,
+      lowStockThreshold: threshold,
     };
   }
 

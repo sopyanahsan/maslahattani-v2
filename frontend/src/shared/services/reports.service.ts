@@ -133,6 +133,9 @@ export interface ProductReportResponse {
   topSelling: ProductReportItem[];
   slowMoving: ProductReportItem[];
   highestMargin: ProductReportItem[];
+  categoryBreakdown: { categoryId: string; name: string; qty: number; revenue: number; productCount: number }[];
+  lowStock: { productId: string; name: string; sku: string; currentStock: number; threshold: number }[];
+  lowStockThreshold: number;
 }
 
 // ============================================
