@@ -825,15 +825,185 @@
           </div>
         </section>
 
-        <!-- Footer -->
-        <footer class="border-t border-[#3d4948] pt-8 pb-6 text-center">
-          <div class="flex items-center justify-center gap-2 mb-3">
-            <div class="h-2 w-10 bg-[#5fd9d2] rounded-full"></div>
-            <div class="h-2 w-2 bg-[#3d4948] rounded-full"></div>
-            <div class="h-2 w-2 bg-[#3d4948] rounded-full"></div>
+        <!-- 11. TAILWIND CSS TOKENS REFERENCE -->
+        <section id="section-tokens">
+          <h2 class="text-2xl font-semibold text-[#e3e2e2] mb-2">Tailwind CSS Design Tokens</h2>
+          <p class="text-sm text-[#bcc9c7] mb-6">Referensi class Tailwind yang tersedia di <code class="px-1.5 py-0.5 bg-[#292a2a] rounded text-[#5fd9d2] text-xs">tailwind.config.js</code> — gunakan sebagai patokan untuk semua perubahan UI ke depan.</p>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Colors Token Reference -->
+            <div class="bg-posify-surface-container border border-posify-outline-variant rounded-posify-md p-posify-lg space-y-4">
+              <h3 class="text-posify-title font-hanken font-medium text-posify-on-surface">Color Classes</h3>
+              <div class="space-y-2 text-posify-body font-hanken">
+                <div class="flex justify-between items-center p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                  <code class="text-posify-label text-posify-primary">bg-posify-primary</code>
+                  <div class="w-6 h-6 rounded bg-posify-primary"></div>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                  <code class="text-posify-label text-posify-primary">bg-posify-primary-container</code>
+                  <div class="w-6 h-6 rounded bg-posify-primary-container"></div>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                  <code class="text-posify-label text-posify-primary">bg-posify-surface-lowest</code>
+                  <div class="w-6 h-6 rounded bg-posify-surface-lowest border border-posify-outline-variant"></div>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                  <code class="text-posify-label text-posify-primary">bg-posify-surface-container</code>
+                  <div class="w-6 h-6 rounded bg-posify-surface-container border border-posify-outline-variant"></div>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                  <code class="text-posify-label text-posify-primary">bg-posify-surface-high</code>
+                  <div class="w-6 h-6 rounded bg-posify-surface-high"></div>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                  <code class="text-posify-label text-posify-primary">bg-posify-surface-highest</code>
+                  <div class="w-6 h-6 rounded bg-posify-surface-highest"></div>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                  <code class="text-posify-label text-posify-primary">text-posify-on-surface</code>
+                  <span class="text-sm text-posify-on-surface font-bold">Aa</span>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                  <code class="text-posify-label text-posify-primary">text-posify-on-surface-variant</code>
+                  <span class="text-sm text-posify-on-surface-variant font-bold">Aa</span>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                  <code class="text-posify-label text-posify-primary">border-posify-outline-variant</code>
+                  <div class="w-12 h-0 border-t-2 border-posify-outline-variant"></div>
+                </div>
+                <div class="flex justify-between items-center p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                  <code class="text-posify-label text-[#ffb4ab]">bg-posify-error</code>
+                  <div class="w-6 h-6 rounded bg-posify-error"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Typography & Spacing Tokens -->
+            <div class="bg-posify-surface-container border border-posify-outline-variant rounded-posify-md p-posify-lg space-y-4">
+              <h3 class="text-posify-title font-hanken font-medium text-posify-on-surface">Typography & Spacing</h3>
+
+              <div class="space-y-3">
+                <p class="text-posify-label text-posify-on-surface-variant uppercase tracking-widest font-bold">Font Size Classes</p>
+                <div class="space-y-2">
+                  <div class="p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                    <code class="text-posify-label text-posify-primary block mb-1">text-posify-display</code>
+                    <p class="text-posify-display font-hanken text-posify-on-surface leading-tight">48px Bold</p>
+                  </div>
+                  <div class="p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                    <code class="text-posify-label text-posify-primary block mb-1">text-posify-headline-lg</code>
+                    <p class="text-posify-headline-lg font-hanken text-posify-on-surface">32px SemiBold</p>
+                  </div>
+                  <div class="p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                    <code class="text-posify-label text-posify-primary block mb-1">text-posify-headline-md</code>
+                    <p class="text-posify-headline-md font-hanken text-posify-on-surface">24px SemiBold</p>
+                  </div>
+                  <div class="p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                    <code class="text-posify-label text-posify-primary block mb-1">text-posify-title</code>
+                    <p class="text-posify-title font-hanken text-posify-on-surface">20px Medium</p>
+                  </div>
+                  <div class="p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                    <code class="text-posify-label text-posify-primary block mb-1">text-posify-body</code>
+                    <p class="text-posify-body font-hanken text-posify-on-surface-variant">14px Regular — default UI text</p>
+                  </div>
+                  <div class="p-2 bg-posify-surface rounded border border-posify-outline-variant">
+                    <code class="text-posify-label text-posify-primary block mb-1">text-posify-label</code>
+                    <p class="text-posify-label font-hanken text-posify-on-surface-variant uppercase tracking-wider">12px Medium — buttons & headers</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-3 pt-4 border-t border-posify-outline-variant">
+                <p class="text-posify-label text-posify-on-surface-variant uppercase tracking-widest font-bold">Spacing & Radius</p>
+                <div class="grid grid-cols-2 gap-2 text-[11px]">
+                  <div class="p-2 bg-posify-surface rounded border border-posify-outline-variant font-mono">
+                    <span class="text-posify-on-surface-variant">p-posify-xs</span> <span class="text-posify-primary">4px</span>
+                  </div>
+                  <div class="p-2 bg-posify-surface rounded border border-posify-outline-variant font-mono">
+                    <span class="text-posify-on-surface-variant">p-posify-sm</span> <span class="text-posify-primary">8px</span>
+                  </div>
+                  <div class="p-2 bg-posify-surface rounded border border-posify-outline-variant font-mono">
+                    <span class="text-posify-on-surface-variant">p-posify-md</span> <span class="text-posify-primary">16px</span>
+                  </div>
+                  <div class="p-2 bg-posify-surface rounded border border-posify-outline-variant font-mono">
+                    <span class="text-posify-on-surface-variant">p-posify-lg</span> <span class="text-posify-primary">24px</span>
+                  </div>
+                  <div class="p-2 bg-posify-surface rounded border border-posify-outline-variant font-mono">
+                    <span class="text-posify-on-surface-variant">p-posify-xl</span> <span class="text-posify-primary">32px</span>
+                  </div>
+                  <div class="p-2 bg-posify-surface rounded border border-posify-outline-variant font-mono">
+                    <span class="text-posify-on-surface-variant">rounded-posify-md</span> <span class="text-posify-primary">8px</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-3 pt-4 border-t border-posify-outline-variant">
+                <p class="text-posify-label text-posify-on-surface-variant uppercase tracking-widest font-bold">Box Shadow & Animation</p>
+                <div class="space-y-2">
+                  <div class="p-3 bg-posify-surface-high rounded-posify-md shadow-posify-md">
+                    <code class="text-posify-label text-posify-primary">shadow-posify-md</code>
+                  </div>
+                  <div class="p-3 bg-posify-primary-container rounded-posify-md shadow-posify-glow">
+                    <code class="text-posify-label text-posify-on-primary">shadow-posify-glow</code>
+                  </div>
+                  <div class="p-3 bg-posify-surface-high rounded-posify-md animate-posify-pulse">
+                    <code class="text-posify-label text-posify-primary">animate-posify-pulse</code>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <p class="text-sm text-[#bcc9c7]">Posify • Design System v2.0</p>
-          <p class="text-xs text-[#869392] mt-1">© 2026 — Vue 3 + Vite + Tailwind · Hanken Grotesk · Dark-mode First</p>
+
+          <!-- Quick Reference Card -->
+          <div class="mt-6 bg-posify-surface-lowest border border-posify-outline-variant rounded-posify-lg p-posify-lg">
+            <h3 class="text-posify-title font-hanken text-posify-on-surface mb-4">Quick Reference — Tailwind Class Patterns</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-posify-body font-hanken">
+              <div class="space-y-2">
+                <p class="text-posify-label text-posify-primary uppercase font-bold">Card Pattern</p>
+                <pre class="text-[10px] text-posify-on-surface-variant bg-posify-surface p-3 rounded-posify-sm overflow-x-auto whitespace-pre-wrap">bg-posify-surface-container
+border border-posify-outline-variant
+rounded-posify-md
+p-posify-md
+hover:border-posify-primary
+transition-colors</pre>
+              </div>
+              <div class="space-y-2">
+                <p class="text-posify-label text-posify-primary uppercase font-bold">Button Primary</p>
+                <pre class="text-[10px] text-posify-on-surface-variant bg-posify-surface p-3 rounded-posify-sm overflow-x-auto whitespace-pre-wrap">bg-posify-primary-container
+text-white
+px-posify-md py-posify-sm
+rounded-posify-md
+font-hanken text-posify-label
+font-bold uppercase
+hover:brightness-110
+active:scale-95
+transition-all</pre>
+              </div>
+              <div class="space-y-2">
+                <p class="text-posify-label text-posify-primary uppercase font-bold">Input Field</p>
+                <pre class="text-[10px] text-posify-on-surface-variant bg-posify-surface p-3 rounded-posify-sm overflow-x-auto whitespace-pre-wrap">w-full
+bg-posify-surface-low
+border border-posify-outline-variant
+rounded-posify-md
+px-posify-md py-posify-sm
+text-posify-body text-posify-on-surface
+font-hanken
+focus:border-posify-primary
+focus:ring-1 focus:ring-posify-primary/20
+outline-none transition-all</pre>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="border-t border-posify-outline-variant pt-8 pb-6 text-center">
+          <div class="flex items-center justify-center gap-2 mb-3">
+            <div class="h-2 w-10 bg-posify-primary rounded-full"></div>
+            <div class="h-2 w-2 bg-posify-outline-variant rounded-full"></div>
+            <div class="h-2 w-2 bg-posify-outline-variant rounded-full"></div>
+          </div>
+          <p class="text-sm text-posify-on-surface-variant font-hanken">Posify • Design System v2.0</p>
+          <p class="text-xs text-posify-outline mt-1 font-hanken">© 2026 — Vue 3 + Vite + Tailwind · Hanken Grotesk · Dark-mode First</p>
         </footer>
       </div>
     </main>
@@ -863,6 +1033,7 @@ const navItems = [
   { id: 'section-modal', label: 'Modal & Toast', icon: 'ad_units' },
   { id: 'section-pos', label: 'POS & Transaction', icon: 'point_of_sale' },
   { id: 'section-layout', label: 'Layout & Navigation', icon: 'dashboard' },
+  { id: 'section-tokens', label: 'Tailwind Tokens', icon: 'code' },
 ];
 
 // Color Data
@@ -921,21 +1092,129 @@ const quickActions = [
 </script>
 
 <style scoped>
+/* ===================================================
+ * POSIFY DESIGN SYSTEM v2 — CSS REFERENCE
+ * Patokan untuk semua perubahan UI ke depan.
+ * Semua token tersedia sebagai Tailwind class di tailwind.config.js
+ * ===================================================
+ */
+
+/* Font Family */
 .font-hanken {
   font-family: 'Hanken Grotesk', system-ui, -apple-system, sans-serif;
 }
 
+/* Custom Scrollbar (Posify Dark Theme) */
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #0d0e0f;
+  background: #0d0e0f; /* posify-surface-lowest */
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #3d4948;
+  background: #3d4948; /* posify-outline-variant */
   border-radius: 10px;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #5fd9d2;
+  background: #5fd9d2; /* posify-primary */
 }
+
+/* ===================================================
+ * REUSABLE COMPONENT PATTERNS (untuk referensi)
+ * Gunakan class Tailwind di template, ini hanya dokumentasi.
+ * ===================================================
+ *
+ * Card Container:
+ *   bg-posify-surface-container
+ *   border border-posify-outline-variant
+ *   rounded-posify-md (8px)
+ *   p-posify-md (16px)
+ *   hover:border-posify-primary transition-colors
+ *
+ * Button Primary:
+ *   bg-posify-primary-container text-white
+ *   px-posify-md py-posify-sm
+ *   rounded-posify-md
+ *   font-hanken text-posify-label font-bold
+ *   hover:brightness-110 active:scale-95 transition-all
+ *
+ * Button Secondary (Ghost):
+ *   border border-posify-outline-variant
+ *   bg-transparent text-posify-on-surface
+ *   px-posify-md py-posify-sm rounded-posify-md
+ *   hover:bg-posify-surface-highest transition-colors
+ *
+ * Button Danger:
+ *   bg-posify-error-container text-posify-on-error-container
+ *   px-posify-md py-posify-sm rounded-posify-md
+ *   hover:brightness-110 transition-all
+ *
+ * Input Field:
+ *   w-full bg-posify-surface-low
+ *   border border-posify-outline-variant rounded-posify-md
+ *   px-posify-md py-posify-sm
+ *   text-posify-body text-posify-on-surface font-hanken
+ *   focus:border-posify-primary focus:ring-1 focus:ring-posify-primary/20
+ *   outline-none transition-all
+ *
+ * Badge (Pill):
+ *   px-3 py-1 rounded-full
+ *   bg-posify-primary/10 border border-posify-primary/20
+ *   text-posify-primary
+ *   text-posify-label font-medium
+ *
+ * Table Header:
+ *   bg-posify-surface-high border-b border-posify-outline-variant
+ *   py-posify-md px-posify-md
+ *   text-posify-label text-posify-on-surface-variant
+ *   uppercase tracking-wider font-bold
+ *
+ * Table Row:
+ *   hover:bg-posify-surface-container transition-colors
+ *   border-b border-posify-outline-variant
+ *
+ * Modal Overlay:
+ *   fixed inset-0 bg-black/60 backdrop-blur-sm z-50
+ *
+ * Modal Container:
+ *   bg-posify-surface-high
+ *   border border-posify-outline-variant
+ *   rounded-posify-lg shadow-posify-lg
+ *
+ * Toast Notification:
+ *   bg-posify-surface-high
+ *   border border-posify-outline-variant
+ *   rounded-posify-md p-posify-md
+ *   flex items-start gap-3
+ *
+ * Sidebar Nav Item (Active):
+ *   bg-posify-surface-highest text-posify-primary
+ *   border-l-4 border-posify-primary
+ *   px-posify-md py-posify-sm
+ *
+ * Sidebar Nav Item (Default):
+ *   text-posify-on-surface-variant
+ *   hover:bg-posify-surface-container hover:text-posify-on-surface
+ *   px-posify-md py-posify-sm rounded-posify-md
+ *   transition-colors
+ *
+ * Empty State:
+ *   bg-posify-surface-container rounded-posify-lg
+ *   p-posify-xl flex flex-col items-center text-center
+ *
+ * Skeleton Loading:
+ *   bg-posify-surface-high rounded animate-posify-pulse
+ *
+ * Status Dot (Online):
+ *   w-2.5 h-2.5 rounded-full bg-posify-primary
+ *   shadow-[0_0_8px_rgba(95,217,210,0.6)]
+ *
+ * ===================================================
+ * ELEVATION LEVELS (Tonal Layering, bukan shadow):
+ * Level 0 — bg-posify-surface (#121414) Main background
+ * Level 1 — bg-posify-surface-container (#1e2020) Cards, sections
+ * Level 2 — bg-posify-surface-high (#292a2a) Modals, popovers, hover
+ * Level 3 — bg-posify-surface-highest (#333535) Active items, highlights
+ * ===================================================
+ */
 </style>
