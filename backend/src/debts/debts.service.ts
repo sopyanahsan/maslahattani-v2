@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { CreateDebtDto } from './dto/create-debt.dto';
 import { PayDebtDto } from './dto/pay-debt.dto';
 import { UpdateDebtDto } from './dto/update-debt.dto';
@@ -12,7 +13,10 @@ import { DebtStatus } from '@prisma/client';
 
 @Injectable()
 export class DebtsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
+  ) {}
 
   // ============================================
   // CREATE DEBT (Hybrid: manual items OR single product)
@@ -108,6 +112,9 @@ export class DebtsService {
 
       return newDebt;
     });
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(dto.shopId, 'debts', 'created', debt.id);
 
     return {
       success: true,
@@ -208,6 +215,9 @@ export class DebtsService {
 
       return updatedDebt;
     });
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(debt.shopId, 'debts', 'updated', debtId);
 
     return {
       success: true,

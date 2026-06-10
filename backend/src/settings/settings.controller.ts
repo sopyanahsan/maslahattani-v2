@@ -13,9 +13,10 @@ import {
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/guards/roles.guard';
+import { RequirePermission } from '../permissions/require-permission.guard';
 import { SettingsService } from './settings.service';
 import { DashboardService } from '../dashboard/dashboard.service';
-import { UpdateLanguageDto, UpdateReceiptConfigDto } from './dto/update-settings.dto';
+import { UpdateLanguageDto, UpdateReceiptConfigDto, UpdateTimezoneDto } from './dto/update-settings.dto';
 import { UpdateShopDto, CreateShopDto } from './dto/update-shop.dto';
 import { UpdateAlertConfigDto } from './dto/update-alert-config.dto';
 import { Role } from '@prisma/client';
@@ -41,6 +42,12 @@ export class SettingsController {
   @ApiOperation({ summary: 'Update bahasa system' })
   async updateLanguage(@Body() dto: UpdateLanguageDto) {
     return this.settingsService.updateLanguage(dto);
+  }
+
+  @Put('timezone')
+  @ApiOperation({ summary: 'Update zona waktu cabang (WIB/WITA/WIT)' })
+  async updateTimezone(@Body() dto: UpdateTimezoneDto) {
+    return this.settingsService.updateTimezone(dto);
   }
 
   @Put('receipt-config')
@@ -108,6 +115,7 @@ export class SettingsController {
   }
 
   @Patch('brilink-categories')
+  @RequirePermission('brilink.fee')
   @ApiOperation({
     summary: 'Update BRILink category config (partial per-category update).',
   })
@@ -116,5 +124,24 @@ export class SettingsController {
     @Body() body: Record<string, any>,
   ) {
     return this.settingsService.updateBrilinkCategoryConfig(shopId, body);
+  }
+
+  // ============================================
+  // SYSTEM SETTINGS (Super Admin only)
+  // ============================================
+
+  @Get('system')
+  @Roles(Role.SUPER_ADMIN)
+  @ApiOperation({ summary: 'Get system-wide settings (Super Admin only)' })
+  async getSystemSettings() {
+    return this.settingsService.getSystemSettings();
+  }
+
+  @Put('system')
+  @Roles(Role.SUPER_ADMIN)
+  @RequirePermission('settings.system')
+  @ApiOperation({ summary: 'Update system-wide settings (Super Admin only)' })
+  async updateSystemSettings(@Body() body: Record<string, any>) {
+    return this.settingsService.updateSystemSettings(body);
   }
 }

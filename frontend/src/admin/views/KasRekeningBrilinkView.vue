@@ -50,14 +50,14 @@
         <!-- Saldo Rekening Strip (1 baris horizontal, sama style Kas Retail) -->
         <div class="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
           <!-- Total Pill -->
-          <div class="shrink-0 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/80 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl px-5 py-3 shadow-sm">
+          <div class="shrink-0 min-w-[160px] bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800/80 dark:to-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl px-5 py-3 shadow-sm">
             <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">Total BRILink</p>
             <p class="text-lg font-bold font-mono text-slate-900 dark:text-slate-100 whitespace-nowrap leading-tight">{{ formatRupiah(totalBrilinkBalance) }}</p>
           </div>
           <!-- Per-Rekening Pill -->
           <div v-for="account in accounts" :key="account.id"
-            class="shrink-0 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow flex items-center gap-3 group">
-            <div class="min-w-0">
+            class="shrink-0 min-w-[160px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow group">
+            <div class="mb-2">
               <div class="flex items-center gap-1.5 mb-0.5">
                 <p class="text-[11px] font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[130px]">{{ account.label }}</p>
                 <span v-if="account.isDefault" class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" title="Default"></span>
@@ -65,9 +65,10 @@
               <p class="text-[9px] text-slate-400 dark:text-slate-500 font-mono leading-none mb-1">{{ account.accountNumber }}</p>
               <p class="text-sm font-bold font-mono whitespace-nowrap leading-tight" :class="account.balance < account.lowBalanceThreshold ? 'text-red-500 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'">{{ formatRupiah(account.balance) }}</p>
             </div>
-            <div class="flex flex-col items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity shrink-0">
-              <button type="button" class="w-6 h-6 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" @click="openMutationModal(account, 'setor')" title="Setor">+</button>
-              <button type="button" class="w-6 h-6 rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[10px] font-bold flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors" @click="openMutationModal(account, 'tarik')" title="Tarik">−</button>
+            <div class="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
+              <button type="button" class="flex-1 h-6 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" @click="openMutationModal(account, 'setor')" title="Setor">+ Setor</button>
+              <button type="button" class="flex-1 h-6 rounded-md bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[9px] font-bold flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors" @click="openMutationModal(account, 'tarik')" title="Tarik">− Tarik</button>
+              <button type="button" class="flex-1 h-6 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-[9px] font-bold flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors" @click="openTransferModal(account)" title="Pindah">⇄ Pindah</button>
             </div>
           </div>
         </div>
@@ -131,128 +132,139 @@
     </template>
 
 
+
+
+
     <!-- ============================================ -->
-    <!-- TAB: Metode Kas                              -->
+    <!-- TAB: Riwayat Transaksi BRILink              -->
     <!-- ============================================ -->
-    <template v-if="activeTab === 'metode'">
-      <!-- Loading -->
-      <div v-if="metodeLoading" class="flex items-center justify-center py-16">
-        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-        <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat konfigurasi...</span>
+    <template v-if="activeTab === 'riwayat'">
+      <!-- Filters -->
+      <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
+        <select
+          v-model="riwayatFilter.category"
+          class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none"
+          @change="fetchRiwayat(1)"
+        >
+          <option value="">Semua Kategori</option>
+          <option value="TRANSFER_BRI">Transfer BRI</option>
+          <option value="TRANSFER_OTHER">Transfer Bank Lain</option>
+          <option value="TARIK_TUNAI">Tarik Tunai</option>
+          <option value="TOPUP_PULSA">Pulsa</option>
+          <option value="TOPUP_DATA">Paket Data</option>
+          <option value="TOPUP_EWALLET">E-Wallet</option>
+          <option value="TOPUP_PLN">Token PLN</option>
+        </select>
+        <select
+          v-model="riwayatFilter.status"
+          class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none"
+          @change="fetchRiwayat(1)"
+        >
+          <option value="">Semua Status</option>
+          <option value="SUCCESS">Sukses</option>
+          <option value="VOIDED">Void</option>
+          <option value="FAILED">Gagal</option>
+        </select>
+        <input
+          v-model="riwayatFilter.startDate"
+          type="date"
+          class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none"
+          @change="fetchRiwayat(1)"
+        />
+        <input
+          v-model="riwayatFilter.endDate"
+          type="date"
+          class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none"
+          @change="fetchRiwayat(1)"
+        />
+        <div class="flex-1"></div>
+        <span v-if="riwayatMeta" class="text-xs text-slate-500 dark:text-slate-400 self-center">{{ riwayatMeta.total }} transaksi</span>
       </div>
 
-      <template v-else>
-        <div class="flex items-center justify-between mb-2">
-          <p class="text-sm text-slate-600 dark:text-slate-400">
-            Konfigurasi tampilan kategori BRILink di UI kasir.
-          </p>
-          <button
-            type="button"
-            :disabled="savingMetode"
-            class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center gap-1.5"
-            @click="handleSaveMetode"
-          >
-            <Loader2Icon v-if="savingMetode" class="w-3.5 h-3.5 animate-spin" />
-            Simpan Semua
-          </button>
+      <!-- Loading -->
+      <div v-if="riwayatLoading" class="flex items-center justify-center py-16">
+        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+        <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat riwayat...</span>
+      </div>
+
+      <!-- Empty -->
+      <div v-else-if="riwayatData.length === 0" class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center">
+        <WalletIcon class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada transaksi BRILink</p>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Transaksi dari webapp kasir akan muncul di sini.</p>
+      </div>
+
+      <!-- Table -->
+      <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[900px]">
+            <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+              <tr>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Waktu</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Ref</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Kategori</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Customer</th>
+                <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Nominal</th>
+                <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Fee</th>
+                <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Flow</th>
+                <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Status</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Rekening</th>
+                <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Admin</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase">Kasir</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+              <tr v-for="trx in riwayatData" :key="trx.id" class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                <td class="px-3 py-2.5 text-xs text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap">{{ formatDateTime(trx.createdAt) }}</td>
+                <td class="px-3 py-2.5"><code class="text-[10px] font-mono text-slate-900 dark:text-slate-100">{{ trx.refNumber }}</code></td>
+                <td class="px-3 py-2.5">
+                  <span :class="['inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold uppercase', riwayatCategoryBadge(trx.category)]">
+                    {{ riwayatCategoryShort(trx.category) }}
+                  </span>
+                </td>
+                <td class="px-3 py-2.5">
+                  <p class="text-xs text-slate-900 dark:text-slate-100 truncate max-w-[140px]">{{ trx.customerName }}</p>
+                  <p class="text-[10px] font-mono text-slate-400 truncate max-w-[140px]">{{ trx.destination }}</p>
+                </td>
+                <td class="px-3 py-2.5 text-right text-xs font-mono font-semibold text-slate-900 dark:text-slate-100">{{ formatRupiah(trx.amount) }}</td>
+                <td class="px-3 py-2.5 text-right text-xs font-mono text-emerald-600 dark:text-emerald-400">{{ trx.fee > 0 ? '+' + formatRupiah(trx.fee) : '—' }}</td>
+                <td class="px-3 py-2.5 text-center">
+                  <span v-if="trx.flowDirection" :class="['text-[9px] font-bold px-1.5 py-0.5 rounded', trx.flowDirection === 'CREDIT' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300']">
+                    {{ trx.flowDirection === 'CREDIT' ? '↑ KREDIT' : '↓ DEBIT' }}
+                  </span>
+                  <span v-else class="text-[9px] text-slate-400">—</span>
+                </td>
+                <td class="px-3 py-2.5 text-center">
+                  <span :class="['inline-flex px-1.5 py-0.5 rounded-full text-[9px] font-bold uppercase', riwayatStatusBadge(trx.status)]">
+                    {{ riwayatStatusLabel(trx.status) }}
+                  </span>
+                </td>
+                <td class="px-3 py-2.5 text-xs text-slate-600 dark:text-slate-400">
+                  <span v-if="trx.accountLabel" class="font-medium text-slate-800 dark:text-slate-200">{{ trx.accountLabel }}</span>
+                  <span v-if="trx.accountNumber" class="text-[10px] font-mono text-slate-400 ml-1">({{ trx.accountNumber.slice(-4) }})</span>
+                  <span v-if="!trx.accountLabel" class="text-slate-400">—</span>
+                </td>
+                <td class="px-3 py-2.5 text-center">
+                  <span v-if="trx.feeMethod" :class="['text-[9px] font-bold px-1.5 py-0.5 rounded', feeMethodBadge(trx.feeMethod)]">
+                    {{ trx.feeMethod }}
+                  </span>
+                  <span v-else class="text-[9px] text-slate-400">—</span>
+                </td>
+                <td class="px-3 py-2.5 text-xs text-slate-600 dark:text-slate-400">{{ trx.cashierName || '—' }}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
 
-        <div
-          v-if="metodeSuccess"
-          class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-md p-2 text-xs text-emerald-700 dark:text-emerald-300 mb-3"
-        >
-          {{ metodeSuccess }}
-        </div>
-
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full min-w-[600px]">
-              <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
-                <tr>
-                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide w-12">#</th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Kategori</th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Nama Tampilan</th>
-                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Warna</th>
-                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Aktif</th>
-                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Urutan</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr
-                  v-for="(item, key) in metodeSorted"
-                  :key="key"
-                  class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
-                >
-                  <td class="px-4 py-3 text-center text-xs text-slate-400 dark:text-slate-500 font-mono">{{ item.sortOrder + 1 }}</td>
-                  <td class="px-4 py-3">
-                    <code class="text-[10px] font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-700 dark:text-slate-300">{{ key }}</code>
-                  </td>
-                  <td class="px-4 py-3">
-                    <input
-                      v-model="metodeConfig[key].displayName"
-                      type="text"
-                      class="h-8 px-2 text-sm border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none w-full max-w-[180px]"
-                    />
-                  </td>
-                  <td class="px-4 py-3 text-center">
-                    <select
-                      v-model="metodeConfig[key].color"
-                      class="h-8 px-2 text-xs border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none"
-                    >
-                      <option value="blue">Blue</option>
-                      <option value="indigo">Indigo</option>
-                      <option value="amber">Amber</option>
-                      <option value="pink">Pink</option>
-                      <option value="purple">Purple</option>
-                      <option value="cyan">Cyan</option>
-                      <option value="yellow">Yellow</option>
-                      <option value="emerald">Emerald</option>
-                      <option value="red">Red</option>
-                    </select>
-                  </td>
-                  <td class="px-4 py-3 text-center">
-                    <button
-                      type="button"
-                      :class="[
-                        'w-9 h-5 rounded-full relative transition-colors',
-                        metodeConfig[key].isActive ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-600',
-                      ]"
-                      @click="metodeConfig[key].isActive = !metodeConfig[key].isActive"
-                    >
-                      <span
-                        :class="[
-                          'absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform',
-                          metodeConfig[key].isActive ? 'left-[18px]' : 'left-0.5',
-                        ]"
-                      />
-                    </button>
-                  </td>
-                  <td class="px-4 py-3 text-center">
-                    <div class="flex items-center justify-center gap-1">
-                      <button
-                        type="button"
-                        class="w-6 h-6 text-xs border border-slate-200 dark:border-slate-700 rounded flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30"
-                        :disabled="item.sortOrder <= 0"
-                        @click="moveCategory(String(key), -1)"
-                      >
-                        ↑
-                      </button>
-                      <button
-                        type="button"
-                        class="w-6 h-6 text-xs border border-slate-200 dark:border-slate-700 rounded flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-30"
-                        :disabled="item.sortOrder >= 6"
-                        @click="moveCategory(String(key), 1)"
-                      >
-                        ↓
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+        <!-- Pagination -->
+        <div v-if="riwayatMeta && riwayatMeta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <p class="text-xs text-slate-500 dark:text-slate-400">Halaman {{ riwayatMeta.page }} dari {{ riwayatMeta.totalPages }}</p>
+          <div class="flex items-center gap-1">
+            <button :disabled="riwayatMeta.page <= 1" class="h-7 px-2.5 text-xs font-medium border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 text-slate-700 dark:text-slate-300" @click="fetchRiwayat(riwayatMeta!.page - 1)">Prev</button>
+            <button :disabled="riwayatMeta.page >= riwayatMeta.totalPages" class="h-7 px-2.5 text-xs font-medium border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 text-slate-700 dark:text-slate-300" @click="fetchRiwayat(riwayatMeta!.page + 1)">Next</button>
           </div>
         </div>
-      </template>
+      </div>
     </template>
 
 
@@ -370,6 +382,79 @@
     </Teleport>
 
     <!-- ============================================ -->
+    <!-- MODAL: Pindah Saldo Antar Rekening           -->
+    <!-- ============================================ -->
+    <Teleport to="body">
+      <div v-if="showTransferModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showTransferModal = false" />
+        <form
+          class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4"
+          @submit.prevent="handleTransferSubmit"
+        >
+          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Pindah Saldo Antar Rekening</h3>
+
+          <div class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900/50 rounded-lg p-3">
+            <p class="text-[10px] font-semibold text-blue-700 dark:text-blue-300">Dari:</p>
+            <p class="text-xs font-bold text-blue-900 dark:text-blue-100">{{ transferFrom?.label }}</p>
+            <p class="text-[10px] text-blue-600 dark:text-blue-400 font-mono">Saldo: {{ formatRupiah(transferFrom?.balance ?? 0) }}</p>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Rekening Tujuan *</label>
+            <select
+              v-model="transferToId"
+              required
+              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none"
+            >
+              <option value="">— Pilih Rekening Tujuan —</option>
+              <option
+                v-for="acc in accounts.filter(a => a.id !== transferFrom?.id && a.isActive)"
+                :key="acc.id"
+                :value="acc.id"
+              >
+                {{ acc.label }} ({{ acc.accountNumber }}) — {{ formatRupiah(acc.balance) }}
+              </option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Jumlah (Rp) *</label>
+            <input
+              v-model.number="transferAmount"
+              type="number"
+              min="1"
+              :max="transferFrom?.balance ?? 0"
+              required
+              class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Catatan</label>
+            <input
+              v-model="transferNotes"
+              type="text"
+              placeholder="Opsional"
+              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <div v-if="transferError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">
+            {{ transferError }}
+          </div>
+
+          <div class="flex items-center justify-end gap-2 pt-2">
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700" @click="showTransferModal = false">Batal</button>
+            <button type="submit" :disabled="savingTransfer || !transferToId || transferAmount <= 0" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
+              <Loader2Icon v-if="savingTransfer" class="w-3.5 h-3.5 animate-spin" />
+              Pindah Saldo
+            </button>
+          </div>
+        </form>
+      </div>
+    </Teleport>
+
+    <!-- ============================================ -->
     <!-- MODAL: Mutations History                      -->
     <!-- ============================================ -->
     <Teleport to="body">
@@ -433,6 +518,7 @@
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed, watch } from 'vue';
 import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
+import { useRealtimeRefresh } from '@/shared/composables/useRealtimeRefresh';
 import {
   Loader2 as Loader2Icon,
   Plus as PlusIcon,
@@ -449,6 +535,12 @@ import brilinkAccountService, {
   type BrilinkMutationItem,
   type MutationsResponse,
 } from '@/shared/services/brilink-account.service';
+import brilinkService, {
+  type BrilinkTransactionDto,
+  type BrilinkListResponse,
+  BRILINK_CATEGORY_LABELS,
+  type BrilinkCategory,
+} from '@/shared/services/brilink.service';
 import settingsService from '@/shared/services/settings.service';
 
 
@@ -456,10 +548,10 @@ const authStore = useAuthStore();
 const { ask } = useConfirm();
 
 // Tabs
-type TabKey = 'rekening' | 'metode';
+type TabKey = 'rekening' | 'riwayat';
 const tabs: { key: TabKey; label: string }[] = [
   { key: 'rekening', label: 'Rekening BRI' },
-  { key: 'metode', label: 'Metode Kas' },
+  { key: 'riwayat', label: 'Riwayat Transaksi' },
 ];
 const activeTab = ref<TabKey>('rekening');
 
@@ -520,7 +612,9 @@ function formatRupiah(amount: number): string {
 }
 
 function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString('id-ID', {
+  const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z');
+  return d.toLocaleString('id-ID', {
+    timeZone: 'Asia/Jakarta',
     day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
   });
 }
@@ -563,11 +657,13 @@ const totalBrilinkBalance = computed(() => accounts.value.reduce((sum, acc) => s
 async function fetchAccounts() {
   const shopId = getShopId();
   if (!shopId) return;
-  accountsLoading.value = true;
+  // Only show loading on first load (prevent flicker on refresh)
+  if (accounts.value.length === 0) accountsLoading.value = true;
   try {
     accounts.value = await brilinkAccountService.list(shopId);
   } catch {
-    accounts.value = [];
+    // Keep existing data on error (don't blank out)
+    if (accounts.value.length === 0) accounts.value = [];
   } finally {
     accountsLoading.value = false;
   }
@@ -758,7 +854,7 @@ function mutationTypeLabel(type: string): string {
 async function fetchMutasi(page = 1) {
   const shopId = getShopId();
   if (!shopId) return;
-  mutasiLoading.value = true;
+  if (mutasiData.value.length === 0) mutasiLoading.value = true;
   try {
     const res = await brilinkAccountService.getAllMutations({
       shopId,
@@ -772,8 +868,7 @@ async function fetchMutasi(page = 1) {
     mutasiData.value = res.data;
     mutasiMeta.value = res.meta;
   } catch {
-    mutasiData.value = [];
-    mutasiMeta.value = null;
+    if (mutasiData.value.length === 0) mutasiData.value = [];
   } finally {
     mutasiLoading.value = false;
   }
@@ -781,6 +876,127 @@ async function fetchMutasi(page = 1) {
 
 function resetMutasiAndFetch() {
   fetchMutasi(1);
+}
+
+// ============================================
+// TRANSFER INTERNAL (Pindah Saldo)
+// ============================================
+const showTransferModal = ref(false);
+const transferFrom = ref<BrilinkAccount | null>(null);
+const transferToId = ref('');
+const transferAmount = ref(0);
+const transferNotes = ref('');
+const savingTransfer = ref(false);
+const transferError = ref<string | null>(null);
+
+function openTransferModal(account: BrilinkAccount) {
+  transferFrom.value = account;
+  transferToId.value = '';
+  transferAmount.value = 0;
+  transferNotes.value = '';
+  transferError.value = null;
+  showTransferModal.value = true;
+}
+
+async function handleTransferSubmit() {
+  if (!transferFrom.value || !transferToId.value || transferAmount.value <= 0) return;
+  savingTransfer.value = true;
+  transferError.value = null;
+  try {
+    await brilinkAccountService.transferInternal({
+      fromAccountId: transferFrom.value.id,
+      toAccountId: transferToId.value,
+      amount: transferAmount.value,
+      notes: transferNotes.value || undefined,
+    });
+    showTransferModal.value = false;
+    await fetchAccounts();
+  } catch (err: any) {
+    transferError.value = err?.response?.data?.message || 'Gagal pindah saldo.';
+  } finally {
+    savingTransfer.value = false;
+  }
+}
+
+// ============================================
+// RIWAYAT TRANSAKSI TAB STATE
+// ============================================
+const riwayatData = ref<BrilinkTransactionDto[]>([]);
+const riwayatMeta = ref<BrilinkListResponse['meta'] | null>(null);
+const riwayatLoading = ref(false);
+const riwayatFilter = reactive({
+  category: '',
+  status: '',
+  startDate: '',
+  endDate: '',
+});
+
+function riwayatCategoryBadge(cat: string): string {
+  const map: Record<string, string> = {
+    TRANSFER_BRI: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300',
+    TRANSFER_OTHER: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300',
+    TARIK_TUNAI: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300',
+    TOPUP_PULSA: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300',
+    TOPUP_DATA: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300',
+    TOPUP_EWALLET: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300',
+    TOPUP_PLN: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300',
+  };
+  return map[cat] || 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300';
+}
+
+function riwayatCategoryShort(cat: string): string {
+  const map: Record<string, string> = {
+    TRANSFER_BRI: 'TF BRI', TRANSFER_OTHER: 'TF Lain', TARIK_TUNAI: 'Tarik',
+    TOPUP_PULSA: 'Pulsa', TOPUP_DATA: 'Data', TOPUP_EWALLET: 'E-Wallet', TOPUP_PLN: 'PLN',
+  };
+  return map[cat] || cat;
+}
+
+function riwayatStatusBadge(s: string): string {
+  switch (s) {
+    case 'SUCCESS': return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300';
+    case 'FAILED': return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
+    case 'VOIDED': return 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300';
+    default: return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300';
+  }
+}
+
+function riwayatStatusLabel(s: string): string {
+  const map: Record<string, string> = { SUCCESS: 'Sukses', FAILED: 'Gagal', VOIDED: 'Void', PENDING: 'Pending' };
+  return map[s] || s;
+}
+
+function feeMethodBadge(method: string): string {
+  switch (method) {
+    case 'DALAM': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
+    case 'LUAR': return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300';
+    case 'POTONG': return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300';
+    default: return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
+  }
+}
+
+async function fetchRiwayat(page = 1) {
+  const shopId = getShopId();
+  if (!shopId) return;
+  riwayatLoading.value = true;
+  try {
+    const res = await brilinkService.listTransactions({
+      shopId,
+      category: (riwayatFilter.category as BrilinkCategory) || undefined,
+      status: (riwayatFilter.status as any) || undefined,
+      startDate: riwayatFilter.startDate || undefined,
+      endDate: riwayatFilter.endDate || undefined,
+      page,
+      limit: 20,
+    });
+    riwayatData.value = res.data;
+    riwayatMeta.value = res.meta;
+  } catch {
+    riwayatData.value = [];
+    riwayatMeta.value = null;
+  } finally {
+    riwayatLoading.value = false;
+  }
 }
 
 // ============================================
@@ -852,6 +1068,9 @@ async function handleSaveMetode() {
 
 // Watch tab changes to load data on demand
 watch(activeTab, (tab) => {
+  if (tab === 'riwayat' && riwayatData.value.length === 0) {
+    fetchRiwayat(1);
+  }
   if (tab === 'metode' && Object.keys(metodeConfig).length === 0) {
     fetchMetodeConfig();
   }
@@ -863,4 +1082,7 @@ onMounted(() => {
 });
 
 useAutoRefresh(() => { fetchAccounts(); fetchMutasi(1); });
+
+// Auto-refresh saat ada real-time event (data tetap tampil walau offline)
+useRealtimeRefresh(() => { fetchAccounts(); fetchMutasi(1); });
 </script>

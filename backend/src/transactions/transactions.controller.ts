@@ -15,6 +15,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/guards/roles.guard';
 import { ShopScopeGuard } from '../auth/guards/shop-scope.guard';
+import { RequirePermission } from '../permissions/require-permission.guard';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { VoidTransactionDto } from './dto/void-transaction.dto';
@@ -102,6 +103,7 @@ export class TransactionsController {
   @Post(':id/void')
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @RequirePermission('transactions.void')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Void/batalkan transaksi (admin only, butuh OTP)' })
   async voidTransaction(

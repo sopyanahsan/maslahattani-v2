@@ -6,6 +6,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { OtpService } from '../auth/otp.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { VoidTransactionDto } from './dto/void-transaction.dto';
@@ -16,6 +17,7 @@ import { TransactionStatus, PaymentStatus } from '@prisma/client';
 export class TransactionsService {
   constructor(
     private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
     private otpService: OtpService,
   ) {}
 
@@ -171,6 +173,39 @@ export class TransactionsService {
     const clientCreatedAt = dto.clientCreatedAt ? new Date(dto.clientCreatedAt) : null;
 
     // ============================================
+    // AUTO-CREATE / FIND CUSTOMER
+    // ============================================
+    let customerId: string | null = null;
+    const trimmedName = dto.customerName?.trim() || null;
+    const trimmedPhone = dto.customerPhone?.trim() || null;
+
+    if (trimmedName) {
+      // Find existing customer by name (unique per shop)
+      let customer = await this.prisma.customer.findUnique({
+        where: { shopId_name: { shopId, name: trimmedName } },
+      });
+
+      if (!customer) {
+        // Auto-create new customer
+        customer = await this.prisma.customer.create({
+          data: {
+            shopId,
+            name: trimmedName,
+            phone: trimmedPhone,
+          },
+        });
+      } else if (trimmedPhone && !customer.phone) {
+        // Update phone if customer exists but phone was empty
+        customer = await this.prisma.customer.update({
+          where: { id: customer.id },
+          data: { phone: trimmedPhone },
+        });
+      }
+
+      customerId = customer.id;
+    }
+
+    // ============================================
     // CREATE (transaksi + items + payment + stock update) atomik
     // ============================================
     const transaction = await this.prisma.$transaction(async (tx) => {
@@ -185,6 +220,9 @@ export class TransactionsService {
           status: TransactionStatus.COMPLETED,
           idempotencyKey: dto.idempotencyKey,
           clientCreatedAt,
+          customerId,
+          customerName: trimmedName,
+          customerPhone: trimmedPhone,
           items: {
             create: transactionItems,
           },
@@ -239,6 +277,9 @@ export class TransactionsService {
     });
 
     const change = dto.amountPaid ? dto.amountPaid - totalPrice : 0;
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(shopId, 'transactions', 'created', transaction.id);
 
     // ============================================
     // AUTO-CREATE DEBT (Hutang flow)
@@ -375,6 +416,9 @@ export class TransactionsService {
       return updated;
     });
 
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(transaction.shopId, 'transactions', 'updated', transactionId);
+
     return {
       success: true,
       message: `Transaksi ${transaction.transactionNumber} berhasil dibatalkan.`,
@@ -397,9 +441,12 @@ export class TransactionsService {
     if (query.status) where.status = query.status;
     if (query.userId) where.userId = query.userId;
 
-    // Search by transactionNumber (partial match, case-insensitive)
+    // Search by transactionNumber or customerName (partial match, case-insensitive)
     if (query.search) {
-      where.transactionNumber = { contains: query.search, mode: 'insensitive' };
+      where.OR = [
+        { transactionNumber: { contains: query.search, mode: 'insensitive' } },
+        { customerName: { contains: query.search, mode: 'insensitive' } },
+      ];
     }
 
     // Filter by payment method (requires join via payments relation)

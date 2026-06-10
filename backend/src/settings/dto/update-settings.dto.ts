@@ -28,4 +28,23 @@ export class UpdateReceiptConfigDto {
   @IsOptional()
   @IsString()
   footerMessage?: string;
+
+  @ApiPropertyOptional({ example: 'https://res.cloudinary.com/xxx/image/upload/v1/logo.png', description: 'URL logo toko di struk' })
+  @IsOptional()
+  @IsString()
+  logoUrl?: string;
+}
+
+
+export class UpdateTimezoneDto {
+  @ApiProperty({ example: 'shop-id-123' })
+  @IsString()
+  shopId: string;
+
+  @ApiProperty({
+    example: 'Asia/Jakarta',
+    description: 'IANA timezone: Asia/Jakarta (WIB), Asia/Makassar (WITA), Asia/Jayapura (WIT)',
+  })
+  @IsString()
+  timezone: string;
 }

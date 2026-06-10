@@ -12,6 +12,7 @@ import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
 import { ShopsService } from '../shops/shops.service';
 import { OtpService } from './otp.service';
+import { FirebaseAdminService } from './firebase-admin.service';
 import { RegisterKasirDto, VerifyOtpDto } from './dto/register.dto';
 import { LoginDto, RefreshTokenDto } from './dto/login.dto';
 import { LoginPinDto, ChangePinDto } from './dto/login-pin.dto';
@@ -23,6 +24,7 @@ interface TokenPayload {
   email: string | null;
   role: Role;
   shopId?: string;
+  tenantId?: string;
 }
 
 @Injectable()
@@ -33,6 +35,7 @@ export class AuthService {
     private configService: ConfigService,
     private otpService: OtpService,
     private shopsService: ShopsService,
+    private firebaseAdmin: FirebaseAdminService,
   ) {}
 
   // ============================================
@@ -513,9 +516,191 @@ export class AuthService {
         status: user.status,
         shopId: user.shopId,
         mustChangePin: user.mustChangePin,
+        emailVerified: user.emailVerifiedAt !== null,
       },
       shop,
     };
+  }
+
+  // ============================================
+  // LOGIN WITH GOOGLE (Firebase)
+  // ============================================
+
+  async loginWithGoogle(idToken: string, ipAddress?: string, userAgent?: string) {
+    // Verify Firebase ID Token
+    const decoded = await this.firebaseAdmin.verifyIdToken(idToken);
+    if (!decoded) {
+      throw new UnauthorizedException('Token Google tidak valid atau expired.');
+    }
+
+    const email = decoded.email;
+    const name = decoded.name || decoded.email?.split('@')[0] || 'User';
+    const picture = decoded.picture || null;
+
+    if (!email) {
+      throw new BadRequestException('Akun Google tidak memiliki email.');
+    }
+
+    // Find existing user by email
+    let user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (user) {
+      // Existing user → login directly
+      if (user.status !== UserStatus.ACTIVE) {
+        throw new ForbiddenException('Akun dinonaktifkan. Hubungi admin.');
+      }
+    } else {
+      // New user
+      // Check if this is a platform owner email — don't create tenant
+      if (this.isPlatformOwner(email)) {
+        const passwordHash = await bcrypt.hash(Math.random().toString(36).slice(2, 14), 12);
+        user = await this.prisma.user.create({
+          data: {
+            email,
+            username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9.]/g, ''),
+            passwordHash,
+            fullName: name,
+            avatarUrl: picture,
+            role: 'SUPER_ADMIN',
+            status: 'ACTIVE',
+            tenantId: null,
+            shopId: null,
+            otpEnabled: false,
+          },
+        });
+      } else {
+      // Regular user → auto-register as SUPER_ADMIN with trial
+      const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 30) + '-' + Math.random().toString(36).substring(2, 6);
+      const passwordHash = await bcrypt.hash(Math.random().toString(36).slice(2, 14), 12);
+
+      const result = await this.prisma.$transaction(async (tx) => {
+        const tenant = await tx.tenant.create({
+          data: {
+            name: name,
+            slug,
+            ownerName: name,
+            ownerEmail: email,
+            ownerPhone: '',
+          },
+        });
+
+        const newUser = await tx.user.create({
+          data: {
+            email,
+            username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9.]/g, ''),
+            passwordHash,
+            fullName: name,
+            avatarUrl: picture,
+            role: 'SUPER_ADMIN',
+            status: 'ACTIVE',
+            tenantId: tenant.id,
+            otpEnabled: false,
+          },
+        });
+
+        // Create empty shop — onboarding wizard will fill name/address/phone
+        const shop = await tx.shop.create({
+          data: {
+            name: '',
+            address: '',
+            phone: '',
+            ownerId: newUser.id,
+            tenantId: tenant.id,
+          },
+        });
+
+        await tx.user.update({
+          where: { id: newUser.id },
+          data: { shopId: shop.id },
+        });
+
+        await tx.shopSetting.create({
+          data: { shopId: shop.id, language: 'id' },
+        });
+
+        return { tenant, user: newUser, shop };
+      });
+
+      // Create trial subscription
+      try {
+        const { SubscriptionService } = await import('../subscription/subscription.service');
+        // Use the injected service if available, or create trial inline
+        await this.prisma.subscription.create({
+          data: {
+            tenantId: result.tenant.id,
+            plan: 'BASIC',
+            cycle: 'MONTHLY',
+            status: 'TRIAL',
+            startDate: new Date(),
+            endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+          },
+        });
+      } catch {
+        // Silent — subscription creation is non-blocking
+      }
+
+      user = result.user;
+      } // end else (regular user tenant creation)
+    }
+
+    // Generate JWT tokens
+    const shop = user.shopId ? await this.prisma.shop.findUnique({
+      where: { id: user.shopId },
+      select: { id: true, name: true, address: true, phone: true },
+    }) : null;
+
+    const payload: TokenPayload = {
+      sub: user.id,
+      email: user.email || '',
+      role: user.role,
+      shopId: user.shopId || undefined,
+    };
+
+    const token = this.jwtService.sign(payload);
+    const refreshToken = this.jwtService.sign(
+      { sub: user.id, type: 'refresh' },
+      {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+        expiresIn: Number(this.configService.get('JWT_REFRESH_EXPIRATION', '2592000')),
+      },
+    );
+
+    // Update last login
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { lastLogin: new Date() },
+    });
+
+    return {
+      token,
+      refreshToken,
+      user: {
+        id: user.id,
+        email: user.email,
+        username: user.username,
+        fullName: user.fullName,
+        role: user.role,
+        shopId: user.shopId,
+        avatarUrl: user.avatarUrl,
+      },
+      shop,
+      isNewUser: !user.lastLogin,
+      needsOnboarding: user.tenantId ? (!shop || !shop.name || shop.name === '' || shop.address === '') : false,
+      isPlatformOwner: this.isPlatformOwner(user.email || ''),
+    };
+  }
+
+  /**
+   * Check if email is a platform owner.
+   * Platform owners are hardcoded in PLATFORM_OWNER_EMAILS env var.
+   * This prevents random users from becoming owner via tenantId manipulation.
+   */
+  private isPlatformOwner(email: string): boolean {
+    const ownerEmails = (this.configService.get<string>('PLATFORM_OWNER_EMAILS') || '')
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+    return ownerEmails.includes(email.toLowerCase());
   }
 
   // ============================================
@@ -617,6 +802,30 @@ export class AuthService {
     return { success: true, message: 'Password berhasil diubah.' };
   }
 
+  /**
+   * Set password for Google-only users (no old password verification needed).
+   * Only allowed if user has never set a real password (lastPasswordReset = null).
+   */
+  async setPasswordForGoogleUser(userId: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User tidak ditemukan.');
+
+    if (user.lastPasswordReset) {
+      throw new BadRequestException('Anda sudah punya password. Gunakan Ganti Password.');
+    }
+    if (newPassword.length < 6) {
+      throw new BadRequestException('Password minimal 6 karakter.');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash, lastPasswordReset: new Date() },
+    });
+
+    return { success: true, message: 'Password berhasil di-set. Sekarang bisa login manual.' };
+  }
+
   // ============================================
   // GET CURRENT USER
   // ============================================
@@ -635,6 +844,7 @@ export class AuthService {
         status: true,
         shopId: true,
         otpEnabled: true,
+        emailVerifiedAt: true,
         lastLogin: true,
         lastPasswordReset: true,
         createdAt: true,
@@ -667,6 +877,7 @@ export class AuthService {
       ...user,
       shopId: effectiveShopId,
       currentShop,
+      emailVerified: user.emailVerifiedAt !== null,
     };
   }
 

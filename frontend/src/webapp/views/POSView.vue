@@ -891,7 +891,7 @@ async function handleCheckout() {
       customerName: customerName.value,
       cashierName: authStore.user?.username || 'Kasir',
       shopName: shopStore.currentShopName || 'Toko',
-      date: new Date().toLocaleString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      date: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
     };
     // Reset state & show receipt
     cart.value = [];

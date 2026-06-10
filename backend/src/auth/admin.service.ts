@@ -1,12 +1,16 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import * as bcrypt from 'bcryptjs';
 import { PrismaService } from '../prisma/prisma.service';
+import { EmailVerificationService } from './email-verification.service';
 import { CreateKasirDto, UpdateKasirDto } from './dto/admin-user.dto';
 import { Role, UserStatus } from '@prisma/client';
 
 @Injectable()
 export class AdminService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private emailVerification: EmailVerificationService,
+  ) {}
 
   /**
    * List all users (kasir + admin cabang), optional filter by shopId
@@ -92,7 +96,7 @@ export class AdminService {
       mustChangePin = true; // Force change on first login
       // Generate placeholder password (kasir doesn't use password)
       passwordHash = await bcrypt.hash(
-        `ngalir_${Date.now()}_${Math.random()}`,
+        `posify_${Date.now()}_${Math.random()}`,
         12,
       );
     }
@@ -124,9 +128,18 @@ export class AdminService {
     const roleLabel = isAdmin ? 'Admin' : 'Kasir';
     const loginMethod = isAdmin ? 'password di /admin/login' : 'PIN di webapp';
 
+    // Send verification email for kasir (if email provided)
+    if (!isAdmin && dto.email) {
+      try {
+        await this.emailVerification.generateAndSendCode(kasir.id);
+      } catch (err) {
+        // Don't block user creation if email fails — code can be resent later
+      }
+    }
+
     return {
       kasir,
-      message: `${roleLabel} "${dto.username}" berhasil dibuat. Login dengan username + ${loginMethod}.`,
+      message: `${roleLabel} "${dto.username}" berhasil dibuat. Login dengan username + ${loginMethod}.${dto.email ? ' Kode verifikasi telah dikirim ke email.' : ''}`,
     };
   }
 

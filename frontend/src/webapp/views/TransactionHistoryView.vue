@@ -255,8 +255,8 @@ function formatRupiahShort(n: number): string {
   if (n >= 1000) return 'Rp ' + Math.round(n / 1000) + 'rb';
   return formatRupiah(n);
 }
-function formatTime(iso: string): string { return new Date(iso).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); }
-function formatDateTime(iso: string): string { return new Date(iso).toLocaleString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+function formatTime(iso: string): string { const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z'); return d.toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }); }
+function formatDateTime(iso: string): string { const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z'); return d.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }); }
 
 function statusLabel(s: string): string {
   switch (s) { case 'COMPLETED': return 'Lunas'; case 'PENDING': return 'Open Bill'; case 'VOIDED': return 'Void'; case 'PROCESSING': return 'Proses'; default: return s; }

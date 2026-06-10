@@ -7,6 +7,8 @@ import { AdminController } from './admin.controller';
 import { AuthService } from './auth.service';
 import { AdminService } from './admin.service';
 import { OtpService } from './otp.service';
+import { EmailVerificationService } from './email-verification.service';
+import { FirebaseAdminService } from './firebase-admin.service';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { JwtRefreshStrategy } from './strategies/jwt-refresh.strategy';
 import { PrismaModule } from '../prisma/prisma.module';
@@ -29,7 +31,7 @@ import { ShopsModule } from '../shops/shops.module';
     }),
   ],
   controllers: [AuthController, AdminController],
-  providers: [AuthService, AdminService, OtpService, JwtStrategy, JwtRefreshStrategy],
-  exports: [AuthService, OtpService],
+  providers: [AuthService, AdminService, OtpService, EmailVerificationService, FirebaseAdminService, JwtStrategy, JwtRefreshStrategy],
+  exports: [AuthService, OtpService, EmailVerificationService, FirebaseAdminService],
 })
 export class AuthModule {}

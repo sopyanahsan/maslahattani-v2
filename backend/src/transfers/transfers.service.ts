@@ -5,6 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import {
   CreateTransferDto,
   ApprovalNotesDto,
@@ -14,7 +15,10 @@ import {
 
 @Injectable()
 export class TransfersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
+  ) {}
 
   // ============================================
   // LIST TRANSFERS
@@ -199,6 +203,12 @@ export class TransfersService {
         _count: { select: { items: true } },
       },
     });
+
+    // Emit real-time event to both shops
+    this.realtimeGateway.emitDataChanged(dto.fromShopId, 'transfers', 'created', transfer.id);
+    if (dto.fromShopId !== dto.toShopId) {
+      this.realtimeGateway.emitDataChanged(dto.toShopId, 'transfers', 'created', transfer.id);
+    }
 
     return {
       id: transfer.id,

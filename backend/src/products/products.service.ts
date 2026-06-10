@@ -5,6 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { QueryProductDto } from './dto/query-product.dto';
@@ -21,7 +22,10 @@ try {
 
 @Injectable()
 export class ProductsService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
+  ) {}
 
   // ============================================
   // CREATE PRODUCT
@@ -83,6 +87,9 @@ export class ProductsService {
 
       return prod;
     });
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(dto.shopId, 'products', 'created', product.id);
 
     return { success: true, product };
   }
@@ -241,6 +248,9 @@ export class ProductsService {
       },
     });
 
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(product.shopId, 'products', 'updated', id);
+
     return { success: true, product: updated };
   }
 
@@ -259,6 +269,9 @@ export class ProductsService {
       where: { id },
       data: { deletedAt: new Date() },
     });
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(product.shopId, 'products', 'deleted', id);
 
     return { success: true, message: `Produk "${product.name}" berhasil dihapus.` };
   }

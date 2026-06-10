@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import {
   CreateBrilinkAccountDto,
   UpdateBrilinkAccountDto,
@@ -14,7 +15,10 @@ import {
 
 @Injectable()
 export class BrilinkAccountsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly realtimeGateway: RealtimeGateway,
+  ) {}
 
   // ============================================
   // CRUD
@@ -146,6 +150,21 @@ export class BrilinkAccountsService {
       }),
     ]);
 
+    // Emit real-time event
+    this.realtimeGateway.emitAccountBalanceChanged(account.shopId, {
+      accountId: id,
+      label: account.label,
+      balanceBefore,
+      balanceAfter,
+      changeAmount: dto.amount,
+      changeType: 'CREDIT',
+      reason: `Setor saldo`,
+    });
+    this.realtimeGateway.emitDashboardRefresh(account.shopId, {
+      source: 'brilink_account_setor',
+      timestamp: new Date().toISOString(),
+    });
+
     return { account: updatedAccount, mutation };
   }
 
@@ -181,7 +200,115 @@ export class BrilinkAccountsService {
       }),
     ]);
 
+    // Emit real-time event
+    this.realtimeGateway.emitAccountBalanceChanged(account.shopId, {
+      accountId: id,
+      label: account.label,
+      balanceBefore,
+      balanceAfter,
+      changeAmount: dto.amount,
+      changeType: 'DEBIT',
+      reason: `Tarik saldo`,
+    });
+    this.realtimeGateway.emitDashboardRefresh(account.shopId, {
+      source: 'brilink_account_tarik',
+      timestamp: new Date().toISOString(),
+    });
+
     return { account: updatedAccount, mutation };
+  }
+
+  // ============================================
+  // TRANSFER INTERNAL (antar rekening)
+  // ============================================
+
+  async transferInternal(
+    fromAccountId: string,
+    toAccountId: string,
+    amount: number,
+    notes?: string,
+    userId?: string,
+  ) {
+    if (fromAccountId === toAccountId) {
+      throw new BadRequestException('Rekening asal dan tujuan tidak boleh sama.');
+    }
+
+    const fromAccount = await this.findOne(fromAccountId);
+    const toAccount = await this.findOne(toAccountId);
+
+    if (fromAccount.balance < amount) {
+      throw new BadRequestException(
+        `Saldo rekening "${fromAccount.label}" tidak cukup. Saldo: Rp ${fromAccount.balance.toLocaleString('id-ID')}`,
+      );
+    }
+
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Debit from source
+      const fromBefore = fromAccount.balance;
+      const fromAfter = fromBefore - amount;
+
+      await tx.brilinkAccount.update({
+        where: { id: fromAccountId },
+        data: { balance: fromAfter },
+      });
+
+      const fromMutation = await tx.brilinkMutation.create({
+        data: {
+          accountId: fromAccountId,
+          type: 'TRANSFER_OUT',
+          amount,
+          balanceBefore: fromBefore,
+          balanceAfter: fromAfter,
+          reference: `TRANSFER-TO-${toAccount.label}`,
+          description: `Pindah saldo ke ${toAccount.label} (${toAccount.accountNumber})`,
+          notes: notes || null,
+          createdById: userId || null,
+        },
+      });
+
+      // Credit to destination
+      const toBefore = toAccount.balance;
+      const toAfter = toBefore + amount;
+
+      await tx.brilinkAccount.update({
+        where: { id: toAccountId },
+        data: { balance: toAfter },
+      });
+
+      const toMutation = await tx.brilinkMutation.create({
+        data: {
+          accountId: toAccountId,
+          type: 'TRANSFER_IN',
+          amount,
+          balanceBefore: toBefore,
+          balanceAfter: toAfter,
+          reference: `TRANSFER-FROM-${fromAccount.label}`,
+          description: `Pindah saldo dari ${fromAccount.label} (${fromAccount.accountNumber})`,
+          notes: notes || null,
+          createdById: userId || null,
+        },
+      });
+
+      return { fromMutation, toMutation, fromAfter, toAfter };
+    });
+
+    return {
+      from: {
+        accountId: fromAccountId,
+        label: fromAccount.label,
+        balanceAfter: result.fromAfter,
+      },
+      to: {
+        accountId: toAccountId,
+        label: toAccount.label,
+        balanceAfter: result.toAfter,
+      },
+      amount,
+      mutations: {
+        from: result.fromMutation,
+        to: result.toMutation,
+      },
+    };
   }
 
   // ============================================

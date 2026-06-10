@@ -67,10 +67,34 @@ export interface BrilinkReportSummary {
   volume: number;
   feeEarnings: number;
   avgFee: number;
+  voidedCount: number;
 }
 
 export interface BrilinkCategoryBreakdownItem {
   category: string;
+  count: number;
+  volume: number;
+  fee: number;
+  percentVolume: number;
+}
+
+export interface BrilinkDailyTrendItem {
+  date: string;
+  volume: number;
+  fee: number;
+  transactions: number;
+}
+
+export interface BrilinkCashierItem {
+  cashierId: string;
+  cashierName: string;
+  count: number;
+  volume: number;
+  fee: number;
+}
+
+export interface BrilinkTopCustomerItem {
+  customerName: string;
   count: number;
   volume: number;
   fee: number;
@@ -79,6 +103,83 @@ export interface BrilinkCategoryBreakdownItem {
 export interface BrilinkReportResponse {
   summary: BrilinkReportSummary;
   categoryBreakdown: BrilinkCategoryBreakdownItem[];
+  dailyTrend: BrilinkDailyTrendItem[];
+  cashierPerformance: BrilinkCashierItem[];
+  topCustomers: BrilinkTopCustomerItem[];
+}
+
+// ============================================
+// Product Report Types
+// ============================================
+
+export interface ProductReportItem {
+  productId: string;
+  name: string;
+  sku: string;
+  price?: number;
+  cost?: number;
+  margin?: number;
+  marginPercent?: number;
+  qtySold: number;
+  revenue: number;
+  transactions?: number;
+  totalProfit?: number;
+}
+
+export interface ProductReportResponse {
+  totalProducts: number;
+  productsWithSales: number;
+  productsWithoutSales: number;
+  topSelling: ProductReportItem[];
+  slowMoving: ProductReportItem[];
+  highestMargin: ProductReportItem[];
+  categoryBreakdown: { categoryId: string; name: string; qty: number; revenue: number; productCount: number }[];
+  lowStock: { productId: string; name: string; sku: string; currentStock: number; threshold: number }[];
+  lowStockThreshold: number;
+}
+
+// ============================================
+// Customer Report Types
+// ============================================
+
+export interface CustomerReportSummary {
+  totalUniqueCustomers: number;
+  repeatCustomers: number;
+  newCustomers: number;
+  newlyRegistered: number;
+}
+
+export interface TopSpenderItem {
+  customerId: string;
+  name: string;
+  phone: string | null;
+  totalSpent: number;
+  totalProfit: number;
+  transactionCount: number;
+  avgPerVisit: number;
+}
+
+export interface CustomerReportResponse {
+  summary: CustomerReportSummary;
+  topSpenders: TopSpenderItem[];
+}
+
+// ============================================
+// Sales Comparison Types
+// ============================================
+
+export interface SalesComparisonPeriod {
+  period: string;
+  omzet: number;
+  profit: number;
+  transactions: number;
+  aov: number;
+}
+
+export interface SalesComparisonResponse {
+  current: SalesComparisonPeriod;
+  previous: SalesComparisonPeriod;
+  change: { omzet: number; profit: number; transactions: number };
 }
 
 // ============================================
@@ -110,6 +211,39 @@ const reportsService = {
     endDate?: string,
   ): Promise<BrilinkReportResponse> {
     const { data } = await api.get<BrilinkReportResponse>('/reports/brilink', {
+      params: { shopId, startDate, endDate },
+    });
+    return data;
+  },
+
+  async getProductReport(
+    shopId: string,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<ProductReportResponse> {
+    const { data } = await api.get<ProductReportResponse>('/reports/products', {
+      params: { shopId, startDate, endDate },
+    });
+    return data;
+  },
+
+  async getCustomerReport(
+    shopId: string,
+    startDate?: string,
+    endDate?: string,
+  ): Promise<CustomerReportResponse> {
+    const { data } = await api.get<CustomerReportResponse>('/reports/customers', {
+      params: { shopId, startDate, endDate },
+    });
+    return data;
+  },
+
+  async getSalesComparison(
+    shopId: string,
+    startDate: string,
+    endDate: string,
+  ): Promise<SalesComparisonResponse> {
+    const { data } = await api.get<SalesComparisonResponse>('/reports/sales/comparison', {
       params: { shopId, startDate, endDate },
     });
     return data;

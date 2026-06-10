@@ -18,10 +18,13 @@ export class ProfileController {
       select: {
         id: true, email: true, username: true, fullName: true,
         phone: true, address: true, avatarUrl: true, role: true,
-        status: true, shopId: true, createdAt: true, lastLogin: true,
+        status: true, shopId: true, tenantId: true, createdAt: true, lastLogin: true,
+        lastPasswordReset: true,
       },
     });
-    return { profile: user };
+    // hasRealPassword: false if user never set their own password (Google-only user)
+    const hasRealPassword = !!(user?.lastPasswordReset);
+    return { profile: { ...user, hasRealPassword } };
   }
 
   @Patch()

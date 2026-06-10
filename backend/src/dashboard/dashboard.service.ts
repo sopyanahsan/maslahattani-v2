@@ -214,7 +214,7 @@ export class DashboardService {
       }> = await this.prisma.$queryRawUnsafe(
         `
         SELECT
-          EXTRACT(HOUR FROM ("createdAt" AT TIME ZONE 'Asia/Jakarta'))::int as hour,
+          EXTRACT(HOUR FROM ("createdAt" + interval '7 hours'))::int as hour,
           COALESCE(SUM("totalPrice"), 0) as revenue,
           COALESCE(SUM("totalPrice") - SUM("totalCost"), 0) as profit
         FROM "transactions"
@@ -258,7 +258,7 @@ export class DashboardService {
     }> = await this.prisma.$queryRawUnsafe(
       `
       SELECT
-        TO_CHAR(("createdAt" AT TIME ZONE 'Asia/Jakarta')::date, 'YYYY-MM-DD') as day_label,
+        TO_CHAR(("createdAt" + interval '7 hours')::date, 'YYYY-MM-DD') as day_label,
         COALESCE(SUM("totalPrice"), 0) as revenue,
         COALESCE(SUM("totalPrice") - SUM("totalCost"), 0) as profit
       FROM "transactions"

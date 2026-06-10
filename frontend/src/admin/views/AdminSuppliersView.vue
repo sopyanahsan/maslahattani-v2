@@ -856,23 +856,23 @@ function poStatusLabel(status: POStatus): string {
 // ============================================
 
 async function fetchSuppliers() {
-  suppliersLoading.value = true;
+  if (suppliers.value.length === 0) suppliersLoading.value = true;
   try {
     const res = await supplierService.listSuppliers({ shopId: getShopId() });
     suppliers.value = res.data;
-  } catch { suppliers.value = []; }
+  } catch { if (suppliers.value.length === 0) suppliers.value = []; }
   finally { suppliersLoading.value = false; }
 }
 
 async function fetchPOs() {
-  posLoading.value = true;
+  if (purchaseOrders.value.length === 0) posLoading.value = true;
   try {
     const res = await supplierService.listPurchaseOrders({
       shopId: getShopId(),
       status: (poFilterStatus.value as POStatus) || undefined,
     });
     purchaseOrders.value = res.data;
-  } catch { purchaseOrders.value = []; }
+  } catch { if (purchaseOrders.value.length === 0) purchaseOrders.value = []; }
   finally { posLoading.value = false; }
 }
 
@@ -1239,7 +1239,7 @@ function generatePOText(): string {
   }
 
   lines.push('');
-  lines.push(`— Maslahat Tani`);
+  lines.push(`— Posify`);
 
   return lines.filter(Boolean).join('\n');
 }

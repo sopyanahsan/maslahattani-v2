@@ -12,6 +12,8 @@ import { onMounted, onUnmounted, ref } from 'vue';
  * - Pause saat tab hidden (hemat resource)
  * - Resume + immediate fetch saat tab visible lagi
  * - Cleanup otomatis saat component unmount
+ * - TIDAK refresh kalau offline (hemat bandwidth, hindari error)
+ * - TIDAK set isRefreshing=true saat silent refresh (anti-flicker)
  */
 export function useAutoRefresh(
   fetchFn: () => Promise<void> | void,
@@ -23,14 +25,13 @@ export function useAutoRefresh(
   function start() {
     stop();
     timer = setInterval(async () => {
-      if (document.hidden) return;
-      isRefreshing.value = true;
+      // Skip if tab hidden or offline
+      if (document.hidden || !navigator.onLine) return;
+      // Silent refresh — NO loading state change (anti-flicker)
       try {
         await fetchFn();
       } catch {
         // Silent — don't break the interval on error
-      } finally {
-        isRefreshing.value = false;
       }
     }, intervalMs);
   }
@@ -43,7 +44,8 @@ export function useAutoRefresh(
   }
 
   function handleVisibility() {
-    if (document.visibilityState === 'visible') {
+    if (document.visibilityState === 'visible' && navigator.onLine) {
+      // Silent fetch on tab visible (no loading indicator)
       fetchFn();
       start();
     } else {

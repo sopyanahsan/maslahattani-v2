@@ -4,6 +4,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import {
   CreateSupplierDto,
   UpdateSupplierDto,
@@ -14,7 +15,10 @@ import {
 
 @Injectable()
 export class SuppliersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
+  ) {}
 
   // ============================================
   // SUPPLIERS CRUD
@@ -205,6 +209,9 @@ export class SuppliersService {
         _count: { select: { items: true } },
       },
     });
+
+    // Emit real-time event
+    this.realtimeGateway.emitDataChanged(dto.shopId, 'suppliers', 'created', po.id);
 
     return {
       id: po.id,

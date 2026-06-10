@@ -84,6 +84,7 @@ const isOffline = computed(() => route.query.offline === '1');
 
 const currentDate = computed(() =>
   new Date().toLocaleString('id-ID', {
+    timeZone: 'Asia/Jakarta',
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   })

@@ -1,9 +1,13 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 
 @Injectable()
 export class CashFlowService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
+  ) {}
 
   // ============================================
   // CATEGORIES CRUD
@@ -83,6 +87,20 @@ export class CashFlowService {
         status,
       },
       include: { category: true, user: { select: { id: true, username: true } } },
+    });
+
+    // Emit real-time event
+    this.realtimeGateway.emitCashFlowCreated(shopId, {
+      id: cashFlow.id,
+      type: dto.type as 'CASH_IN' | 'CASH_OUT',
+      amount: dto.amount,
+      categoryName: cashFlow.category?.name || '',
+      description: dto.notes || '',
+      createdAt: cashFlow.createdAt.toISOString(),
+    });
+    this.realtimeGateway.emitDashboardRefresh(shopId, {
+      source: 'cash_flow',
+      timestamp: new Date().toISOString(),
     });
 
     return { success: true, cashFlow, approvalRequired: status === 'PENDING' };

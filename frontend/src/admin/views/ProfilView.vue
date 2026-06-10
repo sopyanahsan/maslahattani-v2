@@ -178,9 +178,10 @@
       <div v-if="showChangePassword" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showChangePassword = false"></div>
         <form class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleChangePassword">
-          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Ganti Password</h3>
+          <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">{{ hasRealPassword ? 'Ganti Password' : 'Set Password' }}</h3>
 
-          <div>
+          <!-- Only show "Password Lama" if user has a real password (not Google-only) -->
+          <div v-if="hasRealPassword">
             <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-slate-400">Password Lama</label>
             <input
               v-model="pwForm.currentPassword"
@@ -189,6 +190,9 @@
               placeholder="Masukkan password saat ini"
               class="mt-1 w-full h-9 px-3 text-sm bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-slate-100 focus:border-blue-500 outline-none"
             />
+          </div>
+          <div v-else class="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+            <p class="text-xs text-blue-700 dark:text-blue-300">Akun Anda login via Google. Set password untuk bisa login manual juga.</p>
           </div>
 
           <div>
@@ -300,6 +304,10 @@ const lastPasswordResetLabel = computed(() => {
   return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 });
 
+const hasRealPassword = computed(() => {
+  return !!(user.value as any)?.hasRealPassword;
+});
+
 // ============================================
 // Methods
 // ============================================
@@ -354,16 +362,24 @@ async function handleChangePassword() {
 
   changingPassword.value = true;
   try {
-    const { data } = await api.post('/auth/change-password-with-old', {
-      currentPassword: pwForm.currentPassword,
-      newPassword: pwForm.newPassword,
-    });
-    toast.success(data.message || 'Password berhasil diubah.');
+    if (hasRealPassword.value) {
+      // Has existing password → verify old password
+      const { data } = await api.post('/auth/change-password-with-old', {
+        currentPassword: pwForm.currentPassword,
+        newPassword: pwForm.newPassword,
+      });
+      toast.success(data.message || 'Password berhasil diubah.');
+    } else {
+      // Google-only user → set new password without old password verification
+      const { data } = await api.post('/auth/set-password', {
+        newPassword: pwForm.newPassword,
+      });
+      toast.success(data.message || 'Password berhasil di-set.');
+    }
     showChangePassword.value = false;
     pwForm.currentPassword = '';
     pwForm.newPassword = '';
     pwForm.confirmPassword = '';
-    // Reload profile to update lastPasswordReset
     await loadProfile();
   } catch (err: any) {
     pwError.value = err.response?.data?.message || err.message || 'Gagal mengubah password.';

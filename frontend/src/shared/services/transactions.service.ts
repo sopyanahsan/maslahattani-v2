@@ -41,6 +41,9 @@ export interface TransactionDto {
   totalCost: number;
   totalDiscount: number;
   status: TransactionStatus;
+  customerId?: string | null;
+  customerName?: string | null;
+  customerPhone?: string | null;
   idempotencyKey?: string | null;
   clientCreatedAt?: string | null;
   createdAt: string;

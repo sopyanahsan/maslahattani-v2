@@ -20,6 +20,7 @@ export interface UpdateReceiptConfigPayload {
   autoPrint?: boolean;
   mergeReceipts?: boolean;
   footerMessage?: string;
+  logoUrl?: string;
 }
 
 export interface UpdateShopPayload {

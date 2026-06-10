@@ -14,6 +14,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth, ApiParam } from '@nestjs/swagger'
 import { ShiftsService } from './shifts.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard, Roles } from '../auth/guards/roles.guard';
+import { RequirePermission } from '../permissions/require-permission.guard';
 import { Role } from '@prisma/client';
 import {
   OpenShiftDto,
@@ -101,6 +102,7 @@ export class ShiftsController {
 
   @Post(':id/finalize')
   @Roles(Role.ADMIN, Role.SUPER_ADMIN)
+  @RequirePermission('shifts.finalize')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Finalize shift (Admin only)',

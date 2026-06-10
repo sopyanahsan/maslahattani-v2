@@ -18,7 +18,7 @@
             <component :is="StoreIcon" class="w-4 h-4 text-white" />
           </div>
           <div class="min-w-0">
-            <h1 class="text-sm font-bold text-slate-950 dark:text-slate-100 leading-tight truncate">{{ currentShopName || 'Maslahat Tani' }}</h1>
+            <h1 class="text-sm font-bold text-slate-950 dark:text-slate-100 leading-tight truncate">{{ currentShopName || 'Posify' }}</h1>
             <p class="text-[9px] text-slate-400 dark:text-slate-500 leading-tight">{{ todayLabel }}</p>
           </div>
         </div>
@@ -46,6 +46,7 @@
             class="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 border border-white dark:border-slate-900"
           />
         </button>
+
         <button
           type="button"
           class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
@@ -76,7 +77,7 @@
             <component :is="StoreIcon" class="w-5 h-5 text-white" />
           </div>
           <div>
-            <p class="text-sm font-bold leading-tight">Maslahat Tani</p>
+            <p class="text-sm font-bold leading-tight">Posify</p>
             <p class="text-[11px] text-slate-400 leading-tight">Admin Dashboard</p>
           </div>
         </div>
@@ -138,13 +139,13 @@
                 <component :is="item.icon" class="w-4 h-4 shrink-0" />
                 <span class="truncate">{{ item.label }}</span>
                 <span
-                  v-if="item.badge"
+                  v-if="badgeCounts[item.to]?.count"
                   :class="[
                     'ml-auto px-1.5 py-0.5 text-[10px] font-semibold rounded-full',
-                    item.badgeColor || 'bg-amber-500 text-white',
+                    badgeCounts[item.to]?.color || 'bg-amber-500 text-white',
                   ]"
                 >
-                  {{ item.badge }}
+                  {{ badgeCounts[item.to].count }}
                 </span>
               </a>
             </RouterLink>
@@ -329,6 +330,16 @@
           <span class="text-xs text-slate-500 dark:text-slate-400 hidden xl:inline">
             {{ todayLabel }}
           </span>
+          <!-- WebSocket indicator (md+ only, mobile uses banner dot) -->
+          <span v-if="wsConnected" class="hidden md:inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400" title="Real-time aktif">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+            Online
+          </span>
+          <span v-else class="hidden md:inline-flex items-center gap-1 text-[10px] font-medium text-amber-500 dark:text-amber-400" title="Mode offline — data tersimpan lokal">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+            Offline
+            <span v-if="offlinePendingCount > 0" class="ml-0.5 px-1 py-0 text-[9px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-full">{{ offlinePendingCount }} pending</span>
+          </span>
           <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
           <div class="flex items-center gap-2">
             <div
@@ -349,7 +360,7 @@
       <!-- Branch Context Banner -->
       <div class="sticky top-16 z-10 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 dark:from-blue-900 dark:via-blue-900 dark:to-blue-950 px-4 lg:px-6 py-2 flex items-center justify-between shadow-sm">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shrink-0" title="Aktif"></div>
+          <div :class="['w-2 h-2 rounded-full shrink-0', wsConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400']" :title="wsConnected ? 'Online' : 'Offline'"></div>
           <div class="min-w-0">
             <p class="text-xs font-bold text-white truncate">{{ currentShopName || 'Belum dipilih' }}</p>
             <p class="text-[10px] text-blue-200 dark:text-blue-300 truncate">{{ currentShopAddress }}</p>
@@ -512,7 +523,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, type Component } from 'vue';
+import { computed, onMounted, onUnmounted, provide, ref, type Component } from 'vue';
 import api from '@/shared/services/api';
 import GlobalConfirm from '@/shared/components/GlobalConfirm.vue';
 import GlobalToast from '@/shared/components/GlobalToast.vue';
@@ -520,6 +531,9 @@ import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
 import { useTheme } from '@/shared/composables/useTheme';
+import { useRealtimeUpdates } from '@/shared/composables/useRealtimeUpdates';
+import { useOfflineQueue } from '@/shared/composables/useOfflineQueue';
+import { usePermissionsStore } from '@/shared/stores/permissions.store';
 import {
   Menu as MenuIcon,
   Store as StoreIcon,
@@ -546,6 +560,7 @@ import {
   // Shifts & Profile
   Clock as ShiftIcon,
   User as UserIcon,
+  Shield as ShieldIcon,
   // Theme
   Sun as SunIcon,
   Moon as MoonIcon,
@@ -558,6 +573,78 @@ import { useNotifSound } from '@/shared/composables/useNotifSound';
 
 const { play: playNotifSound } = useNotifSound();
 
+// ============================================
+// GLOBAL REAL-TIME WEBSOCKET LISTENER
+// ============================================
+// Listens to DATA_CHANGED event from backend.
+// Provides `realtimeSignal` ref to child pages via provide/inject.
+// Pages watch this signal to re-fetch data WITHOUT unmounting (data stays visible).
+const realtimeSignal = ref(0);
+let realtimeDebounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+// Provide to all child components
+provide('realtimeSignal', realtimeSignal);
+
+const { isConnected: wsConnected } = useRealtimeUpdates({
+  events: {
+    onDataChanged() {
+      // Only trigger refresh if we're online (can actually fetch)
+      if (!navigator.onLine) return;
+      if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(() => {
+        realtimeSignal.value++;
+        fetchBadgeCounts();
+        fetchAlerts();
+        // Also sync offline queue if any
+        if (offlinePendingCount.value > 0) syncOfflineQueue();
+      }, 500);
+    },
+    onBrilinkTransactionCreated() {
+      if (!navigator.onLine) return;
+      if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(() => {
+        realtimeSignal.value++;
+      }, 500);
+    },
+    onAccountBalanceChanged() {
+      if (!navigator.onLine) return;
+      if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(() => {
+        realtimeSignal.value++;
+      }, 500);
+    },
+    onCashFlowCreated() {
+      if (!navigator.onLine) return;
+      if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(() => {
+        realtimeSignal.value++;
+      }, 500);
+    },
+    onCashBoxUpdated() {
+      if (!navigator.onLine) return;
+      if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(() => {
+        realtimeSignal.value++;
+      }, 500);
+    },
+    onDashboardRefresh() {
+      if (!navigator.onLine) return;
+      if (realtimeDebounceTimer) clearTimeout(realtimeDebounceTimer);
+      realtimeDebounceTimer = setTimeout(() => {
+        realtimeSignal.value++;
+      }, 500);
+    },
+  },
+});
+
+// ============================================
+// OFFLINE QUEUE (auto-sync saat online kembali)
+// ============================================
+const { pendingCount: offlinePendingCount, syncNow: syncOfflineQueue } = useOfflineQueue();
+
+// Provide offline queue info to child pages
+provide('offlinePendingCount', offlinePendingCount);
+
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
@@ -569,6 +656,9 @@ const shopMenuOpen = ref(false);
 const showBranchPickerModal = ref(false);
 const switchingShop = ref(false);
 const switchError = ref('');
+
+// Badge counts for sidebar items (reactive, updated by fetchBadgeCounts)
+const badgeCounts = ref<Record<string, { count: number; color: string }>>({});
 
 // Confirmation modal state for switching active branch
 const showSwitchConfirmation = ref(false);
@@ -594,8 +684,13 @@ function toggleTheme() {
 }
 
 // === Shop selector ===
-const currentShopName = computed(() => shopStore.currentShopName);
 const currentShopId = computed(() => shopStore.currentShopId);
+const currentShopName = computed(() => {
+  // Prefer store name, fallback to matching from availableShops list
+  if (shopStore.currentShopName) return shopStore.currentShopName;
+  const shop = availableShops.value.find(s => s.id === currentShopId.value);
+  return shop?.name || '';
+});
 const currentShopAddress = computed(() => {
   const shop = availableShops.value.find(s => s.id === currentShopId.value);
   return shop?.address || '';
@@ -603,7 +698,7 @@ const currentShopAddress = computed(() => {
 const availableShops = computed(() => shopStore.availableShops);
 
 const canSwitchShop = computed(
-  () => authStore.isSuperAdmin || availableShops.value.length > 1,
+  () => authStore.isSuperAdmin && availableShops.value.length > 1,
 );
 
 async function handleSwitchShop(shopId: string) {
@@ -641,17 +736,17 @@ async function confirmSwitchShop() {
     pendingSwitchShopId.value = null;
     pendingSwitchShopName.value = '';
 
-    // Navigate to trigger data reload
-    router.replace({
-      path: route.path,
-      query: { ...route.query, _t: Date.now().toString() },
-    });
+    // Trigger all pages to re-fetch data for new shop
+    realtimeSignal.value++;
+    // Also refresh badges & alerts for new shop
+    fetchBadgeCounts();
+    fetchAlerts();
 
-    // Hide overlay after a short delay (gives time for components to re-fetch)
+    // Hide overlay after data has time to reload
     setTimeout(() => {
       showSwitchOverlay.value = false;
       switchOverlayShopName.value = '';
-    }, 1800);
+    }, 1200);
   } catch (err: any) {
     switchError.value = err?.message ?? 'Gagal ganti cabang.';
     showSwitchOverlay.value = false;
@@ -696,23 +791,13 @@ async function fetchBadgeCounts() {
     const pendingTransfers = getCount(transfersRes);
     const unfinalizedShifts = getCount(shiftsRes);
 
-    // Set badges on the appropriate nav items
-    function setBadge(path: string, count: number, color?: string) {
-      if (count <= 0) return;
-      for (const group of navGroups.value) {
-        const item = group.items.find((i) => i.to === path);
-        if (item) {
-          item.badge = count;
-          if (color) item.badgeColor = color;
-          break;
-        }
-      }
-    }
-
-    setBadge('/admin/kas-retail', pendingCashOut, 'bg-red-500 text-white');
-    setBadge('/admin/debts', overdueDebts, 'bg-amber-500 text-white');
-    setBadge('/admin/transfers', pendingTransfers, 'bg-blue-500 text-white');
-    setBadge('/admin/shifts', unfinalizedShifts, 'bg-slate-500 text-white');
+    // Set badges via separate reactive state
+    badgeCounts.value = {
+      '/admin/kas-retail': { count: pendingCashOut, color: 'bg-red-500 text-white' },
+      '/admin/debts': { count: overdueDebts, color: 'bg-amber-500 text-white' },
+      '/admin/transfers': { count: pendingTransfers, color: 'bg-blue-500 text-white' },
+      '/admin/shifts': { count: unfinalizedShifts, color: 'bg-slate-500 text-white' },
+    };
   } catch {
     /* silent — badges are optional enhancements */
   }
@@ -806,7 +891,9 @@ function markAllRead() {
 onMounted(async () => {
   document.addEventListener('click', onDocClick, true);
   startNotifPolling();
-  if (canSwitchShop.value && availableShops.value.length === 0) {
+
+  // Always fetch shops list if not loaded yet
+  if (availableShops.value.length === 0) {
     try {
       await shopStore.fetchShops();
     } catch {
@@ -814,16 +901,29 @@ onMounted(async () => {
     }
   }
 
-  // Auto-select first shop kalau super-admin belum punya cabang aktif
-  if (authStore.isSuperAdmin && !shopStore.hasCurrentShop) {
-    const shops = availableShops.value;
-    if (shops.length > 0) {
+  // Auto-select cabang aktif kalau belum ada di store
+  if (!shopStore.hasCurrentShop && availableShops.value.length > 0) {
+    // Coba match dari user.shopId (non-super-admin sudah punya shopId di token)
+    const userShopId = authStore.user?.shopId;
+    const matchedShop = userShopId
+      ? availableShops.value.find((s) => s.id === userShopId)
+      : null;
+
+    if (matchedShop) {
+      // Set langsung tanpa call selectShop API (user sudah punya akses)
+      shopStore.setCurrentShop(matchedShop as any);
+    } else if (authStore.isSuperAdmin) {
+      // Super-admin: call selectShop API untuk re-issue JWT
       try {
-        await shopStore.selectShop(shops[0].id);
+        await shopStore.selectShop(availableShops.value[0].id);
         await authStore.fetchUser();
       } catch {
-        // Silent: user bisa pilih manual dari dropdown
+        // Fallback: set dari list tanpa API call
+        shopStore.setCurrentShop(availableShops.value[0] as any);
       }
+    } else {
+      // Fallback: set dari first available shop
+      shopStore.setCurrentShop(availableShops.value[0] as any);
     }
   }
 
@@ -857,52 +957,75 @@ const topItems: NavItem[] = [
   { to: '/admin/home', label: 'Home', icon: HomeIcon },
 ];
 
-const navGroups = ref<NavGroup[]>([
-  {
-    title: 'Retail',
-    items: [
-      { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
-      { to: '/admin/transactions', label: 'Transaksi', icon: ReceiptIcon },
-      { to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon },
-      { to: '/admin/riwayat-stok', label: 'Riwayat Stok', icon: ClipboardListIcon },
-      { to: '/admin/debts', label: 'Hutang', icon: DebtIcon },
-      { to: '/admin/kas-retail', label: 'Kas Retail', icon: WalletIcon },
-      { to: '/admin/reports', label: 'Laporan Retail', icon: ReportIcon },
-    ],
-  },
-  {
-    title: 'BRILink',
-    items: [
+// Role-aware navigation: certain groups/items only show for specific roles
+const isSuperAdmin = computed(() => authStore.user?.role === 'SUPER_ADMIN');
+const isAdminOrAbove = computed(() => ['SUPER_ADMIN', 'ADMIN'].includes(authStore.user?.role || ''));
+
+// Permission-based sidebar filtering
+const permStore = usePermissionsStore();
+
+const navGroups = computed<NavGroup[]>(() => {
+  const can = (p: string) => permStore.can(p);
+
+  const groups: NavGroup[] = [];
+
+  // --- RETAIL ---
+  const retailItems: NavItem[] = [
+    { to: '/admin/dashboard', label: 'Dashboard Retail', icon: DashboardIcon },
+  ];
+  if (can('transactions.view')) retailItems.push({ to: '/admin/transactions', label: 'Transaksi', icon: ReceiptIcon });
+  if (can('products.view')) retailItems.push({ to: '/admin/products', label: 'Produk & Stok', icon: PackageIcon });
+  if (can('products.view')) retailItems.push({ to: '/admin/riwayat-stok', label: 'Riwayat Stok', icon: ClipboardListIcon });
+  if (can('debts.view')) retailItems.push({ to: '/admin/debts', label: 'Hutang', icon: DebtIcon });
+  retailItems.push({ to: '/admin/customers', label: 'Customer', icon: UsersIcon });
+  retailItems.push({ to: '/admin/kas-retail', label: 'Kas Retail', icon: WalletIcon });
+  if (can('reports.view')) retailItems.push({ to: '/admin/reports', label: 'Laporan Retail', icon: ReportIcon });
+  groups.push({ title: 'Retail', items: retailItems });
+
+  // --- BRILINK ---
+  if (can('brilink.view')) {
+    const brilinkItems: NavItem[] = [
       { to: '/admin/brilink', label: 'Dashboard BRILink', icon: DashboardIcon },
       { to: '/admin/brilink/transaksi', label: 'Transaksi BRILink', icon: ReceiptIcon },
       { to: '/admin/kas-rekening-brilink', label: 'Kas & Rekening', icon: LandmarkIcon },
-      { to: '/admin/brilink/fee', label: 'Pengaturan Fee', icon: PercentIcon },
-    ],
-  },
-  {
-    title: 'Operasional',
-    items: [
-      { to: '/admin/shifts', label: 'Shift', icon: ShiftIcon },
-      { to: '/admin/users', label: 'Multi-User', icon: UsersIcon },
-      { to: '/admin/shops', label: 'Cabang', icon: Building2Icon },
-      { to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon },
-      { to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon },
-      { to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon },
-    ],
-  },
-  {
-    title: 'Inventaris',
-    items: [
-      { to: '/admin/cetak-label', label: 'Cetak Label', icon: TagIcon },
-      { to: '/admin/racks', label: 'Label Rak', icon: TagIcon },
-    ],
-  },
-]);
+    ];
+    if (can('brilink.fee')) brilinkItems.push({ to: '/admin/brilink/fee', label: 'Pengaturan Fee', icon: PercentIcon });
+    if (can('reports.view')) brilinkItems.push({ to: '/admin/brilink/laporan', label: 'Laporan BRILink', icon: ReportIcon });
+    groups.push({ title: 'BRILink', items: brilinkItems });
+  }
 
-const bottomNav: NavItem[] = [
-  { to: '/admin/settings', label: 'Pengaturan', icon: SettingsIcon },
-  { to: '/admin/profil', label: 'Profil', icon: UserIcon },
-];
+  // --- INVENTARIS ---
+  const inventarisItems: NavItem[] = [];
+  if (can('inventory.opname')) inventarisItems.push({ to: '/admin/opname-sessions', label: 'Stock Opname', icon: CheckIcon });
+  if (can('inventory.suppliers')) inventarisItems.push({ to: '/admin/suppliers', label: 'Supplier & PO', icon: PackageIcon });
+  if (can('inventory.transfers')) inventarisItems.push({ to: '/admin/transfers', label: 'Transfer Stok', icon: TransferIcon });
+  if (can('products.view')) {
+    inventarisItems.push({ to: '/admin/cetak-label', label: 'Cetak Label', icon: TagIcon });
+    inventarisItems.push({ to: '/admin/racks', label: 'Label Rak', icon: TagIcon });
+  }
+  if (inventarisItems.length > 0) groups.push({ title: 'Inventaris', items: inventarisItems });
+
+  // --- OPERASIONAL ---
+  const operasionalItems: NavItem[] = [];
+  if (can('shifts.view')) operasionalItems.push({ to: '/admin/shifts', label: 'Shift', icon: ShiftIcon });
+  if (can('users.view')) operasionalItems.push({ to: '/admin/users', label: 'Multi-User', icon: UsersIcon });
+  if (can('shops.view') || isSuperAdmin.value) operasionalItems.push({ to: '/admin/shops', label: 'Cabang', icon: Building2Icon });
+  if (operasionalItems.length > 0) groups.push({ title: 'Operasional', items: operasionalItems });
+
+  return groups;
+});
+
+const bottomNav = computed<NavItem[]>(() => {
+  const items: NavItem[] = [];
+  if (permStore.can('settings.shop') || isSuperAdmin.value) {
+    items.push({ to: '/admin/settings', label: 'Pengaturan', icon: SettingsIcon });
+  }
+  if (isSuperAdmin.value) {
+    items.push({ to: '/admin/super-admin-settings', label: 'Super Admin', icon: ShieldIcon });
+  }
+  items.push({ to: '/admin/profil', label: 'Profil', icon: UserIcon });
+  return items;
+});
 
 function onNavClick(e: MouseEvent, navigate: (e?: MouseEvent) => void) {
   navigate(e);
@@ -949,7 +1072,7 @@ const roleLabel = computed(() => {
 const pageTitle = computed(() => {
   const meta = route.meta?.title as string | undefined;
   if (meta) {
-    return meta.replace(/\s*[—-]\s*Maslahat Tani.*$/i, '').trim() || meta;
+    return meta.replace(/\s*[—-]\s*Posify.*$/i, '').trim() || meta;
   }
   return 'Admin';
 });

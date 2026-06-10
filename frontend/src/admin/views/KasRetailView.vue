@@ -262,7 +262,7 @@ const activeTab = ref<TabKey>('mutasi');
 function getShopId(): string | undefined { return authStore.user?.shopId || undefined; }
 function formatRupiah(n: number): string { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n); }
 function formatDate(iso: string): string { return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); }
-function formatDateTime(iso: string): string { return new Date(iso).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+function formatDateTime(iso: string): string { const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z'); return d.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
 
 
 // ============================================
@@ -302,7 +302,7 @@ const cashBoxForm = reactive({ label: '', balance: 0 });
 async function fetchCashBox() { const s = getShopId(); if (!s) return; try { cashBox.value = await kasRetailService.getCashBox(s); } catch { /* */ } }
 async function fetchHistory() {
   const s = getShopId(); if (!s) return;
-  historyLoading.value = true;
+  if (historyData.value.length === 0) historyLoading.value = true;
   try {
     // Determine if filter value is a categoryId or cashBoxId
     const filterVal = mutasiCategoryFilter.value || undefined;
@@ -319,7 +319,7 @@ async function fetchHistory() {
       page: 1, limit: 20,
     });
     historyData.value = res.data; historyMeta.value = res.meta;
-  } catch { historyData.value = []; }
+  } catch { if (historyData.value.length === 0) historyData.value = []; }
   finally { historyLoading.value = false; }
 }
 async function fetchHistoryPage(p: number) {

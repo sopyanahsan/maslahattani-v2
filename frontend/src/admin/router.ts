@@ -13,15 +13,29 @@ import { useAuthStore } from '@/shared/stores/auth.store';
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
+    name: 'landing',
+    component: () => import('@/landing/LandingPage.vue'),
+    meta: { title: 'Posify — Sistem POS Modern untuk UMKM' },
+  },
+  {
+    path: '/home',
     name: 'home',
     component: () => import('@/admin/views/HomeView.vue'),
-    meta: { title: 'Maslahat Tani v2' },
+    meta: { title: 'Posify' },
   },
   {
     path: '/showcase',
     name: 'showcase',
     component: () => import('@/admin/views/ShowcaseView.vue'),
-    meta: { title: 'UI Showcase — Maslahat Tani' },
+    meta: { title: 'UI Showcase — Posify' },
+  },
+
+  // === Owner Dashboard (platform owner only — tenantId must be null) ===
+  {
+    path: '/owner',
+    name: 'owner-dashboard',
+    component: () => import('@/owner/OwnerDashboard.vue'),
+    meta: { title: 'Posify Owner Dashboard', requiresAuth: true, roles: ['SUPER_ADMIN'], platformOwnerOnly: true },
   },
 
   // === Admin Auth (Guest Only) ===
@@ -41,6 +55,19 @@ const routes: RouteRecordRaw[] = [
       requiresAuth: true,
       // Halaman ini di-akses dgn token yang shopId-nya masih null (super-admin
       // baru login). Tidak butuh shopId.
+      allowMissingShop: true,
+    },
+  },
+
+  // === Get Started (Onboarding wizard — no layout, full-screen) ===
+  {
+    path: '/admin/get-started',
+    name: 'admin-get-started',
+    component: () => import('@/admin/views/GetStartedView.vue'),
+    meta: {
+      title: 'Setup Toko — Posify',
+      requiresAuth: true,
+      roles: ['ADMIN', 'SUPER_ADMIN'],
       allowMissingShop: true,
     },
   },
@@ -104,6 +131,15 @@ const routes: RouteRecordRaw[] = [
         meta: {
           title: 'Pengaturan Fee BRILink',
           description: 'Atur margin fee per nominal dan jenis transaksi.',
+        },
+      },
+      {
+        path: 'brilink/laporan',
+        name: 'admin-brilink-report',
+        component: () => import('@/admin/views/BrilinkReportView.vue'),
+        meta: {
+          title: 'Laporan BRILink',
+          description: 'Laporan volume, fee, trend harian, dan performa kasir BRILink.',
         },
       },
       {
@@ -188,6 +224,24 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'customers',
+        name: 'admin-customers',
+        component: () => import('@/admin/views/AdminCustomersView.vue'),
+        meta: {
+          title: 'Customer',
+          description: 'Kelola data pelanggan — anti-double name per cabang.',
+        },
+      },
+      {
+        path: 'customers/:id',
+        name: 'admin-customer-detail',
+        component: () => import('@/admin/views/AdminCustomerDetailView.vue'),
+        meta: {
+          title: 'Detail Customer',
+          description: 'Riwayat pembelian, statistik, dan produk favorit customer.',
+        },
+      },
+      {
         path: 'payments',
         name: 'admin-payments',
         component: () => import('@/admin/views/AdminPaymentsView.vue'),
@@ -261,6 +315,25 @@ const routes: RouteRecordRaw[] = [
         meta: {
           title: 'Pengaturan',
           description: 'Konfigurasi toko, struk, bahasa, sistem ON/OFF, dan preferensi.',
+        },
+      },
+      {
+        path: 'billing',
+        name: 'admin-billing',
+        component: () => import('@/admin/views/BillingView.vue'),
+        meta: {
+          title: 'Billing & Langganan',
+          description: 'Pilih paket, bayar, dan kelola langganan Posify.',
+        },
+      },
+      {
+        path: 'super-admin-settings',
+        name: 'super-admin-settings',
+        component: () => import('@/admin/views/SuperAdminSettingsView.vue'),
+        meta: {
+          title: 'Pengaturan Super Admin',
+          description: 'Role & Permission, Audit Log, System Settings, Danger Zone.',
+          roles: ['SUPER_ADMIN'],
         },
       },
 
@@ -402,9 +475,21 @@ router.beforeEach(async (to, _from, next) => {
   // Role-based access control
   if (requiresAuth && allowedRoles && authStore.user) {
     if (!allowedRoles.includes(authStore.user.role)) {
-      // Role mismatch (misal kasir nyangkut di admin domain)
+      // Kasir trying to access admin panel → redirect to webapp
+      if (authStore.user.role === 'KASIR' || authStore.user.role === 'CASHIER_SUPERVISOR') {
+        return next({ path: '/kasir/login' });
+      }
+      // Other role mismatch
       authStore.clearAuth();
       return next({ name: 'admin-login' });
+    }
+  }
+
+  // Platform owner only: must be SUPER_ADMIN without tenantId
+  const platformOwnerOnly = !!getMeta<boolean>(to, 'platformOwnerOnly');
+  if (platformOwnerOnly && authStore.user) {
+    if (authStore.user.role !== 'SUPER_ADMIN' || (authStore.user as any).tenantId) {
+      return next({ name: 'admin-home' });
     }
   }
 
@@ -417,7 +502,7 @@ router.beforeEach(async (to, _from, next) => {
 
 router.afterEach((to) => {
   const explicit = getMeta<string>(to, 'title');
-  document.title = explicit ? `${explicit} — Ngalir Admin` : 'Ngalir Admin';
+  document.title = explicit ? `${explicit} — Posify` : 'Posify';
 });
 
 export default router;

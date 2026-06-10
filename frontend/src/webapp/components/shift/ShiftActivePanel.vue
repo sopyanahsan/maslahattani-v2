@@ -331,6 +331,7 @@ const shortShiftId = computed(() => props.shift.id.slice(-6).toUpperCase());
 
 const startTimeLabel = computed(() =>
   new Date(props.shift.startTime).toLocaleTimeString('id-ID', {
+    timeZone: 'Asia/Jakarta',
     hour: '2-digit',
     minute: '2-digit',
   }),

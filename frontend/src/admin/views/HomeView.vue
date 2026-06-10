@@ -5,7 +5,7 @@
         <span class="material-symbols-outlined text-white text-4xl">store</span>
       </div>
       <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-3">
-        Maslahat Tani v2
+        Posify
       </h1>
       <p class="text-base sm:text-lg text-slate-600 mb-8">
         Sistem POS &amp; BRILink untuk Agen Retail

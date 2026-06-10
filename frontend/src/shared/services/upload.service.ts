@@ -28,7 +28,7 @@ export interface UploadResult {
  */
 export async function uploadToCloudinary(
   file: File,
-  folder: string = 'ngalir/products',
+  folder: string = 'posify/products',
 ): Promise<UploadResult> {
   if (!CLOUD_NAME || !UPLOAD_PRESET) {
     throw new Error(

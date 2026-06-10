@@ -134,8 +134,9 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email (opsional)</label>
-            <input v-model="createForm.email" type="email" placeholder="kasir@email.com" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email <span class="text-red-500">*</span></label>
+            <input v-model="createForm.email" type="email" placeholder="kasir@gmail.com" required class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Wajib diisi. Kode verifikasi akan dikirim ke email ini.</p>
           </div>
 
           <div>
@@ -237,6 +238,7 @@ import {
   AlertCircle as AlertCircleIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import { useToast } from '@/shared/composables/useToast';
 import kasirService, {
   type KasirDto, type CreateKasirResponse, type ResetPinResponse, type UserStatus,
@@ -244,6 +246,7 @@ import kasirService, {
 import shopsService, { type ShopDto } from '@/shared/services/shops.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const toast = useToast();
 
 const kasirList = ref<KasirDto[]>([]);
@@ -272,7 +275,7 @@ const resetPwResult = ref<{ tempPassword: string } | null>(null);
 async function fetchKasir() {
   loading.value = true; error.value = null;
   try {
-    const response = await kasirService.list(authStore.user?.shopId || undefined);
+    const response = await kasirService.list(shopStore.currentShopId || authStore.user?.shopId || undefined);
     kasirList.value = response.data;
   } catch (err: any) { error.value = err.response?.data?.message ?? err.message ?? 'Gagal memuat.'; }
   finally { loading.value = false; }
@@ -280,7 +283,7 @@ async function fetchKasir() {
 
 function openCreateModal() {
   createForm.name = ''; createForm.username = ''; createForm.pin = ''; createForm.password = '';
-  createForm.email = ''; createForm.shopId = authStore.user?.shopId ?? ''; createForm.role = 'KASIR';
+  createForm.email = ''; createForm.shopId = shopStore.currentShopId ?? authStore.user?.shopId ?? ''; createForm.role = 'KASIR';
   createError.value = null; createResult.value = null; showCreateModal.value = true;
   fetchShops();
 }
@@ -291,6 +294,16 @@ async function fetchShops() {
 function closeCreateModal() { showCreateModal.value = false; if (createResult.value) fetchKasir(); }
 
 async function handleCreate() {
+  // Validate email (required for kasir)
+  if (createForm.role === 'KASIR' && !createForm.email) {
+    createError.value = 'Email wajib diisi untuk akun Kasir (digunakan untuk verifikasi).';
+    return;
+  }
+  if (createForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.email)) {
+    createError.value = 'Format email tidak valid.';
+    return;
+  }
+
   // Validate based on role
   if (createForm.role === 'KASIR') {
     if (!/^\d{4,6}$/.test(createForm.pin)) {
@@ -363,10 +376,10 @@ function initials(text: string): string {
 function hasRealEmail(email?: string | null): boolean {
   if (!email) return false;
   // Legacy placeholders from earlier code that auto-generated fake emails
-  if (email.endsWith('@ngalir.local')) return false;
+  if (email.endsWith('@posify.local')) return false;
   return true;
 }
-function formatDateTime(iso: string): string { return new Date(iso).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
+function formatDateTime(iso: string): string { const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z'); return d.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
 
 function roleBg(role: string): string {
   switch (role) { case 'SUPER_ADMIN': return 'bg-purple-100 dark:bg-purple-900/30 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300'; case 'ADMIN': return 'bg-blue-100 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'; default: return 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'; }

@@ -77,19 +77,36 @@
           {{ BRILINK_CATEGORY_LABELS[selectedCategory] }}
         </h2>
 
-        <!-- Customer Name -->
+        <!-- Customer Name (with autocomplete) -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 mb-1">
             Nama Customer <span class="text-red-500">*</span>
           </label>
-          <input
-            v-model="form.customerName"
-            type="text"
-            required
-            placeholder="Nama lengkap customer"
-            class="w-full h-9 px-3 text-sm border border-slate-300 rounded-md
-                   focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-          />
+          <div class="relative">
+            <input
+              v-model="form.customerName"
+              type="text"
+              required
+              placeholder="Ketik nama customer..."
+              class="w-full h-9 px-3 text-sm border border-slate-300 rounded-md
+                     focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              @input="searchCustomer"
+              @focus="showCustomerSuggestions = true"
+            />
+            <!-- Autocomplete dropdown -->
+            <div v-if="showCustomerSuggestions && customerSuggestions.length > 0" class="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-36 overflow-y-auto">
+              <button
+                v-for="s in customerSuggestions"
+                :key="s.id"
+                type="button"
+                class="w-full px-3 py-2 text-left hover:bg-blue-50 transition-colors border-b border-slate-50 last:border-0"
+                @click="selectCustomerSuggestion(s)"
+              >
+                <p class="text-xs font-medium text-slate-800">{{ s.name }}</p>
+                <p v-if="s.phone" class="text-[10px] text-slate-400">{{ s.phone }}</p>
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- Customer Phone (optional) -->
@@ -334,6 +351,37 @@ const form = reactive({
   amount: 0,
 });
 
+// Customer autocomplete
+const customerSuggestions = ref<{ id: string; name: string; phone: string | null }[]>([]);
+const showCustomerSuggestions = ref(false);
+let customerSearchTimer: any = null;
+
+function searchCustomer() {
+  showCustomerSuggestions.value = true;
+  const q = form.customerName.trim();
+  if (q.length < 2) {
+    customerSuggestions.value = [];
+    return;
+  }
+  clearTimeout(customerSearchTimer);
+  customerSearchTimer = setTimeout(async () => {
+    try {
+      const shopId = authStore.user?.shopId ?? shopStore.currentShopId ?? '';
+      const { data } = await (await import('@/shared/services/api')).default.get('/customers/autocomplete', { params: { shopId, q } });
+      customerSuggestions.value = data;
+    } catch {
+      customerSuggestions.value = [];
+    }
+  }, 300);
+}
+
+function selectCustomerSuggestion(c: { id: string; name: string; phone: string | null }) {
+  form.customerName = c.name;
+  form.customerPhone = c.phone || '';
+  showCustomerSuggestions.value = false;
+  customerSuggestions.value = [];
+}
+
 interface ReceiptInfo {
   refNumber: string;
   category: BrilinkCategory;
@@ -488,6 +536,7 @@ async function handleSubmit() {
       fee: response.summary.fee,
       total: response.summary.total,
       date: new Date().toLocaleString('id-ID', {
+        timeZone: 'Asia/Jakarta',
         day: '2-digit',
         month: 'short',
         year: 'numeric',

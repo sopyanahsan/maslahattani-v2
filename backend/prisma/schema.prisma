@@ -40,6 +40,8 @@ model User {
   status              UserStatus @default(ACTIVE)
   shop                Shop?     @relation("ShopUsers", fields: [shopId], references: [id])
   shopId              String?
+  tenant              Tenant?   @relation(fields: [tenantId], references: [id])
+  tenantId            String?
   
   mustChangePassword  Boolean   @default(false)
   mustChangePin       Boolean   @default(false)
@@ -49,6 +51,11 @@ model User {
   pinChangedAt        DateTime? @map("pin_changed_at")
   pinAttempts         Int       @default(0) @map("pin_attempts")
   pinLockedUntil      DateTime? @map("pin_locked_until")
+  
+  // Email verification for kasir
+  emailVerifiedAt         DateTime? @map("email_verified_at")
+  emailVerificationCode   String?   @map("email_verification_code")
+  emailCodeExpiresAt      DateTime? @map("email_code_expires_at")
   lastLogin           DateTime?
   lastPasswordReset   DateTime?
   createdAt           DateTime  @default(now())
@@ -118,6 +125,8 @@ model Shop {
   phone               String
   owner               User?     @relation("ShopOwner", fields: [ownerId], references: [id], onDelete: SetNull)
   ownerId             String?
+  tenant              Tenant?   @relation(fields: [tenantId], references: [id])
+  tenantId            String?
   parentShop          Shop?     @relation("ShopToParent", fields: [parentShopId], references: [id], onDelete: SetNull)
   parentShopId        String?
   childShops          Shop[]    @relation("ShopToParent")
@@ -141,6 +150,9 @@ model Shop {
   brilinkTransactions BrilinkTransaction[]
   brilinkFees         BrilinkFee[]
   brilinkAccounts     BrilinkAccount[]
+  brilinkCashBox      BrilinkCashBox?
+  brilinkReconciliations BrilinkReconciliation[]
+  brilinkProducts     BrilinkProduct[]
   opnameSessions      OpnameSession[]
   suppliers           Supplier[]
   purchaseOrders      PurchaseOrder[]
@@ -148,6 +160,7 @@ model Shop {
   transfersIn         StockTransfer[]      @relation("TransferTo")
   rackZones           RackZone[]
   racks               Rack[]
+  customers           Customer[]
 
   @@map("shops")
 }
@@ -157,6 +170,7 @@ model ShopSetting {
   shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
   shopId              String    @unique
   language            String    @default("id")
+  timezone            String    @default("Asia/Jakarta") // WIB=Asia/Jakarta, WITA=Asia/Makassar, WIT=Asia/Jayapura
   receiptConfig       String?
   alertConfig         Json?
   brilinkCategoryConfig Json?
@@ -188,6 +202,16 @@ model ShopSetting {
   // Notification settings
   notifSoundEnabled           Boolean @default(true)
   notifSoundTone              String  @default("chime") // chime | beep | bell | silent
+
+  /**
+   * KPI targets for BRILink dashboard & transaction page.
+   * JSON shape: {
+   *   dailyTransactionTarget: number,   // target jumlah transaksi per hari (default 50)
+   *   dailyVolumeTarget: number,        // target volume transaksi per hari in Rp (default 50_000_000)
+   *   dailyFeeTarget: number,           // target fee/profit per hari in Rp (default 500_000)
+   * }
+   */
+  brilinkKpiConfig    Json?
 
   updatedAt           DateTime  @updatedAt
   
@@ -400,6 +424,12 @@ model Transaction {
   idempotencyKey      String?   @unique
   clientCreatedAt     DateTime?
   
+  // Optional customer link (auto-create jika nama baru)
+  customer            Customer? @relation(fields: [customerId], references: [id])
+  customerId          String?
+  customerName        String?   // denormalized: nama pembeli saat transaksi
+  customerPhone       String?   // denormalized: HP pembeli saat transaksi
+
   items               TransactionItem[]
   payments            Payment[]
   debt                Debt?
@@ -412,6 +442,7 @@ model Transaction {
   
   @@index([shopId])
   @@index([userId])
+  @@index([customerId])
   @@index([createdAt])
   @@map("transactions")
 }
@@ -835,6 +866,7 @@ enum BrilinkTransactionStatus {
   SUCCESS
   FAILED
   PENDING
+  VOIDED
 }
 
 enum BrilinkFeeType {
@@ -853,6 +885,8 @@ model BrilinkTransaction {
 
   refNumber       String                   @unique
   category        BrilinkCategory
+  customer        Customer?                @relation(fields: [customerId], references: [id])
+  customerId      String?
   customerName    String
   customerPhone   String?
   destination     String
@@ -861,6 +895,29 @@ model BrilinkTransaction {
   total           Int                      // amount + fee
   status          BrilinkTransactionStatus @default(SUCCESS)
 
+  // Fee method for TARIK_TUNAI (how admin fee is charged)
+  // DALAM = fee added to rekening debit (nasabah tarik nominal+fee dari rek)
+  // LUAR = fee paid cash separately (saldo tetap, fee masuk kas tunai)
+  // POTONG = fee deducted from cash given (nasabah terima nominal-fee)
+  feeMethod       String?                  // 'DALAM' | 'LUAR' | 'POTONG' (null for non-tarik)
+
+  // Flow & Impact fields
+  flowDirection   String?                  // 'DEBIT' | 'CREDIT' (auto-derived from category)
+  accountImpact   Int                      @default(0) // signed: negative for debit, positive for credit
+  cashImpact      Int                      @default(0) // signed: impact on kas tunai
+
+  // Offline support
+  idempotencyKey  String?                  @unique
+  clientCreatedAt DateTime?
+
+  // Void support
+  voidedAt        DateTime?
+  voidedBy        String?
+  voidReason      String?
+
+  // Link to cash mutation (for traceability)
+  cashMutationId  String?
+
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
 
@@ -868,6 +925,7 @@ model BrilinkTransaction {
   @@index([cashierId])
   @@index([category])
   @@index([createdAt])
+  @@index([status])
   @@map("brilink_transactions")
 }
 
@@ -879,9 +937,10 @@ model BrilinkFee {
   label           String          // "Transfer BRI 1-50jt", etc
   minAmount       Int             @default(0)
   maxAmount       Int             @default(999999999)
+  systemFee       Int             @default(0) // biaya sistem/bank (bukan profit, potongan tetap)
   feeType         BrilinkFeeType  @default(FLAT)
-  feeAmount       Int             @default(0) // flat fee (rupiah)
-  feePercent      Float           @default(0) // percent fee (e.g. 0.5 = 0.5%)
+  feeAmount       Int             @default(0) // admin fee flat (rupiah) — profit agen
+  feePercent      Float           @default(0) // admin fee percent (e.g. 0.5 = 0.5%) — profit agen
   isActive        Boolean         @default(true)
 
   createdAt       DateTime        @default(now())
@@ -902,6 +961,8 @@ enum BrilinkMutationType {
   TRX_DEBIT
   TRX_CREDIT
   ADJUSTMENT
+  TRANSFER_OUT
+  TRANSFER_IN
 }
 
 model BrilinkAccount {
@@ -944,6 +1005,142 @@ model BrilinkMutation {
   @@index([accountId])
   @@index([createdAt])
   @@map("brilink_mutations")
+}
+
+
+// ============================================
+// BRILINK CASH BOX (KAS TUNAI BRILINK)
+// ============================================
+//
+// Kas tunai BRILink 100% terpisah dari kas retail (CashBox).
+// 1 shop = 1 BrilinkCashBox.
+// Saldo naik saat nasabah bayar tunai (transfer/topup), turun saat tarik tunai.
+
+enum BrilinkCashMutationType {
+  TRX_IN          // Dari transaksi: nasabah bayar tunai
+  TRX_OUT         // Dari transaksi: agen kasih tunai (tarik tunai)
+  SETOR           // Admin tambah modal kas tunai
+  TARIK           // Admin ambil tunai
+  ADJUSTMENT      // Koreksi dari reconciliation
+  VOID_REVERSE    // Reversal dari void transaksi
+}
+
+model BrilinkCashBox {
+  id                  String    @id @default(cuid())
+  shop                Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId              String    @unique  // 1 kas tunai per shop
+  balance             Int       @default(0)
+  lowBalanceThreshold Int       @default(2000000)
+  lastAudit           DateTime?
+  lastAuditBalance    Int?
+  notes               String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  mutations           BrilinkCashMutation[]
+
+  @@map("brilink_cash_boxes")
+}
+
+model BrilinkCashMutation {
+  id              String                  @id @default(cuid())
+  cashBox         BrilinkCashBox          @relation(fields: [cashBoxId], references: [id], onDelete: Cascade)
+  cashBoxId       String
+  type            BrilinkCashMutationType
+  amount          Int                     // always positive
+  balanceBefore   Int
+  balanceAfter    Int
+  reference       String?                 // brilinkTransaction.id or reconciliation.id
+  description     String
+  notes           String?
+  createdById     String?
+  createdAt       DateTime                @default(now())
+
+  @@index([cashBoxId])
+  @@index([createdAt])
+  @@map("brilink_cash_mutations")
+}
+
+// ============================================
+// BRILINK RECONCILIATION
+// ============================================
+
+model BrilinkReconciliation {
+  id              String    @id @default(cuid())
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  target          String    // 'ACCOUNT' | 'CASHBOX'
+  targetId        String    // accountId or cashBoxId
+  targetLabel     String    // "BRI Utama" or "Kas Tunai"
+  balanceApp      Int       // saldo di app sebelum adjustment
+  balanceReal     Int       // saldo real yang diinput admin
+  adjustment      Int       // selisih (real - app)
+  status          String    // 'MATCHED' | 'ADJUSTED'
+  notes           String?
+  createdById     String
+  createdAt       DateTime  @default(now())
+
+  @@index([shopId])
+  @@index([createdAt])
+  @@map("brilink_reconciliations")
+}
+
+
+// ============================================
+// BRILINK PRODUCTS, OPERATORS & PROVIDERS
+// ============================================
+
+model OperatorPrefix {
+  id        String  @id @default(cuid())
+  prefix    String  @unique  // "0811", "0878", etc
+  operator  String  // TELKOMSEL, XL, INDOSAT, THREE, AXIS, SMARTFREN
+  type      String  @default("GSM")
+
+  @@index([prefix])
+  @@map("operator_prefixes")
+}
+
+model BrilinkProduct {
+  id        String   @id @default(cuid())
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId    String
+  category  String   // TOPUP_PULSA, TOPUP_DATA, TOPUP_EWALLET, TOPUP_PLN
+  operator  String?  // TELKOMSEL, XL, etc (null for PLN/EWALLET)
+  provider  String?  // GOPAY, OVO, etc (null for pulsa/PLN)
+  name      String   // "Pulsa 10rb", "XL 3GB 30hr", "Token 50rb"
+  nominal   Int?     // 10000, 50000 (null for paket data custom)
+  buyPrice  Int      // harga beli dari BRI/supplier
+  sellPrice Int      // harga jual ke nasabah
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([shopId, category, operator])
+  @@index([shopId, category, provider])
+  @@map("brilink_products")
+}
+
+model BankList {
+  id        String  @id @default(cuid())
+  code      String  @unique  // kode BI: "014", "008"
+  name      String  // "Bank Central Asia"
+  shortName String  // "BCA"
+  isActive  Boolean @default(true)
+
+  @@index([isActive])
+  @@map("bank_list")
+}
+
+model EwalletProvider {
+  id        String  @id @default(cuid())
+  code      String  @unique  // "GOPAY", "OVO"
+  name      String  // "GoPay"
+  icon      String? // optional icon/emoji
+  isActive  Boolean @default(true)
+
+  @@map("ewallet_providers")
 }
 
 
@@ -1127,4 +1324,171 @@ model Rack {
   @@index([shopId])
   @@index([zoneId])
   @@map("racks")
+}
+
+
+// ============================================
+// ROLE PERMISSIONS (RBAC)
+// ============================================
+//
+// Super Admin bisa toggle permission per-role.
+// Default permissions di-seed saat pertama kali.
+// Kalau row tidak ada untuk suatu permission → fallback ke default (deny).
+
+model RolePermission {
+  id          String    @id @default(cuid())
+  role        Role
+  permission  String    // e.g. "transactions.void", "products.delete", "users.manage"
+  enabled     Boolean   @default(false)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([role, permission])
+  @@index([role])
+  @@map("role_permissions")
+}
+
+
+// ============================================
+// SAAS MULTI-TENANT + SUBSCRIPTION
+// ============================================
+
+enum PlanType {
+  TRIAL
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum CycleType {
+  MONTHLY
+  YEARLY
+  LIFETIME
+}
+
+enum SubStatus {
+  TRIAL
+  ACTIVE
+  EXPIRED
+  SUSPENDED
+  CANCELLED
+  LIFETIME
+}
+
+enum SaasPaymentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+}
+
+model Tenant {
+  id            String    @id @default(cuid())
+  name          String    // Nama toko/bisnis
+  slug          String    @unique // URL-friendly (auto-generated dari name)
+  ownerName     String    // Nama pemilik
+  ownerPhone    String    // No WA pemilik
+  ownerEmail    String    @unique // Email pemilik (untuk login)
+  isActive      Boolean   @default(true) // Soft-disable oleh owner platform
+
+  subscription  Subscription?
+  shops         Shop[]
+  users         User[]
+  payments      SaasPayment[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([ownerEmail])
+  @@index([isActive])
+  @@map("tenants")
+}
+
+model Subscription {
+  id            String    @id @default(cuid())
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId      String    @unique
+
+  plan          PlanType  @default(TRIAL)
+  cycle         CycleType @default(MONTHLY)
+  status        SubStatus @default(TRIAL)
+
+  startDate     DateTime  @default(now())
+  endDate       DateTime? // null = lifetime (tidak pernah expire)
+  graceEndsAt   DateTime? // endDate + 7 hari
+
+  // Plan limits
+  maxBranches   Int       @default(1)
+  maxUsers      Int       @default(2)
+  maxProducts   Int       @default(50)
+
+  // Feature flags per plan
+  brilinkEnabled    Boolean @default(false)
+  exportEnabled     Boolean @default(false)
+  opnameEnabled     Boolean @default(false)
+  supplierEnabled   Boolean @default(false)
+  transferEnabled   Boolean @default(false)
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([status])
+  @@index([endDate])
+  @@map("subscriptions")
+}
+
+model SaasPayment {
+  id            String             @id @default(cuid())
+  tenant        Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  tenantId      String
+
+  amount        Int                // Rupiah
+  method        String             // SEABANK, BCA, QRIS, DANA, OVO, GOPAY
+  plan          PlanType
+  cycle         CycleType
+
+  status        SaasPaymentStatus  @default(PENDING)
+  proofUrl      String?            // URL bukti transfer (upload)
+  uniqueCode    String?            // Kode unik transfer (3 digit terakhir)
+  notes         String?
+
+  verifiedAt    DateTime?
+  verifiedBy    String?            // Owner platform yang verify
+  rejectedAt    DateTime?
+  rejectedReason String?
+
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("saas_payments")
+}
+
+
+// ============================================
+// CUSTOMERS (Anti-Double Name)
+// ============================================
+
+model Customer {
+  id          String   @id @default(cuid())
+  shop        Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId      String
+  name        String
+  phone       String?
+  address     String?
+  notes       String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactions        Transaction[]
+  brilinkTransactions BrilinkTransaction[]
+
+  @@unique([shopId, name])
+  @@index([shopId])
+  @@index([name])
+  @@map("customers")
 }

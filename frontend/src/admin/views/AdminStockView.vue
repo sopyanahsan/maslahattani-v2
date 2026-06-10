@@ -503,6 +503,7 @@ import {
   AlertCircle as AlertCircleIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import stockService, {
   type StockItemDto,
   type StockSummary,
@@ -512,6 +513,7 @@ import stockService, {
 } from '@/shared/services/stock.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 
 // ============================================
 // State
@@ -563,7 +565,7 @@ const opnameItems = ref<OpnameItemInput[]>([]);
 // ============================================
 
 function getShopId(): string | undefined {
-  return authStore.user?.shopId || undefined;
+  return shopStore.currentShopId || authStore.user?.shopId || undefined;
 }
 
 async function fetchStock() {
@@ -682,7 +684,9 @@ function formatRupiah(amount: number): string {
 }
 
 function formatDateTime(iso: string): string {
-  return new Date(iso).toLocaleString('id-ID', {
+  const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z');
+  return d.toLocaleString('id-ID', {
+    timeZone: 'Asia/Jakarta',
     day: 'numeric',
     month: 'short',
     hour: '2-digit',

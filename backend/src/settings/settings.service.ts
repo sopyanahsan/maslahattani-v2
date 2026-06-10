@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { UpdateLanguageDto, UpdateReceiptConfigDto } from './dto/update-settings.dto';
+import { UpdateLanguageDto, UpdateReceiptConfigDto, UpdateTimezoneDto } from './dto/update-settings.dto';
 import { UpdateShopDto, CreateShopDto } from './dto/update-shop.dto';
 
 /** Default BRILink category config — 7 categories with display info. */
@@ -71,6 +71,26 @@ export class SettingsService {
   }
 
   // ============================================
+  // UPDATE TIMEZONE
+  // ============================================
+
+  async updateTimezone(dto: UpdateTimezoneDto) {
+    const validTimezones = ['Asia/Jakarta', 'Asia/Makassar', 'Asia/Jayapura'];
+    if (!validTimezones.includes(dto.timezone)) {
+      throw new NotFoundException('Zona waktu tidak valid. Pilih: Asia/Jakarta (WIB), Asia/Makassar (WITA), atau Asia/Jayapura (WIT).');
+    }
+
+    const setting = await this.prisma.shopSetting.upsert({
+      where: { shopId: dto.shopId },
+      update: { timezone: dto.timezone },
+      create: { shopId: dto.shopId, language: 'id', timezone: dto.timezone },
+    });
+
+    const label = dto.timezone === 'Asia/Jakarta' ? 'WIB' : dto.timezone === 'Asia/Makassar' ? 'WITA' : 'WIT';
+    return { success: true, message: `Zona waktu berhasil diubah ke ${label}.`, setting };
+  }
+
+  // ============================================
   // UPDATE RECEIPT CONFIG
   // ============================================
 
@@ -79,6 +99,7 @@ export class SettingsService {
       autoPrint: dto.autoPrint ?? true,
       mergeReceipts: dto.mergeReceipts ?? false,
       footerMessage: dto.footerMessage ?? '',
+      logoUrl: dto.logoUrl ?? '',
     });
 
     const setting = await this.prisma.shopSetting.upsert({
@@ -216,5 +237,49 @@ export class SettingsService {
     }
 
     return merged;
+  }
+
+  // ============================================
+  // SYSTEM SETTINGS (global, Super Admin only)
+  // ============================================
+
+  async getSystemSettings(): Promise<Record<string, any>> {
+    const firstSetting = await this.prisma.shopSetting.findFirst({
+      select: { alertConfig: true },
+    });
+
+    const config = (firstSetting?.alertConfig as any) || {};
+    return {
+      maintenanceMode: config.systemMaintenanceMode ?? false,
+      autoLogoutMinutes: config.systemAutoLogoutMinutes ?? 60,
+      maxPinAttempts: config.systemMaxPinAttempts ?? 5,
+    };
+  }
+
+  async updateSystemSettings(body: Record<string, any>) {
+    const firstSetting = await this.prisma.shopSetting.findFirst();
+    if (!firstSetting) {
+      return { success: false, message: 'No shop settings found.' };
+    }
+
+    const existing = (firstSetting.alertConfig as any) || {};
+    const updated = {
+      ...existing,
+      systemMaintenanceMode: body.maintenanceMode ?? existing.systemMaintenanceMode ?? false,
+      systemAutoLogoutMinutes: body.autoLogoutMinutes ?? existing.systemAutoLogoutMinutes ?? 60,
+      systemMaxPinAttempts: body.maxPinAttempts ?? existing.systemMaxPinAttempts ?? 5,
+    };
+
+    await this.prisma.shopSetting.update({
+      where: { id: firstSetting.id },
+      data: { alertConfig: updated },
+    });
+
+    return {
+      success: true,
+      maintenanceMode: updated.systemMaintenanceMode,
+      autoLogoutMinutes: updated.systemAutoLogoutMinutes,
+      maxPinAttempts: updated.systemMaxPinAttempts,
+    };
   }
 }

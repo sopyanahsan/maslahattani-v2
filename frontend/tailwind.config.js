@@ -54,8 +54,8 @@ export default {
         'sidebar-dark': '#0F172A',
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        mono: ['JetBrains Mono', 'Fira Code', 'monospace'],
+        sans: ['Josefin Sans', 'system-ui', '-apple-system', 'sans-serif'],
+        mono: ['Source Sans 3', 'Source Sans Pro', 'system-ui', 'sans-serif'],
       },
     },
   },
