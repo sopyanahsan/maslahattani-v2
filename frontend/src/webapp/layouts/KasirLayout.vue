@@ -76,7 +76,11 @@
       </div>
 
       <div class="max-w-6xl mx-auto">
-        <RouterView />
+        <RouterView v-slot="{ Component, route }">
+          <Transition :name="transitionName" mode="out-in">
+            <component :is="Component" :key="route.path" />
+          </Transition>
+        </RouterView>
       </div>
     </main>
 
@@ -186,6 +190,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
 import { useSettingsStore } from '@/shared/stores/settings.store';
@@ -208,6 +213,49 @@ const settingsStore = useSettingsStore();
 const { isSyncing, pendingCount, startAutoSync, stopAutoSync, refreshPendingCount } = useSyncService();
 
 const isOnline = ref(navigator.onLine);
+
+// Page transition logic
+const router = useRouter();
+const transitionName = ref('page-fade');
+
+// Route depth map for directional transitions
+const routeDepth: Record<string, number> = {
+  '/dashboard': 0,
+  '/brilink/menu': 0,
+  '/retail/pos': 0,
+  '/reports': 0,
+  '/settings': 0,
+  '/retail/history': 1,
+  '/retail/shift': 1,
+  '/retail/receipt': 2,
+  '/brilink/transaction': 1,
+};
+
+function getRouteDepth(path: string): number {
+  // Exact match first
+  if (routeDepth[path] !== undefined) return routeDepth[path];
+  // Check prefix matches
+  for (const [routePath, depth] of Object.entries(routeDepth)) {
+    if (path.startsWith(routePath)) return depth;
+  }
+  return 1; // default mid-level
+}
+
+router.afterEach((to, from) => {
+  const toDepth = getRouteDepth(to.path);
+  const fromDepth = getRouteDepth(from.path);
+
+  if (toDepth === fromDepth) {
+    // Same level (tab switch) — use fade
+    transitionName.value = 'page-fade';
+  } else if (toDepth > fromDepth) {
+    // Going deeper — slide left
+    transitionName.value = 'page-slide-left';
+  } else {
+    // Going back — slide right
+    transitionName.value = 'page-slide-right';
+  }
+});
 
 /**
  * shopId yang dipakai untuk fetch settings.
