@@ -59,6 +59,19 @@ const routes: RouteRecordRaw[] = [
     },
   },
 
+  // === Get Started (Onboarding wizard — no layout, full-screen) ===
+  {
+    path: '/admin/get-started',
+    name: 'admin-get-started',
+    component: () => import('@/admin/views/GetStartedView.vue'),
+    meta: {
+      title: 'Setup Toko — Posify',
+      requiresAuth: true,
+      roles: ['ADMIN', 'SUPER_ADMIN'],
+      allowMissingShop: true,
+    },
+  },
+
   // === Admin Routes — pakai AdminLayout sebagai shell ===
   {
     path: '/admin',

@@ -279,9 +279,11 @@ async function handleGoogleRegister() {
     localStorage.setItem('access_token', data.token);
     localStorage.setItem('refresh_token', data.refreshToken);
     regSuccess.value = data.isNewUser
-      ? 'Akun berhasil dibuat! Mengarahkan ke dashboard...'
+      ? 'Akun berhasil dibuat! Mengarahkan ke setup toko...'
       : 'Login berhasil! Mengarahkan ke dashboard...';
-    setTimeout(() => { window.location.href = '/admin/home'; }, 1000);
+    setTimeout(() => {
+      window.location.href = data.needsOnboarding ? '/admin/get-started' : '/admin/home';
+    }, 1000);
   } catch (err: any) {
     if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
       // Silent — user closed popup

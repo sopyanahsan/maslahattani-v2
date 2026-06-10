@@ -557,11 +557,11 @@ export class AuthService {
       const result = await this.prisma.$transaction(async (tx) => {
         const tenant = await tx.tenant.create({
           data: {
-            name: `Toko ${name}`,
+            name: name,
             slug,
             ownerName: name,
             ownerEmail: email,
-            ownerPhone: '-',
+            ownerPhone: '',
           },
         });
 
@@ -579,11 +579,12 @@ export class AuthService {
           },
         });
 
+        // Create empty shop — onboarding wizard will fill name/address/phone
         const shop = await tx.shop.create({
           data: {
-            name: `Toko ${name}`,
-            address: '-',
-            phone: '-',
+            name: '',
+            address: '',
+            phone: '',
             ownerId: newUser.id,
             tenantId: tenant.id,
           },
@@ -663,7 +664,8 @@ export class AuthService {
         avatarUrl: user.avatarUrl,
       },
       shop,
-      isNewUser: !user.lastLogin, // first time login = new registration
+      isNewUser: !user.lastLogin,
+      needsOnboarding: !shop || !shop.name || shop.name === '' || shop.address === '',
     };
   }
 
