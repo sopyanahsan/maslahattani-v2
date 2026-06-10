@@ -886,7 +886,9 @@ function markAllRead() {
 onMounted(async () => {
   document.addEventListener('click', onDocClick, true);
   startNotifPolling();
-  if (canSwitchShop.value || availableShops.value.length === 0) {
+
+  // Always fetch shops list if not loaded yet
+  if (availableShops.value.length === 0) {
     try {
       await shopStore.fetchShops();
     } catch {
@@ -894,16 +896,13 @@ onMounted(async () => {
     }
   }
 
-  // Auto-select first shop kalau super-admin belum punya cabang aktif
-  if (authStore.isSuperAdmin && !shopStore.hasCurrentShop) {
-    const shops = availableShops.value;
-    if (shops.length > 0) {
-      try {
-        await shopStore.selectShop(shops[0].id);
-        await authStore.fetchUser();
-      } catch {
-        // Silent: user bisa pilih manual dari dropdown
-      }
+  // Auto-select first shop kalau belum punya cabang aktif
+  if (!shopStore.hasCurrentShop && availableShops.value.length > 0) {
+    try {
+      await shopStore.selectShop(availableShops.value[0].id);
+      await authStore.fetchUser();
+    } catch {
+      // Silent: user bisa pilih manual dari dropdown
     }
   }
 
