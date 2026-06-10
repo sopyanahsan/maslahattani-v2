@@ -168,44 +168,7 @@ export class EmailVerificationService {
         from: `"${appName}" <${fromEmail}>`,
         to: email,
         subject: `${appName} — Verifikasi Email Akun Kasir`,
-        html: `
-          <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 480px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 24px;">
-              <h1 style="color: #00A19B; font-size: 24px; margin: 0;">${appName}</h1>
-              <p style="color: #64748b; font-size: 13px; margin-top: 4px;">Verifikasi Email Kasir</p>
-            </div>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px;">
-              <p style="color: #475569; font-size: 14px; margin: 0 0 8px;">Halo <strong>${username}</strong>,</p>
-              <p style="color: #475569; font-size: 13px; margin: 0 0 20px;">
-                Akun kasir Anda telah dibuat. Untuk mengaktifkan akun, masukkan kode verifikasi berikut saat login pertama kali:
-              </p>
-              <div style="text-align: center; margin: 20px 0;">
-                <div style="background: #ffffff; border: 2px solid #00A19B; border-radius: 8px; padding: 16px; display: inline-block;">
-                  <span style="font-family: 'Courier New', monospace; font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #0f172a;">${code}</span>
-                </div>
-              </div>
-              <p style="color: #94a3b8; font-size: 12px; text-align: center; margin: 16px 0 0;">
-                Berlaku selama <strong>${this.codeExpiryMinutes} menit</strong>
-              </p>
-            </div>
-            <div style="margin-top: 16px; padding: 12px; background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;">
-              <p style="color: #1e40af; font-size: 11px; margin: 0;">
-                📋 <strong>Langkah selanjutnya:</strong><br/>
-                1. Login dengan username + PIN yang diberikan admin<br/>
-                2. Masukkan kode verifikasi di atas<br/>
-                3. Buat PIN baru (hanya Anda yang tahu)
-              </p>
-            </div>
-            <div style="margin-top: 12px; padding: 12px; background: #fef3c7; border-radius: 8px;">
-              <p style="color: #92400e; font-size: 11px; margin: 0;">
-                ⚠️ Dengan memverifikasi email ini, Anda menyetujui bahwa akun ini digunakan secara sah dan bertanggung jawab atas semua aktivitas transaksi yang dilakukan.
-              </p>
-            </div>
-            <p style="color: #94a3b8; font-size: 11px; text-align: center; margin-top: 24px;">
-              Email ini dikirim otomatis oleh ${appName}. Jika Anda tidak merasa mendaftar, abaikan email ini.
-            </p>
-          </div>
-        `,
+        html: this.buildEmailHtml(appName, username, code),
       });
 
       this.logger.log(`✅ Verification email sent to ${email}`);
@@ -223,5 +186,113 @@ export class EmailVerificationService {
       ? local.slice(0, 2) + '***'
       : local[0] + '***';
     return `${masked}@${domain}`;
+  }
+
+  /**
+   * Build the complete HTML email template with logo.
+   * Customize: colors, text, logo, and layout here.
+   */
+  private buildEmailHtml(appName: string, username: string, code: string): string {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9; padding: 32px 16px;">
+    <tr>
+      <td align="center">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width: 460px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+          
+          <!-- HEADER dengan Logo -->
+          <tr>
+            <td style="background: linear-gradient(135deg, #00A19B 0%, #0d9488 100%); padding: 32px 24px; text-align: center;">
+              <!-- Logo SVG inline (Toko icon dalam kotak) -->
+              <div style="margin: 0 auto 12px; width: 56px; height: 56px; background: rgba(255,255,255,0.2); border-radius: 14px; line-height: 56px; text-align: center;">
+                <span style="font-size: 28px;">🏪</span>
+              </div>
+              <h1 style="margin: 0; font-size: 22px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">${appName}</h1>
+              <p style="margin: 6px 0 0; font-size: 12px; color: rgba(255,255,255,0.8);">Sistem POS Modern</p>
+            </td>
+          </tr>
+
+          <!-- BODY -->
+          <tr>
+            <td style="padding: 28px 24px;">
+              <!-- Greeting -->
+              <p style="margin: 0 0 6px; font-size: 15px; color: #334155;">Halo <strong style="color: #0f172a;">${username}</strong> 👋</p>
+              <p style="margin: 0 0 24px; font-size: 13px; color: #64748b; line-height: 1.6;">
+                Akun kasir Anda telah dibuat oleh admin. Untuk mengaktifkan akun dan mulai bekerja, masukkan kode verifikasi berikut:
+              </p>
+
+              <!-- KODE VERIFIKASI -->
+              <div style="background: #f8fafc; border: 2px solid #00A19B; border-radius: 12px; padding: 20px; text-align: center; margin: 0 0 24px;">
+                <p style="margin: 0 0 8px; font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px;">Kode Verifikasi</p>
+                <div style="font-family: 'Courier New', monospace; font-size: 36px; font-weight: 900; letter-spacing: 8px; color: #0f172a; padding: 8px 0;">
+                  ${code}
+                </div>
+                <p style="margin: 8px 0 0; font-size: 11px; color: #94a3b8;">
+                  Berlaku <strong>${this.codeExpiryMinutes} menit</strong> sejak email ini dikirim
+                </p>
+              </div>
+
+              <!-- LANGKAH-LANGKAH -->
+              <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 16px; margin: 0 0 16px;">
+                <p style="margin: 0 0 10px; font-size: 12px; font-weight: 700; color: #1e40af;">📋 Cara Aktivasi Akun:</p>
+                <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%;">
+                  <tr>
+                    <td style="padding: 4px 0; vertical-align: top; width: 24px;">
+                      <span style="display: inline-block; width: 18px; height: 18px; background: #2563eb; color: #fff; border-radius: 50%; text-align: center; font-size: 10px; line-height: 18px; font-weight: 700;">1</span>
+                    </td>
+                    <td style="padding: 4px 0; font-size: 12px; color: #1e40af;">Login dengan <strong>username + PIN</strong> dari admin</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px 0; vertical-align: top; width: 24px;">
+                      <span style="display: inline-block; width: 18px; height: 18px; background: #2563eb; color: #fff; border-radius: 50%; text-align: center; font-size: 10px; line-height: 18px; font-weight: 700;">2</span>
+                    </td>
+                    <td style="padding: 4px 0; font-size: 12px; color: #1e40af;">Masukkan <strong>kode verifikasi</strong> di atas</td>
+                  </tr>
+                  <tr>
+                    <td style="padding: 4px 0; vertical-align: top; width: 24px;">
+                      <span style="display: inline-block; width: 18px; height: 18px; background: #2563eb; color: #fff; border-radius: 50%; text-align: center; font-size: 10px; line-height: 18px; font-weight: 700;">3</span>
+                    </td>
+                    <td style="padding: 4px 0; font-size: 12px; color: #1e40af;">Buat <strong>PIN baru</strong> (hanya Anda yang tahu)</td>
+                  </tr>
+                </table>
+              </div>
+
+              <!-- DISCLAIMER / KONTRAK -->
+              <div style="background: #fef3c7; border: 1px solid #fde68a; border-radius: 10px; padding: 14px; margin: 0 0 16px;">
+                <p style="margin: 0; font-size: 11px; color: #92400e; line-height: 1.5;">
+                  ⚠️ <strong>Pernyataan Tanggung Jawab:</strong><br/>
+                  Dengan memverifikasi email ini, Anda menyatakan bahwa:<br/>
+                  • Identitas yang didaftarkan adalah benar<br/>
+                  • Anda bertanggung jawab penuh atas semua aktivitas transaksi pada akun ini<br/>
+                  • Penyalahgunaan akun dapat diproses sesuai hukum yang berlaku
+                </p>
+              </div>
+            </td>
+          </tr>
+
+          <!-- FOOTER -->
+          <tr>
+            <td style="background: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px 24px; text-align: center;">
+              <p style="margin: 0 0 4px; font-size: 10px; color: #94a3b8;">
+                Email ini dikirim otomatis oleh <strong>${appName}</strong>
+              </p>
+              <p style="margin: 0; font-size: 10px; color: #cbd5e1;">
+                Jika Anda tidak merasa mendaftar, abaikan email ini.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
   }
 }
