@@ -382,6 +382,7 @@ import {
   Printer as PrinterIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import { useToast } from '@/shared/composables/useToast';
 import transactionsService, {
   type TransactionDto,
@@ -392,6 +393,7 @@ import transactionsService, {
 } from '@/shared/services/transactions.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const toast = useToast();
 
 // ============================================
@@ -427,7 +429,7 @@ const voidForm = reactive({ otp: '', reason: '' });
 // Helpers
 // ============================================
 function getShopId(): string | undefined {
-  return authStore.user?.shopId || undefined;
+  return shopStore.currentShopId || authStore.user?.shopId || undefined;
 }
 
 function formatRupiah(amount: number): string {

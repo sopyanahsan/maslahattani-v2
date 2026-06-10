@@ -237,6 +237,7 @@ import {
   AlertCircle as AlertCircleIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import { useToast } from '@/shared/composables/useToast';
 import kasirService, {
   type KasirDto, type CreateKasirResponse, type ResetPinResponse, type UserStatus,
@@ -244,6 +245,7 @@ import kasirService, {
 import shopsService, { type ShopDto } from '@/shared/services/shops.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const toast = useToast();
 
 const kasirList = ref<KasirDto[]>([]);
@@ -272,7 +274,7 @@ const resetPwResult = ref<{ tempPassword: string } | null>(null);
 async function fetchKasir() {
   loading.value = true; error.value = null;
   try {
-    const response = await kasirService.list(authStore.user?.shopId || undefined);
+    const response = await kasirService.list(shopStore.currentShopId || authStore.user?.shopId || undefined);
     kasirList.value = response.data;
   } catch (err: any) { error.value = err.response?.data?.message ?? err.message ?? 'Gagal memuat.'; }
   finally { loading.value = false; }
@@ -280,7 +282,7 @@ async function fetchKasir() {
 
 function openCreateModal() {
   createForm.name = ''; createForm.username = ''; createForm.pin = ''; createForm.password = '';
-  createForm.email = ''; createForm.shopId = authStore.user?.shopId ?? ''; createForm.role = 'KASIR';
+  createForm.email = ''; createForm.shopId = shopStore.currentShopId ?? authStore.user?.shopId ?? ''; createForm.role = 'KASIR';
   createError.value = null; createResult.value = null; showCreateModal.value = true;
   fetchShops();
 }

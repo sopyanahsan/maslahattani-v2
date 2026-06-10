@@ -353,9 +353,11 @@ import { onMounted, ref, reactive, computed } from 'vue';
 import { useAutoRefresh } from '@/shared/composables/useAutoRefresh';
 import { Plus as PlusIcon, Search as SearchIcon, HandCoins as HandCoinsIcon, Loader2 as Loader2Icon, AlertCircle as AlertCircleIcon, Eye as EyeIcon, MessageCircle as MessageCircleIcon, Pencil as PencilIcon } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import debtsService, { type DebtDto, type DebtListResponse, type DebtStatus, type PaymentMethod, type ManualDebtItem } from '@/shared/services/debts.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const debts = ref<DebtDto[]>([]);
 const meta = ref<DebtListResponse['meta'] | null>(null);
 const summary = ref<DebtListResponse['summary'] | null>(null);
@@ -385,7 +387,7 @@ const editing = ref(false);
 const editError = ref<string | null>(null);
 const editForm = reactive({ dueDate: '', customerName: '', customerPhone: '', notes: '' });
 
-function getShopId(): string | undefined { return authStore.user?.shopId || undefined; }
+function getShopId(): string | undefined { return shopStore.currentShopId || authStore.user?.shopId || undefined; }
 function formatRupiah(n: number): string { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n); }
 function formatDate(iso: string): string { return new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }); }
 function formatDateTime(iso: string): string { const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z'); return d.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }

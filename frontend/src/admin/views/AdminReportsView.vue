@@ -330,7 +330,7 @@ const quickRanges = [
   { label: 'Bulan Ini', days: -1 },
 ];
 
-function getShopId(): string | undefined { return authStore.user?.shopId || undefined; }
+function getShopId(): string | undefined { return shopStore.currentShopId || authStore.user?.shopId || undefined; }
 
 function formatRupiah(n: number): string {
   return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(n);

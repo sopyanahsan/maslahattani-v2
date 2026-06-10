@@ -222,6 +222,7 @@ import {
   Percent as PercentIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import brilinkService, {
   type BrilinkFeeDto,
   type BrilinkCategory,
@@ -230,6 +231,7 @@ import brilinkService, {
 import MetodeKasPanel from '@/admin/components/brilink/MetodeKasPanel.vue';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 
 type TabKey = 'fee-rules' | 'produk';
 const tabs: { key: TabKey; label: string }[] = [
@@ -276,7 +278,7 @@ const feesByCategory = computed(() => {
 // Helpers
 // ============================================
 function getShopId(): string | undefined {
-  return authStore.user?.shopId || undefined;
+  return shopStore.currentShopId || authStore.user?.shopId || undefined;
 }
 
 function formatRupiah(amount: number): string {
