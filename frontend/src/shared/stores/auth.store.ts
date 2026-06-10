@@ -272,6 +272,7 @@ export const useAuthStore = defineStore('auth', () => {
         role: me.role,
         status: me.status,
         shopId: me.shopId,
+        emailVerified: (me as any).emailVerified ?? true,
       };
 
       // Sync currentShop kalau /me kasih currentShop info

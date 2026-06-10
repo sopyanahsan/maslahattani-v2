@@ -22,6 +22,14 @@ const routes: RouteRecordRaw[] = [
     meta: { title: 'Masuk', guestOnly: true },
   },
 
+  // === Email Verification (authenticated but no layout) ===
+  {
+    path: '/verify-email',
+    name: 'webapp-verify-email',
+    component: () => import('@/webapp/views/VerifyEmailView.vue'),
+    meta: { title: 'Verifikasi Email', requiresAuth: true, skipEmailCheck: true },
+  },
+
   // === App Shell (KasirLayout) ===
   {
     path: '/',
@@ -189,6 +197,18 @@ router.beforeEach(async (to, _from, next) => {
       authStore.clearAuth();
       return next({ name: 'login' });
     }
+  }
+
+  // Email verification check: kasir with email must verify before accessing POS
+  const skipEmailCheck = getMeta<boolean>(to, 'skipEmailCheck');
+  if (
+    requiresAuth &&
+    !skipEmailCheck &&
+    authStore.user &&
+    authStore.user.role === 'KASIR' &&
+    (authStore.user as any).emailVerified === false
+  ) {
+    return next({ name: 'webapp-verify-email' });
   }
 
   next();

@@ -134,8 +134,9 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email (opsional)</label>
-            <input v-model="createForm.email" type="email" placeholder="kasir@email.com" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email <span class="text-red-500">*</span></label>
+            <input v-model="createForm.email" type="email" placeholder="kasir@gmail.com" required class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Wajib diisi. Kode verifikasi akan dikirim ke email ini.</p>
           </div>
 
           <div>
@@ -293,6 +294,16 @@ async function fetchShops() {
 function closeCreateModal() { showCreateModal.value = false; if (createResult.value) fetchKasir(); }
 
 async function handleCreate() {
+  // Validate email (required for kasir)
+  if (createForm.role === 'KASIR' && !createForm.email) {
+    createError.value = 'Email wajib diisi untuk akun Kasir (digunakan untuk verifikasi).';
+    return;
+  }
+  if (createForm.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(createForm.email)) {
+    createError.value = 'Format email tidak valid.';
+    return;
+  }
+
   // Validate based on role
   if (createForm.role === 'KASIR') {
     if (!/^\d{4,6}$/.test(createForm.pin)) {
