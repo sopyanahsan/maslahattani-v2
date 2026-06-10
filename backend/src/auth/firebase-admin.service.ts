@@ -1,11 +1,12 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import * as admin from 'firebase-admin';
+import { initializeApp, cert, type App } from 'firebase-admin/app';
+import { getAuth, type DecodedIdToken } from 'firebase-admin/auth';
 
 @Injectable()
 export class FirebaseAdminService implements OnModuleInit {
   private readonly logger = new Logger(FirebaseAdminService.name);
-  private app: admin.app.App | null = null;
+  private app: App | null = null;
 
   constructor(private configService: ConfigService) {}
 
@@ -20,8 +21,8 @@ export class FirebaseAdminService implements OnModuleInit {
     }
 
     try {
-      this.app = admin.initializeApp({
-        credential: admin.credential.cert({
+      this.app = initializeApp({
+        credential: cert({
           projectId,
           clientEmail,
           privateKey: privateKey.replace(/\\n/g, '\n'),
@@ -37,14 +38,14 @@ export class FirebaseAdminService implements OnModuleInit {
    * Verify Firebase ID Token from frontend.
    * Returns decoded token with uid, email, name, picture.
    */
-  async verifyIdToken(idToken: string): Promise<admin.auth.DecodedIdToken | null> {
+  async verifyIdToken(idToken: string): Promise<DecodedIdToken | null> {
     if (!this.app) {
       this.logger.warn('Firebase Admin not initialized. Cannot verify token.');
       return null;
     }
 
     try {
-      const decoded = await admin.auth().verifyIdToken(idToken);
+      const decoded = await getAuth(this.app).verifyIdToken(idToken);
       return decoded;
     } catch (err: any) {
       this.logger.error(`Firebase token verification failed: ${err.message}`);
