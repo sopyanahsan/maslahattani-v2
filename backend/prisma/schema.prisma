@@ -51,6 +51,11 @@ model User {
   pinChangedAt        DateTime? @map("pin_changed_at")
   pinAttempts         Int       @default(0) @map("pin_attempts")
   pinLockedUntil      DateTime? @map("pin_locked_until")
+  
+  // Email verification for kasir
+  emailVerifiedAt         DateTime? @map("email_verified_at")
+  emailVerificationCode   String?   @map("email_verification_code")
+  emailCodeExpiresAt      DateTime? @map("email_code_expires_at")
   lastLogin           DateTime?
   lastPasswordReset   DateTime?
   createdAt           DateTime  @default(now())

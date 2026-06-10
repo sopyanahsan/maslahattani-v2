@@ -11,11 +11,13 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
+import { EmailVerificationService } from './email-verification.service';
 import { RegisterKasirDto, VerifyOtpDto } from './dto/register.dto';
 import { LoginDto, RefreshTokenDto } from './dto/login.dto';
 import { LoginPinDto, ChangePinDto } from './dto/login-pin.dto';
 import { ForgotPasswordDto, ResetPasswordDto } from './dto/password-reset.dto';
 import { ChangePasswordDto } from './dto/change-password.dto';
+import { VerifyEmailCodeDto } from './dto/email-verification.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard, Roles } from './guards/roles.guard';
 import { PrismaService } from '../prisma/prisma.service';
@@ -28,6 +30,7 @@ import { Role } from '@prisma/client';
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
+    private readonly emailVerificationService: EmailVerificationService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -153,6 +156,37 @@ export class AuthController {
   @ApiOperation({ summary: 'Set PIN baru (untuk kasir fresh yang mustChangePin=true, tanpa verifikasi PIN lama)' })
   async setNewPin(@Request() req: any, @Body() dto: { newPin: string }) {
     return this.authService.setNewPin(req.user.id, dto.newPin);
+  }
+
+  // ============================================
+  // EMAIL VERIFICATION (Kasir)
+  // ============================================
+
+  @Post('send-verification')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Kirim/kirim ulang kode verifikasi email ke kasir' })
+  async sendVerification(@Request() req: any) {
+    return this.emailVerificationService.generateAndSendCode(req.user.id);
+  }
+
+  @Post('verify-email')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verifikasi email kasir dengan kode 6 digit' })
+  async verifyEmail(@Request() req: any, @Body() dto: VerifyEmailCodeDto) {
+    return this.emailVerificationService.verifyCode(req.user.id, dto.code);
+  }
+
+  @Get('email-status')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cek status verifikasi email' })
+  async emailStatus(@Request() req: any) {
+    const verified = await this.emailVerificationService.isEmailVerified(req.user.id);
+    return { verified };
   }
 
   @Post('toggle-otp')

@@ -516,6 +516,7 @@ export class AuthService {
         status: user.status,
         shopId: user.shopId,
         mustChangePin: user.mustChangePin,
+        emailVerified: user.emailVerifiedAt !== null,
       },
       shop,
     };
@@ -843,6 +844,7 @@ export class AuthService {
         status: true,
         shopId: true,
         otpEnabled: true,
+        emailVerifiedAt: true,
         lastLogin: true,
         lastPasswordReset: true,
         createdAt: true,
@@ -875,6 +877,7 @@ export class AuthService {
       ...user,
       shopId: effectiveShopId,
       currentShop,
+      emailVerified: user.emailVerifiedAt !== null,
     };
   }
 
