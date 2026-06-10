@@ -17,6 +17,7 @@ interface AuthUser {
   username?: string | null;
   role: Role;
   shopId?: string | null;
+  tenantId?: string | null;
 }
 
 @Injectable()
@@ -34,7 +35,19 @@ export class ShopsService {
    */
   async listAccessible(user: AuthUser) {
     if (user.role === Role.SUPER_ADMIN) {
+      // Multi-tenant isolation: only show shops from same tenant
+      const where: any = {};
+      if (user.tenantId) {
+        where.tenantId = user.tenantId;
+      } else if (user.shopId) {
+        where.OR = [
+          { id: user.shopId },
+          { parentShopId: user.shopId },
+        ];
+      }
+      // Platform owner (no tenantId) can see all
       return this.prisma.shop.findMany({
+        where,
         orderBy: { createdAt: 'asc' },
         include: {
           _count: {
@@ -251,7 +264,20 @@ export class ShopsService {
    */
   async getAccessibleShopsForUser(user: AuthUser) {
     if (user.role === Role.SUPER_ADMIN) {
+      // Only show shops belonging to the same tenant (multi-tenant isolation)
+      const where: any = {};
+      if (user.tenantId) {
+        where.tenantId = user.tenantId;
+      } else if (user.shopId) {
+        // Legacy: user tanpa tenantId, hanya lihat shop sendiri + child shops
+        where.OR = [
+          { id: user.shopId },
+          { parentShopId: user.shopId },
+        ];
+      }
+      // Platform owner (no tenantId, no shopId) can see all — this is intentional
       return this.prisma.shop.findMany({
+        where,
         orderBy: { createdAt: 'asc' },
         select: { id: true, name: true, address: true, phone: true },
       });
