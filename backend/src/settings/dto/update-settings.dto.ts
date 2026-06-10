@@ -28,6 +28,11 @@ export class UpdateReceiptConfigDto {
   @IsOptional()
   @IsString()
   footerMessage?: string;
+
+  @ApiPropertyOptional({ example: 'https://res.cloudinary.com/xxx/image/upload/v1/logo.png', description: 'URL logo toko di struk' })
+  @IsOptional()
+  @IsString()
+  logoUrl?: string;
 }
 
 

@@ -99,6 +99,7 @@ export class SettingsService {
       autoPrint: dto.autoPrint ?? true,
       mergeReceipts: dto.mergeReceipts ?? false,
       footerMessage: dto.footerMessage ?? '',
+      logoUrl: dto.logoUrl ?? '',
     });
 
     const setting = await this.prisma.shopSetting.upsert({

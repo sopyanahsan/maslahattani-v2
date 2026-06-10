@@ -201,6 +201,44 @@
               class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
             />
           </div>
+
+          <!-- Logo Struk -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              Logo Struk
+            </label>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mb-2">
+              Logo akan muncul di bagian atas struk. Format: PNG, JPG, SVG. Maks 2MB.
+            </p>
+            <div v-if="receiptForm.logoUrl" class="flex items-center gap-3 mb-2">
+              <div class="w-16 h-16 border border-slate-200 dark:border-slate-700 rounded-md overflow-hidden bg-white flex items-center justify-center p-1">
+                <img :src="receiptForm.logoUrl" alt="Logo struk" class="max-w-full max-h-full object-contain" />
+              </div>
+              <button
+                type="button"
+                class="h-7 px-2 text-[10px] font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-md hover:bg-red-100 dark:hover:bg-red-950/50 flex items-center gap-1"
+                @click="removeLogo"
+              >
+                <XIcon class="w-3 h-3" />
+                Hapus
+              </button>
+            </div>
+            <label
+              class="inline-flex items-center gap-1.5 h-8 px-3 text-[11px] font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 cursor-pointer transition-colors"
+            >
+              <Loader2Icon v-if="uploadingLogo" class="w-3.5 h-3.5 animate-spin" />
+              <ImagePlusIcon v-else class="w-3.5 h-3.5" />
+              {{ uploadingLogo ? 'Uploading...' : (receiptForm.logoUrl ? 'Ganti Logo' : 'Upload Logo') }}
+              <input
+                type="file"
+                accept="image/png,image/jpeg,image/svg+xml"
+                class="hidden"
+                :disabled="uploadingLogo"
+                @change="handleLogoUpload"
+              />
+            </label>
+            <p v-if="logoError" class="text-[10px] text-red-600 dark:text-red-400 mt-1">{{ logoError }}</p>
+          </div>
           <div
             v-if="receiptSuccess"
             class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-md p-2 text-xs text-emerald-700 dark:text-emerald-300"
@@ -248,6 +286,7 @@
               :shop-address="shopForm.address"
               :shop-phone="shopForm.phone"
               :footer-message="receiptForm.footerMessage"
+              :logo-url="receiptForm.logoUrl"
             />
           </div>
         </Transition>
@@ -596,6 +635,8 @@ import {
   AlertCircle as AlertCircleIcon,
   Eye as EyeIcon,
   EyeOff as EyeOffIcon,
+  ImagePlus as ImagePlusIcon,
+  X as XIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
@@ -606,6 +647,7 @@ import SystemSettingsView from '@/admin/views/SystemSettingsView.vue';
 import dashboardService from '@/shared/services/dashboard.service';
 import { useNotifSound } from '@/shared/composables/useNotifSound';
 import ReceiptPreview from '@/admin/components/receipt/ReceiptPreview.vue';
+import { uploadToCloudinary } from '@/shared/services/upload.service';
 
 const { preview: previewTone } = useNotifSound();
 
@@ -680,10 +722,13 @@ const receiptForm = reactive({
   autoPrint: true,
   mergeReceipts: false,
   footerMessage: '',
+  logoUrl: '',
 });
 const savingReceipt = ref(false);
 const receiptSuccess = ref<string | null>(null);
 const showReceiptPreview = ref(false);
+const uploadingLogo = ref(false);
+const logoError = ref<string | null>(null);
 
 // POS form
 const posForm = reactive({
@@ -757,6 +802,7 @@ async function fetchSettings() {
         receiptForm.autoPrint = rc.autoPrint ?? true;
         receiptForm.mergeReceipts = rc.mergeReceipts ?? false;
         receiptForm.footerMessage = rc.footerMessage ?? '';
+        receiptForm.logoUrl = rc.logoUrl ?? '';
       } catch {
         /* ignore parse error */
       }
@@ -823,6 +869,38 @@ async function handleSaveLanguage() {
   }
 }
 
+async function handleLogoUpload(event: Event) {
+  const input = event.target as HTMLInputElement;
+  const file = input.files?.[0];
+  if (!file) return;
+
+  // Validate file type and size
+  if (!file.type.startsWith('image/')) {
+    logoError.value = 'File harus berupa gambar (PNG, JPG, SVG).';
+    return;
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    logoError.value = 'Ukuran file maksimal 2MB.';
+    return;
+  }
+
+  uploadingLogo.value = true;
+  logoError.value = null;
+  try {
+    const result = await uploadToCloudinary(file, 'posify/logos');
+    receiptForm.logoUrl = result.url;
+  } catch (err: any) {
+    logoError.value = err?.message || 'Gagal upload logo.';
+  } finally {
+    uploadingLogo.value = false;
+    input.value = '';
+  }
+}
+
+function removeLogo() {
+  receiptForm.logoUrl = '';
+}
+
 async function handleSaveReceipt() {
   if (!shopId.value) return;
   savingReceipt.value = true;
@@ -833,6 +911,7 @@ async function handleSaveReceipt() {
       autoPrint: receiptForm.autoPrint,
       mergeReceipts: receiptForm.mergeReceipts,
       footerMessage: receiptForm.footerMessage,
+      logoUrl: receiptForm.logoUrl,
     });
     receiptSuccess.value = 'Pengaturan struk berhasil disimpan.';
     setTimeout(() => {

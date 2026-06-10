@@ -10,6 +10,9 @@
       <div class="px-4 py-3 space-y-2">
         <!-- Shop Header (center, bold, double height) -->
         <div class="text-center">
+          <div v-if="logoUrl" class="flex justify-center mb-1.5">
+            <img :src="logoUrl" alt="Logo" class="max-h-10 max-w-[120px] object-contain" />
+          </div>
           <p class="text-sm font-extrabold uppercase tracking-wider">
             {{ shopName || 'Nama Toko' }}
           </p>
@@ -99,12 +102,14 @@ const props = withDefaults(
     shopAddress?: string;
     shopPhone?: string;
     footerMessage?: string;
+    logoUrl?: string;
   }>(),
   {
     shopName: '',
     shopAddress: '',
     shopPhone: '',
     footerMessage: '',
+    logoUrl: '',
   },
 );
 
