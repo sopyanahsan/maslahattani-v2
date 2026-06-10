@@ -207,7 +207,15 @@
           >
             {{ receiptSuccess }}
           </div>
-          <div class="flex justify-end">
+          <div class="flex items-center justify-between">
+            <button
+              type="button"
+              class="h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5"
+              @click="showReceiptPreview = !showReceiptPreview"
+            >
+              <component :is="showReceiptPreview ? EyeOffIcon : EyeIcon" class="w-3.5 h-3.5" />
+              {{ showReceiptPreview ? 'Tutup Preview' : 'Preview Struk' }}
+            </button>
             <button
               type="submit"
               :disabled="savingReceipt"
@@ -218,6 +226,31 @@
             </button>
           </div>
         </form>
+
+        <!-- Receipt Preview Panel -->
+        <Transition
+          enter-active-class="transition-all duration-300 ease-out"
+          leave-active-class="transition-all duration-200 ease-in"
+          enter-from-class="opacity-0 max-h-0"
+          enter-to-class="opacity-100 max-h-[600px]"
+          leave-from-class="opacity-100 max-h-[600px]"
+          leave-to-class="opacity-0 max-h-0"
+        >
+          <div
+            v-if="showReceiptPreview"
+            class="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 p-5 overflow-hidden"
+          >
+            <p class="text-[11px] text-slate-500 dark:text-slate-400 text-center mb-3">
+              Preview menggunakan data toko & footer yang sedang diisi.
+            </p>
+            <ReceiptPreview
+              :shop-name="shopForm.name"
+              :shop-address="shopForm.address"
+              :shop-phone="shopForm.phone"
+              :footer-message="receiptForm.footerMessage"
+            />
+          </div>
+        </Transition>
       </section>
 
       <!-- POS / Kasir Settings (same tab as receipt) -->
@@ -561,6 +594,8 @@ import {
   Settings as SettingsIcon,
   Loader2 as Loader2Icon,
   AlertCircle as AlertCircleIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
@@ -570,6 +605,7 @@ import settingsService from '@/shared/services/settings.service';
 import SystemSettingsView from '@/admin/views/SystemSettingsView.vue';
 import dashboardService from '@/shared/services/dashboard.service';
 import { useNotifSound } from '@/shared/composables/useNotifSound';
+import ReceiptPreview from '@/admin/components/receipt/ReceiptPreview.vue';
 
 const { preview: previewTone } = useNotifSound();
 
@@ -647,6 +683,7 @@ const receiptForm = reactive({
 });
 const savingReceipt = ref(false);
 const receiptSuccess = ref<string | null>(null);
+const showReceiptPreview = ref(false);
 
 // POS form
 const posForm = reactive({
