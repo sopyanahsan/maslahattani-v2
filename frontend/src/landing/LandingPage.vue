@@ -140,6 +140,20 @@
               <svg v-if="regLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
               {{ regLoading ? 'Membuat akun...' : 'Daftar Gratis' }}
             </button>
+
+            <!-- Divider -->
+            <div class="flex items-center gap-3 my-3">
+              <div class="flex-1 h-px bg-white/20"></div>
+              <span class="text-xs text-blue-200">atau</span>
+              <div class="flex-1 h-px bg-white/20"></div>
+            </div>
+
+            <!-- Google Register Button -->
+            <button type="button" :disabled="googleLoading" @click="handleGoogleRegister" class="w-full h-11 bg-white text-slate-800 text-sm font-bold rounded-lg hover:bg-slate-100 disabled:opacity-50 transition-colors flex items-center justify-center gap-3">
+              <svg v-if="!googleLoading" class="w-5 h-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              <svg v-else class="w-5 h-5 animate-spin text-slate-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              {{ googleLoading ? 'Memproses...' : 'Daftar dengan Google' }}
+            </button>
           </form>
 
           <p class="mt-4 text-[11px] text-blue-200">Sudah punya akun? <a href="/admin/login" class="underline text-white font-medium">Login di sini</a></p>
@@ -237,8 +251,47 @@ const regForm = reactive({
   password: '',
 });
 const regLoading = ref(false);
+const googleLoading = ref(false);
 const regError = ref('');
 const regSuccess = ref('');
+
+async function handleGoogleRegister() {
+  googleLoading.value = true;
+  regError.value = '';
+  regSuccess.value = '';
+  try {
+    const { signInWithGoogle } = await import('@/shared/services/firebase');
+    const { idToken } = await signInWithGoogle();
+
+    // Send to backend — auto-creates tenant + shop + trial if new
+    const res = await fetch(
+      (import.meta.env.VITE_API_BASE_URL || '/api') + '/auth/google',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken }),
+      },
+    );
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || 'Gagal daftar dengan Google.');
+
+    // Store tokens & redirect to admin
+    localStorage.setItem('access_token', data.token);
+    localStorage.setItem('refresh_token', data.refreshToken);
+    regSuccess.value = data.isNewUser
+      ? 'Akun berhasil dibuat! Mengarahkan ke dashboard...'
+      : 'Login berhasil! Mengarahkan ke dashboard...';
+    setTimeout(() => { window.location.href = '/admin/home'; }, 1000);
+  } catch (err: any) {
+    if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
+      // Silent — user closed popup
+    } else {
+      regError.value = err?.message || 'Gagal daftar dengan Google.';
+    }
+  } finally {
+    googleLoading.value = false;
+  }
+}
 
 async function handleRegister() {
   regLoading.value = true;
