@@ -110,6 +110,15 @@ export class AuthController {
     return this.authService.changePasswordWithOld(req.user.id, dto.currentPassword, dto.newPassword);
   }
 
+  @Post('set-password')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Set password for Google-only users (no old password required)' })
+  async setPassword(@Request() req: any, @Body() dto: { newPassword: string }) {
+    return this.authService.setPasswordForGoogleUser(req.user.id, dto.newPassword);
+  }
+
   @Post('login-pin')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login kasir dengan username + PIN (4-6 digit)' })

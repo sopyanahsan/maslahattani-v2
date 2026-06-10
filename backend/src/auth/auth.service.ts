@@ -801,6 +801,30 @@ export class AuthService {
     return { success: true, message: 'Password berhasil diubah.' };
   }
 
+  /**
+   * Set password for Google-only users (no old password verification needed).
+   * Only allowed if user has never set a real password (lastPasswordReset = null).
+   */
+  async setPasswordForGoogleUser(userId: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User tidak ditemukan.');
+
+    if (user.lastPasswordReset) {
+      throw new BadRequestException('Anda sudah punya password. Gunakan Ganti Password.');
+    }
+    if (newPassword.length < 6) {
+      throw new BadRequestException('Password minimal 6 karakter.');
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 12);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { passwordHash, lastPasswordReset: new Date() },
+    });
+
+    return { success: true, message: 'Password berhasil di-set. Sekarang bisa login manual.' };
+  }
+
   // ============================================
   // GET CURRENT USER
   // ============================================
