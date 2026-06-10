@@ -665,7 +665,8 @@ export class AuthService {
       },
       shop,
       isNewUser: !user.lastLogin,
-      needsOnboarding: !shop || !shop.name || shop.name === '' || shop.address === '',
+      needsOnboarding: user.tenantId ? (!shop || !shop.name || shop.name === '' || shop.address === '') : false,
+      isPlatformOwner: user.role === 'SUPER_ADMIN' && !user.tenantId,
     };
   }
 

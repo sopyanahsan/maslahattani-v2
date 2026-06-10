@@ -282,7 +282,13 @@ async function handleGoogleRegister() {
       ? 'Akun berhasil dibuat! Mengarahkan ke setup toko...'
       : 'Login berhasil! Mengarahkan ke dashboard...';
     setTimeout(() => {
-      window.location.href = data.needsOnboarding ? '/admin/get-started' : '/admin/home';
+      if (data.isPlatformOwner) {
+        window.location.href = '/owner';
+      } else if (data.needsOnboarding) {
+        window.location.href = '/admin/get-started';
+      } else {
+        window.location.href = '/admin/home';
+      }
     }, 1000);
   } catch (err: any) {
     if (err?.code === 'auth/popup-closed-by-user' || err?.code === 'auth/cancelled-popup-request') {
