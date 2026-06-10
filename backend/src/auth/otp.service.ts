@@ -93,7 +93,7 @@ export class OtpService {
    */
   async sendOtp(email: string, otp: string): Promise<void> {
     const fromEmail = this.configService.get<string>('SMTP_FROM', this.configService.get<string>('SMTP_USER', ''));
-    const appName = this.configService.get<string>('APP_NAME', 'Posify');
+    const appName = this.configService.get<string>('APP_NAME', 'Posify E-Pos Agenku');
 
     // Always log for debugging
     this.logger.log(`📧 OTP for ${email}: ${otp} (expires in ${this.otpExpiryMinutes} min)`);

@@ -149,7 +149,7 @@ export class EmailVerificationService {
    * Send verification email via SMTP.
    */
   private async sendVerificationEmail(email: string, code: string, username: string): Promise<void> {
-    const appName = this.configService.get<string>('APP_NAME', 'Posify');
+    const appName = this.configService.get<string>('APP_NAME', 'Posify E-Pos Agenku');
     const fromEmail = this.configService.get<string>('SMTP_FROM', this.configService.get<string>('SMTP_USER', ''));
     const smtpUser = this.configService.get<string>('SMTP_USER', '');
     const smtpPass = this.configService.get<string>('SMTP_PASSWORD', '');
