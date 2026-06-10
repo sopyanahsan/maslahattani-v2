@@ -199,7 +199,12 @@ export class ShopsService {
       throw new NotFoundException('Cabang tidak ditemukan.');
     }
 
-    if (user.role !== Role.SUPER_ADMIN && user.shopId !== shopId) {
+    // Multi-tenant isolation: SUPER_ADMIN can only select shops in their own tenant
+    if (user.role === Role.SUPER_ADMIN) {
+      if (user.tenantId && shop.tenantId && shop.tenantId !== user.tenantId) {
+        throw new ForbiddenException('Anda tidak punya akses ke cabang ini.');
+      }
+    } else if (user.shopId !== shopId) {
       throw new ForbiddenException('Anda tidak punya akses ke cabang ini.');
     }
 
@@ -209,6 +214,7 @@ export class ShopsService {
       email: user.email,
       role: user.role,
       shopId,
+      tenantId: user.tenantId || undefined,
     };
 
     const [accessToken, refreshToken] = await Promise.all([
