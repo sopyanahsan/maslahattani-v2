@@ -54,6 +54,7 @@ export class ShopScopeGuard implements CanActivate {
           );
         }
       }
+      // Platform owner (tenantId=null) can access any shop
     } else {
       // Non-super-admin: ALWAYS from JWT, ignore client input
       resolvedShopId = user.shopId || null;

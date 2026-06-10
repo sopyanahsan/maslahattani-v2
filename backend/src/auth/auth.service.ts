@@ -549,8 +549,26 @@ export class AuthService {
         throw new ForbiddenException('Akun dinonaktifkan. Hubungi admin.');
       }
     } else {
-      // New user → auto-register as SUPER_ADMIN with trial
-      // Create Tenant + User + Shop + Subscription (same as tenant register flow)
+      // New user
+      // Check if this is a platform owner email — don't create tenant
+      if (this.isPlatformOwner(email)) {
+        const passwordHash = await bcrypt.hash(Math.random().toString(36).slice(2, 14), 12);
+        user = await this.prisma.user.create({
+          data: {
+            email,
+            username: email.split('@')[0].toLowerCase().replace(/[^a-z0-9.]/g, ''),
+            passwordHash,
+            fullName: name,
+            avatarUrl: picture,
+            role: 'SUPER_ADMIN',
+            status: 'ACTIVE',
+            tenantId: null,
+            shopId: null,
+            otpEnabled: false,
+          },
+        });
+      } else {
+      // Regular user → auto-register as SUPER_ADMIN with trial
       const slug = name.toLowerCase().replace(/[^a-z0-9]/g, '-').slice(0, 30) + '-' + Math.random().toString(36).substring(2, 6);
       const passwordHash = await bcrypt.hash(Math.random().toString(36).slice(2, 14), 12);
 
@@ -621,6 +639,7 @@ export class AuthService {
       }
 
       user = result.user;
+      } // end else (regular user tenant creation)
     }
 
     // Generate JWT tokens
@@ -666,8 +685,21 @@ export class AuthService {
       shop,
       isNewUser: !user.lastLogin,
       needsOnboarding: user.tenantId ? (!shop || !shop.name || shop.name === '' || shop.address === '') : false,
-      isPlatformOwner: user.role === 'SUPER_ADMIN' && !user.tenantId,
+      isPlatformOwner: this.isPlatformOwner(user.email || ''),
     };
+  }
+
+  /**
+   * Check if email is a platform owner.
+   * Platform owners are hardcoded in PLATFORM_OWNER_EMAILS env var.
+   * This prevents random users from becoming owner via tenantId manipulation.
+   */
+  private isPlatformOwner(email: string): boolean {
+    const ownerEmails = (this.configService.get<string>('PLATFORM_OWNER_EMAILS') || '')
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+    return ownerEmails.includes(email.toLowerCase());
   }
 
   // ============================================
