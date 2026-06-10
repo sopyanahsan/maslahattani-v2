@@ -684,8 +684,13 @@ function toggleTheme() {
 }
 
 // === Shop selector ===
-const currentShopName = computed(() => shopStore.currentShopName);
 const currentShopId = computed(() => shopStore.currentShopId);
+const currentShopName = computed(() => {
+  // Prefer store name, fallback to matching from availableShops list
+  if (shopStore.currentShopName) return shopStore.currentShopName;
+  const shop = availableShops.value.find(s => s.id === currentShopId.value);
+  return shop?.name || '';
+});
 const currentShopAddress = computed(() => {
   const shop = availableShops.value.find(s => s.id === currentShopId.value);
   return shop?.address || '';
