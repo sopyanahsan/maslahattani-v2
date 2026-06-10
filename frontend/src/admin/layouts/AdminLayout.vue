@@ -896,13 +896,29 @@ onMounted(async () => {
     }
   }
 
-  // Auto-select first shop kalau belum punya cabang aktif
+  // Auto-select cabang aktif kalau belum ada di store
   if (!shopStore.hasCurrentShop && availableShops.value.length > 0) {
-    try {
-      await shopStore.selectShop(availableShops.value[0].id);
-      await authStore.fetchUser();
-    } catch {
-      // Silent: user bisa pilih manual dari dropdown
+    // Coba match dari user.shopId (non-super-admin sudah punya shopId di token)
+    const userShopId = authStore.user?.shopId;
+    const matchedShop = userShopId
+      ? availableShops.value.find((s) => s.id === userShopId)
+      : null;
+
+    if (matchedShop) {
+      // Set langsung tanpa call selectShop API (user sudah punya akses)
+      shopStore.setCurrentShop(matchedShop as any);
+    } else if (authStore.isSuperAdmin) {
+      // Super-admin: call selectShop API untuk re-issue JWT
+      try {
+        await shopStore.selectShop(availableShops.value[0].id);
+        await authStore.fetchUser();
+      } catch {
+        // Fallback: set dari list tanpa API call
+        shopStore.setCurrentShop(availableShops.value[0] as any);
+      }
+    } else {
+      // Fallback: set dari first available shop
+      shopStore.setCurrentShop(availableShops.value[0] as any);
     }
   }
 
