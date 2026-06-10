@@ -192,12 +192,12 @@ const handleGoogleLogin = async () => {
 
     // Redirect: platform owner → /owner, new user → onboarding, existing → dashboard
     if (data.isPlatformOwner) {
-      router.push('/owner');
+      window.location.href = '/owner';
     } else if (data.needsOnboarding) {
-      router.push('/admin/get-started');
+      window.location.href = '/admin/get-started';
     } else {
       const redirect = router.currentRoute.value.query.redirect as string;
-      router.push(redirect || '/admin/home');
+      window.location.href = redirect || '/admin/home';
     }
   } catch (err: any) {
     if (err?.code === 'auth/popup-closed-by-user') {
