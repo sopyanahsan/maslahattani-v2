@@ -214,7 +214,15 @@
           >
             {{ receiptSuccess }}
           </div>
-          <div class="flex justify-end">
+          <div class="flex items-center justify-between">
+            <button
+              type="button"
+              class="h-9 px-3 text-xs font-semibold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5"
+              @click="showReceiptPreview = !showReceiptPreview"
+            >
+              <component :is="showReceiptPreview ? EyeOffIcon : EyeIcon" class="w-3.5 h-3.5" />
+              {{ showReceiptPreview ? 'Tutup Preview' : 'Preview Struk' }}
+            </button>
             <button
               type="submit"
               :disabled="savingReceipt"
@@ -225,6 +233,19 @@
             </button>
           </div>
         </form>
+
+        <!-- Receipt Preview Panel -->
+        <div
+          v-if="showReceiptPreview"
+          class="border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/30 p-5"
+        >
+          <ReceiptPreview
+            :shop-name="shopForm.name"
+            :shop-address="shopForm.address"
+            :shop-phone="shopForm.phone"
+            :footer-message="receiptForm.footerMessage"
+          />
+        </div>
       </section>
 
       <!-- ============================================ -->
@@ -371,10 +392,13 @@ import {
   Bell as BellIcon,
   Loader2 as Loader2Icon,
   AlertCircle as AlertCircleIcon,
+  Eye as EyeIcon,
+  EyeOff as EyeOffIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import settingsService from '@/shared/services/settings.service';
 import dashboardService from '@/shared/services/dashboard.service';
+import ReceiptPreview from '@/admin/components/receipt/ReceiptPreview.vue';
 
 const authStore = useAuthStore();
 
@@ -409,6 +433,7 @@ const receiptForm = reactive({
 });
 const savingReceipt = ref(false);
 const receiptSuccess = ref<string | null>(null);
+const showReceiptPreview = ref(false);
 
 // Alert form
 const alertForm = reactive({
