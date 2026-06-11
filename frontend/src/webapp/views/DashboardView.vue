@@ -6,55 +6,66 @@
       <h1 class="font-bold text-xl text-slate-900 dark:text-[#e3e2e2] mt-0.5">{{ userName }}</h1>
     </header>
 
-    <!-- Row 1: Penjualan Retail + BRILink (2 cols or 1 col) -->
+    <!-- Row 1: Penjualan Retail + BRILink (KPI cards) -->
     <div :class="settingsStore.isBrilinkEnabled ? 'grid grid-cols-2 gap-3' : ''">
-      <div class="rounded-xl bg-gradient-to-br from-[#00A19B] to-[#00756f] p-4 text-white shadow-md dark:shadow-[0_0_20px_rgba(0,161,155,0.25)]">
-        <p class="text-[11px] font-medium opacity-80 mb-1">Penjualan Retail</p>
-        <h2 class="text-xl font-bold font-mono">{{ formatRupiah(retailOmzet) }}</h2>
-        <p class="text-[10px] opacity-70 mt-1">{{ stats.retail }} transaksi</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] p-4 rounded-xl shadow-sm hover:border-[#00A19B] dark:hover:border-[#5fd9d2] transition-colors">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-[11px] font-bold text-slate-500 dark:text-[#bcc9c7] uppercase tracking-wide">Penjualan Retail</span>
+          <ShoppingCartIcon class="w-5 h-5 text-[#00A19B] dark:text-[#5fd9d2] shrink-0" />
+        </div>
+        <p class="text-xl font-bold font-mono text-slate-900 dark:text-[#e3e2e2] mb-3 truncate">{{ formatRupiah(retailOmzet) }}</p>
+        <div class="h-8 bg-slate-100 dark:bg-[#292a2a] rounded overflow-hidden">
+          <div class="h-full w-3/4 bg-gradient-to-r from-[#03a29c]/50 to-[#5fd9d2]/50 rounded"></div>
+        </div>
+        <p class="text-[10px] text-slate-400 dark:text-[#bcc9c7] mt-2">{{ stats.retail }} transaksi</p>
       </div>
-      <div v-if="settingsStore.isBrilinkEnabled" class="rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 p-4 text-white shadow-md dark:shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-        <p class="text-[11px] font-medium opacity-80 mb-1">Penjualan BRILink</p>
-        <h2 class="text-xl font-bold font-mono">{{ formatRupiah(brilinkOmzet) }}</h2>
-        <p class="text-[10px] opacity-70 mt-1">{{ stats.brilink }} transaksi</p>
+      <div v-if="settingsStore.isBrilinkEnabled" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] p-4 rounded-xl shadow-sm hover:border-emerald-400 transition-colors">
+        <div class="flex justify-between items-start mb-2">
+          <span class="text-[11px] font-bold text-slate-500 dark:text-[#bcc9c7] uppercase tracking-wide">Penjualan BRILink</span>
+          <LandmarkIcon class="w-5 h-5 text-emerald-500 dark:text-emerald-400 shrink-0" />
+        </div>
+        <p class="text-xl font-bold font-mono text-slate-900 dark:text-[#e3e2e2] mb-3 truncate">{{ formatRupiah(brilinkOmzet) }}</p>
+        <div class="h-8 bg-slate-100 dark:bg-[#292a2a] rounded overflow-hidden">
+          <div class="h-full w-2/3 bg-gradient-to-r from-emerald-500/40 to-emerald-400/40 rounded"></div>
+        </div>
+        <p class="text-[10px] text-slate-400 dark:text-[#bcc9c7] mt-2">{{ stats.brilink }} transaksi</p>
       </div>
     </div>
 
-    <!-- Row 2: Total Trx, Profit Retail, Profit BRILink (conditional) -->
+    <!-- Row 2: Total Trx, Profit Retail, Profit BRILink (compact KPI cards) -->
     <div :class="settingsStore.isBrilinkEnabled ? 'grid grid-cols-3 gap-3' : 'grid grid-cols-2 gap-3'">
-      <div class="rounded-xl bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] p-3 shadow-sm">
-        <p class="text-[10px] font-medium text-slate-500 dark:text-[#bcc9c7] mb-0.5">Total Trx</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] p-3 rounded-xl shadow-sm hover:border-[#00A19B] dark:hover:border-[#5fd9d2] transition-colors">
+        <div class="flex justify-between items-start mb-1.5">
+          <span class="text-[10px] font-bold text-slate-500 dark:text-[#bcc9c7] uppercase">Total Trx</span>
+          <ReceiptIcon class="w-4 h-4 text-[#00A19B] dark:text-[#5fd9d2] shrink-0" />
+        </div>
         <p class="text-lg font-bold font-mono text-slate-900 dark:text-[#e3e2e2]">{{ stats.total }}</p>
-        <p class="text-[9px] text-slate-400 dark:text-[#869392]">{{ settingsStore.isBrilinkEnabled ? 'Retail + BRILink' : 'Retail' }}</p>
+        <p class="text-[9px] text-slate-400 dark:text-[#869392] mt-0.5">{{ settingsStore.isBrilinkEnabled ? 'Retail + BRILink' : 'Retail' }}</p>
       </div>
-      <div class="rounded-xl bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] p-3 shadow-sm">
-        <div class="flex items-center gap-1 mb-0.5">
-          <TrendingUpIcon class="w-3 h-3 text-emerald-500" />
-          <p class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">Profit Retail</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] p-3 rounded-xl shadow-sm hover:border-emerald-400 transition-colors">
+        <div class="flex justify-between items-start mb-1.5">
+          <span class="text-[10px] font-bold text-slate-500 dark:text-[#bcc9c7] uppercase">Profit Retail</span>
+          <TrendingUpIcon class="w-4 h-4 text-emerald-500 dark:text-emerald-400 shrink-0" />
         </div>
-        <p class="text-lg font-bold font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(profitRetail) }}</p>
+        <p class="text-lg font-bold font-mono text-slate-900 dark:text-[#e3e2e2] truncate">{{ formatRupiah(profitRetail) }}</p>
       </div>
-      <div v-if="settingsStore.isBrilinkEnabled" class="rounded-xl bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] p-3 shadow-sm">
-        <div class="flex items-center gap-1 mb-0.5">
-          <TrendingUpIcon class="w-3 h-3 text-emerald-500" />
-          <p class="text-[10px] font-medium text-emerald-600 dark:text-emerald-400">Profit BRILink</p>
+      <div v-if="settingsStore.isBrilinkEnabled" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] p-3 rounded-xl shadow-sm hover:border-emerald-400 transition-colors">
+        <div class="flex justify-between items-start mb-1.5">
+          <span class="text-[10px] font-bold text-slate-500 dark:text-[#bcc9c7] uppercase">Profit BRILink</span>
+          <TrendingUpIcon class="w-4 h-4 text-emerald-500 dark:text-emerald-400 shrink-0" />
         </div>
-        <p class="text-lg font-bold font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(profitBrilink) }}</p>
+        <p class="text-lg font-bold font-mono text-slate-900 dark:text-[#e3e2e2] truncate">{{ formatRupiah(profitBrilink) }}</p>
       </div>
     </div>
 
-    <!-- Row 3: Pengeluaran Hari Ini (1 card full width) -->
-    <div class="rounded-xl bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] p-4 shadow-sm">
-      <div class="flex items-center justify-between">
-        <div>
-          <div class="flex items-center gap-1.5 mb-1">
-            <WalletIcon class="w-3.5 h-3.5 text-amber-500" />
-            <p class="text-xs font-medium text-amber-600 dark:text-amber-400">Pengeluaran Hari Ini</p>
-          </div>
-          <p class="text-2xl font-bold font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(expenses) }}</p>
-          <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">{{ expenseCount }} catatan</p>
-        </div>
+    <!-- Row 3: Pengeluaran Hari Ini (full width KPI card) -->
+    <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] p-4 rounded-xl shadow-sm">
+      <div class="flex justify-between items-start mb-2">
+        <span class="text-[11px] font-bold text-slate-500 dark:text-[#bcc9c7] uppercase tracking-wide">Pengeluaran Hari Ini</span>
+        <WalletIcon class="w-5 h-5 text-amber-500 dark:text-amber-400 shrink-0" />
       </div>
+      <p class="text-2xl font-bold font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(expenses) }}</p>
+      <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">{{ expenseCount }} catatan</p>
       <!-- Buttons: Cash In, Transfer, Cash Out -->
       <div class="grid grid-cols-3 gap-2 mt-3">
         <button class="h-9 rounded-lg border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[11px] font-semibold flex items-center justify-center gap-1.5 hover:bg-emerald-100 dark:hover:bg-emerald-500/20 transition-colors">
