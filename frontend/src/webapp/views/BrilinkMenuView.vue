@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-0 -mx-4 -mt-4 font-hanken">
+  <div class="space-y-0 -mx-4 -mt-4 font-hanken overflow-x-hidden max-w-[100vw]">
 
     <!-- ============================================================ -->
     <!-- HEADER — gradient teal Posify v2                              -->
@@ -21,12 +21,12 @@
       </div>
 
       <!-- ── Saldo strip: Kas Tunai + semua rekening ── -->
-      <div class="relative z-10">
-        <div ref="saldoStrip" class="flex gap-3 overflow-x-auto pb-1 hide-scrollbar snap-x snap-mandatory">
+      <div class="relative z-10 overflow-hidden">
+        <div ref="saldoStrip" class="flex gap-3 overflow-x-auto pb-1 hide-scrollbar snap-x snap-mandatory px-0.5">
 
           <!-- KAS TUNAI AGEN card — klik untuk Cash In / Cash Out -->
           <div
-            class="shrink-0 snap-start w-48 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 px-4 py-3 flex flex-col gap-1 cursor-pointer active:scale-[0.98] transition-transform"
+            class="shrink-0 snap-start w-[44vw] min-w-[160px] max-w-[200px] rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 px-3 py-3 flex flex-col gap-1 cursor-pointer active:scale-[0.98] transition-transform"
             @click="openKasPanel"
           >
             <div class="flex items-center justify-between mb-0.5">
@@ -60,7 +60,7 @@
 
           <!-- Per-Rekening cards -->
           <template v-if="accountsLoading">
-            <div v-for="i in 2" :key="i" class="shrink-0 snap-start w-52 rounded-2xl bg-white/10 border border-white/20 px-4 py-3 animate-pulse">
+            <div v-for="i in 2" :key="i" class="shrink-0 snap-start w-[55vw] min-w-[180px] max-w-[220px] rounded-2xl bg-white/10 border border-white/20 px-3 py-3 animate-pulse">
               <div class="h-3 w-24 rounded bg-white/20 mb-2" />
               <div class="h-5 w-32 rounded bg-white/20 mb-3" />
               <div class="flex gap-2"><div class="h-6 flex-1 rounded-lg bg-white/20" /><div class="h-6 flex-1 rounded-lg bg-white/20" /></div>
@@ -71,7 +71,7 @@
             <div
               v-for="acc in accounts"
               :key="acc.id"
-              class="shrink-0 snap-start w-56 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 px-4 py-3 flex flex-col gap-1"
+              class="shrink-0 snap-start w-[55vw] min-w-[180px] max-w-[220px] rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 px-3 py-3 flex flex-col gap-1"
             >
               <div class="flex items-center gap-1.5 mb-0.5">
                 <CreditCardIcon class="w-3.5 h-3.5 text-white/70" />
@@ -108,7 +108,7 @@
 
             <!-- Empty -->
             <div v-if="accounts.length === 0"
-              class="shrink-0 snap-start w-52 rounded-2xl border border-dashed border-white/30 px-4 py-3 flex flex-col items-center justify-center gap-1 text-white/50">
+              class="shrink-0 snap-start w-[55vw] min-w-[180px] max-w-[220px] rounded-2xl border border-dashed border-white/30 px-3 py-3 flex flex-col items-center justify-center gap-1 text-white/50">
               <LandmarkIcon class="w-5 h-5" />
               <p class="text-[10px] text-center">Belum ada rekening BRI</p>
               <p class="text-[9px] text-center text-white/30">Tambah via panel admin</p>
@@ -128,9 +128,9 @@
     <!-- ============================================================ -->
     <!-- LAYANAN TRANSAKSI                                             -->
     <!-- ============================================================ -->
-    <div class="px-4 pt-4 pb-2 bg-slate-50 dark:bg-[#1a1c1c]">
+    <div class="px-4 pt-4 pb-2 bg-slate-50 dark:bg-[#1a1c1c] overflow-hidden">
       <h3 class="text-xs font-bold text-slate-500 dark:text-[#869392] uppercase tracking-wider mb-3">Layanan Transaksi</h3>
-      <div class="grid grid-cols-3 gap-2.5">
+      <div class="grid grid-cols-3 gap-2">
 
         <RouterLink to="/brilink/transaction?cat=TRANSFER_BRI"
           class="flex flex-col items-center gap-2 p-3 rounded-2xl bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] hover:border-[#00A19B] dark:hover:border-[#5fd9d2] hover:shadow-md dark:hover:shadow-[0_4px_12px_rgba(0,161,155,0.2)] transition-all group">
@@ -186,7 +186,7 @@
     <!-- ============================================================ -->
     <!-- TRANSAKSI TERAKHIR                                            -->
     <!-- ============================================================ -->
-    <div class="px-4 pt-4 pb-6 bg-slate-50 dark:bg-[#1a1c1c]">
+    <div class="px-4 pt-4 pb-6 bg-slate-50 dark:bg-[#1a1c1c] overflow-hidden">
       <h3 class="text-xs font-bold text-slate-500 dark:text-[#869392] uppercase tracking-wider mb-3">Transaksi Terakhir</h3>
 
       <div v-if="loading" class="flex items-center justify-center py-8">
@@ -753,7 +753,8 @@ function setupScrollTracker() {
   const el = saldoStrip.value;
   if (!el) return;
   el.addEventListener('scroll', () => {
-    const cardW = 192 + 12; // w-48 = 192px + gap-3 = 12px
+    // Card width ≈ 180px + gap 12px
+    const cardW = 192;
     activeCard.value = Math.round(el.scrollLeft / cardW);
   }, { passive: true });
 }
