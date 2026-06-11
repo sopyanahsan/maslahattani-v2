@@ -1,18 +1,18 @@
 <template>
-  <div class="min-h-screen bg-slate-50 flex flex-col">
+  <div class="min-h-screen bg-slate-50 dark:bg-[#121414] flex flex-col transition-colors">
     <!-- Top Bar -->
     <header
-      class="sticky top-0 z-30 bg-white border-b border-slate-200 px-4 h-14 flex items-center justify-between"
+      class="sticky top-0 z-30 bg-white dark:bg-[#1a1c1c] border-b border-slate-200 dark:border-[#3d4948] px-4 h-14 flex items-center justify-between transition-colors"
     >
       <div class="flex items-center gap-2 min-w-0">
         <div class="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
           <component :is="DropletsIcon" class="w-4 h-4 text-white" />
         </div>
         <div class="min-w-0">
-          <p class="text-sm font-bold text-slate-950 leading-tight truncate">
+          <p class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2] leading-tight truncate">
             Ngalir
           </p>
-          <p class="text-[10px] text-slate-500 leading-tight truncate">
+          <p class="text-[10px] text-slate-500 dark:text-[#bcc9c7] leading-tight truncate">
             {{ shopName || 'Toko' }}
             <span v-if="userName"> · {{ userName }}</span>
           </p>
@@ -86,7 +86,7 @@
 
     <!-- Bottom Nav (5 tabs with center FAB) -->
     <nav
-      class="fixed bottom-0 inset-x-0 z-30 bg-white border-t border-slate-200"
+      class="fixed bottom-0 inset-x-0 z-30 bg-white dark:bg-[#1a1c1c] border-t border-slate-200 dark:border-[#3d4948] transition-colors"
       role="navigation"
     >
       <div class="max-w-3xl mx-auto grid grid-cols-5 h-16 relative">
@@ -96,7 +96,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900',
+              isActive ? 'text-blue-600' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
             ]"
             @click="(e) => navigate(e)"
           >
@@ -111,7 +111,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900',
+              isActive ? 'text-blue-600' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
             ]"
             @click="(e) => navigate(e)"
           >
@@ -124,7 +124,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900',
+              isActive ? 'text-blue-600' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
             ]"
             @click="(e) => navigate(e)"
           >
@@ -150,7 +150,7 @@
             >
               <component :is="ShoppingCartIcon" class="w-6 h-6 text-white" />
             </div>
-            <span class="mt-7" :class="isActive ? 'text-blue-600' : 'text-slate-500'">Kasir</span>
+            <span class="mt-7" :class="isActive ? 'text-blue-600' : 'text-slate-500 dark:text-[#869392]'">Kasir</span>
           </a>
         </RouterLink>
 
@@ -160,7 +160,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900',
+              isActive ? 'text-blue-600' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
             ]"
             @click="(e) => navigate(e)"
           >
@@ -175,7 +175,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-blue-600' : 'text-slate-500 hover:text-slate-900',
+              isActive ? 'text-blue-600' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
             ]"
             @click="(e) => navigate(e)"
           >
