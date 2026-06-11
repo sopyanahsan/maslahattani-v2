@@ -111,8 +111,8 @@
           </button>
         </div>
 
-        <!-- No Rekening Tujuan (numeric only) -->
-        <div>
+        <!-- No Rekening Tujuan (numeric only) — TIDAK tampil untuk TARIK TUNAI -->
+        <div v-if="selectedCategory !== 'TARIK_TUNAI'">
           <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
             {{ destinationLabel }} <span class="text-red-500">*</span>
           </label>
@@ -290,6 +290,8 @@
 
       <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-[#1a1c1c]">
 
+        <!-- Pengirim & Penerima — hanya tampil untuk Transfer, tidak untuk Tarik Tunai -->
+        <template v-if="selectedCategory !== 'TARIK_TUNAI'">
         <!-- Pengirim Card -->
         <div v-if="!isCustomerCard" class="bg-gradient-to-r from-[#00756f] to-[#00A19B] rounded-2xl px-4 py-3 text-white">
           <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-0.5">Pengirim (Sumber Dana)</p>
@@ -325,12 +327,13 @@
           <div class="flex items-center gap-2">
             <LandmarkIcon class="w-5 h-5 text-slate-400 dark:text-[#869392] shrink-0" />
             <div>
-              <p class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ form.customerName }}</p>
+              <p class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ form.customerName || 'Nasabah' }}</p>
               <p class="text-[11px] text-slate-500 dark:text-[#869392] font-mono">{{ form.destination }}</p>
               <p v-if="selectedBankName" class="text-[10px] text-slate-400 dark:text-[#869392]">{{ selectedBankName }}</p>
             </div>
           </div>
         </div>
+        </template>
 
         <!-- Detail Transaksi -->
         <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 space-y-2">
@@ -699,7 +702,7 @@ const insufficientBalance = computed(() => {
 
 const canProceed = computed(() =>
   (selectedAccountId.value || isCustomerCard.value) &&
-  form.destination &&
+  (selectedCategory.value === 'TARIK_TUNAI' || form.destination) &&
   form.amount >= 10000 &&
   !insufficientBalance.value &&
   (!showBankField.value || form.bankCode)
@@ -799,7 +802,7 @@ async function handleSubmit() {
       category: selectedCategory.value,
       customerName: form.customerName || 'Nasabah',
       customerPhone: form.customerPhone || undefined,
-      destination: form.destination,
+      destination: form.destination || (selectedCategory.value === 'TARIK_TUNAI' ? 'TUNAI' : ''),
       amount: form.amount,
       accountId: selectedAccountId.value || undefined,
       idempotencyKey: crypto.randomUUID(),
