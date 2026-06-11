@@ -849,10 +849,17 @@ onMounted(async () => {
   ]);
 
   if (accsRes.status === 'fulfilled') {
-    accounts.value = accsRes.value.filter(a => a.isActive);
-    // Auto-select default account
-    const def = accounts.value.find(a => a.isDefault) ?? accounts.value[0];
-    if (def) selectedAccountId.value = def.id;
+    const allActive = accsRes.value.filter(a => a.isActive);
+    // Sort: default rekening pertama, lalu sisanya by createdAt
+    const def = allActive.find(a => a.isDefault) ?? allActive[0];
+    if (def) {
+      // Pindahkan default ke index 0 supaya tampil pertama di strip
+      const rest = allActive.filter(a => a.id !== def.id);
+      accounts.value = [def, ...rest];
+      selectedAccountId.value = def.id;
+    } else {
+      accounts.value = allActive;
+    }
   }
   accountsLoading.value = false;
 
