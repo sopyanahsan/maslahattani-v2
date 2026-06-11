@@ -14,62 +14,62 @@
     <!-- === LEFT COLUMN: Products (always visible) === -->
     <div class="flex-1 flex flex-col min-w-0 overflow-hidden h-[calc(100vh-7.5rem)]">
       <!-- Top: Header + Search + Scan + View Toggle -->
-      <div class="shrink-0 bg-white border-b border-slate-200 p-3 space-y-3">
+      <div class="shrink-0 bg-white dark:bg-[#1e2020] border-b border-slate-200 dark:border-[#3d4948] p-3 space-y-3">
         <div class="flex items-center justify-between">
-          <h2 class="text-base font-bold text-slate-800 flex items-center gap-2">
-            <ShoppingCartIcon class="w-5 h-5 text-blue-600" /> Kasir
+          <h2 class="text-base font-bold text-slate-800 dark:text-[#e3e2e2] flex items-center gap-2">
+            <ShoppingCartIcon class="w-5 h-5 text-[#00A19B] dark:text-[#5fd9d2]" /> Kasir
           </h2>
-          <button class="text-xs font-medium text-slate-600 flex items-center gap-1 hover:text-blue-600 transition-colors" @click="refreshSavedBills(); showOpenBill = true">
+          <button class="text-xs font-medium text-slate-600 dark:text-[#bcc9c7] flex items-center gap-1 hover:text-[#00A19B] dark:hover:text-[#5fd9d2] transition-colors" @click="refreshSavedBills(); showOpenBill = true">
             <ClipboardListIcon class="w-4 h-4" /> Open Bill
           </button>
         </div>
         <div class="flex items-center gap-2">
           <div class="relative flex-1">
-            <SearchIcon class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input v-model="searchQuery" type="text" placeholder="Cari nama / SKU produk..." class="w-full bg-slate-100 rounded-lg py-2.5 pl-9 pr-3 text-sm focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 border border-transparent outline-none transition-all" @input="debouncedSearch" />
+            <SearchIcon class="w-4 h-4 text-slate-400 dark:text-[#869392] absolute left-3 top-1/2 -translate-y-1/2" />
+            <input v-model="searchQuery" type="text" placeholder="Cari nama / SKU produk..." class="w-full bg-slate-100 dark:bg-[#1a1c1c] rounded-lg py-2.5 pl-9 pr-3 text-sm text-slate-900 dark:text-[#e3e2e2] placeholder:text-slate-500 dark:placeholder:text-[#869392] focus:bg-white dark:focus:bg-[#1e2020] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] focus:ring-2 focus:ring-[#00A19B]/20 border border-transparent outline-none transition-all" @input="debouncedSearch" />
           </div>
-          <button class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0" @click="showScanModal = true; setTimeout(startCamera, 300)">
+          <button class="w-10 h-10 rounded-lg bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 text-[#00A19B] dark:text-[#5fd9d2] flex items-center justify-center shrink-0 hover:bg-[#00A19B]/20 dark:hover:bg-[#5fd9d2]/20 transition-colors" @click="showScanModal = true; setTimeout(startCamera, 300)">
             <ScanBarcodeIcon class="w-5 h-5" />
           </button>
-          <div class="flex rounded-lg border border-slate-200 overflow-hidden shrink-0">
-            <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'grid' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'grid'"><LayoutGridIcon class="w-4 h-4" /></button>
-            <button :class="['w-9 h-9 flex items-center justify-center', viewMode === 'list' ? 'bg-blue-600 text-white' : 'bg-white text-slate-500']" @click="viewMode = 'list'"><ListIcon class="w-4 h-4" /></button>
+          <div class="flex rounded-lg border border-slate-200 dark:border-[#3d4948] overflow-hidden shrink-0">
+            <button :class="['w-9 h-9 flex items-center justify-center transition-colors', viewMode === 'grid' ? 'bg-[#00A19B] dark:bg-[#5fd9d2] text-white' : 'bg-white dark:bg-[#1e2020] text-slate-500 dark:text-[#bcc9c7]']" @click="viewMode = 'grid'"><LayoutGridIcon class="w-4 h-4" /></button>
+            <button :class="['w-9 h-9 flex items-center justify-center transition-colors', viewMode === 'list' ? 'bg-[#00A19B] dark:bg-[#5fd9d2] text-white' : 'bg-white dark:bg-[#1e2020] text-slate-500 dark:text-[#bcc9c7]']" @click="viewMode = 'list'"><ListIcon class="w-4 h-4" /></button>
           </div>
         </div>
         <div class="flex overflow-x-auto gap-2 hide-scrollbar">
-          <button v-for="cat in categories" :key="cat" :class="['px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors', selectedCategory === cat ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200']" @click="selectCategory(cat)">{{ cat }}</button>
+          <button v-for="cat in categories" :key="cat" :class="['px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors', selectedCategory === cat ? 'bg-[#00A19B] dark:bg-[#5fd9d2] text-white' : 'bg-slate-100 dark:bg-[#292a2a] text-slate-600 dark:text-[#bcc9c7] hover:bg-slate-200 dark:hover:bg-[#3d4948]']" @click="selectCategory(cat)">{{ cat }}</button>
         </div>
       </div>
 
       <!-- Product Area (scrollable) -->
-      <div class="flex-1 overflow-y-auto p-3 bg-slate-50">
+      <div class="flex-1 overflow-y-auto p-3 bg-slate-50 dark:bg-[#1a1c1c]">
 
-        <div v-if="productsLoading" class="flex items-center justify-center py-12"><Loader2Icon class="w-5 h-5 animate-spin text-slate-400" /></div>
+        <div v-if="productsLoading" class="flex items-center justify-center py-12"><Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" /></div>
         <div v-else-if="filteredProducts.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
-          <PackageIcon class="w-12 h-12 text-slate-300 mb-3" /><p class="text-sm text-slate-500">{{ searchQuery ? 'Produk tidak ditemukan' : 'Cari atau scan produk' }}</p>
+          <PackageIcon class="w-12 h-12 text-slate-300 dark:text-[#3d4948] mb-3" /><p class="text-sm text-slate-500 dark:text-[#869392]">{{ searchQuery ? 'Produk tidak ditemukan' : 'Cari atau scan produk' }}</p>
         </div>
         <!-- Grid -->
         <div v-else-if="viewMode === 'grid'" class="grid grid-cols-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5">
-          <button v-for="product in filteredProducts" :key="product.id" :disabled="product.totalStock <= 0" class="bg-white border border-slate-200 rounded-xl p-2.5 text-left hover:border-blue-300 hover:shadow-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed" @click="addToCart(product)">
-            <div class="relative w-full aspect-[4/3] bg-slate-100 rounded-lg mb-2 overflow-hidden">
+          <button v-for="product in filteredProducts" :key="product.id" :disabled="product.totalStock <= 0" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl p-2.5 text-left hover:border-[#00A19B] dark:hover:border-[#5fd9d2] hover:shadow-md dark:hover:shadow-[0_4px_12px_rgba(0,161,155,0.2)] transition-all disabled:opacity-40 disabled:cursor-not-allowed" @click="addToCart(product)">
+            <div class="relative w-full aspect-[4/3] bg-slate-100 dark:bg-[#292a2a] rounded-lg mb-2 overflow-hidden">
               <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />
-              <PackageIcon v-else class="w-8 h-8 text-slate-300 absolute inset-0 m-auto" />
-              <span class="absolute top-1.5 right-1.5 text-[9px] font-bold bg-white/90 text-slate-700 px-1.5 py-0.5 rounded shadow-sm">{{ product.totalStock }} {{ product.unit || 'pcs' }}</span>
+              <PackageIcon v-else class="w-8 h-8 text-slate-300 dark:text-[#3d4948] absolute inset-0 m-auto" />
+              <span class="absolute top-1.5 right-1.5 text-[9px] font-bold bg-white/90 dark:bg-[#1e2020]/90 text-slate-700 dark:text-[#e3e2e2] px-1.5 py-0.5 rounded shadow-sm">{{ product.totalStock }} {{ product.unit || 'pcs' }}</span>
             </div>
-            <p class="text-xs font-semibold text-slate-800 line-clamp-2 leading-tight mb-1">{{ product.name }}</p>
-            <p class="text-xs font-mono font-bold text-blue-600">{{ formatRupiah(product.price) }}</p>
+            <p class="text-xs font-semibold text-slate-800 dark:text-[#e3e2e2] line-clamp-2 leading-tight mb-1">{{ product.name }}</p>
+            <p class="text-xs font-mono font-bold text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(product.price) }}</p>
           </button>
         </div>
         <!-- List -->
         <div v-else class="space-y-2">
-          <button v-for="product in filteredProducts" :key="product.id" :disabled="product.totalStock <= 0" class="w-full flex items-center gap-3 bg-white border border-slate-200 rounded-xl p-3 text-left hover:border-blue-300 transition-all disabled:opacity-40" @click="addToCart(product)">
-            <div class="w-12 h-12 bg-slate-100 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+          <button v-for="product in filteredProducts" :key="product.id" :disabled="product.totalStock <= 0" class="w-full flex items-center gap-3 bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl p-3 text-left hover:border-[#00A19B] dark:hover:border-[#5fd9d2] hover:shadow-md dark:hover:shadow-[0_4px_12px_rgba(0,161,155,0.2)] transition-all disabled:opacity-40" @click="addToCart(product)">
+            <div class="w-12 h-12 bg-slate-100 dark:bg-[#292a2a] rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
               <img v-if="product.imageUrl" :src="product.imageUrl" :alt="product.name" class="w-full h-full object-cover" />
-              <PackageIcon v-else class="w-5 h-5 text-slate-300" />
+              <PackageIcon v-else class="w-5 h-5 text-slate-300 dark:text-[#3d4948]" />
             </div>
-            <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 truncate">{{ product.name }}</p><p class="text-[10px] text-slate-500 font-mono">{{ product.sku }}</p></div>
-            <div class="text-right shrink-0"><p class="text-xs font-mono font-bold text-blue-600">{{ formatRupiah(product.price) }}</p><p class="text-[10px] text-slate-500">{{ product.totalStock }} {{ product.unit || 'pcs' }}</p></div>
-            <PlusCircleIcon class="w-5 h-5 text-blue-500 shrink-0" />
+            <div class="flex-1 min-w-0"><p class="text-sm font-semibold text-slate-800 dark:text-[#e3e2e2] truncate">{{ product.name }}</p><p class="text-[10px] text-slate-500 dark:text-[#869392] font-mono">{{ product.sku }}</p></div>
+            <div class="text-right shrink-0"><p class="text-xs font-mono font-bold text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(product.price) }}</p><p class="text-[10px] text-slate-500 dark:text-[#869392]">{{ product.totalStock }} {{ product.unit || 'pcs' }}</p></div>
+            <PlusCircleIcon class="w-5 h-5 text-[#00A19B] dark:text-[#5fd9d2] shrink-0" />
           </button>
         </div>
       </div>
@@ -77,14 +77,14 @@
       <!-- Mobile only: Floating Glass Cart Bar -->
       <Transition name="cart-float">
         <div v-if="cart.length > 0" class="md:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-[500px]">
-          <button class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-white/80 backdrop-blur-xl border border-white/50 shadow-[0_8px_32px_rgba(0,0,0,0.12)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.16)] transition-all active:scale-[0.98]" @click="showMobileCart = true">
+          <button class="w-full flex items-center justify-between px-5 py-3.5 rounded-2xl bg-white/80 dark:bg-[#1e2020]/80 backdrop-blur-xl border border-white/50 dark:border-[#3d4948]/50 shadow-[0_8px_32px_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_rgba(0,161,155,0.2)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.16)] transition-all active:scale-[0.98]" @click="showMobileCart = true">
             <div class="flex items-center gap-3">
-              <div class="relative"><ShoppingCartIcon class="w-5 h-5 text-blue-600" /><span class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-blue-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center">{{ totalItems }}</span></div>
-              <span class="text-sm font-semibold text-slate-700">{{ totalItems }} item</span>
+              <div class="relative"><ShoppingCartIcon class="w-5 h-5 text-[#00A19B] dark:text-[#5fd9d2]" /><span class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-[#00A19B] dark:bg-[#5fd9d2] text-white text-[9px] font-bold rounded-full flex items-center justify-center">{{ totalItems }}</span></div>
+              <span class="text-sm font-semibold text-slate-700 dark:text-[#e3e2e2]">{{ totalItems }} item</span>
             </div>
             <div class="flex items-center gap-3">
-              <span class="text-base font-bold text-blue-600 font-mono">{{ formatRupiah(totalPrice) }}</span>
-              <span class="bg-blue-600 text-white text-xs font-bold px-3 py-1.5 rounded-xl">Bayar</span>
+              <span class="text-base font-bold text-[#00A19B] dark:text-[#5fd9d2] font-mono">{{ formatRupiah(totalPrice) }}</span>
+              <span class="bg-[#00A19B] dark:bg-[#5fd9d2] text-white text-xs font-bold px-3 py-1.5 rounded-xl">Bayar</span>
             </div>
           </button>
         </div>
@@ -93,80 +93,80 @@
 
 
     <!-- === RIGHT COLUMN: Cart Panel (desktop/tablet only) === -->
-    <aside class="hidden md:flex flex-col w-[380px] lg:w-[420px] bg-white border-l border-slate-200 shrink-0 h-[calc(100vh-7.5rem)]">
+    <aside class="hidden md:flex flex-col w-[380px] lg:w-[420px] bg-white dark:bg-[#1e2020] border-l border-slate-200 dark:border-[#3d4948] shrink-0 h-[calc(100vh-7.5rem)]">
       <!-- Cart Header -->
-      <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-100 shrink-0">
-        <ShoppingCartIcon class="w-4 h-4 text-blue-600" />
-        <h3 class="text-sm font-bold text-slate-800">Keranjang</h3>
-        <span class="text-[10px] font-bold bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded-full">{{ totalItems }}</span>
+      <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-100 dark:border-[#3d4948] shrink-0">
+        <ShoppingCartIcon class="w-4 h-4 text-[#00A19B] dark:text-[#5fd9d2]" />
+        <h3 class="text-sm font-bold text-slate-800 dark:text-[#e3e2e2]">Keranjang</h3>
+        <span class="text-[10px] font-bold bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 text-[#00A19B] dark:text-[#5fd9d2] px-1.5 py-0.5 rounded-full">{{ totalItems }}</span>
       </div>
 
       <!-- Cart Items (scrollable) -->
       <div class="flex-1 overflow-y-auto px-4 py-2 space-y-1">
         <div v-if="cart.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
-          <PackageIcon class="w-10 h-10 text-slate-200 mb-3" />
-          <p class="text-xs text-slate-400">Tap produk untuk menambahkan</p>
+          <PackageIcon class="w-10 h-10 text-slate-200 dark:text-[#3d4948] mb-3" />
+          <p class="text-xs text-slate-400 dark:text-[#869392]">Tap produk untuk menambahkan</p>
         </div>
-        <div v-for="item in cart" :key="item.productId" class="py-2.5 border-b border-slate-50 last:border-0">
+        <div v-for="item in cart" :key="item.productId" class="py-2.5 border-b border-slate-50 dark:border-[#292a2a] last:border-0">
           <div class="flex items-start gap-2">
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-slate-800 truncate">{{ item.name }}</p>
-              <p class="text-[10px] text-slate-500">{{ formatRupiah(item.price) }} × {{ item.quantity }}</p>
-              <p v-if="item.discount > 0" class="text-[10px] text-red-500">Diskon: -{{ formatRupiah(item.discount) }}</p>
-              <p class="text-xs font-bold text-blue-600 mt-0.5">{{ formatRupiah(item.subtotal) }}</p>
+              <p class="text-sm font-semibold text-slate-800 dark:text-[#e3e2e2] truncate">{{ item.name }}</p>
+              <p class="text-[10px] text-slate-500 dark:text-[#869392]">{{ formatRupiah(item.price) }} × {{ item.quantity }}</p>
+              <p v-if="item.discount > 0" class="text-[10px] text-red-500 dark:text-[#ffb4ab]">Diskon: -{{ formatRupiah(item.discount) }}</p>
+              <p class="text-xs font-bold text-[#00A19B] dark:text-[#5fd9d2] mt-0.5">{{ formatRupiah(item.subtotal) }}</p>
             </div>
             <div class="flex items-center gap-1 shrink-0">
-              <button class="w-7 h-7 rounded-md bg-slate-100 flex items-center justify-center text-slate-600 hover:bg-slate-200" @click="updateQty(item.productId, item.quantity - 1)">
-                <XIcon v-if="item.quantity === 1" class="w-3 h-3 text-red-500" />
+              <button class="w-7 h-7 rounded-md bg-slate-100 dark:bg-[#292a2a] flex items-center justify-center text-slate-600 dark:text-[#bcc9c7] hover:bg-slate-200 dark:hover:bg-[#3d4948]" @click="updateQty(item.productId, item.quantity - 1)">
+                <XIcon v-if="item.quantity === 1" class="w-3 h-3 text-red-500 dark:text-[#ffb4ab]" />
                 <MinusIcon v-else class="w-3 h-3" />
               </button>
-              <span class="w-6 text-center text-xs font-bold text-slate-800">{{ item.quantity }}</span>
-              <button class="w-7 h-7 rounded-md bg-blue-50 flex items-center justify-center text-blue-600 hover:bg-blue-100" @click="updateQty(item.productId, item.quantity + 1)">
+              <span class="w-6 text-center text-xs font-bold text-slate-800 dark:text-[#e3e2e2]">{{ item.quantity }}</span>
+              <button class="w-7 h-7 rounded-md bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 flex items-center justify-center text-[#00A19B] dark:text-[#5fd9d2] hover:bg-[#00A19B]/20 dark:hover:bg-[#5fd9d2]/20" @click="updateQty(item.productId, item.quantity + 1)">
                 <PlusIcon class="w-3 h-3" />
               </button>
             </div>
           </div>
           <!-- Inline note input -->
           <div v-if="item.showNote" class="mt-1.5">
-            <input v-model="item.note" type="text" placeholder="Catatan item..." class="w-full h-7 px-2 text-[10px] border border-slate-200 rounded bg-slate-50 focus:border-blue-400 outline-none" @blur="item.showNote = false" />
+            <input v-model="item.note" type="text" placeholder="Catatan item..." class="w-full h-7 px-2 text-[10px] border border-slate-200 dark:border-[#3d4948] rounded bg-slate-50 dark:bg-[#1a1c1c] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" @blur="item.showNote = false" />
           </div>
           <!-- Inline discount input -->
           <div v-if="item.showDiscount" class="mt-1.5 flex items-center gap-1.5">
-            <span class="text-[10px] text-slate-500">Diskon Rp:</span>
-            <input :value="item.discount" type="number" min="0" class="w-20 h-7 px-2 text-[10px] font-mono border border-slate-200 rounded bg-slate-50 text-right focus:border-blue-400 outline-none" @change="(e) => { item.discount = Math.min(Number((e.target as HTMLInputElement).value) || 0, item.price * item.quantity); Object.assign(item, recalcCartItem(item)); }" @blur="item.showDiscount = false" />
+            <span class="text-[10px] text-slate-500 dark:text-[#869392]">Diskon Rp:</span>
+            <input :value="item.discount" type="number" min="0" class="w-20 h-7 px-2 text-[10px] font-mono border border-slate-200 dark:border-[#3d4948] rounded bg-slate-50 dark:bg-[#1a1c1c] text-slate-900 dark:text-[#e3e2e2] text-right focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" @change="(e) => { item.discount = Math.min(Number((e.target as HTMLInputElement).value) || 0, item.price * item.quantity); Object.assign(item, recalcCartItem(item)); }" @blur="item.showDiscount = false" />
           </div>
           <!-- Action buttons -->
           <div class="flex items-center gap-3 mt-1.5">
-            <button v-if="settingsStore.isNotePerItemEnabled" class="text-[10px] text-slate-400 hover:text-slate-600 flex items-center gap-0.5" @click="item.showNote = !item.showNote"><EditIcon class="w-3 h-3" /> Catatan</button>
-            <button v-if="settingsStore.isDiscountPerItemEnabled" class="text-[10px] text-slate-400 hover:text-blue-600 flex items-center gap-0.5" @click="item.showDiscount = !item.showDiscount"><TagIcon class="w-3 h-3" /> Diskon</button>
+            <button v-if="settingsStore.isNotePerItemEnabled" class="text-[10px] text-slate-400 dark:text-[#869392] hover:text-slate-600 dark:hover:text-[#bcc9c7] flex items-center gap-0.5" @click="item.showNote = !item.showNote"><EditIcon class="w-3 h-3" /> Catatan</button>
+            <button v-if="settingsStore.isDiscountPerItemEnabled" class="text-[10px] text-slate-400 dark:text-[#869392] hover:text-[#00A19B] dark:hover:text-[#5fd9d2] flex items-center gap-0.5" @click="item.showDiscount = !item.showDiscount"><TagIcon class="w-3 h-3" /> Diskon</button>
           </div>
         </div>
       </div>
 
       <!-- Cart Footer: Summary + Actions -->
-      <div class="shrink-0 border-t border-slate-200 px-4 py-3 space-y-3 bg-slate-50/80">
+      <div class="shrink-0 border-t border-slate-200 dark:border-[#3d4948] px-4 py-3 space-y-3 bg-slate-50/80 dark:bg-[#1a1c1c]">
         <!-- Customer / Table -->
         <div class="flex gap-2">
           <div class="flex-1 relative">
-            <UserIcon class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-            <input v-model="customerName" type="text" placeholder="Nama pelanggan (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
+            <UserIcon class="w-3.5 h-3.5 text-slate-400 dark:text-[#869392] absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <input v-model="customerName" type="text" placeholder="Nama pelanggan (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 dark:border-[#3d4948] rounded-lg bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" />
           </div>
           <div class="flex-1 relative">
-            <PhoneIcon class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-            <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
+            <PhoneIcon class="w-3.5 h-3.5 text-slate-400 dark:text-[#869392] absolute left-2.5 top-1/2 -translate-y-1/2" />
+            <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 dark:border-[#3d4948] rounded-lg bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" />
           </div>
         </div>
 
 
         <!-- Discount total trx -->
         <div v-if="settingsStore.isDiscountTotalEnabled">
-          <button v-if="!showTrxDiscount" class="text-xs text-blue-600 font-medium flex items-center gap-1 hover:underline" @click="showTrxDiscount = true">
+          <button v-if="!showTrxDiscount" class="text-xs text-[#00A19B] dark:text-[#5fd9d2] font-medium flex items-center gap-1 hover:underline" @click="showTrxDiscount = true">
             <TagIcon class="w-3.5 h-3.5" /> Tambah Diskon
           </button>
           <div v-else class="flex items-center gap-2">
-            <span class="text-[10px] text-slate-500">Diskon Rp:</span>
-            <input v-model.number="trxDiscount" type="number" min="0" class="w-24 h-7 px-2 text-xs font-mono border border-slate-200 rounded bg-white text-right focus:border-blue-400 outline-none" />
-            <button class="text-[10px] text-red-400 hover:text-red-600" @click="trxDiscount = 0; showTrxDiscount = false">
+            <span class="text-[10px] text-slate-500 dark:text-[#869392]">Diskon Rp:</span>
+            <input v-model.number="trxDiscount" type="number" min="0" class="w-24 h-7 px-2 text-xs font-mono border border-slate-200 dark:border-[#3d4948] rounded bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] text-right focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" />
+            <button class="text-[10px] text-red-400 dark:text-[#ffb4ab] hover:text-red-600" @click="trxDiscount = 0; showTrxDiscount = false">
               <XIcon class="w-3 h-3" />
             </button>
           </div>
@@ -174,15 +174,15 @@
 
         <!-- Totals -->
         <div class="space-y-1">
-          <div class="flex justify-between text-xs text-slate-500">
+          <div class="flex justify-between text-xs text-slate-500 dark:text-[#bcc9c7]">
             <span>Subtotal</span>
             <span class="font-mono">{{ formatRupiah(totalPrice) }}</span>
           </div>
-          <div v-if="trxDiscount > 0" class="flex justify-between text-xs text-red-500">
+          <div v-if="trxDiscount > 0" class="flex justify-between text-xs text-red-500 dark:text-[#ffb4ab]">
             <span>Diskon</span>
             <span class="font-mono">- {{ formatRupiah(trxDiscount) }}</span>
           </div>
-          <div class="flex justify-between text-base font-bold text-blue-600 pt-1 border-t border-slate-200">
+          <div class="flex justify-between text-base font-bold text-[#00A19B] dark:text-[#5fd9d2] pt-1 border-t border-slate-200 dark:border-[#3d4948]">
             <span>Total</span>
             <span class="font-mono">{{ formatRupiah(grandTotal) }}</span>
           </div>
@@ -190,13 +190,12 @@
 
         <!-- Action Buttons -->
         <div class="flex gap-2">
-          <button v-if="settingsStore.isSaveBillEnabled" class="flex-1 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100 transition-colors" @click="handleSaveBill">
+          <button v-if="settingsStore.isSaveBillEnabled" class="flex-1 h-10 border border-slate-200 dark:border-[#3d4948] rounded-xl text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-[#292a2a] transition-colors" @click="handleSaveBill">
             <SaveIcon class="w-4 h-4" /> Simpan Bill
           </button>
           <button
             :disabled="cart.length === 0"
-            class="flex-1 h-10 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-1.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-            style="background-color: #2563eb;"
+            class="flex-1 h-10 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-1.5 transition-all disabled:opacity-40 disabled:cursor-not-allowed bg-[#00A19B] hover:brightness-110 dark:shadow-[0_0_15px_rgba(0,161,155,0.3)]"
             @click="showPaymentModal = true"
           >
             <CreditCardIcon class="w-4 h-4" /> Bayar
