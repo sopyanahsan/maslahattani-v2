@@ -8,6 +8,13 @@ export class UpdateBrilinkAccountDto {
   @IsOptional()
   label?: string;
 
+  @ApiPropertyOptional({ example: 5000000, description: 'Koreksi saldo langsung (akan dicatat sebagai ADJUSTMENT)' })
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  @IsOptional()
+  balance?: number;
+
   @ApiPropertyOptional({ example: '1234567890' })
   @IsString()
   @IsOptional()

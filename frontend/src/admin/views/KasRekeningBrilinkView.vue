@@ -424,9 +424,15 @@
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Saldo Awal</label>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                {{ editingAccount ? 'Koreksi Saldo' : 'Saldo Awal' }}
+              </label>
               <input v-model.number="accountForm.balance" type="number" min="0" placeholder="0"
                 class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+              <!-- Hint saat mode edit -->
+              <p v-if="editingAccount && accountForm.balance !== editingAccount.balance" class="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5 flex items-center gap-1">
+                <span>⟳</span> Akan dicatat sebagai Adjustment
+              </p>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Threshold Low Balance</label>
@@ -994,6 +1000,7 @@ async function handleSaveAccount() {
         label: accountForm.label,
         accountNumber: accountForm.accountNumber,
         accountHolder: accountForm.accountHolder || undefined,
+        balance: accountForm.balance,
         lowBalanceThreshold: accountForm.lowBalanceThreshold,
         isDefault: accountForm.isDefault,
       });

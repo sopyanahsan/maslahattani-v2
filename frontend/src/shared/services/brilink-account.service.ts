@@ -34,6 +34,7 @@ export interface UpdateBrilinkAccountPayload {
   label?: string;
   accountNumber?: string;
   accountHolder?: string;
+  balance?: number;
   lowBalanceThreshold?: number;
   isDefault?: boolean;
   isActive?: boolean;

@@ -97,6 +97,20 @@ export class BrilinkAccountsService {
     if (dto.isDefault !== undefined && dto.isDefault !== account.isDefault)
       changes.push(dto.isDefault ? 'Dijadikan rekening default' : 'Dilepas dari rekening default');
 
+    // Cek apakah ada koreksi saldo
+    const hasBalanceCorrection =
+      dto.balance !== undefined && dto.balance !== account.balance;
+    const balanceBefore = account.balance;
+    const balanceAfter = hasBalanceCorrection ? dto.balance! : account.balance;
+    const balanceDiff = balanceAfter - balanceBefore;
+
+    if (hasBalanceCorrection) {
+      changes.push(
+        `Koreksi saldo: Rp ${balanceBefore.toLocaleString('id-ID')} → Rp ${balanceAfter.toLocaleString('id-ID')}` +
+        ` (${balanceDiff >= 0 ? '+' : ''}${balanceDiff.toLocaleString('id-ID')})`,
+      );
+    }
+
     try {
       const updated = await this.prisma.brilinkAccount.update({
         where: { id },
@@ -108,23 +122,43 @@ export class BrilinkAccountsService {
           ...(dto.isDefault !== undefined && { isDefault: dto.isDefault }),
           ...(dto.isActive !== undefined && { isActive: dto.isActive }),
           ...(dto.notes !== undefined && { notes: dto.notes }),
+          // Koreksi saldo langsung jika disertakan
+          ...(hasBalanceCorrection && { balance: balanceAfter }),
         },
       });
 
-      // Catat mutasi ADJUSTMENT hanya kalau ada perubahan data yang relevan
+      // Catat mutasi ADJUSTMENT kalau ada perubahan
       if (changes.length > 0) {
         await this.prisma.brilinkMutation.create({
           data: {
             accountId: id,
             type: 'ADJUSTMENT',
-            amount: 0,
-            balanceBefore: account.balance,
-            balanceAfter: account.balance, // saldo tidak berubah
+            // Kalau ada koreksi saldo, pakai selisihnya sebagai amount (abs)
+            amount: hasBalanceCorrection ? Math.abs(balanceDiff) : 0,
+            balanceBefore,
+            balanceAfter,
             description: `Edit rekening: ${changes.join(' | ')}`,
             notes: dto.notes ?? null,
             createdById: userId ?? null,
           },
         });
+
+        // Emit realtime kalau saldo berubah
+        if (hasBalanceCorrection) {
+          this.realtimeGateway.emitAccountBalanceChanged(account.shopId, {
+            accountId: id,
+            label: dto.label ?? account.label,
+            balanceBefore,
+            balanceAfter,
+            changeAmount: Math.abs(balanceDiff),
+            changeType: balanceDiff >= 0 ? 'CREDIT' : 'DEBIT',
+            reason: 'Koreksi saldo (edit rekening)',
+          });
+          this.realtimeGateway.emitDashboardRefresh(account.shopId, {
+            source: 'brilink_account_update',
+            timestamp: new Date().toISOString(),
+          });
+        }
       }
 
       return updated;
