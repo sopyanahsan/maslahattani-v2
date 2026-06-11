@@ -27,6 +27,7 @@ const COMMANDS = {
   NORMAL_SIZE: [GS, 0x21, 0x00],
   CUT: [GS, 0x56, 0x00], // Full cut
   FEED_3: [ESC, 0x64, 0x03], // Feed 3 lines
+  FEED_2: [ESC, 0x64, 0x02], // Feed 2 lines
   LINE: [0x0a], // Line feed
 };
 
@@ -250,90 +251,76 @@ class ThermalPrintService {
   }
 
   /**
-   * Print a BRILink transaction receipt.
-   * Format mirip struk BRI EDC: header toko, detail transaksi, nominal, status.
+   * Print a BRILink receipt. Compact: minimal paper, aligned ":" labels.
    */
   async printBrilinkReceipt(data: BrilinkReceiptData): Promise<void> {
     const bytes: number[] = [];
-
     bytes.push(...COMMANDS.INIT);
 
-    // Header: Shop name (center, bold, double)
+    // Header (center, bold)
     bytes.push(...COMMANDS.ALIGN_CENTER);
     bytes.push(...COMMANDS.BOLD_ON);
     bytes.push(...COMMANDS.DOUBLE_HEIGHT);
     bytes.push(...this.line(data.shopName));
     bytes.push(...COMMANDS.NORMAL_SIZE);
     bytes.push(...COMMANDS.BOLD_OFF);
-    if (data.shopAddress) {
-      bytes.push(...this.line(data.shopAddress));
-    }
-    bytes.push(...COMMANDS.LINE);
-
+    if (data.shopAddress) bytes.push(...this.line(data.shopAddress));
     bytes.push(...this.separator());
 
-    // Date & Ref
+    // Date & Ref (compact, padded ":")
     bytes.push(...COMMANDS.ALIGN_LEFT);
     bytes.push(...this.line(data.date));
-    bytes.push(...this.line(`No Ref  : ${data.refNumber}`));
-    bytes.push(...this.line(`Kasir   : ${data.cashierName}`));
-
+    bytes.push(...this.linePad('No Ref', data.refNumber));
+    bytes.push(...this.linePad('Kasir', data.cashierName));
     bytes.push(...this.separator());
 
-    // Transaction detail
-    bytes.push(...this.line(`Transaksi    : ${data.category}`));
-    if (data.metodeAdmin) {
-      bytes.push(...this.line(`Metode Admin : ${data.metodeAdmin}`));
-    }
-    bytes.push(...this.line(`Nama    : ${data.customerName || '-'}`));
-    bytes.push(...this.line(`No HP   : ${data.customerPhone || '-'}`));
-    if (data.destination) {
-      bytes.push(...this.line(`Tujuan  : ${data.destination}`));
-    }
-    if (data.bankName) {
-      bytes.push(...this.line(`Bank    : ${data.bankName}`));
-    }
-
+    // Detail (padded labels — ":" aligned)
+    bytes.push(...this.linePad('Transaksi', data.category));
+    if (data.metodeAdmin) bytes.push(...this.linePad('Metode', data.metodeAdmin));
+    bytes.push(...this.linePad('Nama', data.customerName || '-'));
+    bytes.push(...this.linePad('No HP', data.customerPhone || '-'));
+    if (data.destination) bytes.push(...this.linePad('Tujuan', data.destination));
+    if (data.bankName) bytes.push(...this.linePad('Bank', data.bankName));
     bytes.push(...this.separator());
 
     // Financials
     bytes.push(...this.lineRight('Nominal', this.fmtRp(data.amount)));
-    if (data.systemFee && data.systemFee > 0) {
-      bytes.push(...this.lineRight('Biaya Sistem', this.fmtRp(data.systemFee)));
-    }
-    if (data.adminFee && data.adminFee > 0) {
-      bytes.push(...this.lineRight('Biaya Admin', this.fmtRp(data.adminFee)));
-    }
+    if (data.systemFee && data.systemFee > 0) bytes.push(...this.lineRight('Biaya Sistem', this.fmtRp(data.systemFee)));
+    if (data.adminFee && data.adminFee > 0) bytes.push(...this.lineRight('Biaya Admin', this.fmtRp(data.adminFee)));
     bytes.push(...COMMANDS.BOLD_ON);
     bytes.push(...this.lineRight('TOTAL', this.fmtRp(data.total)));
     bytes.push(...COMMANDS.BOLD_OFF);
-
     bytes.push(...this.separator());
 
     // Status
     bytes.push(...COMMANDS.BOLD_ON);
-    bytes.push(...this.lineRight('Status', data.status));
+    bytes.push(...this.linePad('Status', data.status));
     bytes.push(...COMMANDS.BOLD_OFF);
-
     bytes.push(...this.separator());
 
-    // Footer
+    // Footer (compact)
     bytes.push(...COMMANDS.ALIGN_CENTER);
     bytes.push(...this.line('Terima kasih'));
-    bytes.push(...this.line('Harap simpan resi ini sebagai'));
-    bytes.push(...this.line('bukti transaksi yang sah'));
-    bytes.push(...COMMANDS.LINE);
+    bytes.push(...this.line('Simpan resi sebagai bukti'));
 
-    // Feed and cut
-    bytes.push(...COMMANDS.FEED_3);
+    // Minimal feed then cut (2 lines instead of 3)
+    bytes.push(...COMMANDS.FEED_2);
     bytes.push(...COMMANDS.CUT);
-
     await this.sendBytes(bytes);
   }
 
   private lineRight(left: string, right: string): number[] {
     const padding = ' '.repeat(Math.max(1, 32 - left.length - right.length));
     return this.line(`${left}${padding}${right}`);
+  }
+
+  /**
+   * Padded label line: "Label   : Value"
+   * Label is padded to 10 chars so ":" aligns neatly.
+   */
+  private linePad(label: string, value: string): number[] {
+    const padded = label.padEnd(10, ' ');
+    return this.line(`${padded}: ${value}`);
   }
 
   private fmtRp(n: number): string {
