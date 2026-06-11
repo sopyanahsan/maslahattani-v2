@@ -159,19 +159,42 @@
           </div>
           <!-- Per-Rekening Pill -->
           <div v-for="account in accounts" :key="account.id"
-            class="shrink-0 min-w-[160px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow group">
-            <div class="mb-2">
-              <div class="flex items-center gap-1.5 mb-0.5">
-                <p class="text-[11px] font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[130px]">{{ account.label }}</p>
-                <span v-if="account.isDefault" class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" title="Default"></span>
+            class="shrink-0 min-w-[180px] bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-700/60 rounded-2xl px-4 py-3 shadow-sm hover:shadow-md transition-shadow group">
+            <!-- Header: label + edit/hapus -->
+            <div class="flex items-start justify-between gap-1 mb-1">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5">
+                  <p class="text-[11px] font-semibold text-slate-700 dark:text-slate-300 truncate max-w-[120px]">{{ account.label }}</p>
+                  <span v-if="account.isDefault" class="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" title="Default" />
+                </div>
+                <p class="text-[9px] text-slate-400 dark:text-slate-500 font-mono leading-none mt-0.5">{{ account.accountNumber }}</p>
               </div>
-              <p class="text-[9px] text-slate-400 dark:text-slate-500 font-mono leading-none mb-1">{{ account.accountNumber }}</p>
-              <p class="text-sm font-bold font-mono whitespace-nowrap leading-tight" :class="account.balance < account.lowBalanceThreshold ? 'text-red-500 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'">{{ formatRupiah(account.balance) }}</p>
+              <!-- Edit & Hapus — muncul saat hover -->
+              <div class="flex gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button type="button"
+                  class="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 flex items-center justify-center transition-colors"
+                  title="Edit rekening"
+                  @click="openAccountModal(account)">
+                  <PencilIcon class="w-3 h-3" />
+                </button>
+                <button type="button"
+                  class="w-6 h-6 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-900/30 hover:text-red-600 dark:hover:text-red-400 flex items-center justify-center transition-colors"
+                  title="Hapus rekening"
+                  @click="handleDeleteAccount(account)">
+                  <Trash2Icon class="w-3 h-3" />
+                </button>
+              </div>
             </div>
-            <div class="flex items-center gap-1.5 opacity-70 group-hover:opacity-100 transition-opacity">
-              <button type="button" class="flex-1 h-6 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" @click="openMutationModal(account, 'setor')" title="Setor">+ Setor</button>
-              <button type="button" class="flex-1 h-6 rounded-md bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[9px] font-bold flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors" @click="openMutationModal(account, 'tarik')" title="Tarik">− Tarik</button>
-              <button type="button" class="flex-1 h-6 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-[9px] font-bold flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors" @click="openTransferModal(account)" title="Pindah">⇄ Pindah</button>
+            <!-- Saldo -->
+            <p class="text-sm font-bold font-mono whitespace-nowrap leading-tight mb-2"
+              :class="account.balance < account.lowBalanceThreshold ? 'text-red-500 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'">
+              {{ formatRupiah(account.balance) }}
+            </p>
+            <!-- Action buttons -->
+            <div class="flex items-center gap-1">
+              <button type="button" class="flex-1 h-6 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold flex items-center justify-center hover:bg-emerald-100 dark:hover:bg-emerald-900/60 transition-colors" @click="openMutationModal(account, 'setor')">+ Setor</button>
+              <button type="button" class="flex-1 h-6 rounded-md bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 text-[9px] font-bold flex items-center justify-center hover:bg-red-100 dark:hover:bg-red-900/60 transition-colors" @click="openMutationModal(account, 'tarik')">− Tarik</button>
+              <button type="button" class="flex-1 h-6 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 text-[9px] font-bold flex items-center justify-center hover:bg-blue-100 dark:hover:bg-blue-900/60 transition-colors" @click="openTransferModal(account)">⇄ Pindah</button>
             </div>
           </div>
         </div>
