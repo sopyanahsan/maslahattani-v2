@@ -55,14 +55,20 @@ export class BrilinkAccountsController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update brilink account' })
-  async update(@Param('id') id: string, @Body() dto: UpdateBrilinkAccountDto) {
-    return this.service.update(id, dto);
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateBrilinkAccountDto,
+    @Req() req: any,
+  ) {
+    const userId = req.user?.id || req.user?.sub;
+    return this.service.update(id, dto, userId);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Soft delete brilink account (set isActive=false)' })
-  async remove(@Param('id') id: string) {
-    return this.service.remove(id);
+  async remove(@Param('id') id: string, @Req() req: any) {
+    const userId = req.user?.id || req.user?.sub;
+    return this.service.remove(id, userId);
   }
 
   @Post(':id/setor')

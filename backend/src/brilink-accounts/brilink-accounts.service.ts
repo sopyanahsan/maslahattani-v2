@@ -71,7 +71,7 @@ export class BrilinkAccountsService {
     }
   }
 
-  async update(id: string, dto: UpdateBrilinkAccountDto) {
+  async update(id: string, dto: UpdateBrilinkAccountDto, userId?: string) {
     const account = await this.findOne(id);
 
     // If setting as default, unset other defaults
@@ -82,25 +82,52 @@ export class BrilinkAccountsService {
       });
     }
 
+    // Build human-readable changelog for mutation description
+    const changes: string[] = [];
+    if (dto.label !== undefined && dto.label !== account.label)
+      changes.push(`Label: "${account.label}" → "${dto.label}"`);
+    if (dto.accountNumber !== undefined && dto.accountNumber !== account.accountNumber)
+      changes.push(`No. Rek: ${account.accountNumber} → ${dto.accountNumber}`);
+    if (dto.accountHolder !== undefined && dto.accountHolder !== account.accountHolder)
+      changes.push(`Pemilik: "${account.accountHolder ?? '-'}" → "${dto.accountHolder}"`);
+    if (dto.lowBalanceThreshold !== undefined && dto.lowBalanceThreshold !== account.lowBalanceThreshold)
+      changes.push(
+        `Min. saldo: Rp ${account.lowBalanceThreshold.toLocaleString('id-ID')} → Rp ${dto.lowBalanceThreshold.toLocaleString('id-ID')}`,
+      );
+    if (dto.isDefault !== undefined && dto.isDefault !== account.isDefault)
+      changes.push(dto.isDefault ? 'Dijadikan rekening default' : 'Dilepas dari rekening default');
+
     try {
-      return await this.prisma.brilinkAccount.update({
+      const updated = await this.prisma.brilinkAccount.update({
         where: { id },
         data: {
           ...(dto.label !== undefined && { label: dto.label }),
-          ...(dto.accountNumber !== undefined && {
-            accountNumber: dto.accountNumber,
-          }),
-          ...(dto.accountHolder !== undefined && {
-            accountHolder: dto.accountHolder,
-          }),
-          ...(dto.lowBalanceThreshold !== undefined && {
-            lowBalanceThreshold: dto.lowBalanceThreshold,
-          }),
+          ...(dto.accountNumber !== undefined && { accountNumber: dto.accountNumber }),
+          ...(dto.accountHolder !== undefined && { accountHolder: dto.accountHolder }),
+          ...(dto.lowBalanceThreshold !== undefined && { lowBalanceThreshold: dto.lowBalanceThreshold }),
           ...(dto.isDefault !== undefined && { isDefault: dto.isDefault }),
           ...(dto.isActive !== undefined && { isActive: dto.isActive }),
           ...(dto.notes !== undefined && { notes: dto.notes }),
         },
       });
+
+      // Catat mutasi ADJUSTMENT hanya kalau ada perubahan data yang relevan
+      if (changes.length > 0) {
+        await this.prisma.brilinkMutation.create({
+          data: {
+            accountId: id,
+            type: 'ADJUSTMENT',
+            amount: 0,
+            balanceBefore: account.balance,
+            balanceAfter: account.balance, // saldo tidak berubah
+            description: `Edit rekening: ${changes.join(' | ')}`,
+            notes: dto.notes ?? null,
+            createdById: userId ?? null,
+          },
+        });
+      }
+
+      return updated;
     } catch (error: any) {
       if (error.code === 'P2002') {
         throw new ConflictException(
@@ -111,8 +138,23 @@ export class BrilinkAccountsService {
     }
   }
 
-  async remove(id: string) {
-    await this.findOne(id);
+  async remove(id: string, userId?: string) {
+    const account = await this.findOne(id);
+
+    // Catat mutasi ADJUSTMENT sebelum soft-delete
+    await this.prisma.brilinkMutation.create({
+      data: {
+        accountId: id,
+        type: 'ADJUSTMENT',
+        amount: 0,
+        balanceBefore: account.balance,
+        balanceAfter: account.balance,
+        description: `Rekening dinonaktifkan (hapus). Saldo terakhir: Rp ${account.balance.toLocaleString('id-ID')}`,
+        notes: null,
+        createdById: userId ?? null,
+      },
+    });
+
     // Soft delete: set isActive = false
     return this.prisma.brilinkAccount.update({
       where: { id },
