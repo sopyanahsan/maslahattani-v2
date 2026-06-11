@@ -932,7 +932,7 @@ async function handleSubmitForm() {
         description: form.description || undefined,
       });
     } else {
-      const shopId = authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
+      const shopId = await ensureShopScoped();
       if (!shopId) {
         formError.value = 'Tidak ada cabang aktif. Pilih cabang dulu.';
         return;
@@ -1066,7 +1066,7 @@ async function downloadTemplate() {
 
 async function handleBulkUpload() {
   if (!bulkFile.value) return;
-  const shopId = authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
+  const shopId = await ensureShopScoped();
   if (!shopId) {
     bulkError.value = 'Tidak ada cabang aktif. Pilih cabang dulu.';
     return;
@@ -1185,12 +1185,54 @@ function toggleCategoryInline() {
   categoryError.value = null;
 }
 
+/**
+ * Pastikan JWT ter-scope ke cabang aktif.
+ *
+ * Super-admin yang login hanya men-set currentShop secara lokal (tanpa
+ * re-issue token), sehingga JWT belum punya shopId → backend menolak operasi
+ * yang bergantung pada shop dari token (mis. tambah kategori) dengan pesan
+ * "Tidak ada cabang aktif". Helper ini me-resolve cabang aktif dan, bila perlu,
+ * memanggil selectShop untuk mendapatkan token yang sudah ter-scope.
+ *
+ * Mengembalikan shopId final (atau undefined kalau benar-benar tidak ada cabang).
+ */
+async function ensureShopScoped(): Promise<string | undefined> {
+  // Token sudah ter-scope → langsung pakai.
+  if (authStore.user?.shopId) return authStore.user.shopId;
+
+  // Ada cabang aktif lokal tapi token belum ter-scope → re-issue token.
+  let shopId = shopStore.currentShopId ?? undefined;
+  if (shopId) {
+    try {
+      await shopStore.selectShop(shopId);
+      return authStore.user?.shopId ?? shopStore.currentShopId ?? shopId;
+    } catch {
+      return shopId; // fallback: minimal kirim shopId yang ada
+    }
+  }
+
+  // Belum ada cabang sama sekali → fetch & auto-select (kasus toko 1 cabang).
+  try {
+    const shops = shopStore.availableShops.length
+      ? shopStore.availableShops
+      : await shopStore.fetchShops();
+    if (shops && shops.length > 0) {
+      await shopStore.selectShop(shops[0].id);
+      shopId = shopStore.currentShopId ?? undefined;
+    }
+  } catch {
+    /* ignore */
+  }
+  return shopId;
+}
+
 async function handleAddCategory() {
   const name = newCategoryName.value.trim();
   if (!name) return;
   categoryAdding.value = true;
   categoryError.value = null;
   try {
+    await ensureShopScoped();
     const { data } = await api.post('/product-categories', { name });
     // Backend returns { category: { id, name, ... } }
     const newCat = data?.category || data;
