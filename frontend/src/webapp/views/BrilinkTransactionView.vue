@@ -1,639 +1,691 @@
 <template>
-  <div class="flex flex-col h-[calc(100vh-4rem)] overflow-hidden">
-    <!-- Top bar -->
-    <div class="shrink-0 px-4 py-3 bg-white border-b border-slate-200">
-      <h1 class="text-base font-bold text-slate-950">BRILink</h1>
-      <p class="text-xs text-slate-500 mt-0.5">Transaksi BRILink — pilih kategori &amp; isi form.</p>
-    </div>
+  <div class="font-hanken overflow-x-hidden w-full">
 
-    <!-- Saldo rekening BRI -->
-    <div
-      v-if="accountBalance !== null"
-      class="shrink-0 px-4 py-2.5 flex items-center justify-between border-b"
-      :class="accountBalance <= lowBalanceThreshold
-        ? 'bg-amber-50 border-amber-200'
-        : 'bg-emerald-50 border-emerald-100'"
-    >
-      <div class="flex items-center gap-2 min-w-0">
-        <WalletIcon
-          class="w-4 h-4 shrink-0"
-          :class="accountBalance <= lowBalanceThreshold ? 'text-amber-600' : 'text-emerald-600'"
-        />
-        <span class="text-xs text-slate-500 truncate">
-          Saldo BRI{{ accountLabel ? ` — ${accountLabel}` : '' }}
-        </span>
+    <!-- ============================================================ -->
+    <!-- STEP 1: Form Transfer                                         -->
+    <!-- ============================================================ -->
+    <template v-if="step === 'form'">
+      <!-- Header -->
+      <div class="shrink-0 px-4 py-3 bg-white dark:bg-[#1e2020] border-b border-slate-200 dark:border-[#3d4948] flex items-center gap-3">
+        <RouterLink to="/brilink/menu" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#292a2a] transition-colors">
+          <ChevronLeftIcon class="w-5 h-5 text-slate-600 dark:text-[#bcc9c7]" />
+        </RouterLink>
+        <div>
+          <h1 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ categoryTitle }}</h1>
+          <p class="text-[10px] text-slate-500 dark:text-[#869392]">Pilih sumber dana &amp; isi data tujuan</p>
+        </div>
       </div>
-      <div class="flex items-center gap-2 shrink-0">
-        <span
-          v-if="accountBalance <= lowBalanceThreshold"
-          class="inline-flex items-center gap-1 text-[10px] font-bold text-amber-700"
-        >
-          <AlertTriangleIcon class="w-3 h-3" /> Menipis
-        </span>
-        <span class="text-sm font-bold font-mono text-slate-900">{{ formatRupiah(accountBalance) }}</span>
-      </div>
-    </div>
 
-    <!-- Main content -->
-    <div class="flex-1 overflow-y-auto p-4 space-y-5">
-      <!-- ============================================ -->
-      <!-- Category Selector                            -->
-      <!-- ============================================ -->
-      <div>
-        <p class="text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2">
-          Pilih Kategori
-        </p>
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <!-- Saldo strip: pilih sumber dana -->
+      <div class="bg-gradient-to-br from-[#00756f] via-[#00A19B] to-[#00bdb6] px-4 py-4 overflow-hidden">
+        <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">Sumber Dana (pilih rekening)</p>
+        <div class="flex gap-3 overflow-x-auto pb-1 hide-scrollbar snap-x snap-mandatory">
           <button
-            v-for="cat in BRILINK_CATEGORIES"
-            :key="cat"
+            v-for="acc in accounts"
+            :key="acc.id"
             type="button"
             :class="[
-              'rounded-lg border p-3 text-left transition-colors',
-              selectedCategory === cat
-                ? 'border-blue-500 bg-blue-50 ring-1 ring-blue-500'
-                : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50/30',
+              'shrink-0 snap-start w-[55vw] min-w-[180px] max-w-[220px] rounded-2xl px-4 py-3 text-left transition-all border',
+              selectedAccountId === acc.id
+                ? 'bg-white/25 border-white/60 shadow-lg scale-[1.02]'
+                : 'bg-white/10 border-white/20 hover:bg-white/15',
             ]"
-            @click="selectCategory(cat)"
+            @click="selectedAccountId = acc.id"
           >
-            <span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase mb-1', categoryBadge(cat)]">
-              {{ BRILINK_CATEGORY_LABELS[cat] }}
-            </span>
-            <p class="text-[10px] text-slate-500 mt-0.5">{{ categoryHint(cat) }}</p>
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <CreditCardIcon class="w-3.5 h-3.5 text-white/70" />
+              <p class="text-[10px] font-semibold text-white/80 uppercase tracking-wider truncate">{{ acc.label }}</p>
+              <span v-if="selectedAccountId === acc.id" class="ml-auto w-4 h-4 rounded-full bg-white/90 flex items-center justify-center">
+                <CheckIcon class="w-2.5 h-2.5 text-[#00756f]" />
+              </span>
+            </div>
+            <p class="text-[9px] text-white/50 font-mono">{{ acc.accountNumber }}</p>
+            <p class="text-base font-bold text-white font-mono leading-tight mt-0.5">{{ formatRupiah(acc.balance) }}</p>
           </button>
+
+          <!-- Empty state -->
+          <div v-if="accounts.length === 0 && !accountsLoading"
+            class="shrink-0 snap-start w-[55vw] min-w-[180px] rounded-2xl border border-dashed border-white/30 px-4 py-4 flex flex-col items-center justify-center text-white/50">
+            <LandmarkIcon class="w-5 h-5 mb-1" />
+            <p class="text-[10px] text-center">Belum ada rekening</p>
+          </div>
+
+          <!-- Loading -->
+          <template v-if="accountsLoading">
+            <div v-for="i in 2" :key="i" class="shrink-0 snap-start w-[55vw] min-w-[180px] max-w-[220px] rounded-2xl bg-white/10 border border-white/20 px-4 py-3 animate-pulse">
+              <div class="h-3 w-20 rounded bg-white/20 mb-2" />
+              <div class="h-5 w-28 rounded bg-white/20" />
+            </div>
+          </template>
         </div>
       </div>
 
+      <!-- Form Fields -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-[#1a1c1c]">
 
-      <!-- ============================================ -->
-      <!-- Transaction Form                             -->
-      <!-- ============================================ -->
-      <form
-        v-if="selectedCategory"
-        class="bg-white border border-slate-200 rounded-xl p-5 space-y-4 max-w-lg"
-        @submit.prevent="handleSubmit"
-      >
-        <h2 class="text-sm font-bold text-slate-900">
-          {{ BRILINK_CATEGORY_LABELS[selectedCategory] }}
-        </h2>
-
-        <!-- Customer Name (with autocomplete) -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
-            Nama Customer <span class="text-red-500">*</span>
+        <!-- Bank Tujuan -->
+        <div v-if="showBankField">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
+            Bank Tujuan <span class="text-red-500">*</span>
           </label>
-          <div class="relative">
-            <input
-              v-model="form.customerName"
-              type="text"
-              required
-              placeholder="Ketik nama customer..."
-              class="w-full h-9 px-3 text-sm border border-slate-300 rounded-md
-                     focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-              @input="searchCustomer"
-              @focus="showCustomerSuggestions = true"
-            />
-            <!-- Autocomplete dropdown -->
-            <div v-if="showCustomerSuggestions && customerSuggestions.length > 0" class="absolute z-20 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-36 overflow-y-auto">
-              <button
-                v-for="s in customerSuggestions"
-                :key="s.id"
-                type="button"
-                class="w-full px-3 py-2 text-left hover:bg-blue-50 transition-colors border-b border-slate-50 last:border-0"
-                @click="selectCustomerSuggestion(s)"
-              >
-                <p class="text-xs font-medium text-slate-800">{{ s.name }}</p>
-                <p v-if="s.phone" class="text-[10px] text-slate-400">{{ s.phone }}</p>
-              </button>
-            </div>
-          </div>
+          <select
+            v-model="form.bankCode"
+            required
+            class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
+          >
+            <option value="">— Pilih Bank —</option>
+            <option v-for="bank in banks" :key="bank.id" :value="bank.code">{{ bank.name }}</option>
+          </select>
         </div>
 
-        <!-- Customer Phone (optional) -->
+        <!-- No Rekening Tujuan -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
-            No. HP Customer <span class="text-slate-400">(opsional)</span>
-          </label>
-          <input
-            v-model="form.customerPhone"
-            type="tel"
-            placeholder="08xxxxxxxxxx"
-            class="w-full h-9 px-3 text-sm border border-slate-300 rounded-md
-                   focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
-          />
-        </div>
-
-        <!-- Destination -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
-            Tujuan / No. Rekening <span class="text-red-500">*</span>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
+            {{ destinationLabel }} <span class="text-red-500">*</span>
           </label>
           <input
             v-model="form.destination"
             type="text"
             required
             :placeholder="destinationPlaceholder"
-            class="w-full h-9 px-3 text-sm font-mono border border-slate-300 rounded-md
-                   focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+            class="w-full h-10 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
           />
         </div>
 
-
-        <!-- Amount -->
+        <!-- Nama Penerima -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">
+          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
+            Nama Penerima <span class="text-red-500">*</span>
+          </label>
+          <input
+            v-model="form.customerName"
+            type="text"
+            required
+            placeholder="Nama lengkap penerima"
+            class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
+            @input="searchCustomer"
+            @focus="showSuggestions = true"
+          />
+          <!-- Autocomplete -->
+          <div v-if="showSuggestions && suggestions.length > 0"
+            class="mt-1 bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl shadow-lg max-h-32 overflow-y-auto z-20 relative">
+            <button v-for="s in suggestions" :key="s.id" type="button"
+              class="w-full px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-[#292a2a] border-b border-slate-50 dark:border-[#292a2a] last:border-0"
+              @click="selectSuggestion(s)">
+              <p class="text-xs font-medium text-slate-800 dark:text-[#e3e2e2]">{{ s.name }}</p>
+              <p v-if="s.phone" class="text-[10px] text-slate-400 dark:text-[#869392]">{{ s.phone }}</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- No HP (optional) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
+            No. HP Customer <span class="text-slate-400 dark:text-[#869392] font-normal">(opsional)</span>
+          </label>
+          <input
+            v-model="form.customerPhone"
+            type="tel"
+            placeholder="08xxxxxxxxxx"
+            class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
+          />
+        </div>
+
+        <!-- Metode Admin -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">Metode Admin</label>
+          <div class="grid grid-cols-3 gap-2">
+            <button v-for="m in feeMethodOptions" :key="m.value" type="button"
+              :class="[
+                'p-2.5 rounded-xl border text-center transition-all',
+                form.feeMethod === m.value
+                  ? 'border-[#00A19B] dark:border-[#5fd9d2] bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10'
+                  : 'border-slate-200 dark:border-[#3d4948] hover:border-slate-300 dark:hover:border-[#5fd9d2]/30',
+              ]"
+              @click="form.feeMethod = m.value"
+            >
+              <p :class="['text-[11px] font-bold', form.feeMethod === m.value ? 'text-[#00756f] dark:text-[#5fd9d2]' : 'text-slate-700 dark:text-[#e3e2e2]']">{{ m.label }}</p>
+              <p class="text-[9px] text-slate-400 dark:text-[#869392] mt-0.5 leading-tight">{{ m.hint }}</p>
+            </button>
+          </div>
+        </div>
+
+        <!-- Nominal -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
             Nominal <span class="text-red-500">*</span>
           </label>
           <input
             v-model.number="form.amount"
             type="number"
             required
-            min="1000"
+            min="10000"
             step="1000"
-            placeholder="100000"
-            class="w-full h-9 px-3 text-sm font-mono border border-slate-300 rounded-md
-                   focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+            placeholder="0"
+            class="w-full h-12 px-4 text-xl font-mono font-bold text-center border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] focus:ring-2 focus:ring-[#00A19B]/20 outline-none"
             @input="calculateFee"
+          />
+          <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-1">Minimal transfer Rp 10.000</p>
+        </div>
+
+        <!-- Fee Preview -->
+        <div v-if="form.amount >= 10000" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl p-3 space-y-1.5">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Nominal</span>
+            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount) }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Biaya Admin</span>
+            <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedFee) }}</span>
+          </div>
+          <div class="flex justify-between text-sm font-bold border-t border-slate-100 dark:border-[#3d4948] pt-1.5">
+            <span class="text-slate-700 dark:text-[#bcc9c7]">Uang Diterima</span>
+            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(totalReceived) }}</span>
+          </div>
+        </div>
+
+        <!-- Nomor Referensi -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
+            No. Referensi Nasabah <span class="text-slate-400 dark:text-[#869392] font-normal">(opsional)</span>
+          </label>
+          <input
+            v-model="form.reference"
+            type="text"
+            placeholder="Nomor referensi"
+            class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
           />
         </div>
 
-        <!-- Fee display -->
-        <div v-if="form.amount > 0" class="bg-slate-50 rounded-lg p-3 space-y-1.5">
-          <div class="flex justify-between text-xs">
-            <span class="text-slate-500">Nominal</span>
-            <span class="font-mono text-slate-900">{{ formatRupiah(form.amount) }}</span>
-          </div>
-          <div class="flex justify-between text-xs">
-            <span class="text-slate-500">Fee</span>
-            <span class="font-mono text-emerald-600">{{ formatRupiah(calculatedFee) }}</span>
-          </div>
-          <div class="flex justify-between text-sm font-bold border-t border-slate-200 pt-1.5">
-            <span class="text-slate-700">Total</span>
-            <span class="font-mono text-slate-950">{{ formatRupiah(form.amount + calculatedFee) }}</span>
+        <!-- Catatan -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
+            Catatan <span class="text-slate-400 dark:text-[#869392] font-normal">(tidak wajib, max 30 karakter)</span>
+          </label>
+          <input
+            v-model="form.notes"
+            type="text"
+            maxlength="30"
+            placeholder="Catatan singkat..."
+            class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
+          />
+          <p class="text-[10px] text-slate-400 dark:text-[#869392] text-right mt-0.5">{{ form.notes.length }}/30</p>
+        </div>
+
+        <!-- Insufficient balance -->
+        <div v-if="insufficientBalance" class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-3 flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300">
+          <AlertTriangleIcon class="w-4 h-4 shrink-0 mt-0.5" />
+          <span>Nominal melebihi saldo rekening ({{ formatRupiah(selectedAccount?.balance ?? 0) }}). Setor saldo dulu.</span>
+        </div>
+
+        <!-- Selanjutnya -->
+        <button
+          type="button"
+          :disabled="!canProceed"
+          class="w-full h-12 rounded-xl text-sm font-bold text-white bg-[#00A19B] hover:brightness-110 dark:shadow-[0_0_15px_rgba(0,161,155,0.3)] flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          @click="goToConfirm"
+        >
+          Selanjutnya
+          <ChevronRightIcon class="w-4 h-4" />
+        </button>
+      </div>
+    </template>
+
+    <!-- ============================================================ -->
+    <!-- STEP 2: Konfirmasi Transaksi                                  -->
+    <!-- ============================================================ -->
+    <template v-if="step === 'confirm'">
+      <!-- Header -->
+      <div class="shrink-0 px-4 py-3 bg-white dark:bg-[#1e2020] border-b border-slate-200 dark:border-[#3d4948] flex items-center gap-3">
+        <button type="button" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#292a2a]" @click="step = 'form'">
+          <ChevronLeftIcon class="w-5 h-5 text-slate-600 dark:text-[#bcc9c7]" />
+        </button>
+        <h1 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">Konfirmasi Transaksi</h1>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-[#1a1c1c]">
+
+        <!-- Pengirim Card -->
+        <div class="bg-gradient-to-r from-[#00756f] to-[#00A19B] rounded-2xl px-4 py-3 text-white">
+          <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-0.5">Pengirim (Sumber Dana)</p>
+          <div class="flex items-center gap-2">
+            <LandmarkIcon class="w-5 h-5 text-white/80 shrink-0" />
+            <div>
+              <p class="text-sm font-bold">{{ selectedAccount?.label }}</p>
+              <p class="text-[11px] text-white/70 font-mono">{{ selectedAccount?.accountNumber }}</p>
+            </div>
           </div>
         </div>
 
-        <!-- Insufficient balance warning -->
-        <div
-          v-if="insufficientBalance"
-          class="bg-amber-50 border border-amber-200 rounded-md p-2 flex items-start gap-2 text-xs text-amber-800"
-        >
-          <AlertTriangleIcon class="w-4 h-4 shrink-0 mt-0.5" />
-          <span>
-            Nominal melebihi saldo rekening BRI ({{ formatRupiah(accountBalance ?? 0) }}).
-            Lakukan setor saldo dulu sebelum transaksi.
-          </span>
+        <!-- Arrow down -->
+        <div class="flex justify-center">
+          <div class="w-8 h-8 rounded-full bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] flex items-center justify-center shadow-sm">
+            <ChevronDownIcon class="w-4 h-4 text-[#00A19B] dark:text-[#5fd9d2]" />
+          </div>
+        </div>
+
+        <!-- Penerima Card -->
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl px-4 py-3">
+          <p class="text-[10px] font-semibold text-slate-400 dark:text-[#869392] uppercase tracking-wider mb-1">Penerima</p>
+          <div class="flex items-center gap-2">
+            <LandmarkIcon class="w-5 h-5 text-slate-400 dark:text-[#869392] shrink-0" />
+            <div>
+              <p class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ form.customerName }}</p>
+              <p class="text-[11px] text-slate-500 dark:text-[#869392] font-mono">{{ form.destination }}</p>
+              <p v-if="selectedBankName" class="text-[10px] text-slate-400 dark:text-[#869392]">{{ selectedBankName }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail Transaksi -->
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 space-y-2">
+          <h3 class="text-xs font-bold text-slate-800 dark:text-[#e3e2e2] mb-2">Detail Transaksi</h3>
+
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Jenis Layanan</span>
+            <span class="font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ categoryTitle }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Metode Admin</span>
+            <span class="font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ feeMethodLabel }}</span>
+          </div>
+          <div v-if="form.reference" class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">No. Referensi</span>
+            <span class="font-mono text-slate-800 dark:text-[#e3e2e2]">{{ form.reference }}</span>
+          </div>
+          <div v-if="form.notes" class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Catatan</span>
+            <span class="text-slate-800 dark:text-[#e3e2e2]">{{ form.notes }}</span>
+          </div>
+
+          <div class="border-t border-slate-100 dark:border-[#3d4948] pt-2 mt-2 space-y-1.5">
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500 dark:text-[#869392]">Nominal</span>
+              <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount) }}</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500 dark:text-[#869392]">Biaya Admin</span>
+              <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedFee) }}</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500 dark:text-[#869392]">Saldo Sebelum</span>
+              <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(selectedAccount?.balance ?? 0) }}</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500 dark:text-[#869392]">Saldo Setelah</span>
+              <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah((selectedAccount?.balance ?? 0) - debitAmount) }}</span>
+            </div>
+          </div>
+
+          <div class="border-t border-slate-200 dark:border-[#3d4948] pt-2 mt-2">
+            <div class="flex justify-between text-base font-bold">
+              <span class="text-slate-800 dark:text-[#e3e2e2]">Total</span>
+              <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount + calculatedFee) }}</span>
+            </div>
+            <div class="flex justify-between text-sm mt-1">
+              <span class="text-slate-500 dark:text-[#869392]">Uang Diterima</span>
+              <span class="font-mono font-bold text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(totalReceived) }}</span>
+            </div>
+          </div>
         </div>
 
         <!-- Error -->
-        <div
-          v-if="submitError"
-          class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700"
-        >
-          {{ submitError }}
-        </div>
+        <div v-if="submitError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl p-3 text-xs text-red-700 dark:text-red-300">{{ submitError }}</div>
 
-        <!-- Submit -->
+        <!-- Konfirmasi Button -->
         <button
-          type="submit"
-          :disabled="submitting || insufficientBalance"
-          class="w-full h-11 bg-blue-600 text-white text-sm font-bold rounded-lg
-                 hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed
-                 flex items-center justify-center gap-2"
+          type="button"
+          :disabled="submitting"
+          class="w-full h-12 rounded-xl text-sm font-bold text-white bg-[#00A19B] hover:brightness-110 dark:shadow-[0_0_15px_rgba(0,161,155,0.3)] flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+          @click="handleSubmit"
         >
           <Loader2Icon v-if="submitting" class="w-4 h-4 animate-spin" />
           <SendIcon v-else class="w-4 h-4" />
-          {{ submitting ? 'Memproses...' : 'Proses Transaksi' }}
+          {{ submitting ? 'Memproses...' : 'Konfirmasi & Proses' }}
         </button>
-      </form>
-
-      <!-- No category selected -->
-      <div
-        v-if="!selectedCategory"
-        class="bg-white border border-dashed border-slate-300 rounded-xl p-10 text-center max-w-lg"
-      >
-        <WalletIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
-        <p class="text-sm font-semibold text-slate-700">Pilih kategori di atas</p>
-        <p class="text-xs text-slate-500 mt-1">Untuk memulai transaksi BRILink.</p>
       </div>
-    </div>
+    </template>
 
+    <!-- ============================================================ -->
+    <!-- STEP 3: Sukses / Receipt                                      -->
+    <!-- ============================================================ -->
+    <template v-if="step === 'success'">
+      <div class="flex-1 flex flex-col items-center justify-center p-6 text-center bg-slate-50 dark:bg-[#1a1c1c] min-h-[60vh]">
+        <div class="w-16 h-16 rounded-full bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 flex items-center justify-center mb-4">
+          <CheckCircleIcon class="w-8 h-8 text-[#00A19B] dark:text-[#5fd9d2]" />
+        </div>
+        <h2 class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mb-1">Transaksi Berhasil!</h2>
+        <code class="text-xs font-mono text-slate-500 dark:text-[#869392]">{{ receiptRef }}</code>
 
-    <!-- ============================================ -->
-    <!-- Success Receipt Modal                        -->
-    <!-- ============================================ -->
-    <Teleport to="body">
-      <div v-if="showReceipt && receiptData" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50"></div>
-        <div class="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
-          <div class="text-center">
-            <div class="w-14 h-14 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-3">
-              <CheckCircleIcon class="w-7 h-7 text-emerald-600" />
-            </div>
-            <h2 class="text-base font-bold text-slate-950">Transaksi Berhasil!</h2>
-            <code class="text-xs font-mono text-slate-500">{{ receiptData.refNumber }}</code>
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 mt-4 w-full max-w-sm space-y-2 text-left">
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Kategori</span>
+            <span class="font-bold text-slate-800 dark:text-[#e3e2e2]">{{ categoryTitle }}</span>
           </div>
-
-          <div class="bg-slate-50 rounded-lg p-4 space-y-2">
-            <div class="flex justify-between text-xs">
-              <span class="text-slate-500">Kategori</span>
-              <span class="font-bold text-slate-700">{{ BRILINK_CATEGORY_LABELS[receiptData.category] }}</span>
-            </div>
-            <div class="flex justify-between text-xs">
-              <span class="text-slate-500">Customer</span>
-              <span class="font-semibold text-slate-900">{{ receiptData.customerName }}</span>
-            </div>
-            <div class="flex justify-between text-xs">
-              <span class="text-slate-500">Tujuan</span>
-              <span class="font-mono text-slate-700">{{ receiptData.destination }}</span>
-            </div>
-            <div class="border-t border-slate-200 pt-2 flex justify-between text-xs">
-              <span class="text-slate-500">Nominal</span>
-              <span class="font-mono text-slate-900">{{ formatRupiah(receiptData.amount) }}</span>
-            </div>
-            <div class="flex justify-between text-xs">
-              <span class="text-slate-500">Fee</span>
-              <span class="font-mono text-emerald-600">{{ formatRupiah(receiptData.fee) }}</span>
-            </div>
-            <div class="flex justify-between text-sm font-bold border-t border-slate-200 pt-2">
-              <span class="text-slate-700">Total</span>
-              <span class="font-mono text-slate-950">{{ formatRupiah(receiptData.total) }}</span>
-            </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Penerima</span>
+            <span class="font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ form.customerName }}</span>
           </div>
-
-          <!-- Print status -->
-          <p
-            v-if="printMsg"
-            class="text-center text-xs"
-            :class="printMsg.includes('tercetak') ? 'text-emerald-600' : 'text-slate-500'"
-          >
-            {{ printMsg }}
-          </p>
-
-          <div class="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              :disabled="printing"
-              class="h-10 border border-slate-300 text-slate-700 text-sm font-semibold rounded-lg
-                     hover:bg-slate-50 transition-colors disabled:opacity-50
-                     flex items-center justify-center gap-1.5"
-              @click="handlePrintBrilinkReceipt"
-            >
-              <Loader2Icon v-if="printing" class="w-4 h-4 animate-spin" />
-              <PrinterIcon v-else class="w-4 h-4" />
-              Cetak Struk
-            </button>
-            <button
-              type="button"
-              class="h-10 bg-blue-600 text-white text-sm font-semibold rounded-lg
-                     hover:bg-blue-700 transition-colors"
-              @click="closeReceipt"
-            >
-              Transaksi Baru
-            </button>
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Tujuan</span>
+            <span class="font-mono text-slate-700 dark:text-[#bcc9c7]">{{ form.destination }}</span>
+          </div>
+          <div class="border-t border-slate-100 dark:border-[#3d4948] pt-2 flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Nominal</span>
+            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount) }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Fee</span>
+            <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedFee) }}</span>
+          </div>
+          <div class="flex justify-between text-sm font-bold border-t border-slate-200 dark:border-[#3d4948] pt-2">
+            <span class="text-slate-800 dark:text-[#e3e2e2]">Total</span>
+            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount + calculatedFee) }}</span>
           </div>
         </div>
+
+        <div class="flex gap-3 mt-6 w-full max-w-sm">
+          <button type="button"
+            class="flex-1 h-11 border border-slate-200 dark:border-[#3d4948] rounded-xl text-sm font-semibold text-slate-600 dark:text-[#bcc9c7] hover:bg-slate-100 dark:hover:bg-[#292a2a] flex items-center justify-center gap-1.5 transition-colors"
+            @click="handlePrint">
+            <PrinterIcon class="w-4 h-4" /> Cetak Struk
+          </button>
+          <button type="button"
+            class="flex-1 h-11 rounded-xl text-sm font-bold text-white bg-[#00A19B] hover:brightness-110 flex items-center justify-center gap-1.5 transition-all"
+            @click="resetForm">
+            Transaksi Baru
+          </button>
+        </div>
       </div>
-    </Teleport>
+    </template>
+
   </div>
 </template>
 
-
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { RouterLink, useRoute } from 'vue-router';
 import {
-  Loader2 as Loader2Icon,
+  ChevronLeft as ChevronLeftIcon,
+  ChevronRight as ChevronRightIcon,
+  ChevronDown as ChevronDownIcon,
+  CreditCard as CreditCardIcon,
+  Landmark as LandmarkIcon,
   Send as SendIcon,
-  Wallet as WalletIcon,
+  Check as CheckIcon,
   CheckCircle2 as CheckCircleIcon,
-  Printer as PrinterIcon,
   AlertTriangle as AlertTriangleIcon,
+  Loader2 as Loader2Icon,
+  Printer as PrinterIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
-import brilinkAccountService from '@/shared/services/brilink-account.service';
+import brilinkAccountService, { type BrilinkAccount } from '@/shared/services/brilink-account.service';
+import brilinkProductsService, { type BankItem } from '@/shared/services/brilink-products.service';
 import brilinkService, {
   BRILINK_CATEGORY_LABELS,
   BRILINK_CATEGORIES,
   type BrilinkCategory,
   type BrilinkFeeDto,
-  type CreateBrilinkTransactionPayload,
 } from '@/shared/services/brilink.service';
 
 const authStore = useAuthStore();
 const shopStore = useShopStore();
 const route = useRoute();
 
-// ============================================
-// State
-// ============================================
-const selectedCategory = ref<BrilinkCategory | null>(null);
-const feeRules = ref<BrilinkFeeDto[]>([]);
-const calculatedFee = ref(0);
-const submitting = ref(false);
-const submitError = ref<string | null>(null);
-const showReceipt = ref(false);
+// ── Steps ─────────────────────────────────────────────────────────────────────
+const step = ref<'form' | 'confirm' | 'success'>('form');
 
-// BRI account (saldo) state
-const accountBalance = ref<number | null>(null);
-const accountLabel = ref('');
-const lowBalanceThreshold = ref(0);
+// ── Category from route query ─────────────────────────────────────────────────
+const selectedCategory = ref<BrilinkCategory>((route.query.cat as BrilinkCategory) || 'TRANSFER_OTHER');
 
-// Print state
-const printing = ref(false);
-const printMsg = ref<string | null>(null);
+const categoryTitle = computed(() => BRILINK_CATEGORY_LABELS[selectedCategory.value] ?? 'Transfer');
 
-const form = reactive({
-  customerName: '',
-  customerPhone: '',
-  destination: '',
-  amount: 0,
-});
-
-// Customer autocomplete
-const customerSuggestions = ref<{ id: string; name: string; phone: string | null }[]>([]);
-const showCustomerSuggestions = ref(false);
-let customerSearchTimer: any = null;
-
-function searchCustomer() {
-  showCustomerSuggestions.value = true;
-  const q = form.customerName.trim();
-  if (q.length < 2) {
-    customerSuggestions.value = [];
-    return;
-  }
-  clearTimeout(customerSearchTimer);
-  customerSearchTimer = setTimeout(async () => {
-    try {
-      const shopId = authStore.user?.shopId ?? shopStore.currentShopId ?? '';
-      const { data } = await (await import('@/shared/services/api')).default.get('/customers/autocomplete', { params: { shopId, q } });
-      customerSuggestions.value = data;
-    } catch {
-      customerSuggestions.value = [];
-    }
-  }, 300);
-}
-
-function selectCustomerSuggestion(c: { id: string; name: string; phone: string | null }) {
-  form.customerName = c.name;
-  form.customerPhone = c.phone || '';
-  showCustomerSuggestions.value = false;
-  customerSuggestions.value = [];
-}
-
-interface ReceiptInfo {
-  refNumber: string;
-  category: BrilinkCategory;
-  customerName: string;
-  destination: string;
-  amount: number;
-  fee: number;
-  total: number;
-  date: string;
-}
-const receiptData = ref<ReceiptInfo | null>(null);
-
-const insufficientBalance = computed(
-  () =>
-    accountBalance.value !== null &&
-    form.amount > 0 &&
-    form.amount > accountBalance.value,
+const showBankField = computed(() =>
+  ['TRANSFER_OTHER', 'TRANSFER_BRI'].includes(selectedCategory.value)
 );
 
-
-// ============================================
-// Helpers
-// ============================================
-
-function getShopId(): string {
-  return authStore.user?.shopId ?? shopStore.currentShopId ?? '';
-}
-
-function formatRupiah(amount: number): string {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(amount);
-}
-
-function categoryBadge(category: BrilinkCategory): string {
-  switch (category) {
-    case 'TRANSFER_BRI': return 'bg-blue-100 text-blue-700';
-    case 'TRANSFER_OTHER': return 'bg-indigo-100 text-indigo-700';
-    case 'TARIK_TUNAI': return 'bg-amber-100 text-amber-700';
-    case 'TOPUP_PULSA': return 'bg-pink-100 text-pink-700';
-    case 'TOPUP_DATA': return 'bg-purple-100 text-purple-700';
-    case 'TOPUP_EWALLET': return 'bg-cyan-100 text-cyan-700';
-    case 'TOPUP_PLN': return 'bg-yellow-100 text-yellow-700';
-    default: return 'bg-slate-100 text-slate-700';
-  }
-}
-
-function categoryHint(category: BrilinkCategory): string {
-  switch (category) {
-    case 'TRANSFER_BRI': return 'Sesama BRI';
-    case 'TRANSFER_OTHER': return 'Antar bank';
-    case 'TARIK_TUNAI': return 'Penarikan tunai';
-    case 'TOPUP_PULSA': return 'Pulsa HP';
-    case 'TOPUP_DATA': return 'Paket data';
-    case 'TOPUP_EWALLET': return 'OVO, GoPay, dll';
-    case 'TOPUP_PLN': return 'Token listrik';
-    default: return '';
-  }
-}
-
-const destinationPlaceholder = computed(() => {
-  if (!selectedCategory.value) return '';
+const destinationLabel = computed(() => {
   switch (selectedCategory.value) {
     case 'TRANSFER_BRI':
-    case 'TRANSFER_OTHER': return 'No. rekening tujuan';
-    case 'TARIK_TUNAI': return 'No. rekening nasabah';
+    case 'TRANSFER_OTHER': return 'Nomor Rekening Tujuan';
     case 'TOPUP_PULSA':
-    case 'TOPUP_DATA': return 'No. HP tujuan';
-    case 'TOPUP_EWALLET': return 'No. HP / ID akun';
-    case 'TOPUP_PLN': return 'No. meter / ID pelanggan';
+    case 'TOPUP_DATA': return 'Nomor HP';
+    case 'TOPUP_EWALLET': return 'Nomor e-Wallet';
+    case 'TOPUP_PLN': return 'No. Meter / ID Pelanggan';
+    case 'TARIK_TUNAI': return 'Nomor Rekening Nasabah';
     default: return 'Tujuan';
   }
 });
 
-
-// ============================================
-// Methods
-// ============================================
-
-async function selectCategory(cat: BrilinkCategory) {
-  selectedCategory.value = cat;
-  form.customerName = '';
-  form.customerPhone = '';
-  form.destination = '';
-  form.amount = 0;
-  calculatedFee.value = 0;
-  submitError.value = null;
-
-  // Load fee rules for this shop
-  const shopId = getShopId();
-  if (shopId) {
-    try {
-      feeRules.value = await brilinkService.listFees(shopId);
-    } catch {
-      feeRules.value = [];
-    }
+const destinationPlaceholder = computed(() => {
+  switch (selectedCategory.value) {
+    case 'TRANSFER_BRI': return 'Nomor rekening BRI tujuan';
+    case 'TRANSFER_OTHER': return 'Nomor rekening bank lain';
+    case 'TOPUP_PULSA':
+    case 'TOPUP_DATA': return '08xxxxxxxxxx';
+    case 'TOPUP_EWALLET': return '08xxxxxxxxxx';
+    case 'TOPUP_PLN': return '1234567890';
+    case 'TARIK_TUNAI': return 'Nomor rekening nasabah';
+    default: return '';
   }
-}
+});
+
+// ── Data ──────────────────────────────────────────────────────────────────────
+const accounts = ref<BrilinkAccount[]>([]);
+const accountsLoading = ref(true);
+const selectedAccountId = ref('');
+const banks = ref<BankItem[]>([]);
+const feeRules = ref<BrilinkFeeDto[]>([]);
+const calculatedFee = ref(0);
+
+// ── Fee method ────────────────────────────────────────────────────────────────
+const feeMethodOptions = [
+  { value: 'DALAM', label: 'Admin Dalam', hint: 'Termasuk dalam nominal' },
+  { value: 'LUAR', label: 'Admin Luar', hint: 'Nominal + admin terpisah' },
+  { value: 'POTONG', label: 'Potong Saldo', hint: 'Admin dari saldo agen' },
+] as const;
+
+const feeMethodLabel = computed(() => {
+  const opt = feeMethodOptions.find(o => o.value === form.feeMethod);
+  return opt ? `${opt.label} — ${opt.hint}` : form.feeMethod;
+});
+
+// ── Form ──────────────────────────────────────────────────────────────────────
+const form = reactive({
+  bankCode: '',
+  destination: '',
+  customerName: '',
+  customerPhone: '',
+  amount: 0,
+  feeMethod: 'DALAM' as 'DALAM' | 'LUAR' | 'POTONG',
+  reference: '',
+  notes: '',
+});
+
+// ── Submit state ──────────────────────────────────────────────────────────────
+const submitting = ref(false);
+const submitError = ref<string | null>(null);
+const receiptRef = ref('');
+
+// ── Customer autocomplete ─────────────────────────────────────────────────────
+const suggestions = ref<{ id: string; name: string; phone: string | null }[]>([]);
+const showSuggestions = ref(false);
+let searchTimer: any = null;
+
+// ── Computed ──────────────────────────────────────────────────────────────────
+const selectedAccount = computed(() => accounts.value.find(a => a.id === selectedAccountId.value) ?? null);
+
+const selectedBankName = computed(() => {
+  if (!form.bankCode) return '';
+  const bank = banks.value.find(b => b.code === form.bankCode);
+  return bank?.name ?? form.bankCode;
+});
+
+const totalReceived = computed(() => {
+  if (form.feeMethod === 'DALAM') return form.amount; // nasabah bayar nominal saja
+  if (form.feeMethod === 'LUAR') return form.amount + calculatedFee.value; // nominal + fee
+  return form.amount; // POTONG: nasabah bayar nominal, fee dari agen
+});
+
+const debitAmount = computed(() => {
+  // Berapa yang akan didebit dari rekening agen
+  if (form.feeMethod === 'POTONG') return form.amount + calculatedFee.value;
+  return form.amount;
+});
+
+const insufficientBalance = computed(() =>
+  selectedAccount.value !== null &&
+  form.amount > 0 &&
+  debitAmount.value > selectedAccount.value.balance
+);
+
+const canProceed = computed(() =>
+  selectedAccountId.value &&
+  form.destination &&
+  form.customerName &&
+  form.amount >= 10000 &&
+  !insufficientBalance.value &&
+  (!showBankField.value || form.bankCode)
+);
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function getShopId() { return authStore.user?.shopId ?? shopStore.currentShopId ?? ''; }
+
+function formatRupiah(n: number) { return 'Rp ' + n.toLocaleString('id-ID'); }
 
 function calculateFee() {
-  if (!selectedCategory.value || !form.amount || form.amount <= 0) {
-    calculatedFee.value = 0;
+  if (!feeRules.value.length || form.amount <= 0) { calculatedFee.value = 0; return; }
+  const rule = feeRules.value.find(
+    r => r.category === selectedCategory.value && r.isActive && form.amount >= r.minAmount && form.amount <= r.maxAmount
+  );
+  if (!rule) {
+    // Fallback: cari rule yang paling dekat
+    const fallback = feeRules.value.find(r => r.category === selectedCategory.value && r.isActive);
+    if (fallback) {
+      calculatedFee.value = fallback.feeType === 'FLAT' ? fallback.feeAmount : Math.round(form.amount * fallback.feePercent / 100);
+    } else {
+      calculatedFee.value = 0;
+    }
     return;
   }
+  calculatedFee.value = rule.feeType === 'FLAT' ? rule.feeAmount : Math.round(form.amount * rule.feePercent / 100);
+}
 
-  // Find matching fee rule for current category + amount
-  const matchingRule = feeRules.value.find(
-    (rule) =>
-      rule.isActive &&
-      rule.category === selectedCategory.value &&
-      form.amount >= rule.minAmount &&
-      form.amount <= rule.maxAmount,
-  );
+function searchCustomer() {
+  showSuggestions.value = true;
+  const q = form.customerName.trim();
+  if (q.length < 2) { suggestions.value = []; return; }
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(async () => {
+    try {
+      const shopId = getShopId();
+      const { data } = await (await import('@/shared/services/api')).default.get('/customers/autocomplete', { params: { shopId, q } });
+      suggestions.value = data;
+    } catch { suggestions.value = []; }
+  }, 300);
+}
 
-  if (matchingRule) {
-    if (matchingRule.feeType === 'FLAT') {
-      calculatedFee.value = matchingRule.feeAmount;
-    } else {
-      calculatedFee.value = Math.round((form.amount * matchingRule.feePercent) / 100);
-    }
-  } else {
-    calculatedFee.value = 0;
-  }
+function selectSuggestion(s: { id: string; name: string; phone: string | null }) {
+  form.customerName = s.name;
+  form.customerPhone = s.phone || '';
+  showSuggestions.value = false;
+  suggestions.value = [];
+}
+
+function goToConfirm() {
+  if (!canProceed.value) return;
+  calculateFee();
+  submitError.value = null;
+  step.value = 'confirm';
 }
 
 async function handleSubmit() {
-  if (!selectedCategory.value) return;
-
+  if (!selectedAccount.value) return;
   submitting.value = true;
   submitError.value = null;
-
   try {
-    const payload: CreateBrilinkTransactionPayload = {
+    const result = await brilinkService.createTransaction({
       category: selectedCategory.value,
       customerName: form.customerName,
       customerPhone: form.customerPhone || undefined,
       destination: form.destination,
       amount: form.amount,
-    };
-
-    const response = await brilinkService.createTransaction(payload);
-
-    receiptData.value = {
-      refNumber: response.summary.refNumber,
-      category: response.summary.category,
-      customerName: response.summary.customerName,
-      destination: response.summary.destination,
-      amount: response.summary.amount,
-      fee: response.summary.fee,
-      total: response.summary.total,
-      date: new Date().toLocaleString('id-ID', {
-        timeZone: 'Asia/Jakarta',
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      }),
-    };
-
-    // Reflect the debited BRI balance returned by the backend
-    if (response.account) {
-      accountBalance.value = response.account.balance;
-      lowBalanceThreshold.value = response.account.lowBalanceThreshold;
-      accountLabel.value = response.account.label;
+      accountId: selectedAccountId.value,
+      idempotencyKey: crypto.randomUUID(),
+      clientCreatedAt: new Date().toISOString(),
+    });
+    receiptRef.value = result.summary?.refNumber ?? result.id ?? '';
+    // Update local account balance
+    if (result.account) {
+      const idx = accounts.value.findIndex(a => a.id === result.account!.id);
+      if (idx !== -1) accounts.value[idx] = { ...accounts.value[idx], balance: result.account.balance };
     }
-
-    printMsg.value = null;
-    showReceipt.value = true;
-  } catch (err: any) {
-    submitError.value = err.response?.data?.message ?? err.message ?? 'Gagal memproses transaksi.';
+    step.value = 'success';
+  } catch (e: any) {
+    submitError.value = e?.response?.data?.message ?? 'Terjadi kesalahan. Coba lagi.';
   } finally {
     submitting.value = false;
   }
 }
 
-async function handlePrintBrilinkReceipt() {
-  if (!receiptData.value) return;
-  printing.value = true;
-  printMsg.value = null;
-  try {
-    const { thermalPrint } = await import('@/shared/services/thermal-print.service');
-    if (!thermalPrint.isConnected) {
-      printMsg.value = 'Mencari printer Bluetooth...';
-      await thermalPrint.connect();
-    }
-    await thermalPrint.printBrilinkReceipt({
-      shopName: shopStore.currentShopName || 'Toko',
-      refNumber: receiptData.value.refNumber,
-      date: receiptData.value.date,
-      cashierName: authStore.user?.username || 'Kasir',
-      category: BRILINK_CATEGORY_LABELS[receiptData.value.category],
-      customerName: receiptData.value.customerName,
-      destination: receiptData.value.destination,
-      amount: receiptData.value.amount,
-      fee: receiptData.value.fee,
-      total: receiptData.value.total,
-    });
-    printMsg.value = `Struk tercetak ke ${thermalPrint.deviceName}`;
-  } catch (err: any) {
-    if (err?.message?.includes('cancelled') || err?.message?.includes('NotFound')) {
-      printMsg.value = 'Pairing printer dibatalkan.';
-    } else {
-      printMsg.value = err?.message || 'Gagal cetak. Pastikan printer menyala & gunakan Chrome/Edge.';
-    }
-  } finally {
-    printing.value = false;
-  }
+function handlePrint() {
+  // TODO: integrate thermal printer
+  window.print();
 }
 
-function closeReceipt() {
-  showReceipt.value = false;
-  receiptData.value = null;
-  selectedCategory.value = null;
+function resetForm() {
+  form.bankCode = '';
+  form.destination = '';
   form.customerName = '';
   form.customerPhone = '';
-  form.destination = '';
   form.amount = 0;
+  form.feeMethod = 'DALAM';
+  form.reference = '';
+  form.notes = '';
   calculatedFee.value = 0;
-  printing.value = false;
-  printMsg.value = null;
+  submitError.value = null;
+  receiptRef.value = '';
+  step.value = 'form';
 }
 
-async function loadAccountBalance() {
+// ── Data load ─────────────────────────────────────────────────────────────────
+onMounted(async () => {
   const shopId = getShopId();
-  if (!shopId) return;
-  try {
-    const accounts = await brilinkAccountService.list(shopId);
-    const account =
-      accounts.find((a) => a.isDefault && a.isActive) ??
-      accounts.find((a) => a.isActive) ??
-      accounts[0];
-    if (account) {
-      accountBalance.value = account.balance;
-      lowBalanceThreshold.value = account.lowBalanceThreshold;
-      accountLabel.value = account.label;
-    }
-  } catch {
-    /* ignore */
+  if (!shopId) { accountsLoading.value = false; return; }
+
+  // Read category from query
+  const catParam = route.query.cat as string;
+  if (catParam && BRILINK_CATEGORIES.includes(catParam as BrilinkCategory)) {
+    selectedCategory.value = catParam as BrilinkCategory;
   }
-}
 
-onMounted(() => {
-  loadAccountBalance();
+  // Load accounts, banks, fee rules in parallel
+  const [accsRes, banksRes, feesRes] = await Promise.allSettled([
+    brilinkAccountService.list(shopId),
+    brilinkProductsService.listBanks(undefined, true),
+    brilinkService.listFees(shopId),
+  ]);
 
-  // Preselect category from ?cat= query param sent by the BRILink menu.
-  const cat = route.query.cat;
-  if (typeof cat === 'string' && (BRILINK_CATEGORIES as string[]).includes(cat)) {
-    selectCategory(cat as BrilinkCategory);
+  if (accsRes.status === 'fulfilled') {
+    accounts.value = accsRes.value.filter(a => a.isActive);
+    // Auto-select default account
+    const def = accounts.value.find(a => a.isDefault) ?? accounts.value[0];
+    if (def) selectedAccountId.value = def.id;
+  }
+  accountsLoading.value = false;
+
+  if (banksRes.status === 'fulfilled') {
+    banks.value = banksRes.value;
+  }
+
+  if (feesRes.status === 'fulfilled') {
+    feeRules.value = feesRes.value;
   }
 });
 </script>
+
+<style scoped>
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
