@@ -1066,9 +1066,9 @@ async function downloadTemplate() {
 
 async function handleBulkUpload() {
   if (!bulkFile.value) return;
-  const shopId = authStore.user?.shopId;
+  const shopId = authStore.user?.shopId ?? shopStore.currentShopId ?? undefined;
   if (!shopId) {
-    bulkError.value = 'Tidak ada cabang aktif.';
+    bulkError.value = 'Tidak ada cabang aktif. Pilih cabang dulu.';
     return;
   }
 
