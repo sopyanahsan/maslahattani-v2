@@ -86,12 +86,20 @@
       <!-- Form Fields -->
       <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-[#1a1c1c]">
 
-        <!-- Bank Tujuan — button opens search modal -->
+        <!-- Bank Tujuan -->
         <div v-if="showBankField">
           <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
             Bank Tujuan <span class="text-red-500">*</span>
           </label>
+          <!-- Transfer Sesama BRI: locked -->
+          <div v-if="selectedCategory === 'TRANSFER_BRI'"
+            class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-slate-50 dark:bg-[#292a2a] flex items-center text-slate-700 dark:text-[#e3e2e2] font-medium">
+            <LandmarkIcon class="w-4 h-4 text-[#00A19B] dark:text-[#5fd9d2] mr-2 shrink-0" />
+            Bank Rakyat Indonesia (BRI)
+          </div>
+          <!-- Transfer Antar Bank: bisa search & ganti -->
           <button
+            v-else
             type="button"
             class="w-full h-10 px-3 text-left text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] flex items-center justify-between hover:border-[#00A19B] dark:hover:border-[#5fd9d2] transition-colors"
             @click="showBankSearch = true"
@@ -120,15 +128,14 @@
           />
         </div>
 
-        <!-- Nama Penerima -->
+        <!-- Nama Penerima (opsional) -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
-            Nama Penerima <span class="text-red-500">*</span>
+            Nama Penerima <span class="text-slate-400 dark:text-[#869392] font-normal">(opsional)</span>
           </label>
           <input
             v-model="form.customerName"
             type="text"
-            required
             placeholder="Nama lengkap penerima"
             class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
             @input="searchCustomer"
@@ -690,7 +697,6 @@ const insufficientBalance = computed(() => {
 const canProceed = computed(() =>
   (selectedAccountId.value || isCustomerCard.value) &&
   form.destination &&
-  form.customerName &&
   form.amount >= 10000 &&
   !insufficientBalance.value &&
   (!showBankField.value || form.bankCode)
@@ -777,7 +783,7 @@ async function handleSubmit() {
   try {
     const result = await brilinkService.createTransaction({
       category: selectedCategory.value,
-      customerName: form.customerName,
+      customerName: form.customerName || 'Nasabah',
       customerPhone: form.customerPhone || undefined,
       destination: form.destination,
       amount: form.amount,
@@ -828,6 +834,11 @@ onMounted(async () => {
   const catParam = route.query.cat as string;
   if (catParam && BRILINK_CATEGORIES.includes(catParam as BrilinkCategory)) {
     selectedCategory.value = catParam as BrilinkCategory;
+  }
+
+  // Lock bank to BRI for Transfer Sesama
+  if (selectedCategory.value === 'TRANSFER_BRI') {
+    form.bankCode = BRI_BANK_CODE;
   }
 
   // Load accounts, banks, fee rules in parallel
