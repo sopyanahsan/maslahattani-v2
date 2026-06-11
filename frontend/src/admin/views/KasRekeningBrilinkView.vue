@@ -26,6 +26,109 @@
     <!-- TAB: Rekening BRI                            -->
     <!-- ============================================ -->
     <template v-if="activeTab === 'rekening'">
+
+      <!-- ════════════════════════════════════════════ -->
+      <!-- KAS TUNAI AGEN — selalu ada (auto-created)   -->
+      <!-- ════════════════════════════════════════════ -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
+        <!-- Card header -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-slate-800">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center">
+              <WalletIcon class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+            </div>
+            <div>
+              <p class="text-sm font-bold text-slate-800 dark:text-slate-100 leading-tight">Kas Tunai Agen</p>
+              <p class="text-[10px] text-slate-400 dark:text-slate-500 leading-none">Kas fisik BRILink · auto-tersedia</p>
+            </div>
+          </div>
+          <!-- Riwayat button -->
+          <button
+            type="button"
+            class="flex items-center gap-1 text-[11px] font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            @click="openKasMutasiModal"
+          >
+            <HistoryIcon class="w-3.5 h-3.5" /> Riwayat
+          </button>
+        </div>
+
+        <!-- Card body -->
+        <div class="px-4 py-4 flex items-center justify-between gap-4">
+          <!-- Saldo display -->
+          <div>
+            <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-0.5">Saldo Kas</p>
+            <div v-if="kasLoading" class="h-7 w-32 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />
+            <p v-else class="text-2xl font-bold font-mono leading-tight"
+              :class="kasIsLow ? 'text-red-600 dark:text-red-400' : 'text-slate-900 dark:text-slate-100'">
+              {{ formatRupiah(kasBox?.balance ?? 0) }}
+            </p>
+            <!-- Status badges -->
+            <div class="flex items-center gap-2 mt-1">
+              <span v-if="!kasLoading && !kasPernahDipakai"
+                class="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 dark:text-slate-500">
+                Belum ada kas masuk
+              </span>
+              <span v-else-if="kasIsLow"
+                class="inline-flex items-center gap-1 text-[10px] font-semibold text-amber-600 dark:text-amber-400">
+                <AlertTriangleIcon class="w-3 h-3" /> Saldo menipis
+              </span>
+              <span v-else-if="!kasLoading"
+                class="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                Normal
+              </span>
+            </div>
+          </div>
+
+          <!-- Action buttons -->
+          <div class="flex gap-2 shrink-0">
+            <button
+              type="button"
+              class="h-9 px-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300 text-xs font-bold flex items-center gap-1.5 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors border border-emerald-200/60 dark:border-emerald-800/40"
+              @click="openKasModal('cashin')"
+            >
+              <ArrowDownCircleIcon class="w-4 h-4" /> Cash In
+            </button>
+            <button
+              type="button"
+              :disabled="!kasBox || kasBox.balance <= 0"
+              class="h-9 px-3.5 rounded-xl bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-bold flex items-center gap-1.5 hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors border border-red-200/60 dark:border-red-800/30 disabled:opacity-40 disabled:cursor-not-allowed"
+              @click="openKasModal('cashout')"
+            >
+              <ArrowUpCircleIcon class="w-4 h-4" /> Cash Out
+            </button>
+          </div>
+        </div>
+
+        <!-- Recent mutations mini preview -->
+        <template v-if="!kasLoading && kasBox?.recentMutations?.length">
+          <div class="border-t border-slate-100 dark:border-slate-800 px-4 py-2 space-y-1">
+            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-1.5">Mutasi Terakhir</p>
+            <div
+              v-for="mut in kasBox.recentMutations.slice(0, 3)"
+              :key="mut.id"
+              class="flex items-center justify-between py-1"
+            >
+              <div class="flex items-center gap-2">
+                <span :class="['text-[9px] font-bold px-1.5 py-0.5 rounded', kasMutTypeBadge(mut.type)]">
+                  {{ kasMutTypeLabel(mut.type) }}
+                </span>
+                <span class="text-[10px] text-slate-500 dark:text-slate-400 truncate max-w-[160px]">{{ mut.description }}</span>
+              </div>
+              <span :class="['text-[10px] font-bold font-mono', kasMutIsCredit(mut.type) ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400']">
+                {{ kasMutIsCredit(mut.type) ? '+' : '−' }}{{ formatRupiah(mut.amount) }}
+              </span>
+            </div>
+          </div>
+        </template>
+      </div>
+
+      <!-- Divider label -->
+      <div class="flex items-center gap-3">
+        <div class="flex-1 border-t border-slate-200 dark:border-slate-800" />
+        <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">Rekening BRI</span>
+        <div class="flex-1 border-t border-slate-200 dark:border-slate-800" />
+      </div>
+
       <!-- Actions bar -->
       <div class="flex items-center justify-between">
         <p class="text-xs text-slate-500 dark:text-slate-400">{{ accounts.length }} rekening aktif</p>
@@ -512,6 +615,164 @@
         </div>
       </div>
     </Teleport>
+
+    <!-- ============================================ -->
+    <!-- MODAL: Kas Tunai — Cash In / Cash Out         -->
+    <!-- ============================================ -->
+    <Teleport to="body">
+      <div v-if="showKasModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showKasModal = false" />
+        <form
+          class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4"
+          @submit.prevent="handleKasSubmit"
+        >
+          <!-- Header -->
+          <div class="flex items-center gap-3">
+            <div :class="['w-10 h-10 rounded-xl flex items-center justify-center shrink-0', kasModalType === 'cashin' ? 'bg-emerald-50 dark:bg-emerald-900/30' : 'bg-red-50 dark:bg-red-900/20']">
+              <ArrowDownCircleIcon v-if="kasModalType === 'cashin'" class="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <ArrowUpCircleIcon v-else class="w-5 h-5 text-red-500 dark:text-red-400" />
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">
+                {{ kasModalType === 'cashin' ? 'Cash In — Tambah Kas' : 'Cash Out — Ambil Kas' }}
+              </h3>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">
+                Saldo saat ini: <span class="font-mono font-semibold">{{ formatRupiah(kasBox?.balance ?? 0) }}</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Amount input -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              Jumlah (Rp) <span class="text-red-500">*</span>
+            </label>
+            <input
+              v-model.number="kasForm.amount"
+              type="number"
+              min="1"
+              required
+              placeholder="0"
+              class="w-full h-11 px-4 text-base font-mono font-bold text-center border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
+            />
+            <!-- Quick chips -->
+            <div class="grid grid-cols-4 gap-1.5 mt-2">
+              <button
+                v-for="n in [100000, 500000, 1000000, 5000000]"
+                :key="n"
+                type="button"
+                class="h-7 rounded-lg border border-slate-200 dark:border-slate-700 text-[10px] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                @click="kasForm.amount += n"
+              >+{{ n >= 1000000 ? (n / 1000000) + 'Jt' : (n / 1000) + 'K' }}</button>
+            </div>
+            <button type="button" class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5 hover:text-slate-600" @click="kasForm.amount = 0">Reset</button>
+          </div>
+
+          <!-- Notes -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
+              Catatan <span class="text-slate-400 font-normal">(opsional)</span>
+            </label>
+            <input
+              v-model="kasForm.notes"
+              type="text"
+              placeholder="Keterangan kas masuk / keluar..."
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 focus:border-blue-500 outline-none"
+            />
+          </div>
+
+          <!-- Error -->
+          <div v-if="kasModalError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-3 text-xs text-red-700 dark:text-red-300">
+            {{ kasModalError }}
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-2 pt-1">
+            <button type="button" class="flex-1 h-10 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" @click="showKasModal = false">
+              Batal
+            </button>
+            <button
+              type="submit"
+              :disabled="kasModalSaving || kasForm.amount <= 0"
+              :class="[
+                'flex-1 h-10 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-40 transition-colors',
+                kasModalType === 'cashin' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-500 hover:bg-red-600',
+              ]"
+            >
+              <Loader2Icon v-if="kasModalSaving" class="w-4 h-4 animate-spin" />
+              <ArrowDownCircleIcon v-else-if="kasModalType === 'cashin'" class="w-4 h-4" />
+              <ArrowUpCircleIcon v-else class="w-4 h-4" />
+              {{ kasModalSaving ? 'Memproses...' : kasModalType === 'cashin' ? 'Cash In' : 'Cash Out' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </Teleport>
+
+    <!-- ============================================ -->
+    <!-- MODAL: Riwayat Mutasi Kas Tunai Agen          -->
+    <!-- ============================================ -->
+    <Teleport to="body">
+      <div v-if="showKasMutasiModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/40" @click="showKasMutasiModal = false" />
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+          <!-- Header -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <WalletIcon class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Riwayat Mutasi — Kas Tunai Agen</h3>
+            </div>
+            <button type="button" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 p-1" @click="showKasMutasiModal = false">✕</button>
+          </div>
+
+          <!-- Loading -->
+          <div v-if="kasMutasiLoading" class="flex items-center justify-center py-10">
+            <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+          </div>
+
+          <!-- Empty -->
+          <div v-else-if="kasMutasiData.length === 0" class="text-center py-10">
+            <WalletIcon class="w-8 h-8 text-slate-200 dark:text-slate-700 mx-auto mb-2" />
+            <p class="text-xs text-slate-400 dark:text-slate-500">Belum ada mutasi kas tunai.</p>
+          </div>
+
+          <!-- List -->
+          <div v-else class="space-y-2">
+            <div
+              v-for="mut in kasMutasiData"
+              :key="mut.id"
+              class="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <span :class="['text-[9px] font-bold px-2 py-0.5 rounded shrink-0', kasMutTypeBadge(mut.type)]">
+                  {{ kasMutTypeLabel(mut.type) }}
+                </span>
+                <div class="min-w-0">
+                  <p class="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">{{ mut.description }}</p>
+                  <p class="text-[10px] text-slate-400 dark:text-slate-500 font-mono">{{ formatDateTime(mut.createdAt) }}</p>
+                </div>
+              </div>
+              <div class="text-right shrink-0 ml-3">
+                <p :class="['text-sm font-bold font-mono', kasMutIsCredit(mut.type) ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400']">
+                  {{ kasMutIsCredit(mut.type) ? '+' : '−' }}{{ formatRupiah(mut.amount) }}
+                </p>
+                <p class="text-[10px] text-slate-400 dark:text-slate-500 font-mono">{{ formatRupiah(mut.balanceAfter) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div v-if="kasMutasiMeta && kasMutasiMeta.totalPages > 1" class="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-800">
+            <p class="text-[10px] text-slate-500 dark:text-slate-400">Hal. {{ kasMutasiPage }} / {{ kasMutasiMeta.totalPages }}</p>
+            <div class="flex gap-1">
+              <button :disabled="kasMutasiPage <= 1" class="h-7 px-2.5 text-xs border border-slate-200 dark:border-slate-700 rounded-lg disabled:opacity-40 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" @click="fetchKasMutasi(kasMutasiPage - 1)">Prev</button>
+              <button :disabled="kasMutasiPage >= kasMutasiMeta.totalPages" class="h-7 px-2.5 text-xs border border-slate-200 dark:border-slate-700 rounded-lg disabled:opacity-40 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800" @click="fetchKasMutasi(kasMutasiPage + 1)">Next</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
   </div>
 </template>
 
@@ -527,9 +788,18 @@ import {
   Landmark as LandmarkIcon,
   Wallet as WalletIcon,
   Boxes as BoxesIcon,
+  ArrowDownCircle as ArrowDownCircleIcon,
+  ArrowUpCircle as ArrowUpCircleIcon,
+  AlertTriangle as AlertTriangleIcon,
+  History as HistoryIcon,
+  ChevronRight as ChevronRightIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useConfirm } from '@/shared/composables/useConfirm';
+import brilinkCashboxService, {
+  type BrilinkCashBox,
+  type BrilinkCashMutation,
+} from '@/shared/services/brilink-cashbox.service';
 import brilinkAccountService, {
   type BrilinkAccount,
   type BrilinkMutationItem,
@@ -796,6 +1066,114 @@ async function fetchHistory(page: number) {
   } finally {
     historyLoading.value = false;
   }
+}
+
+// ============================================
+// KAS TUNAI AGEN (BrilinkCashBox)
+// ============================================
+const kasBox = ref<BrilinkCashBox | null>(null);
+const kasLoading = ref(true);
+
+// Kas modal state
+const showKasModal = ref(false);
+const kasModalType = ref<'cashin' | 'cashout'>('cashin');
+const kasModalSaving = ref(false);
+const kasModalError = ref<string | null>(null);
+const kasForm = reactive({ amount: 0, notes: '' });
+
+// Kas mutations history
+const showKasMutasiModal = ref(false);
+const kasMutasiData = ref<BrilinkCashMutation[]>([]);
+const kasMutasiLoading = ref(false);
+const kasMutasiPage = ref(1);
+const kasMutasiMeta = ref<{ page: number; limit: number; total: number; totalPages: number } | null>(null);
+
+const kasPernahDipakai = computed(() =>
+  kasBox.value ? (kasBox.value.balance > 0 || (kasBox.value.recentMutations?.length ?? 0) > 0) : false,
+);
+const kasIsLow = computed(() =>
+  kasPernahDipakai.value && (kasBox.value?.isLowBalance ?? false),
+);
+
+async function fetchKasBox() {
+  const shopId = getShopId();
+  if (!shopId) { kasLoading.value = false; return; }
+  try {
+    kasBox.value = await brilinkCashboxService.getCashBox(shopId);
+  } catch { /* keep null */ }
+  finally { kasLoading.value = false; }
+}
+
+function openKasModal(type: 'cashin' | 'cashout') {
+  kasModalType.value = type;
+  kasForm.amount = 0;
+  kasForm.notes = '';
+  kasModalError.value = null;
+  showKasModal.value = true;
+}
+
+async function handleKasSubmit() {
+  const shopId = getShopId();
+  if (!shopId || kasForm.amount <= 0) return;
+  kasModalSaving.value = true;
+  kasModalError.value = null;
+  try {
+    const payload = { amount: kasForm.amount, notes: kasForm.notes || undefined };
+    if (kasModalType.value === 'cashin') {
+      await brilinkCashboxService.setor(shopId, payload);
+    } else {
+      await brilinkCashboxService.tarik(shopId, payload);
+    }
+    showKasModal.value = false;
+    await fetchKasBox();
+  } catch (err: any) {
+    kasModalError.value = err?.response?.data?.message ?? 'Terjadi kesalahan.';
+  } finally {
+    kasModalSaving.value = false;
+  }
+}
+
+async function openKasMutasiModal() {
+  showKasMutasiModal.value = true;
+  await fetchKasMutasi(1);
+}
+
+async function fetchKasMutasi(page = 1) {
+  const shopId = getShopId();
+  if (!shopId) return;
+  kasMutasiLoading.value = true;
+  try {
+    const res = await brilinkCashboxService.getMutations({ shopId, page, limit: 15 });
+    kasMutasiData.value = res.data;
+    kasMutasiMeta.value = res.meta;
+    kasMutasiPage.value = page;
+  } catch { kasMutasiData.value = []; }
+  finally { kasMutasiLoading.value = false; }
+}
+
+function kasMutTypeBadge(type: string): string {
+  switch (type) {
+    case 'SETOR': return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300';
+    case 'TARIK': return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
+    case 'TRX_IN': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
+    case 'TRX_OUT': return 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300';
+    case 'ADJUSTMENT': return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300';
+    case 'VOID_REVERSE': return 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300';
+    default: return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
+  }
+}
+
+function kasMutTypeLabel(type: string): string {
+  const map: Record<string, string> = {
+    SETOR: 'Cash In', TARIK: 'Cash Out',
+    TRX_IN: 'Trx Masuk', TRX_OUT: 'Trx Keluar',
+    ADJUSTMENT: 'Adjustment', VOID_REVERSE: 'Void',
+  };
+  return map[type] ?? type;
+}
+
+function kasMutIsCredit(type: string): boolean {
+  return ['SETOR', 'TRX_IN', 'VOID_REVERSE'].includes(type);
 }
 
 onMounted(fetchAccounts);
@@ -1079,10 +1457,11 @@ watch(activeTab, (tab) => {
 onMounted(() => {
   fetchAccounts();
   fetchMutasi(1);
+  fetchKasBox();
 });
 
-useAutoRefresh(() => { fetchAccounts(); fetchMutasi(1); });
+useAutoRefresh(() => { fetchAccounts(); fetchMutasi(1); fetchKasBox(); });
 
 // Auto-refresh saat ada real-time event (data tetap tampil walau offline)
-useRealtimeRefresh(() => { fetchAccounts(); fetchMutasi(1); });
+useRealtimeRefresh(() => { fetchAccounts(); fetchMutasi(1); fetchKasBox(); });
 </script>
