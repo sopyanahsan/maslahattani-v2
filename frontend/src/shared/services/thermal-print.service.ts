@@ -242,10 +242,7 @@ class ThermalPrintService {
     bytes.push(...COMMANDS.ALIGN_CENTER);
     bytes.push(...this.line('Terima kasih atas kunjungan Anda!'));
     bytes.push(...COMMANDS.LINE);
-
-    // Feed and cut (1 line — hemat kertas)
     bytes.push(...COMMANDS.LINE);
-    bytes.push(...COMMANDS.CUT);
 
     await this.sendBytes(bytes);
   }
@@ -302,10 +299,9 @@ class ThermalPrintService {
     bytes.push(...COMMANDS.ALIGN_CENTER);
     bytes.push(...this.line('Terima kasih'));
     bytes.push(...this.line('Simpan resi sebagai bukti'));
-
-    // Minimal feed then cut (1 line — hemat kertas)
     bytes.push(...COMMANDS.LINE);
-    bytes.push(...COMMANDS.CUT);
+    bytes.push(...COMMANDS.LINE);
+
     await this.sendBytes(bytes);
   }
 
