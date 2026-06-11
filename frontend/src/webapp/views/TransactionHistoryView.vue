@@ -458,7 +458,12 @@ async function handleVoidRetail() {
   }
 }
 
+// Print guard — prevent double-print
+let isPrinting = false;
+
 function handlePrint(trx: any) {
+  if (isPrinting) return;
+  isPrinting = true;
   import('@/shared/services/thermal-print.service').then(async ({ thermalPrint }) => {
     try {
       if (!thermalPrint.isConnected) await thermalPrint.connect();
@@ -476,14 +481,14 @@ function handlePrint(trx: any) {
       });
       toast.success('Struk dicetak!');
     } catch (err: any) {
-      if (err.message === 'cancelled') return;
-      toast.error(err.message || 'Gagal cetak.');
-    }
-  }).catch(() => { window.print(); });
+      if (err.message !== 'cancelled') toast.error(err.message || 'Gagal cetak.');
+    } finally { isPrinting = false; }
+  }).catch(() => { isPrinting = false; });
 }
 
 function handlePrintBrilink() {
-  if (!selectedBrilink.value) return;
+  if (isPrinting || !selectedBrilink.value) return;
+  isPrinting = true;
   const trx = selectedBrilink.value;
 
   // Determine metode admin label (only for TARIK_TUNAI)
@@ -518,10 +523,9 @@ function handlePrintBrilink() {
       });
       toast.success('Struk BRILink dicetak!');
     } catch (err: any) {
-      if (err.message === 'cancelled') return;
-      toast.error(err.message || 'Gagal cetak.');
-    }
-  }).catch(() => { window.print(); });
+      if (err.message !== 'cancelled') toast.error(err.message || 'Gagal cetak.');
+    } finally { isPrinting = false; }
+  }).catch(() => { isPrinting = false; });
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────

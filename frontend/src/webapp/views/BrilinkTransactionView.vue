@@ -657,6 +657,7 @@ const form = reactive({
 const submitting = ref(false);
 const submitError = ref<string | null>(null);
 const receiptRef = ref('');
+let isPrinting = false;
 
 // ── Customer autocomplete ─────────────────────────────────────────────────────
 const suggestions = ref<{ id: string; name: string; phone: string | null }[]>([]);
@@ -823,9 +824,9 @@ async function handleSubmit() {
 }
 
 function handlePrint() {
-  // Print BRILink receipt via thermal printer
+  if (isPrinting) return;
+  isPrinting = true;
   const metodeLabels: Record<string, string> = { DALAM: 'Admin Dalam', LUAR: 'Admin Luar', POTONG: 'Potong Saldo' };
-  const statusLabels: Record<string, string> = { SUCCESS: 'Sukses', VOIDED: 'Void', FAILED: 'Gagal', PENDING: 'Pending' };
 
   import('@/shared/services/thermal-print.service').then(async ({ thermalPrint }) => {
     try {
@@ -848,11 +849,9 @@ function handlePrint() {
         total: totalReceived.value,
         status: 'Sukses',
       });
-    } catch (err: any) {
-      if (err.message === 'cancelled') return;
-      window.print(); // fallback
-    }
-  }).catch(() => { window.print(); });
+    } catch { /* silent */ }
+    finally { isPrinting = false; }
+  }).catch(() => { isPrinting = false; });
 }
 
 function resetForm() {
