@@ -15,9 +15,9 @@
         </div>
         <p class="text-xl font-bold font-mono text-slate-900 dark:text-[#e3e2e2] mb-3 truncate">{{ formatRupiah(retailOmzet) }}</p>
         <div class="h-8 bg-slate-100 dark:bg-[#292a2a] rounded overflow-hidden">
-          <div class="h-full w-3/4 bg-gradient-to-r from-[#03a29c]/50 to-[#5fd9d2]/50 rounded"></div>
+          <div class="h-full bg-gradient-to-r from-[#03a29c]/50 to-[#5fd9d2]/50 rounded transition-[width] duration-500 ease-out" :style="{ width: retailProgress + '%' }"></div>
         </div>
-        <p class="text-[10px] text-slate-400 dark:text-[#bcc9c7] mt-2">{{ stats.retail }} transaksi</p>
+        <p class="text-[10px] text-slate-400 dark:text-[#bcc9c7] mt-2">{{ stats.retail }} / {{ TRX_TARGET }} transaksi</p>
       </div>
       <div v-if="settingsStore.isBrilinkEnabled" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] p-4 rounded-xl shadow-sm hover:border-emerald-400 transition-colors">
         <div class="flex justify-between items-start mb-2">
@@ -26,9 +26,9 @@
         </div>
         <p class="text-xl font-bold font-mono text-slate-900 dark:text-[#e3e2e2] mb-3 truncate">{{ formatRupiah(brilinkOmzet) }}</p>
         <div class="h-8 bg-slate-100 dark:bg-[#292a2a] rounded overflow-hidden">
-          <div class="h-full w-2/3 bg-gradient-to-r from-emerald-500/40 to-emerald-400/40 rounded"></div>
+          <div class="h-full bg-gradient-to-r from-emerald-500/40 to-emerald-400/40 rounded transition-[width] duration-500 ease-out" :style="{ width: brilinkProgress + '%' }"></div>
         </div>
-        <p class="text-[10px] text-slate-400 dark:text-[#bcc9c7] mt-2">{{ stats.brilink }} transaksi</p>
+        <p class="text-[10px] text-slate-400 dark:text-[#bcc9c7] mt-2">{{ stats.brilink }} / {{ TRX_TARGET }} transaksi</p>
       </div>
     </div>
 
@@ -186,6 +186,15 @@ const profitBrilink = ref(0);
 const expenses = ref(0);
 const expenseCount = ref(0);
 const stats = ref({ total: 0, retail: 0, brilink: 0 });
+
+// KPI target — bar terisi sesuai progress menuju target transaksi (capped 100%)
+const TRX_TARGET = 50;
+const retailProgress = computed(() =>
+  Math.min(100, Math.round((stats.value.retail / TRX_TARGET) * 100)),
+);
+const brilinkProgress = computed(() =>
+  Math.min(100, Math.round((stats.value.brilink / TRX_TARGET) * 100)),
+);
 
 // Transactions
 const trxTab = ref<'retail' | 'brilink'>('retail');
