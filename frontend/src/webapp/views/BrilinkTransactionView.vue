@@ -282,13 +282,23 @@
       <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-[#1a1c1c]">
 
         <!-- Pengirim Card -->
-        <div class="bg-gradient-to-r from-[#00756f] to-[#00A19B] rounded-2xl px-4 py-3 text-white">
+        <div v-if="!isCustomerCard" class="bg-gradient-to-r from-[#00756f] to-[#00A19B] rounded-2xl px-4 py-3 text-white">
           <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-0.5">Pengirim (Sumber Dana)</p>
           <div class="flex items-center gap-2">
             <LandmarkIcon class="w-5 h-5 text-white/80 shrink-0" />
             <div>
               <p class="text-sm font-bold">{{ selectedAccount?.label }}</p>
               <p class="text-[11px] text-white/70 font-mono">{{ selectedAccount?.accountNumber }}</p>
+            </div>
+          </div>
+        </div>
+        <div v-else class="bg-gradient-to-r from-amber-500 to-amber-400 rounded-2xl px-4 py-3 text-white">
+          <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-0.5">Sumber Dana</p>
+          <div class="flex items-center gap-2">
+            <UserIcon class="w-5 h-5 text-white/80 shrink-0" />
+            <div>
+              <p class="text-sm font-bold">Kartu Customer</p>
+              <p class="text-[11px] text-white/70">Uang dari nasabah · hanya profit admin masuk</p>
             </div>
           </div>
         </div>
@@ -758,7 +768,9 @@ function goToConfirm() {
 }
 
 async function handleSubmit() {
-  if (!selectedAccount.value) return;
+  // Validasi: harus ada sumber dana (rekening agen atau kartu customer)
+  if (!selectedAccount.value && !isCustomerCard.value) return;
+
   submitting.value = true;
   submitError.value = null;
   try {
@@ -768,13 +780,13 @@ async function handleSubmit() {
       customerPhone: form.customerPhone || undefined,
       destination: form.destination,
       amount: form.amount,
-      accountId: selectedAccountId.value,
+      accountId: selectedAccountId.value || undefined,
       idempotencyKey: crypto.randomUUID(),
       clientCreatedAt: new Date().toISOString(),
     });
     receiptRef.value = result.summary?.refNumber ?? result.id ?? '';
-    // Update local account balance
-    if (result.account) {
+    // Update local account balance (hanya kalau pakai rekening agen)
+    if (result.account && selectedAccountId.value) {
       const idx = accounts.value.findIndex(a => a.id === result.account!.id);
       if (idx !== -1) accounts.value[idx] = { ...accounts.value[idx], balance: result.account.balance };
     }
