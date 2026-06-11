@@ -77,9 +77,10 @@ export interface BrilinkFeeDto {
   label: string;
   minAmount: number;
   maxAmount: number;
+  systemFee: number; // biaya sistem/bank (potongan EDC, bukan profit)
   feeType: 'FLAT' | 'PERCENT';
-  feeAmount: number;
-  feePercent: number;
+  feeAmount: number; // admin fee flat (rupiah) — profit agen
+  feePercent: number; // admin fee percent — profit agen
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

@@ -131,8 +131,8 @@
           />
         </div>
 
-        <!-- Metode Admin -->
-        <div>
+        <!-- Metode Admin — HANYA untuk Tarik Tunai -->
+        <div v-if="selectedCategory === 'TARIK_TUNAI'">
           <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">Metode Admin</label>
           <div class="grid grid-cols-3 gap-2">
             <button v-for="m in feeMethodOptions" :key="m.value" type="button"
@@ -175,12 +175,20 @@
             <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount) }}</span>
           </div>
           <div class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Biaya Admin</span>
-            <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedFee) }}</span>
+            <span class="text-slate-500 dark:text-[#869392]">Biaya Sistem <span class="text-[9px]">(EDC)</span></span>
+            <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(calculatedSystemFee) }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Biaya Admin <span class="text-[9px]">(profit)</span></span>
+            <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedAdminFee) }}</span>
           </div>
           <div class="flex justify-between text-sm font-bold border-t border-slate-100 dark:border-[#3d4948] pt-1.5">
+            <span class="text-slate-700 dark:text-[#bcc9c7]">Total Biaya</span>
+            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(calculatedFee) }}</span>
+          </div>
+          <div class="flex justify-between text-sm font-bold">
             <span class="text-slate-700 dark:text-[#bcc9c7]">Uang Diterima</span>
-            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(totalReceived) }}</span>
+            <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(totalReceived) }}</span>
           </div>
         </div>
 
@@ -285,7 +293,7 @@
             <span class="text-slate-500 dark:text-[#869392]">Jenis Layanan</span>
             <span class="font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ categoryTitle }}</span>
           </div>
-          <div class="flex justify-between text-xs">
+          <div v-if="selectedCategory === 'TARIK_TUNAI'" class="flex justify-between text-xs">
             <span class="text-slate-500 dark:text-[#869392]">Metode Admin</span>
             <span class="font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ feeMethodLabel }}</span>
           </div>
@@ -304,8 +312,12 @@
               <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount) }}</span>
             </div>
             <div class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">Biaya Admin</span>
-              <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedFee) }}</span>
+              <span class="text-slate-500 dark:text-[#869392]">Biaya Sistem (EDC)</span>
+              <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(calculatedSystemFee) }}</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500 dark:text-[#869392]">Biaya Admin (profit)</span>
+              <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedAdminFee) }}</span>
             </div>
             <div class="flex justify-between text-xs">
               <span class="text-slate-500 dark:text-[#869392]">Saldo Sebelum</span>
@@ -478,6 +490,8 @@ const selectedAccountId = ref('');
 const banks = ref<BankItem[]>([]);
 const feeRules = ref<BrilinkFeeDto[]>([]);
 const calculatedFee = ref(0);
+const calculatedSystemFee = ref(0); // biaya sistem (potongan EDC)
+const calculatedAdminFee = ref(0); // biaya admin (profit agen)
 
 // ── Fee method ────────────────────────────────────────────────────────────────
 const feeMethodOptions = [
@@ -523,14 +537,23 @@ const selectedBankName = computed(() => {
 });
 
 const totalReceived = computed(() => {
-  if (form.feeMethod === 'DALAM') return form.amount; // nasabah bayar nominal saja
-  if (form.feeMethod === 'LUAR') return form.amount + calculatedFee.value; // nominal + fee
-  return form.amount; // POTONG: nasabah bayar nominal, fee dari agen
+  // Untuk Tarik Tunai: tergantung metode admin
+  if (selectedCategory.value === 'TARIK_TUNAI') {
+    if (form.feeMethod === 'DALAM') return form.amount; // nasabah bayar nominal saja (fee sudah included)
+    if (form.feeMethod === 'LUAR') return form.amount + calculatedFee.value; // nominal + fee
+    return form.amount; // POTONG: nasabah bayar nominal, fee dari agen
+  }
+  // Untuk Transfer dll: nasabah selalu bayar nominal + total fee (biaya sistem + admin)
+  return form.amount + calculatedFee.value;
 });
 
 const debitAmount = computed(() => {
-  // Berapa yang akan didebit dari rekening agen
-  if (form.feeMethod === 'POTONG') return form.amount + calculatedFee.value;
+  // Berapa yang didebit dari rekening agen
+  if (selectedCategory.value === 'TARIK_TUNAI') {
+    if (form.feeMethod === 'POTONG') return form.amount + calculatedFee.value;
+    return form.amount;
+  }
+  // Transfer: selalu debit nominal saja dari rekening (fee dibayar nasabah)
   return form.amount;
 });
 
@@ -555,21 +578,32 @@ function getShopId() { return authStore.user?.shopId ?? shopStore.currentShopId 
 function formatRupiah(n: number) { return 'Rp ' + n.toLocaleString('id-ID'); }
 
 function calculateFee() {
-  if (!feeRules.value.length || form.amount <= 0) { calculatedFee.value = 0; return; }
+  if (!feeRules.value.length || form.amount <= 0) {
+    calculatedFee.value = 0;
+    calculatedSystemFee.value = 0;
+    calculatedAdminFee.value = 0;
+    return;
+  }
+  // Find matching rule for this category & amount range
   const rule = feeRules.value.find(
     r => r.category === selectedCategory.value && r.isActive && form.amount >= r.minAmount && form.amount <= r.maxAmount
   );
   if (!rule) {
-    // Fallback: cari rule yang paling dekat
+    // Fallback: first active rule for this category
     const fallback = feeRules.value.find(r => r.category === selectedCategory.value && r.isActive);
     if (fallback) {
-      calculatedFee.value = fallback.feeType === 'FLAT' ? fallback.feeAmount : Math.round(form.amount * fallback.feePercent / 100);
+      calculatedSystemFee.value = fallback.systemFee ?? 0;
+      calculatedAdminFee.value = fallback.feeType === 'FLAT' ? fallback.feeAmount : Math.round(form.amount * fallback.feePercent / 100);
     } else {
-      calculatedFee.value = 0;
+      calculatedSystemFee.value = 0;
+      calculatedAdminFee.value = 0;
     }
-    return;
+  } else {
+    calculatedSystemFee.value = rule.systemFee ?? 0;
+    calculatedAdminFee.value = rule.feeType === 'FLAT' ? rule.feeAmount : Math.round(form.amount * rule.feePercent / 100);
   }
-  calculatedFee.value = rule.feeType === 'FLAT' ? rule.feeAmount : Math.round(form.amount * rule.feePercent / 100);
+  // Total fee = sistem + admin
+  calculatedFee.value = calculatedSystemFee.value + calculatedAdminFee.value;
 }
 
 function searchCustomer() {
