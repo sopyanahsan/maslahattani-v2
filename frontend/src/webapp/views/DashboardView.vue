@@ -350,6 +350,7 @@ import posService from '@/shared/services/pos.service';
 import kasRetailService from '@/shared/services/kas-retail.service';
 import brilinkCashboxService from '@/shared/services/brilink-cashbox.service';
 import brilinkAccountService, { type BrilinkAccount } from '@/shared/services/brilink-account.service';
+import brilinkService, { BRILINK_CATEGORY_LABELS } from '@/shared/services/brilink.service';
 
 const authStore = useAuthStore();
 const shiftStore = useShiftStore();
@@ -551,7 +552,6 @@ async function refresh() {
     retailOmzet.value = completed.reduce((sum: number, t: any) => sum + t.totalPrice, 0);
     profitRetail.value = completed.reduce((sum: number, t: any) => sum + (t.totalPrice - t.totalCost), 0);
     stats.value.retail = completed.length;
-    stats.value.total = completed.length + stats.value.brilink;
     retailTransactions.value = completed.slice(0, 5).map((t: any) => ({
       itemNames: t.items?.map((i: any) => i.product?.name || i.productId).join(', ') || `#${t.transactionNumber}`,
       timestamp: new Date(t.createdAt).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }),
@@ -560,7 +560,7 @@ async function refresh() {
     }));
   } catch { /* silent */ }
 
-  // Fetch BRILink accounts (for modal source options)
+  // Fetch BRILink data (KPI + recent transactions)
   if (settingsStore.isBrilinkEnabled) {
     try {
       brilinkAccounts.value = (await brilinkAccountService.list(shopId)).filter(a => a.isActive);
@@ -570,7 +570,34 @@ async function refresh() {
       const cb = await brilinkCashboxService.getCashBox(shopId);
       kasBrilinkBalance.value = cb.balance;
     } catch { /* silent */ }
+
+    // BRILink transactions today (for KPI + recent list)
+    try {
+      const todayStr = today();
+      const brilinkRes = await brilinkService.listTransactions({
+        shopId,
+        startDate: todayStr,
+        endDate: todayStr,
+        limit: 50,
+      });
+      const brilinkData = brilinkRes.data ?? [];
+      const successTrx = brilinkData.filter((t: any) => t.status === 'SUCCESS');
+      brilinkOmzet.value = successTrx.reduce((sum: number, t: any) => sum + (t.amount || 0), 0);
+      profitBrilink.value = successTrx.reduce((sum: number, t: any) => sum + (t.fee || 0), 0);
+      stats.value.brilink = successTrx.length;
+
+      // Recent BRILink transactions (top 5)
+      brilinkTransactions.value = brilinkData.slice(0, 5).map((t: any) => ({
+        itemNames: t.customerName || BRILINK_CATEGORY_LABELS[t.category as keyof typeof BRILINK_CATEGORY_LABELS] || t.refNumber,
+        timestamp: new Date(t.createdAt).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }),
+        amount: t.amount + (t.fee || 0),
+        method: BRILINK_CATEGORY_LABELS[t.category as keyof typeof BRILINK_CATEGORY_LABELS] || t.category,
+      }));
+    } catch { /* silent */ }
   }
+
+  // Update total stats
+  stats.value.total = stats.value.retail + stats.value.brilink;
 
   // Fetch Kas Retail balance
   try {
