@@ -29,25 +29,27 @@
           ref="saldoStrip"
           class="flex gap-3 overflow-x-auto pb-1 hide-scrollbar snap-x snap-mandatory"
         >
-          <!-- Kas Tunai card -->
+          <!-- Kas Tunai Agen card (read-only di webapp, dikelola admin) -->
           <div class="shrink-0 snap-start w-44 rounded-2xl bg-white/15 backdrop-blur-sm border border-white/20 px-4 py-3 flex flex-col gap-1">
             <div class="flex items-center gap-1.5 mb-0.5">
               <WalletIcon class="w-3.5 h-3.5 text-white/70" />
-              <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider">Kas Tunai</p>
+              <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider">Kas Tunai Agen</p>
             </div>
             <div v-if="kasLoading" class="h-5 w-20 rounded bg-white/20 animate-pulse" />
             <template v-else>
               <p class="text-base font-bold text-white font-mono leading-tight whitespace-nowrap">
                 {{ formatRupiah(saldoKas) }}
               </p>
-              <!-- Belum pernah diisi: tampilkan hint, bukan warning -->
+              <!-- Belum pernah diisi -->
               <p v-if="!kasPernahDipakai" class="text-[9px] text-white/50 leading-tight">
                 Belum ada kas masuk
               </p>
-              <!-- Sudah dipakai tapi menipis -->
+              <!-- Saldo menipis -->
               <p v-else-if="kasLowBalance" class="text-[9px] text-amber-300 font-semibold flex items-center gap-1">
-                <AlertTriangleIcon class="w-3 h-3" /> Saldo menipis
+                <AlertTriangleIcon class="w-3 h-3" /> Menipis
               </p>
+              <!-- Normal -->
+              <p v-else class="text-[9px] text-white/40 leading-tight">Kas fisik agen</p>
             </template>
           </div>
 
@@ -128,26 +130,32 @@
     </header>
 
     <!-- ============================================================ -->
-    <!-- QUICK ACTIONS — Tambah Saldo & Tarik Saldo (default rekening) -->
-    <!-- Hanya tampil kalau sudah ada rekening aktif                    -->
+    <!-- QUICK ACTIONS — Tambah/Tarik Saldo Rekening (default account) -->
+    <!-- Kas Tunai Agen hanya bisa dikelola via admin panel            -->
     <!-- ============================================================ -->
     <div class="px-4 py-3 bg-white dark:bg-[#1e2020] border-b border-slate-100 dark:border-[#3d4948]">
       <!-- Ada rekening: tampilkan tombol aksi -->
-      <div v-if="defaultAccount" class="flex gap-2">
-        <button
-          type="button"
-          class="flex-1 h-10 rounded-xl bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 text-[#00756f] dark:text-[#5fd9d2] text-xs font-bold flex items-center justify-center gap-1.5 border border-[#00A19B]/20 dark:border-[#5fd9d2]/20 hover:bg-[#00A19B]/20 transition-colors"
-          @click="openModal(defaultAccount!, 'tambah')"
-        >
-          <PlusCircleIcon class="w-4 h-4" /> Tambah Saldo
-        </button>
-        <button
-          type="button"
-          class="flex-1 h-10 rounded-xl bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 text-xs font-bold flex items-center justify-center gap-1.5 border border-red-200/50 dark:border-red-800/30 hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors"
-          @click="openModal(defaultAccount!, 'tarik')"
-        >
-          <MinusCircleIcon class="w-4 h-4" /> Tarik Saldo
-        </button>
+      <div v-if="defaultAccount">
+        <p class="text-[10px] text-slate-400 dark:text-[#869392] mb-2 font-medium">
+          Rekening: <span class="font-semibold text-slate-600 dark:text-[#bcc9c7]">{{ defaultAccount.label }}</span>
+          <span class="font-mono ml-1">· {{ formatRupiah(defaultAccount.balance) }}</span>
+        </p>
+        <div class="flex gap-2">
+          <button
+            type="button"
+            class="flex-1 h-10 rounded-xl bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 text-[#00756f] dark:text-[#5fd9d2] text-xs font-bold flex items-center justify-center gap-1.5 border border-[#00A19B]/20 dark:border-[#5fd9d2]/20 hover:bg-[#00A19B]/20 transition-colors"
+            @click="openModal(defaultAccount!, 'tambah')"
+          >
+            <PlusCircleIcon class="w-4 h-4" /> Tambah Saldo Rekening
+          </button>
+          <button
+            type="button"
+            class="flex-1 h-10 rounded-xl bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 text-xs font-bold flex items-center justify-center gap-1.5 border border-red-200/50 dark:border-red-800/30 hover:bg-red-100 dark:hover:bg-red-950/40 transition-colors"
+            @click="openModal(defaultAccount!, 'tarik')"
+          >
+            <MinusCircleIcon class="w-4 h-4" /> Tarik Saldo Rekening
+          </button>
+        </div>
       </div>
       <!-- Belum ada rekening: tampilkan info -->
       <div v-else-if="!accountsLoading" class="flex items-center gap-2.5 py-1">
