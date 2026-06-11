@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-0 -mx-4 -mt-4 font-hanken overflow-x-hidden max-w-[100vw]">
+  <div class="font-hanken overflow-x-hidden w-full">
 
     <!-- ============================================================ -->
     <!-- HEADER — gradient teal Posify v2                              -->
