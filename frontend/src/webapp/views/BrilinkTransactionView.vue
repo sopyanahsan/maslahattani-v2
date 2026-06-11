@@ -20,6 +20,7 @@
       <div class="bg-gradient-to-br from-[#00756f] via-[#00A19B] to-[#00bdb6] px-4 py-4 overflow-hidden">
         <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">Sumber Dana (pilih rekening)</p>
         <div class="flex gap-3 overflow-x-auto pb-1 hide-scrollbar snap-x snap-mandatory">
+          <!-- Rekening agen -->
           <button
             v-for="acc in accounts"
             :key="acc.id"
@@ -30,17 +31,39 @@
                 ? 'bg-white/25 border-white/60 shadow-lg scale-[1.02]'
                 : 'bg-white/10 border-white/20 hover:bg-white/15',
             ]"
-            @click="selectedAccountId = acc.id"
+            @click="selectedAccountId = acc.id; isCustomerCard = false"
           >
             <div class="flex items-center gap-1.5 mb-0.5">
               <CreditCardIcon class="w-3.5 h-3.5 text-white/70" />
               <p class="text-[10px] font-semibold text-white/80 uppercase tracking-wider truncate">{{ acc.label }}</p>
-              <span v-if="selectedAccountId === acc.id" class="ml-auto w-4 h-4 rounded-full bg-white/90 flex items-center justify-center">
+              <span v-if="selectedAccountId === acc.id && !isCustomerCard" class="ml-auto w-4 h-4 rounded-full bg-white/90 flex items-center justify-center">
                 <CheckIcon class="w-2.5 h-2.5 text-[#00756f]" />
               </span>
             </div>
             <p class="text-[9px] text-white/50 font-mono">{{ acc.accountNumber }}</p>
             <p class="text-base font-bold text-white font-mono leading-tight mt-0.5">{{ formatRupiah(acc.balance) }}</p>
+          </button>
+
+          <!-- Kartu Customer (sumber dana nasabah — agen cuma terima profit admin) -->
+          <button
+            type="button"
+            :class="[
+              'shrink-0 snap-start w-[55vw] min-w-[180px] max-w-[220px] rounded-2xl px-4 py-3 text-left transition-all border',
+              isCustomerCard
+                ? 'bg-amber-400/30 border-amber-300/60 shadow-lg scale-[1.02]'
+                : 'bg-white/10 border-white/20 hover:bg-white/15',
+            ]"
+            @click="isCustomerCard = true; selectedAccountId = ''"
+          >
+            <div class="flex items-center gap-1.5 mb-0.5">
+              <UserIcon class="w-3.5 h-3.5 text-white/70" />
+              <p class="text-[10px] font-semibold text-white/80 uppercase tracking-wider">Kartu Customer</p>
+              <span v-if="isCustomerCard" class="ml-auto w-4 h-4 rounded-full bg-white/90 flex items-center justify-center">
+                <CheckIcon class="w-2.5 h-2.5 text-[#00756f]" />
+              </span>
+            </div>
+            <p class="text-[9px] text-amber-200/80 leading-tight">Uang dari nasabah langsung</p>
+            <p class="text-[10px] text-white/60 mt-0.5">Hanya profit admin masuk ke agen</p>
           </button>
 
           <!-- Empty state -->
@@ -63,22 +86,24 @@
       <!-- Form Fields -->
       <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-[#1a1c1c]">
 
-        <!-- Bank Tujuan -->
+        <!-- Bank Tujuan — button opens search modal -->
         <div v-if="showBankField">
           <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
             Bank Tujuan <span class="text-red-500">*</span>
           </label>
-          <select
-            v-model="form.bankCode"
-            required
-            class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
+          <button
+            type="button"
+            class="w-full h-10 px-3 text-left text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] flex items-center justify-between hover:border-[#00A19B] dark:hover:border-[#5fd9d2] transition-colors"
+            @click="showBankSearch = true"
           >
-            <option value="">— Pilih Bank —</option>
-            <option v-for="bank in banks" :key="bank.id" :value="bank.code">{{ bank.name }}</option>
-          </select>
+            <span :class="form.bankCode ? 'text-slate-900 dark:text-[#e3e2e2] font-medium' : 'text-slate-400 dark:text-[#869392]'">
+              {{ selectedBankName || 'Cari bank tujuan...' }}
+            </span>
+            <SearchIcon class="w-4 h-4 text-slate-400 dark:text-[#869392] shrink-0" />
+          </button>
         </div>
 
-        <!-- No Rekening Tujuan -->
+        <!-- No Rekening Tujuan (numeric only) -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
             {{ destinationLabel }} <span class="text-red-500">*</span>
@@ -86,9 +111,12 @@
           <input
             v-model="form.destination"
             type="text"
+            inputmode="numeric"
+            pattern="[0-9]*"
             required
             :placeholder="destinationPlaceholder"
             class="w-full h-10 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
+            @input="filterNumericOnly"
           />
         </div>
 
@@ -341,6 +369,14 @@
           </div>
         </div>
 
+        <!-- Progress bar saat proses -->
+        <div v-if="submitting" class="space-y-2">
+          <div class="h-2 bg-slate-200 dark:bg-[#3d4948] rounded-full overflow-hidden">
+            <div class="h-full bg-gradient-to-r from-[#00A19B] to-[#5fd9d2] rounded-full animate-progress" />
+          </div>
+          <p class="text-center text-xs text-slate-500 dark:text-[#869392]">Memproses transaksi...</p>
+        </div>
+
         <!-- Error -->
         <div v-if="submitError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl p-3 text-xs text-red-700 dark:text-red-300">{{ submitError }}</div>
 
@@ -411,6 +447,62 @@
       </div>
     </template>
 
+    <!-- ============================================================ -->
+    <!-- MODAL: Bank Search                                            -->
+    <!-- ============================================================ -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showBankSearch" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center font-hanken">
+          <div class="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-[2px]" @click="showBankSearch = false" />
+          <div class="relative w-full sm:max-w-md bg-white dark:bg-[#1e2020] rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-200 dark:border-[#3d4948] shadow-2xl max-h-[75vh] flex flex-col">
+            <!-- handle -->
+            <div class="w-10 h-1 rounded-full bg-slate-200 dark:bg-[#3d4948] mx-auto mt-3 sm:hidden" />
+            <!-- search input -->
+            <div class="px-4 pt-4 pb-2 shrink-0">
+              <div class="relative">
+                <SearchIcon class="w-4 h-4 text-slate-400 dark:text-[#869392] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  ref="bankSearchInput"
+                  v-model="bankSearchQuery"
+                  type="text"
+                  placeholder="Cari nama bank..."
+                  autofocus
+                  class="w-full h-10 pl-9 pr-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-slate-50 dark:bg-[#1a1c1c] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
+                />
+              </div>
+            </div>
+            <!-- bank list -->
+            <div class="flex-1 overflow-y-auto px-4 pb-4">
+              <div v-if="filteredBanks.length === 0" class="py-8 text-center">
+                <p class="text-xs text-slate-400 dark:text-[#869392]">Bank tidak ditemukan</p>
+              </div>
+              <button
+                v-for="bank in filteredBanks"
+                :key="bank.id"
+                type="button"
+                :class="[
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors mb-1',
+                  form.bankCode === bank.code
+                    ? 'bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 border border-[#00A19B]/30 dark:border-[#5fd9d2]/30'
+                    : 'hover:bg-slate-50 dark:hover:bg-[#292a2a]',
+                ]"
+                @click="selectBank(bank)"
+              >
+                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#292a2a] flex items-center justify-center shrink-0">
+                  <LandmarkIcon class="w-4 h-4 text-slate-500 dark:text-[#869392]" />
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-slate-800 dark:text-[#e3e2e2] truncate">{{ bank.name }}</p>
+                  <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ bank.shortName }} · {{ bank.code }}</p>
+                </div>
+                <CheckIcon v-if="form.bankCode === bank.code" class="w-4 h-4 text-[#00A19B] dark:text-[#5fd9d2] shrink-0" />
+              </button>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
   </div>
 </template>
 
@@ -429,6 +521,8 @@ import {
   AlertTriangle as AlertTriangleIcon,
   Loader2 as Loader2Icon,
   Printer as PrinterIcon,
+  Search as SearchIcon,
+  User as UserIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
@@ -492,6 +586,24 @@ const feeRules = ref<BrilinkFeeDto[]>([]);
 const calculatedFee = ref(0);
 const calculatedSystemFee = ref(0); // biaya sistem (potongan EDC)
 const calculatedAdminFee = ref(0); // biaya admin (profit agen)
+
+// ── Customer Card mode (sumber dana dari nasabah) ─────────────────────────────
+const isCustomerCard = ref(false);
+
+// ── Bank search modal ─────────────────────────────────────────────────────────
+const showBankSearch = ref(false);
+const bankSearchQuery = ref('');
+const bankSearchInput = ref<HTMLInputElement | null>(null);
+
+const filteredBanks = computed(() => {
+  if (!bankSearchQuery.value.trim()) return banks.value;
+  const q = bankSearchQuery.value.toLowerCase();
+  return banks.value.filter(b =>
+    b.name.toLowerCase().includes(q) ||
+    b.shortName.toLowerCase().includes(q) ||
+    b.code.toLowerCase().includes(q)
+  );
+});
 
 // ── Fee method ────────────────────────────────────────────────────────────────
 const feeMethodOptions = [
@@ -557,14 +669,15 @@ const debitAmount = computed(() => {
   return form.amount;
 });
 
-const insufficientBalance = computed(() =>
-  selectedAccount.value !== null &&
-  form.amount > 0 &&
-  debitAmount.value > selectedAccount.value.balance
-);
+const insufficientBalance = computed(() => {
+  if (isCustomerCard.value) return false; // customer card: no balance check on agen
+  return selectedAccount.value !== null &&
+    form.amount > 0 &&
+    debitAmount.value > selectedAccount.value.balance;
+});
 
 const canProceed = computed(() =>
-  selectedAccountId.value &&
+  (selectedAccountId.value || isCustomerCard.value) &&
   form.destination &&
   form.customerName &&
   form.amount >= 10000 &&
@@ -576,6 +689,16 @@ const canProceed = computed(() =>
 function getShopId() { return authStore.user?.shopId ?? shopStore.currentShopId ?? ''; }
 
 function formatRupiah(n: number) { return 'Rp ' + n.toLocaleString('id-ID'); }
+
+function filterNumericOnly() {
+  form.destination = form.destination.replace(/[^0-9]/g, '');
+}
+
+function selectBank(bank: BankItem) {
+  form.bankCode = bank.code;
+  showBankSearch.value = false;
+  bankSearchQuery.value = '';
+}
 
 function calculateFee() {
   if (!feeRules.value.length || form.amount <= 0) {
@@ -722,4 +845,17 @@ onMounted(async () => {
 <style scoped>
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@keyframes progress {
+  0% { width: 5%; }
+  50% { width: 70%; }
+  90% { width: 90%; }
+  100% { width: 95%; }
+}
+.animate-progress {
+  animation: progress 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.sheet-enter-active, .sheet-leave-active { transition: all 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+.sheet-enter-from, .sheet-leave-to { opacity: 0; }
 </style>
