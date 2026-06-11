@@ -36,12 +36,19 @@
               <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider">Kas Tunai</p>
             </div>
             <div v-if="kasLoading" class="h-5 w-20 rounded bg-white/20 animate-pulse" />
-            <p v-else class="text-base font-bold text-white font-mono leading-tight whitespace-nowrap">
-              {{ formatRupiah(saldoKas) }}
-            </p>
-            <p v-if="kasLowBalance" class="text-[9px] text-amber-300 font-semibold flex items-center gap-1">
-              <AlertTriangleIcon class="w-3 h-3" /> Di bawah minimum
-            </p>
+            <template v-else>
+              <p class="text-base font-bold text-white font-mono leading-tight whitespace-nowrap">
+                {{ formatRupiah(saldoKas) }}
+              </p>
+              <!-- Belum pernah diisi: tampilkan hint, bukan warning -->
+              <p v-if="!kasPernahDipakai" class="text-[9px] text-white/50 leading-tight">
+                Belum ada kas masuk
+              </p>
+              <!-- Sudah dipakai tapi menipis -->
+              <p v-else-if="kasLowBalance" class="text-[9px] text-amber-300 font-semibold flex items-center gap-1">
+                <AlertTriangleIcon class="w-3 h-3" /> Saldo menipis
+              </p>
+            </template>
           </div>
 
           <!-- Per-Rekening cards -->
@@ -122,9 +129,11 @@
 
     <!-- ============================================================ -->
     <!-- QUICK ACTIONS — Tambah Saldo & Tarik Saldo (default rekening) -->
+    <!-- Hanya tampil kalau sudah ada rekening aktif                    -->
     <!-- ============================================================ -->
-    <div v-if="defaultAccount" class="px-4 py-3 bg-white dark:bg-[#1e2020] border-b border-slate-100 dark:border-[#3d4948]">
-      <div class="flex gap-2">
+    <div class="px-4 py-3 bg-white dark:bg-[#1e2020] border-b border-slate-100 dark:border-[#3d4948]">
+      <!-- Ada rekening: tampilkan tombol aksi -->
+      <div v-if="defaultAccount" class="flex gap-2">
         <button
           type="button"
           class="flex-1 h-10 rounded-xl bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 text-[#00756f] dark:text-[#5fd9d2] text-xs font-bold flex items-center justify-center gap-1.5 border border-[#00A19B]/20 dark:border-[#5fd9d2]/20 hover:bg-[#00A19B]/20 transition-colors"
@@ -140,6 +149,18 @@
           <MinusCircleIcon class="w-4 h-4" /> Tarik Saldo
         </button>
       </div>
+      <!-- Belum ada rekening: tampilkan info -->
+      <div v-else-if="!accountsLoading" class="flex items-center gap-2.5 py-1">
+        <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#292a2a] flex items-center justify-center shrink-0">
+          <LandmarkIcon class="w-4 h-4 text-slate-400 dark:text-[#869392]" />
+        </div>
+        <div>
+          <p class="text-xs font-semibold text-slate-600 dark:text-[#bcc9c7]">Belum ada rekening BRI aktif</p>
+          <p class="text-[10px] text-slate-400 dark:text-[#869392]">Tambahkan rekening di panel admin untuk mulai transaksi</p>
+        </div>
+      </div>
+      <!-- Loading state -->
+      <div v-else class="h-10 rounded-xl bg-slate-100 dark:bg-[#292a2a] animate-pulse" />
     </div>
 
     <!-- ============================================================ -->
@@ -421,6 +442,7 @@ const accountsLoading = ref(true);
 const saldoKas = ref(0);
 const kasLoading = ref(true);
 const kasLowBalance = ref(false);
+const kasPernahDipakai = ref(false); // false = kas baru, belum pernah diisi
 
 const recentTransactions = ref<BrilinkTransactionDto[]>([]);
 const loading = ref(true);
@@ -560,8 +582,13 @@ onMounted(async () => {
   loading.value = false;
 
   if (cashbox.status === 'fulfilled') {
-    saldoKas.value = cashbox.value.balance;
-    kasLowBalance.value = cashbox.value.isLowBalance;
+    const cb = cashbox.value;
+    saldoKas.value = cb.balance;
+    // Hanya tampilkan warning low balance kalau kas sudah pernah dipakai
+    // (ada mutasi atau saldo > 0). Kalau kas baru (0 & belum ada mutasi) = belum disetup, bukan "menipis"
+    const sudahDipakai = cb.balance > 0 || (cb.recentMutations?.length ?? 0) > 0;
+    kasPernahDipakai.value = sudahDipakai;
+    kasLowBalance.value = sudahDipakai && cb.isLowBalance;
   }
   kasLoading.value = false;
 
