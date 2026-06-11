@@ -204,6 +204,7 @@
                     <p class="text-xs font-semibold text-slate-700 dark:text-[#e3e2e2]">Kas Retail</p>
                     <p class="text-[10px] text-slate-400 dark:text-[#869392]">Kas penjualan toko</p>
                   </div>
+                  <span class="text-xs font-bold font-mono text-slate-700 dark:text-[#e3e2e2] shrink-0">{{ formatRupiah(kasRetailBalance) }}</span>
                 </label>
 
                 <!-- Kas BRILink (if enabled) -->
@@ -216,9 +217,10 @@
                 >
                   <input v-model="expenseSource" type="radio" value="kas_brilink" class="accent-[#00A19B]" />
                   <div class="flex-1 min-w-0">
-                    <p class="text-xs font-semibold text-slate-700 dark:text-[#e3e2e2]">Kas Tunai Agen BRILink</p>
-                    <p class="text-[10px] text-slate-400 dark:text-[#869392]">Kas fisik agen</p>
+                    <p class="text-xs font-semibold text-slate-700 dark:text-[#e3e2e2]">Kas Tunai Agen</p>
+                    <p class="text-[10px] text-slate-400 dark:text-[#869392]">Kas fisik agen BRILink</p>
                   </div>
+                  <span class="text-xs font-bold font-mono text-slate-700 dark:text-[#e3e2e2] shrink-0">{{ formatRupiah(kasBrilinkBalance) }}</span>
                 </label>
 
                 <!-- Per-Rekening BRI (if enabled & has accounts) -->
@@ -233,8 +235,9 @@
                   <input v-model="expenseSource" type="radio" :value="'rek_' + acc.id" class="accent-[#00A19B]" />
                   <div class="flex-1 min-w-0">
                     <p class="text-xs font-semibold text-slate-700 dark:text-[#e3e2e2]">{{ acc.label }}</p>
-                    <p class="text-[10px] text-slate-400 dark:text-[#869392] font-mono">{{ acc.accountNumber }} · {{ formatRupiah(acc.balance) }}</p>
+                    <p class="text-[10px] text-slate-400 dark:text-[#869392] font-mono">{{ acc.accountNumber }}</p>
                   </div>
+                  <span class="text-xs font-bold font-mono text-slate-700 dark:text-[#e3e2e2] shrink-0">{{ formatRupiah(acc.balance) }}</span>
                 </label>
               </div>
             </div>
@@ -248,13 +251,13 @@
                 class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1a1c1c] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
               >
                 <option value="">— Pilih tujuan —</option>
-                <option v-if="expenseSource !== 'kas_retail'" value="kas_retail">Kas Retail</option>
-                <option v-if="expenseSource !== 'kas_brilink' && settingsStore.isBrilinkEnabled" value="kas_brilink">Kas Tunai Agen BRILink</option>
+                <option v-if="expenseSource !== 'kas_retail'" value="kas_retail">Kas Retail · {{ formatRupiah(kasRetailBalance) }}</option>
+                <option v-if="expenseSource !== 'kas_brilink' && settingsStore.isBrilinkEnabled" value="kas_brilink">Kas Tunai Agen · {{ formatRupiah(kasBrilinkBalance) }}</option>
                 <option
                   v-for="acc in brilinkAccounts.filter(a => expenseSource !== 'rek_' + a.id)"
                   :key="acc.id"
                   :value="'rek_' + acc.id"
-                >{{ acc.label }} ({{ acc.accountNumber }})</option>
+                >{{ acc.label }} ({{ acc.accountNumber }}) · {{ formatRupiah(acc.balance) }}</option>
               </select>
             </div>
 
@@ -375,6 +378,10 @@ const trxTab = ref<'retail' | 'brilink'>('retail');
 const retailTransactions = ref<any[]>([]);
 const brilinkTransactions = ref<any[]>([]);
 const visibleTransactions = computed(() => trxTab.value === 'retail' ? retailTransactions.value : brilinkTransactions.value);
+
+// ── Saldo sources for modal ────────────────────────────────────────────────────
+const kasRetailBalance = ref(0);
+const kasBrilinkBalance = ref(0);
 
 // ── BRILink accounts (for expense modal) ──────────────────────────────────────
 const brilinkAccounts = ref<BrilinkAccount[]>([]);
@@ -558,7 +565,18 @@ async function refresh() {
     try {
       brilinkAccounts.value = (await brilinkAccountService.list(shopId)).filter(a => a.isActive);
     } catch { /* silent */ }
+
+    try {
+      const cb = await brilinkCashboxService.getCashBox(shopId);
+      kasBrilinkBalance.value = cb.balance;
+    } catch { /* silent */ }
   }
+
+  // Fetch Kas Retail balance
+  try {
+    const kasRes = await kasRetailService.getCashBox(shopId);
+    kasRetailBalance.value = kasRes.balance;
+  } catch { /* silent */ }
 
   // Fetch pengeluaran
   await fetchExpenses();
