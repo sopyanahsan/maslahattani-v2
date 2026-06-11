@@ -333,7 +333,7 @@ function handlePrintReceipt() {
     try {
       if (!thermalPrint.isConnected) await thermalPrint.connect();
       await thermalPrint.printReceipt({
-        shopName: 'Ngalir', // TODO: from shop settings
+        shopName: 'Posify', // TODO: from shop settings
         trxNumber: selectedTrx.value.transactionNumber,
         date: formatDateTime(selectedTrx.value.createdAt),
         cashierName: selectedTrx.value.user?.username || '-',

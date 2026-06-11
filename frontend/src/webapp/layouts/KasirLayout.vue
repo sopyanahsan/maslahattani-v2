@@ -10,7 +10,7 @@
         </div>
         <div class="min-w-0">
           <p class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2] leading-tight truncate">
-            Ngalir
+            Posify
           </p>
           <p class="text-[10px] text-slate-500 dark:text-[#bcc9c7] leading-tight truncate">
             {{ shopName || 'Toko' }}
