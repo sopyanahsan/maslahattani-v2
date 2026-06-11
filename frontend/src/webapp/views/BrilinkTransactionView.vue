@@ -185,21 +185,23 @@
           </div>
         </div>
 
-        <!-- Nominal -->
+        <!-- Nominal (formatted Rupiah) -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
             Nominal <span class="text-red-500">*</span>
           </label>
-          <input
-            v-model.number="form.amount"
-            type="number"
-            required
-            min="10000"
-            step="1000"
-            placeholder="0"
-            class="w-full h-12 px-4 text-xl font-mono font-bold text-center border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] focus:ring-2 focus:ring-[#00A19B]/20 outline-none"
-            @input="calculateFee"
-          />
+          <div class="relative">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400 dark:text-[#869392] pointer-events-none">Rp</span>
+            <input
+              :value="formatNumber(form.amount)"
+              type="text"
+              inputmode="numeric"
+              required
+              placeholder="0"
+              class="w-full h-12 pl-12 pr-4 text-xl font-mono font-bold text-center border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] focus:ring-2 focus:ring-[#00A19B]/20 outline-none"
+              @input="onNominalInput"
+            />
+          </div>
           <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-1">Minimal transfer Rp 10.000</p>
         </div>
 
@@ -710,6 +712,17 @@ function formatRupiah(n: number) { return 'Rp ' + n.toLocaleString('id-ID'); }
 
 function filterNumericOnly() {
   form.destination = form.destination.replace(/[^0-9]/g, '');
+}
+
+function formatNumber(n: number): string {
+  if (!n || n === 0) return '';
+  return n.toLocaleString('id-ID');
+}
+
+function onNominalInput(e: Event) {
+  const raw = (e.target as HTMLInputElement).value.replace(/[^0-9]/g, '');
+  form.amount = parseInt(raw) || 0;
+  calculateFee();
 }
 
 function selectBank(bank: BankItem) {

@@ -321,7 +321,10 @@
           <!-- Amount (only for Tunai) -->
           <div v-if="paymentMethod === 'Tunai'">
             <p class="text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] mb-1.5">Jumlah Bayar</p>
-            <input v-model.number="amountPaid" type="number" class="w-full h-10 px-4 text-lg font-mono font-bold text-center text-slate-900 dark:text-[#e3e2e2] bg-white dark:bg-[#1a1c1c] border border-slate-200 dark:border-[#3d4948] rounded-xl focus:border-[#00A19B] dark:focus:border-[#5fd9d2] focus:ring-2 focus:ring-[#00A19B]/20 outline-none" />
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400 dark:text-[#869392] pointer-events-none">Rp</span>
+              <input :value="amountPaid ? amountPaid.toLocaleString('id-ID') : ''" type="text" inputmode="numeric" class="w-full h-10 pl-10 pr-4 text-lg font-mono font-bold text-center text-slate-900 dark:text-[#e3e2e2] bg-white dark:bg-[#1a1c1c] border border-slate-200 dark:border-[#3d4948] rounded-xl focus:border-[#00A19B] dark:focus:border-[#5fd9d2] focus:ring-2 focus:ring-[#00A19B]/20 outline-none" @input="(e) => { amountPaid = parseInt(((e.target as HTMLInputElement).value || '0').replace(/[^0-9]/g, '')) || 0; }" />
+            </div>
             <div class="grid grid-cols-4 gap-1.5 mt-2">
               <button v-for="n in [1000,2000,5000,10000,20000,50000,100000]" :key="n" class="h-7 rounded-lg border border-slate-200 dark:border-[#3d4948] text-[10px] font-semibold text-slate-600 dark:text-[#bcc9c7] hover:bg-slate-50 dark:hover:bg-[#292a2a]" @click="amountPaid += n">{{ (n/1000) + 'K' }}</button>
               <button class="h-7 rounded-lg border-2 border-[#00A19B]/30 dark:border-[#5fd9d2]/30 text-[10px] font-semibold text-[#00756f] dark:text-[#5fd9d2] hover:bg-[#00A19B]/10" @click="amountPaid = grandTotal">Uang Pas</button>
