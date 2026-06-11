@@ -229,6 +229,57 @@
                 <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Tujuan</span><span class="text-xs font-mono text-slate-700 dark:text-[#bcc9c7]">{{ selectedBrilink.destination }}</span></div>
               </div>
 
+              <!-- Sumber & Aliran Dana -->
+              <div class="bg-[#00A19B]/5 dark:bg-[#5fd9d2]/5 border border-[#00A19B]/15 dark:border-[#5fd9d2]/15 rounded-2xl p-4 space-y-2.5">
+                <p class="text-[10px] font-bold text-[#00756f] dark:text-[#5fd9d2] uppercase tracking-wider">Aliran Dana</p>
+                <!-- Sumber dana keluar -->
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="text-[9px] font-bold text-red-600 dark:text-red-400">↑</span>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-[10px] font-semibold text-slate-500 dark:text-[#869392]">Dana Keluar Dari</p>
+                    <p class="text-xs font-bold text-slate-800 dark:text-[#e3e2e2]">
+                      {{ selectedBrilink.accountLabel ? selectedBrilink.accountLabel + (selectedBrilink.accountNumber ? ' (...' + selectedBrilink.accountNumber.slice(-4) + ')' : '') : 'Kartu Customer' }}
+                    </p>
+                    <p v-if="selectedBrilink.accountImpact" class="text-[10px] text-red-500 dark:text-red-400 font-mono">-{{ formatRupiah(Math.abs(selectedBrilink.accountImpact)) }}</p>
+                  </div>
+                </div>
+                <!-- Profit fee masuk ke -->
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">↓</span>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-[10px] font-semibold text-slate-500 dark:text-[#869392]">Profit Admin Masuk Ke</p>
+                    <p class="text-xs font-bold text-slate-800 dark:text-[#e3e2e2]">
+                      {{ selectedBrilink.accountLabel ? selectedBrilink.accountLabel : 'Kas Tunai Agen' }}
+                    </p>
+                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">+{{ formatRupiah(selectedBrilink.fee) }}</p>
+                  </div>
+                </div>
+                <!-- Kas tunai impact (jika ada) -->
+                <div v-if="selectedBrilink.cashImpact && selectedBrilink.cashImpact !== 0" class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                    :class="selectedBrilink.cashImpact > 0 ? 'bg-emerald-100 dark:bg-emerald-900/20' : 'bg-red-100 dark:bg-red-900/20'">
+                    <span :class="['text-[9px] font-bold', selectedBrilink.cashImpact > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400']">{{ selectedBrilink.cashImpact > 0 ? '↓' : '↑' }}</span>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-[10px] font-semibold text-slate-500 dark:text-[#869392]">Kas Tunai Agen</p>
+                    <p :class="['text-[10px] font-mono font-semibold', selectedBrilink.cashImpact > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400']">
+                      {{ selectedBrilink.cashImpact > 0 ? '+' : '-' }}{{ formatRupiah(Math.abs(selectedBrilink.cashImpact)) }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Metode Admin — hanya untuk TARIK_TUNAI -->
+              <div v-if="selectedBrilink.category === 'TARIK_TUNAI' && selectedBrilink.feeMethod" class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-2xl p-4 space-y-1.5">
+                <p class="text-[10px] font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Metode Admin</p>
+                <p class="text-sm font-bold text-amber-800 dark:text-amber-300">{{ feeMethodDetail(selectedBrilink.feeMethod) }}</p>
+                <p class="text-[10px] text-amber-600 dark:text-amber-400/80">{{ feeMethodHint(selectedBrilink.feeMethod) }}</p>
+              </div>
+
               <!-- Financial breakdown -->
               <div class="border-t border-slate-200 dark:border-[#3d4948] pt-3 space-y-1.5">
                 <div class="flex justify-between text-xs text-slate-600 dark:text-[#bcc9c7]"><span>Nominal</span><span class="font-mono">{{ formatRupiah(selectedBrilink.amount) }}</span></div>
@@ -338,6 +389,24 @@ function retailStatusIconBg(s: string) { return { COMPLETED: 'bg-[#00A19B]/10 te
 
 // BRILink status helpers
 function brilinkStatusLabel(s: string) { return { SUCCESS: 'Sukses', VOIDED: 'Void', FAILED: 'Gagal', PENDING: 'Pending' }[s] || s; }
+
+// Fee method detail helpers (untuk Tarik Tunai)
+function feeMethodDetail(method: string): string {
+  switch (method) {
+    case 'DALAM': return 'Admin Dalam';
+    case 'LUAR': return 'Admin Luar';
+    case 'POTONG': return 'Potong Saldo';
+    default: return method;
+  }
+}
+function feeMethodHint(method: string): string {
+  switch (method) {
+    case 'DALAM': return 'Biaya admin sudah termasuk dalam nominal. Nasabah bayar nominal saja.';
+    case 'LUAR': return 'Biaya admin di luar nominal. Nasabah bayar nominal + admin terpisah.';
+    case 'POTONG': return 'Biaya admin dipotong dari saldo agen. Nasabah bayar nominal saja.';
+    default: return '';
+  }
+}
 function brilinkStatusBadge(s: string) { return { SUCCESS: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', VOIDED: 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300', FAILED: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300', PENDING: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' }[s] || 'bg-slate-100 dark:bg-[#292a2a] text-slate-600 dark:text-[#bcc9c7]'; }
 function brilinkStatusIconBg(s: string) { return { SUCCESS: 'bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400', VOIDED: 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400', FAILED: 'bg-red-50 dark:bg-red-900/20 text-red-500 dark:text-red-400' }[s] || 'bg-slate-100 dark:bg-[#292a2a] text-slate-500 dark:text-[#869392]'; }
 function brilinkCategoryBadge(cat: string) { return { TRANSFER_BRI: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300', TRANSFER_OTHER: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300', TARIK_TUNAI: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300', TOPUP_PULSA: 'bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300', TOPUP_DATA: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300', TOPUP_EWALLET: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300', TOPUP_PLN: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300' }[cat] || 'bg-slate-100 dark:bg-[#292a2a] text-slate-600 dark:text-[#bcc9c7]'; }
