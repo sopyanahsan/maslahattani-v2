@@ -19,7 +19,7 @@
       <!-- Saldo strip: pilih sumber dana -->
       <div class="bg-gradient-to-br from-[#00756f] via-[#00A19B] to-[#00bdb6] px-4 py-4 overflow-hidden">
         <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">Sumber Dana (pilih rekening)</p>
-        <div class="flex gap-3 overflow-x-auto pb-1 hide-scrollbar snap-x snap-mandatory">
+        <div ref="sourceStrip" class="flex gap-3 overflow-x-auto pb-1 hide-scrollbar snap-x snap-mandatory">
           <!-- Rekening agen -->
           <button
             v-for="acc in accounts"
@@ -598,6 +598,7 @@ const destinationPlaceholder = computed(() => {
 const accounts = ref<BrilinkAccount[]>([]);
 const accountsLoading = ref(true);
 const selectedAccountId = ref('');
+const sourceStrip = ref<HTMLElement | null>(null);
 const banks = ref<BankItem[]>([]);
 const feeRules = ref<BrilinkFeeDto[]>([]);
 const calculatedFee = ref(0);
@@ -860,6 +861,8 @@ onMounted(async () => {
     } else {
       accounts.value = allActive;
     }
+    // Scroll strip ke awal (posisi 0) agar rekening default terlihat
+    setTimeout(() => { sourceStrip.value?.scrollTo({ left: 0, behavior: 'instant' }); }, 50);
   }
   accountsLoading.value = false;
 
