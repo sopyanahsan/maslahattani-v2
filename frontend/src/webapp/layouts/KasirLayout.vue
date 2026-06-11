@@ -1,11 +1,11 @@
 <template>
-  <div class="min-h-screen bg-slate-50 dark:bg-[#121414] flex flex-col transition-colors">
+  <div class="min-h-screen bg-slate-50 dark:bg-[#121414] font-hanken flex flex-col transition-colors">
     <!-- Top Bar -->
     <header
       class="sticky top-0 z-30 bg-white dark:bg-[#1a1c1c] border-b border-slate-200 dark:border-[#3d4948] px-4 h-14 flex items-center justify-between transition-colors"
     >
       <div class="flex items-center gap-2 min-w-0">
-        <div class="w-8 h-8 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
+        <div class="w-8 h-8 rounded-md bg-[#00A19B] flex items-center justify-center shrink-0 dark:shadow-[0_0_12px_rgba(0,161,155,0.4)]">
           <component :is="DropletsIcon" class="w-4 h-4 text-white" />
         </div>
         <div class="min-w-0">
@@ -36,12 +36,22 @@
           </span>
           <span
             v-if="isSyncing"
-            class="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700"
+            class="inline-flex items-center gap-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#00A19B]/10 text-[#00756f] dark:bg-[#5fd9d2]/10 dark:text-[#5fd9d2]"
           >
             <component :is="Loader2Icon" class="w-2.5 h-2.5 animate-spin" />
             Sync
           </span>
         </div>
+
+        <!-- Theme toggle (light / dark) -->
+        <button
+          type="button"
+          class="w-9 h-9 rounded-full border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] text-slate-600 dark:text-[#5fd9d2] flex items-center justify-center hover:bg-slate-50 dark:hover:bg-[#292a2a] active:scale-95 transition-all shrink-0"
+          :aria-label="resolved === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'"
+          @click="toggleSimple"
+        >
+          <component :is="resolved === 'dark' ? SunIcon : MoonIcon" class="w-[18px] h-[18px]" />
+        </button>
       </div>
     </header>
 
@@ -96,7 +106,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-blue-600' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
+              isActive ? 'text-[#00A19B] dark:text-[#5fd9d2]' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
             ]"
             @click="(e) => navigate(e)"
           >
@@ -111,7 +121,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-blue-600' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
+              isActive ? 'text-[#00A19B] dark:text-[#5fd9d2]' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
             ]"
             @click="(e) => navigate(e)"
           >
@@ -124,7 +134,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-blue-600' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
+              isActive ? 'text-[#00A19B] dark:text-[#5fd9d2]' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
             ]"
             @click="(e) => navigate(e)"
           >
@@ -144,13 +154,13 @@
               :class="[
                 'absolute -top-5 w-14 h-14 rounded-full flex items-center justify-center shadow-lg transition-all',
                 isActive
-                  ? 'bg-blue-600 shadow-blue-200'
-                  : 'bg-blue-500 hover:bg-blue-600 shadow-blue-100',
+                  ? 'bg-[#00A19B] shadow-[#00A19B]/40'
+                  : 'bg-[#00A19B]/90 hover:bg-[#00A19B] shadow-[#00A19B]/30',
               ]"
             >
               <component :is="ShoppingCartIcon" class="w-6 h-6 text-white" />
             </div>
-            <span class="mt-7" :class="isActive ? 'text-blue-600' : 'text-slate-500 dark:text-[#869392]'">Kasir</span>
+            <span class="mt-7" :class="isActive ? 'text-[#00A19B] dark:text-[#5fd9d2]' : 'text-slate-500 dark:text-[#869392]'">Kasir</span>
           </a>
         </RouterLink>
 
@@ -160,7 +170,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-blue-600' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
+              isActive ? 'text-[#00A19B] dark:text-[#5fd9d2]' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
             ]"
             @click="(e) => navigate(e)"
           >
@@ -175,7 +185,7 @@
             :href="href"
             :class="[
               'flex flex-col items-center justify-center gap-0.5 transition-colors text-[10px] font-medium',
-              isActive ? 'text-blue-600' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
+              isActive ? 'text-[#00A19B] dark:text-[#5fd9d2]' : 'text-slate-500 dark:text-[#869392] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
             ]"
             @click="(e) => navigate(e)"
           >
@@ -195,6 +205,7 @@ import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
 import { useSettingsStore } from '@/shared/stores/settings.store';
 import { useSyncService } from '@/shared/services/sync.service';
+import { useTheme } from '@/shared/composables/useTheme';
 import {
   Droplets as DropletsIcon,
   Home as HomeIcon,
@@ -205,12 +216,15 @@ import {
   CloudOff as CloudOffIcon,
   Loader2 as Loader2Icon,
   History as HistoryIcon,
+  Sun as SunIcon,
+  Moon as MoonIcon,
 } from 'lucide-vue-next';
 
 const authStore = useAuthStore();
 const shopStore = useShopStore();
 const settingsStore = useSettingsStore();
 const { isSyncing, pendingCount, startAutoSync, stopAutoSync, refreshPendingCount } = useSyncService();
+const { resolved, toggleSimple } = useTheme();
 
 const isOnline = ref(navigator.onLine);
 

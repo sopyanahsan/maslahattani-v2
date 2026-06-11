@@ -1,23 +1,9 @@
 <template>
   <div class="space-y-5 p-4 font-hanken">
     <!-- Greeting -->
-    <header class="flex items-start justify-between gap-3">
-      <div class="min-w-0">
-        <p class="text-xs text-slate-500 dark:text-[#bcc9c7]">{{ currentDateLabel }}</p>
-        <h1 class="font-bold text-xl text-slate-900 dark:text-[#e3e2e2] mt-0.5 truncate">{{ userName }}</h1>
-      </div>
-      <!-- Theme toggle (light / dark) -->
-      <button
-        type="button"
-        class="w-10 h-10 rounded-full border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] text-slate-600 dark:text-[#5fd9d2] flex items-center justify-center hover:bg-slate-50 dark:hover:bg-[#292a2a] active:scale-95 transition-all shrink-0"
-        :aria-label="resolved === 'dark' ? 'Aktifkan mode terang' : 'Aktifkan mode gelap'"
-        @click="toggleSimple"
-      >
-        <Transition name="theme-icon" mode="out-in">
-          <SunIcon v-if="resolved === 'dark'" key="sun" class="w-5 h-5" />
-          <MoonIcon v-else key="moon" class="w-5 h-5" />
-        </Transition>
-      </button>
+    <header>
+      <p class="text-xs text-slate-500 dark:text-[#bcc9c7]">{{ currentDateLabel }}</p>
+      <h1 class="font-bold text-xl text-slate-900 dark:text-[#e3e2e2] mt-0.5">{{ userName }}</h1>
     </header>
 
     <!-- Row 1: Penjualan Retail + BRILink (2 cols or 1 col) -->
@@ -166,18 +152,15 @@ import {
   Smartphone as SmartphoneIcon, History as HistoryIcon,
   ArrowDown as ArrowDownIcon, ArrowUp as ArrowUpIcon,
   ClipboardCheck as ClipboardCheckIcon,
-  Sun as SunIcon, Moon as MoonIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShiftStore } from '@/shared/stores/shift.store';
 import { useSettingsStore } from '@/shared/stores/settings.store';
-import { useTheme } from '@/shared/composables/useTheme';
 import posService from '@/shared/services/pos.service';
 
 const authStore = useAuthStore();
 const shiftStore = useShiftStore();
 const settingsStore = useSettingsStore();
-const { resolved, toggleSimple } = useTheme();
 
 const userName = computed(() => authStore.user?.username || 'Kasir');
 const currentDateLabel = computed(() =>
@@ -238,26 +221,3 @@ onUnmounted(() => {
   if (refreshInterval) clearInterval(refreshInterval);
 });
 </script>
-
-<style scoped>
-/* Smooth swap between sun/moon theme icons */
-.theme-icon-enter-active,
-.theme-icon-leave-active {
-  transition: opacity 0.2s ease, transform 0.2s ease;
-}
-.theme-icon-enter-from {
-  opacity: 0;
-  transform: rotate(-90deg) scale(0.6);
-}
-.theme-icon-leave-to {
-  opacity: 0;
-  transform: rotate(90deg) scale(0.6);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .theme-icon-enter-active,
-  .theme-icon-leave-active {
-    transition-duration: 0.01ms !important;
-  }
-}
-</style>
