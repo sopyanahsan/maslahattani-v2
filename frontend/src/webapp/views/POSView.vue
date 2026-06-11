@@ -639,7 +639,7 @@ let searchTimer: ReturnType<typeof setTimeout> | null = null;
 
 const filteredProducts = computed(() => {
   if (selectedCategory.value === 'Semua') return products.value;
-  return products.value.filter(p => (p as any).category === selectedCategory.value);
+  return products.value.filter(p => (p as any).category?.name === selectedCategory.value);
 });
 
 const totalItems = computed(() => cart.value.reduce((sum, i) => sum + i.quantity, 0));
@@ -688,7 +688,7 @@ async function fetchProducts() {
   productsLoading.value = true;
   try {
     products.value = await posService.searchProducts(shopId, searchQuery.value || undefined);
-    const cats = new Set(products.value.map((p: any) => p.category).filter(Boolean));
+    const cats = new Set(products.value.map((p: any) => p.category?.name).filter(Boolean));
     categories.value = ['Semua', ...Array.from(cats)];
   } catch { products.value = []; }
   finally { productsLoading.value = false; }

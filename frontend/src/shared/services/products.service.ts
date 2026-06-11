@@ -9,6 +9,12 @@ export interface ProductStock {
   warehouse: string;
 }
 
+export interface ProductCategory {
+  id: string;
+  name: string;
+  icon?: string | null;
+}
+
 export interface ProductDto {
   id: string;
   shopId: string;
@@ -26,6 +32,7 @@ export interface ProductDto {
   updatedAt: string;
   deletedAt?: string | null;
   stocks?: ProductStock[];
+  category?: ProductCategory | null;
 }
 
 export interface ProductDetailDto extends ProductDto {
