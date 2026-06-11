@@ -207,84 +207,84 @@
 
     <!-- === MOBILE CART BOTTOM SHEET === -->
     <Teleport to="body">
-      <div v-if="showMobileCart" class="fixed inset-0 z-50 md:hidden flex items-end">
-        <div class="absolute inset-0 bg-black/30" @click="showMobileCart = false"></div>
-        <div class="relative bg-white rounded-t-2xl w-full max-h-[80vh] flex flex-col animate-slide-up shadow-xl">
-          <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 shrink-0">
+      <div v-if="showMobileCart" class="fixed inset-0 z-50 md:hidden flex items-end font-hanken">
+        <div class="absolute inset-0 bg-black/30 dark:bg-black/70 backdrop-blur-[2px]" @click="showMobileCart = false"></div>
+        <div class="relative bg-white dark:bg-[#1e2020] border-t border-slate-200 dark:border-[#3d4948] rounded-t-2xl w-full max-h-[80vh] flex flex-col animate-slide-up shadow-xl">
+          <div class="flex items-center justify-between px-4 py-3 border-b border-slate-100 dark:border-[#3d4948] shrink-0">
             <div class="flex items-center gap-2">
-              <ShoppingCartIcon class="w-4 h-4 text-blue-600" />
-              <h3 class="text-sm font-bold text-slate-800">Keranjang ({{ totalItems }})</h3>
+              <ShoppingCartIcon class="w-4 h-4 text-[#00A19B] dark:text-[#5fd9d2]" />
+              <h3 class="text-sm font-bold text-slate-800 dark:text-[#e3e2e2]">Keranjang ({{ totalItems }})</h3>
             </div>
-            <button class="p-1 hover:bg-slate-100 rounded-lg" @click="showMobileCart = false"><XIcon class="w-5 h-5 text-slate-500" /></button>
+            <button class="p-1 hover:bg-slate-100 dark:hover:bg-[#292a2a] rounded-lg" @click="showMobileCart = false"><XIcon class="w-5 h-5 text-slate-500 dark:text-[#bcc9c7]" /></button>
           </div>
           <!-- Items -->
           <div class="flex-1 overflow-y-auto px-4 py-2 space-y-2">
-            <div v-for="item in cart" :key="item.productId" class="py-2 border-b border-slate-50 last:border-0">
+            <div v-for="item in cart" :key="item.productId" class="py-2 border-b border-slate-50 dark:border-[#292a2a] last:border-0">
               <div class="flex items-center gap-2">
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-semibold text-slate-800 truncate">{{ item.name }}</p>
-                  <p class="text-[10px] text-slate-500">{{ formatRupiah(item.price) }} × {{ item.quantity }}</p>
-                  <p v-if="item.discount > 0" class="text-[10px] text-red-500">Diskon: -{{ formatRupiah(item.discount) }}</p>
-                  <p class="text-xs font-bold text-blue-600">{{ formatRupiah(item.subtotal) }}</p>
+                  <p class="text-sm font-semibold text-slate-800 dark:text-[#e3e2e2] truncate">{{ item.name }}</p>
+                  <p class="text-[10px] text-slate-500 dark:text-[#869392]">{{ formatRupiah(item.price) }} × {{ item.quantity }}</p>
+                  <p v-if="item.discount > 0" class="text-[10px] text-red-500 dark:text-[#ffb4ab]">Diskon: -{{ formatRupiah(item.discount) }}</p>
+                  <p class="text-xs font-bold text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(item.subtotal) }}</p>
                 </div>
                 <div class="flex items-center gap-1 shrink-0">
-                  <button class="w-7 h-7 rounded-md bg-slate-100 flex items-center justify-center" @click="updateQty(item.productId, item.quantity - 1)">
-                    <XIcon v-if="item.quantity === 1" class="w-3 h-3 text-red-500" />
-                    <MinusIcon v-else class="w-3 h-3 text-slate-600" />
+                  <button class="w-7 h-7 rounded-md bg-slate-100 dark:bg-[#292a2a] flex items-center justify-center" @click="updateQty(item.productId, item.quantity - 1)">
+                    <XIcon v-if="item.quantity === 1" class="w-3 h-3 text-red-500 dark:text-[#ffb4ab]" />
+                    <MinusIcon v-else class="w-3 h-3 text-slate-600 dark:text-[#bcc9c7]" />
                   </button>
-                  <span class="w-6 text-center text-xs font-bold">{{ item.quantity }}</span>
-                  <button class="w-7 h-7 rounded-md bg-blue-50 flex items-center justify-center text-blue-600" @click="updateQty(item.productId, item.quantity + 1)"><PlusIcon class="w-3 h-3" /></button>
+                  <span class="w-6 text-center text-xs font-bold text-slate-800 dark:text-[#e3e2e2]">{{ item.quantity }}</span>
+                  <button class="w-7 h-7 rounded-md bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 flex items-center justify-center text-[#00A19B] dark:text-[#5fd9d2]" @click="updateQty(item.productId, item.quantity + 1)"><PlusIcon class="w-3 h-3" /></button>
                 </div>
               </div>
               <!-- Inline note -->
               <div v-if="item.showNote" class="mt-1.5">
-                <input v-model="item.note" type="text" placeholder="Catatan item..." class="w-full h-7 px-2 text-[10px] border border-slate-200 rounded bg-slate-50 focus:border-blue-400 outline-none" />
+                <input v-model="item.note" type="text" placeholder="Catatan item..." class="w-full h-7 px-2 text-[10px] border border-slate-200 dark:border-[#3d4948] rounded bg-slate-50 dark:bg-[#1a1c1c] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" />
               </div>
               <!-- Inline discount -->
               <div v-if="item.showDiscount" class="mt-1.5 flex items-center gap-1.5">
-                <span class="text-[10px] text-slate-500">Diskon Rp:</span>
-                <input :value="item.discount" type="number" min="0" class="w-20 h-7 px-2 text-[10px] font-mono border border-slate-200 rounded bg-slate-50 text-right focus:border-blue-400 outline-none" @change="(e) => { item.discount = Math.min(Number((e.target as HTMLInputElement).value) || 0, item.price * item.quantity); Object.assign(item, recalcCartItem(item)); }" />
+                <span class="text-[10px] text-slate-500 dark:text-[#869392]">Diskon Rp:</span>
+                <input :value="item.discount" type="number" min="0" class="w-20 h-7 px-2 text-[10px] font-mono border border-slate-200 dark:border-[#3d4948] rounded bg-slate-50 dark:bg-[#1a1c1c] text-slate-900 dark:text-[#e3e2e2] text-right focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" @change="(e) => { item.discount = Math.min(Number((e.target as HTMLInputElement).value) || 0, item.price * item.quantity); Object.assign(item, recalcCartItem(item)); }" />
               </div>
               <!-- Actions -->
               <div class="flex items-center gap-3 mt-1">
-                <button v-if="settingsStore.isNotePerItemEnabled" class="text-[10px] text-slate-400 hover:text-slate-600 flex items-center gap-0.5" @click="item.showNote = !item.showNote"><EditIcon class="w-3 h-3" /> Catatan</button>
-                <button v-if="settingsStore.isDiscountPerItemEnabled" class="text-[10px] text-slate-400 hover:text-blue-600 flex items-center gap-0.5" @click="item.showDiscount = !item.showDiscount"><TagIcon class="w-3 h-3" /> Diskon</button>
+                <button v-if="settingsStore.isNotePerItemEnabled" class="text-[10px] text-slate-400 dark:text-[#869392] hover:text-slate-600 dark:hover:text-[#bcc9c7] flex items-center gap-0.5" @click="item.showNote = !item.showNote"><EditIcon class="w-3 h-3" /> Catatan</button>
+                <button v-if="settingsStore.isDiscountPerItemEnabled" class="text-[10px] text-slate-400 dark:text-[#869392] hover:text-[#00A19B] dark:hover:text-[#5fd9d2] flex items-center gap-0.5" @click="item.showDiscount = !item.showDiscount"><TagIcon class="w-3 h-3" /> Diskon</button>
               </div>
             </div>
           </div>
 
           <!-- Mobile cart footer -->
-          <div class="shrink-0 border-t border-slate-200 px-4 py-3 space-y-3 bg-slate-50/80">
+          <div class="shrink-0 border-t border-slate-200 dark:border-[#3d4948] px-4 py-3 space-y-3 bg-slate-50/80 dark:bg-[#1a1c1c]">
             <div class="flex gap-2">
               <div class="flex-1 relative">
-                <UserIcon class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                <input v-model="customerName" type="text" placeholder="Nama pelanggan (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
+                <UserIcon class="w-3.5 h-3.5 text-slate-400 dark:text-[#869392] absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <input v-model="customerName" type="text" placeholder="Nama pelanggan (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 dark:border-[#3d4948] rounded-lg bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" />
               </div>
               <div class="flex-1 relative">
-                <PhoneIcon class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none" />
+                <PhoneIcon class="w-3.5 h-3.5 text-slate-400 dark:text-[#869392] absolute left-2.5 top-1/2 -translate-y-1/2" />
+                <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="w-full h-8 pl-8 pr-2 text-xs border border-slate-200 dark:border-[#3d4948] rounded-lg bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" />
               </div>
             </div>
             <div v-if="settingsStore.isDiscountTotalEnabled">
-              <button v-if="!showTrxDiscount" class="text-xs text-blue-600 font-medium flex items-center gap-1" @click="showTrxDiscount = true"><TagIcon class="w-3.5 h-3.5" /> Tambah Diskon</button>
+              <button v-if="!showTrxDiscount" class="text-xs text-[#00A19B] dark:text-[#5fd9d2] font-medium flex items-center gap-1" @click="showTrxDiscount = true"><TagIcon class="w-3.5 h-3.5" /> Tambah Diskon</button>
               <div v-else class="flex items-center gap-2">
-                <span class="text-[10px] text-slate-500">Diskon Rp:</span>
-                <input v-model.number="trxDiscount" type="number" min="0" class="w-20 h-7 px-2 text-xs font-mono border border-slate-200 rounded bg-white text-right focus:border-blue-400 outline-none" />
-                <button class="text-[10px] text-red-400" @click="trxDiscount = 0; showTrxDiscount = false"><XIcon class="w-3 h-3" /></button>
+                <span class="text-[10px] text-slate-500 dark:text-[#869392]">Diskon Rp:</span>
+                <input v-model.number="trxDiscount" type="number" min="0" class="w-20 h-7 px-2 text-xs font-mono border border-slate-200 dark:border-[#3d4948] rounded bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] text-right focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" />
+                <button class="text-[10px] text-red-400 dark:text-[#ffb4ab]" @click="trxDiscount = 0; showTrxDiscount = false"><XIcon class="w-3 h-3" /></button>
               </div>
             </div>
-            <div class="flex justify-between text-xs text-slate-500">
+            <div class="flex justify-between text-xs text-slate-500 dark:text-[#bcc9c7]">
               <span>Subtotal</span><span class="font-mono">{{ formatRupiah(totalPrice) }}</span>
             </div>
-            <div v-if="trxDiscount > 0" class="flex justify-between text-xs text-red-500">
+            <div v-if="trxDiscount > 0" class="flex justify-between text-xs text-red-500 dark:text-[#ffb4ab]">
               <span>Diskon</span><span class="font-mono">- {{ formatRupiah(trxDiscount) }}</span>
             </div>
-            <div class="flex justify-between text-base font-bold text-blue-600 pt-1 border-t border-slate-200">
+            <div class="flex justify-between text-base font-bold text-[#00A19B] dark:text-[#5fd9d2] pt-1 border-t border-slate-200 dark:border-[#3d4948]">
               <span>Total</span><span class="font-mono">{{ formatRupiah(grandTotal) }}</span>
             </div>
             <div class="flex gap-2">
-              <button v-if="settingsStore.isSaveBillEnabled" class="flex-1 h-10 border border-slate-200 rounded-xl text-xs font-semibold text-slate-600 flex items-center justify-center gap-1.5 hover:bg-slate-100" @click="handleSaveBill"><SaveIcon class="w-4 h-4" /> Simpan Bill</button>
-              <button :disabled="cart.length === 0" class="flex-1 h-10 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-1.5 disabled:opacity-40" style="background-color: #2563eb;" @click="showMobileCart = false; showPaymentModal = true"><CreditCardIcon class="w-4 h-4" /> Bayar</button>
+              <button v-if="settingsStore.isSaveBillEnabled" class="flex-1 h-10 border border-slate-200 dark:border-[#3d4948] rounded-xl text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] flex items-center justify-center gap-1.5 hover:bg-slate-100 dark:hover:bg-[#292a2a]" @click="handleSaveBill"><SaveIcon class="w-4 h-4" /> Simpan Bill</button>
+              <button :disabled="cart.length === 0" class="flex-1 h-10 rounded-xl text-sm font-bold text-white flex items-center justify-center gap-1.5 disabled:opacity-40 bg-[#00A19B] hover:brightness-110 transition-all dark:shadow-[0_0_15px_rgba(0,161,155,0.3)]" @click="showMobileCart = false; showPaymentModal = true"><CreditCardIcon class="w-4 h-4" /> Bayar</button>
             </div>
           </div>
         </div>
@@ -293,83 +293,83 @@
 
     <!-- === PAYMENT MODAL (fixed frame, no scroll) === -->
     <Teleport to="body">
-      <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-3">
-        <div class="absolute inset-0 bg-black/50" @click="showPaymentModal = false"></div>
-        <div class="relative bg-white rounded-2xl w-full max-w-md p-5 space-y-3 shadow-2xl">
+      <div v-if="showPaymentModal" class="fixed inset-0 z-50 flex items-center justify-center p-3 font-hanken">
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-[2px]" @click="showPaymentModal = false"></div>
+        <div class="relative bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl w-full max-w-md p-5 space-y-3 shadow-2xl">
           <div class="flex items-center justify-between">
-            <h3 class="text-lg font-bold text-slate-800">Pembayaran</h3>
-            <button class="p-1 hover:bg-slate-100 rounded-lg" @click="showPaymentModal = false"><XIcon class="w-5 h-5 text-slate-500" /></button>
+            <h3 class="text-lg font-bold text-slate-800 dark:text-[#e3e2e2]">Pembayaran</h3>
+            <button class="p-1 hover:bg-slate-100 dark:hover:bg-[#292a2a] rounded-lg" @click="showPaymentModal = false"><XIcon class="w-5 h-5 text-slate-500 dark:text-[#bcc9c7]" /></button>
           </div>
           <!-- Total -->
-          <div class="bg-blue-50 rounded-xl p-3 text-center">
-            <p class="text-[10px] text-blue-500">Total Bayar</p>
-            <p class="text-2xl font-bold text-blue-700 font-mono">{{ formatRupiah(grandTotal) }}</p>
+          <div class="bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 border border-[#00A19B]/20 dark:border-[#5fd9d2]/20 rounded-xl p-3 text-center">
+            <p class="text-[10px] font-semibold uppercase tracking-wide text-[#00756f] dark:text-[#5fd9d2]">Total Bayar</p>
+            <p class="text-2xl font-bold text-[#00756f] dark:text-[#5fd9d2] font-mono">{{ formatRupiah(grandTotal) }}</p>
           </div>
           <!-- Kas Tujuan (only if multiple kas) -->
           <div v-if="kasOptions.length > 1">
-            <p class="text-xs font-semibold text-slate-600 mb-1">Kas Tujuan</p>
-            <select v-model="selectedKas" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg bg-white focus:border-blue-500 outline-none">
+            <p class="text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] mb-1">Kas Tujuan</p>
+            <select v-model="selectedKas" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg bg-white dark:bg-[#1a1c1c] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none">
               <option v-for="kas in kasOptions" :key="kas.id" :value="kas.id">{{ kas.label }}</option>
             </select>
           </div>
           <!-- Payment method -->
           <div>
-            <p class="text-xs font-semibold text-slate-600 mb-1.5">Metode Pembayaran</p>
+            <p class="text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] mb-1.5">Metode Pembayaran</p>
             <div class="grid grid-cols-3 gap-2">
-              <button v-for="m in availablePaymentMethods" :key="m" :class="['py-2 rounded-lg border-2 text-xs font-semibold transition-all', paymentMethod === m ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-slate-200 text-slate-500']" @click="paymentMethod = m">{{ m }}</button>
+              <button v-for="m in availablePaymentMethods" :key="m" :class="['py-2 rounded-lg border-2 text-xs font-semibold transition-all', paymentMethod === m ? 'border-[#00A19B] dark:border-[#5fd9d2] bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 text-[#00756f] dark:text-[#5fd9d2]' : 'border-slate-200 dark:border-[#3d4948] text-slate-500 dark:text-[#bcc9c7]']" @click="paymentMethod = m">{{ m }}</button>
             </div>
           </div>
           <!-- Amount (only for Tunai) -->
           <div v-if="paymentMethod === 'Tunai'">
-            <p class="text-xs font-semibold text-slate-600 mb-1.5">Jumlah Bayar</p>
-            <input v-model.number="amountPaid" type="number" class="w-full h-10 px-4 text-lg font-mono font-bold text-center border border-slate-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none" />
+            <p class="text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] mb-1.5">Jumlah Bayar</p>
+            <input v-model.number="amountPaid" type="number" class="w-full h-10 px-4 text-lg font-mono font-bold text-center text-slate-900 dark:text-[#e3e2e2] bg-white dark:bg-[#1a1c1c] border border-slate-200 dark:border-[#3d4948] rounded-xl focus:border-[#00A19B] dark:focus:border-[#5fd9d2] focus:ring-2 focus:ring-[#00A19B]/20 outline-none" />
             <div class="grid grid-cols-4 gap-1.5 mt-2">
-              <button v-for="n in [1000,2000,5000,10000,20000,50000,100000]" :key="n" class="h-7 rounded-lg border border-slate-200 text-[10px] font-semibold text-slate-600 hover:bg-slate-50" @click="amountPaid += n">{{ (n/1000) + 'K' }}</button>
-              <button class="h-7 rounded-lg border-2 border-blue-200 text-[10px] font-semibold text-blue-600 hover:bg-blue-50" @click="amountPaid = grandTotal">Uang Pas</button>
+              <button v-for="n in [1000,2000,5000,10000,20000,50000,100000]" :key="n" class="h-7 rounded-lg border border-slate-200 dark:border-[#3d4948] text-[10px] font-semibold text-slate-600 dark:text-[#bcc9c7] hover:bg-slate-50 dark:hover:bg-[#292a2a]" @click="amountPaid += n">{{ (n/1000) + 'K' }}</button>
+              <button class="h-7 rounded-lg border-2 border-[#00A19B]/30 dark:border-[#5fd9d2]/30 text-[10px] font-semibold text-[#00756f] dark:text-[#5fd9d2] hover:bg-[#00A19B]/10" @click="amountPaid = grandTotal">Uang Pas</button>
             </div>
-            <button class="text-[10px] text-slate-400 mt-0.5 hover:text-slate-600" @click="amountPaid = 0">Reset</button>
+            <button class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5 hover:text-slate-600 dark:hover:text-[#bcc9c7]" @click="amountPaid = 0">Reset</button>
           </div>
           <!-- QRIS: show placeholder QR -->
           <div v-if="paymentMethod === 'QRIS'" class="text-center py-3">
-            <div class="w-40 h-40 mx-auto bg-slate-100 rounded-xl border-2 border-dashed border-slate-300 flex items-center justify-center mb-2">
-              <QrCodeIcon class="w-12 h-12 text-slate-300" />
+            <div class="w-40 h-40 mx-auto bg-slate-100 dark:bg-[#292a2a] rounded-xl border-2 border-dashed border-slate-300 dark:border-[#3d4948] flex items-center justify-center mb-2">
+              <QrCodeIcon class="w-12 h-12 text-slate-300 dark:text-[#869392]" />
             </div>
-            <p class="text-xs text-slate-500">Tunjukkan QR ke pelanggan untuk scan</p>
-            <p class="text-[10px] text-slate-400 mt-1">Admin perlu upload gambar QRIS di Pengaturan</p>
+            <p class="text-xs text-slate-500 dark:text-[#bcc9c7]">Tunjukkan QR ke pelanggan untuk scan</p>
+            <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-1">Admin perlu upload gambar QRIS di Pengaturan</p>
           </div>
           <!-- Hutang: info + mandatory fields + jatuh tempo -->
-          <div v-if="paymentMethod === 'Hutang'" class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
-            <p class="text-xs font-semibold text-amber-700">Seluruh transaksi {{ formatRupiah(grandTotal) }} akan dicatat sebagai hutang.</p>
-            <p class="text-[10px] text-amber-600">Nama & No HP pelanggan <strong>wajib</strong> diisi.</p>
+          <div v-if="paymentMethod === 'Hutang'" class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-3 space-y-2">
+            <p class="text-xs font-semibold text-amber-700 dark:text-amber-400">Seluruh transaksi {{ formatRupiah(grandTotal) }} akan dicatat sebagai hutang.</p>
+            <p class="text-[10px] text-amber-600 dark:text-amber-400/80">Nama & No HP pelanggan <strong>wajib</strong> diisi.</p>
             <div class="flex items-center gap-2 pt-1">
-              <label class="text-[10px] text-amber-700 font-medium shrink-0">Jatuh tempo:</label>
-              <input v-model="debtDueDate" type="date" class="flex-1 h-7 px-2 text-[11px] border border-amber-300 rounded bg-white focus:border-amber-500 outline-none" />
+              <label class="text-[10px] text-amber-700 dark:text-amber-400 font-medium shrink-0">Jatuh tempo:</label>
+              <input v-model="debtDueDate" type="date" class="flex-1 h-7 px-2 text-[11px] border border-amber-300 dark:border-amber-500/40 rounded bg-white dark:bg-[#1a1c1c] text-slate-900 dark:text-[#e3e2e2] focus:border-amber-500 outline-none" />
             </div>
           </div>
           <!-- Partial hutang detection (Tunai, paid < total) -->
-          <div v-if="paymentMethod === 'Tunai' && settingsStore.isHutangEnabled && amountPaid > 0 && amountPaid < grandTotal" class="bg-amber-50 border border-amber-200 rounded-xl p-3 space-y-2">
-            <p class="text-xs text-amber-700">Kurang <strong>{{ formatRupiah(grandTotal - amountPaid) }}</strong></p>
+          <div v-if="paymentMethod === 'Tunai' && settingsStore.isHutangEnabled && amountPaid > 0 && amountPaid < grandTotal" class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-3 space-y-2">
+            <p class="text-xs text-amber-700 dark:text-amber-400">Kurang <strong>{{ formatRupiah(grandTotal - amountPaid) }}</strong></p>
             <label class="flex items-center gap-2 cursor-pointer">
-              <input v-model="createDebtForRemainder" type="checkbox" class="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
-              <span class="text-xs text-amber-800 font-medium">Catat sisa sebagai hutang?</span>
+              <input v-model="createDebtForRemainder" type="checkbox" class="rounded border-slate-300 dark:border-[#3d4948] text-[#00A19B] focus:ring-[#00A19B]/40" />
+              <span class="text-xs text-amber-800 dark:text-amber-300 font-medium">Catat sisa sebagai hutang?</span>
             </label>
-            <p v-if="createDebtForRemainder" class="text-[10px] text-amber-600">Nama & No HP pelanggan <strong>wajib</strong> diisi.</p>
+            <p v-if="createDebtForRemainder" class="text-[10px] text-amber-600 dark:text-amber-400/80">Nama & No HP pelanggan <strong>wajib</strong> diisi.</p>
           </div>
           <!-- Customer info (shared state with cart panel) -->
           <div class="grid grid-cols-2 gap-2">
-            <input v-model="customerName" type="text" placeholder="Nama (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
-            <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+            <input v-model="customerName" type="text" placeholder="Nama (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg bg-white dark:bg-[#1a1c1c] text-slate-900 dark:text-[#e3e2e2] placeholder:text-slate-400 dark:placeholder:text-[#869392] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" />
+            <input v-model="customerPhone" type="text" placeholder="No HP (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg bg-white dark:bg-[#1a1c1c] text-slate-900 dark:text-[#e3e2e2] placeholder:text-slate-400 dark:placeholder:text-[#869392] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" />
           </div>
-          <input v-model="customerNote" type="text" placeholder="Catatan tambahan (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
+          <input v-model="customerNote" type="text" placeholder="Catatan tambahan (opsional)" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg bg-white dark:bg-[#1a1c1c] text-slate-900 dark:text-[#e3e2e2] placeholder:text-slate-400 dark:placeholder:text-[#869392] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none" />
           <!-- Kembalian (only Tunai & change > 0) -->
-          <div v-if="paymentMethod === 'Tunai' && change > 0" class="flex justify-between items-center bg-emerald-50 rounded-xl px-4 py-2">
-            <span class="text-sm font-medium text-emerald-700">Kembalian</span>
-            <span class="text-lg font-bold font-mono text-emerald-600">{{ formatRupiah(change) }}</span>
+          <div v-if="paymentMethod === 'Tunai' && change > 0" class="flex justify-between items-center bg-emerald-50 dark:bg-emerald-500/10 rounded-xl px-4 py-2">
+            <span class="text-sm font-medium text-emerald-700 dark:text-emerald-400">Kembalian</span>
+            <span class="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ formatRupiah(change) }}</span>
           </div>
           <!-- Error -->
-          <div v-if="checkoutError" class="bg-red-50 border border-red-200 rounded-lg p-2 text-xs text-red-700">{{ checkoutError }}</div>
+          <div v-if="checkoutError" class="bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 rounded-lg p-2 text-xs text-red-700 dark:text-[#ffb4ab]">{{ checkoutError }}</div>
           <!-- Confirm -->
-          <button :disabled="!canCheckout || checking" class="w-full h-11 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40" style="background-color: #2563eb;" @click="handleCheckout">
+          <button :disabled="!canCheckout || checking" class="w-full h-11 rounded-xl bg-[#00A19B] hover:brightness-110 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-40 dark:shadow-[0_0_15px_rgba(0,161,155,0.3)]" @click="handleCheckout">
             <Loader2Icon v-if="checking" class="w-5 h-5 animate-spin" />
             <template v-else>
               <CheckIcon class="w-5 h-5" />
@@ -441,86 +441,86 @@
 
     <!-- === RECEIPT MODAL (popup struk setelah bayar) === -->
     <Teleport to="body">
-      <div v-if="showReceiptModal && receiptData" class="fixed inset-0 z-50 flex items-center justify-center p-3">
-        <div class="absolute inset-0 bg-black/60"></div>
-        <div class="relative bg-white rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
+      <div v-if="showReceiptModal && receiptData" class="fixed inset-0 z-50 flex items-center justify-center p-3 font-hanken">
+        <div class="absolute inset-0 bg-black/60 dark:bg-black/75 backdrop-blur-[2px]"></div>
+        <div class="relative bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl w-full max-w-sm shadow-2xl overflow-hidden">
           <!-- Success toast bar -->
-          <div class="bg-emerald-500 px-4 py-2.5 flex items-center gap-2 text-white text-sm font-medium">
+          <div class="bg-emerald-500 dark:bg-emerald-600 px-4 py-2.5 flex items-center gap-2 text-white text-sm font-medium">
             <CheckIcon class="w-4 h-4" />
             <span>Transaksi berhasil! {{ receiptData.trxNumber }}</span>
           </div>
           <!-- Header -->
           <div class="flex items-center justify-between px-5 pt-4 pb-2">
-            <h3 class="text-base font-bold text-slate-800">Struk Transaksi</h3>
-            <button class="p-1 hover:bg-slate-100 rounded-lg" @click="closeReceipt"><XIcon class="w-5 h-5 text-slate-500" /></button>
+            <h3 class="text-base font-bold text-slate-800 dark:text-[#e3e2e2]">Struk Transaksi</h3>
+            <button class="p-1 hover:bg-slate-100 dark:hover:bg-[#292a2a] rounded-lg" @click="closeReceipt"><XIcon class="w-5 h-5 text-slate-500 dark:text-[#bcc9c7]" /></button>
           </div>
           <!-- Receipt content -->
           <div class="px-5 pb-4" id="receipt-content">
-            <div class="border border-slate-200 rounded-xl p-4 space-y-3 text-sm">
+            <div class="border border-slate-200 dark:border-[#3d4948] bg-slate-50/50 dark:bg-[#1a1c1c] rounded-xl p-4 space-y-3 text-sm">
               <!-- Shop name -->
-              <p class="text-center font-bold text-slate-800">{{ receiptData.shopName }}</p>
-              <div class="border-t border-dashed border-slate-200"></div>
+              <p class="text-center font-bold text-slate-800 dark:text-[#e3e2e2]">{{ receiptData.shopName }}</p>
+              <div class="border-t border-dashed border-slate-300 dark:border-[#3d4948]"></div>
               <!-- Meta -->
-              <div class="flex justify-between text-[11px] text-slate-500">
+              <div class="flex justify-between text-[11px] text-slate-500 dark:text-[#bcc9c7]">
                 <span>No: {{ receiptData.trxNumber }}</span>
                 <span>{{ receiptData.method }}</span>
               </div>
-              <div class="flex justify-between text-[11px] text-slate-500">
+              <div class="flex justify-between text-[11px] text-slate-500 dark:text-[#bcc9c7]">
                 <span>{{ receiptData.date }}</span>
                 <span>Kasir: {{ receiptData.cashierName }}</span>
               </div>
-              <div class="border-t border-dashed border-slate-200"></div>
+              <div class="border-t border-dashed border-slate-300 dark:border-[#3d4948]"></div>
               <!-- Items -->
               <div class="space-y-1.5">
                 <div v-for="(item, idx) in receiptData.items" :key="idx" class="flex justify-between text-xs">
                   <div>
-                    <p class="text-slate-800">{{ item.name }}</p>
-                    <p class="text-slate-500">{{ item.qty }} x {{ formatRupiah(item.price) }}</p>
+                    <p class="text-slate-800 dark:text-[#e3e2e2]">{{ item.name }}</p>
+                    <p class="text-slate-500 dark:text-[#869392]">{{ item.qty }} x {{ formatRupiah(item.price) }}</p>
                   </div>
-                  <span class="font-mono text-slate-700 shrink-0">{{ formatRupiah(item.subtotal) }}</span>
+                  <span class="font-mono text-slate-700 dark:text-[#bcc9c7] shrink-0">{{ formatRupiah(item.subtotal) }}</span>
                 </div>
               </div>
-              <div class="border-t border-dashed border-slate-200"></div>
+              <div class="border-t border-dashed border-slate-300 dark:border-[#3d4948]"></div>
               <!-- Totals -->
               <div class="space-y-1">
-                <div class="flex justify-between text-xs text-slate-600">
+                <div class="flex justify-between text-xs text-slate-600 dark:text-[#bcc9c7]">
                   <span>Subtotal</span>
                   <span class="font-mono">{{ formatRupiah(receiptData.total) }}</span>
                 </div>
-                <div class="flex justify-between text-sm font-bold text-slate-900">
+                <div class="flex justify-between text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">
                   <span>TOTAL</span>
                   <span class="font-mono">{{ formatRupiah(receiptData.total) }}</span>
                 </div>
-                <div class="flex justify-between text-xs text-slate-600">
+                <div class="flex justify-between text-xs text-slate-600 dark:text-[#bcc9c7]">
                   <span>Bayar</span>
                   <span class="font-mono">{{ formatRupiah(receiptData.paid) }}</span>
                 </div>
-                <div v-if="receiptData.change > 0" class="flex justify-between text-xs text-slate-600">
+                <div v-if="receiptData.change > 0" class="flex justify-between text-xs text-slate-600 dark:text-[#bcc9c7]">
                   <span>Kembali</span>
                   <span class="font-mono">{{ formatRupiah(receiptData.change) }}</span>
                 </div>
               </div>
-              <div class="border-t border-dashed border-slate-200"></div>
-              <p class="text-center text-[10px] text-slate-400">Terima kasih atas kunjungan Anda!</p>
+              <div class="border-t border-dashed border-slate-300 dark:border-[#3d4948]"></div>
+              <p class="text-center text-[10px] text-slate-400 dark:text-[#869392]">Terima kasih atas kunjungan Anda!</p>
             </div>
           </div>
           <!-- Action buttons -->
           <div class="px-5 pb-5 space-y-2">
             <div class="grid grid-cols-3 gap-2">
-              <button class="h-10 flex flex-col items-center justify-center border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors" @click="handleDownloadReceipt">
-                <DownloadIcon class="w-4 h-4 text-slate-600" />
-                <span class="text-[9px] text-slate-500 mt-0.5">Unduh</span>
+              <button class="h-12 flex flex-col items-center justify-center border border-slate-200 dark:border-[#3d4948] rounded-lg hover:border-[#00A19B] dark:hover:border-[#5fd9d2] hover:bg-[#00A19B]/5 transition-colors" @click="handleDownloadReceipt">
+                <DownloadIcon class="w-4 h-4 text-slate-600 dark:text-[#bcc9c7]" />
+                <span class="text-[9px] text-slate-500 dark:text-[#869392] mt-0.5">Unduh</span>
               </button>
-              <button class="h-10 flex flex-col items-center justify-center border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors" @click="handleShareReceipt">
-                <Share2Icon class="w-4 h-4 text-slate-600" />
-                <span class="text-[9px] text-slate-500 mt-0.5">Bagikan</span>
+              <button class="h-12 flex flex-col items-center justify-center border border-slate-200 dark:border-[#3d4948] rounded-lg hover:border-[#00A19B] dark:hover:border-[#5fd9d2] hover:bg-[#00A19B]/5 transition-colors" @click="handleShareReceipt">
+                <Share2Icon class="w-4 h-4 text-slate-600 dark:text-[#bcc9c7]" />
+                <span class="text-[9px] text-slate-500 dark:text-[#869392] mt-0.5">Bagikan</span>
               </button>
-              <button class="h-10 flex flex-col items-center justify-center border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors" @click="handlePrintReceipt">
-                <PrinterIcon class="w-4 h-4 text-slate-600" />
-                <span class="text-[9px] text-slate-500 mt-0.5">Cetak</span>
+              <button class="h-12 flex flex-col items-center justify-center border-2 border-[#00A19B]/40 dark:border-[#5fd9d2]/40 bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 rounded-lg hover:bg-[#00A19B]/20 transition-colors" @click="handlePrintReceipt">
+                <PrinterIcon class="w-4 h-4 text-[#00756f] dark:text-[#5fd9d2]" />
+                <span class="text-[9px] font-semibold text-[#00756f] dark:text-[#5fd9d2] mt-0.5">Cetak</span>
               </button>
             </div>
-            <button class="w-full h-10 bg-slate-100 text-slate-700 font-semibold rounded-xl hover:bg-slate-200 transition-colors" @click="closeReceipt">
+            <button class="w-full h-11 bg-[#00A19B] hover:brightness-110 text-white font-bold text-sm rounded-xl transition-all dark:shadow-[0_0_15px_rgba(0,161,155,0.3)]" @click="closeReceipt">
               Selesai
             </button>
           </div>
