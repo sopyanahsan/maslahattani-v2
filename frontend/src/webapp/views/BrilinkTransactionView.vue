@@ -823,8 +823,36 @@ async function handleSubmit() {
 }
 
 function handlePrint() {
-  // TODO: integrate thermal printer
-  window.print();
+  // Print BRILink receipt via thermal printer
+  const metodeLabels: Record<string, string> = { DALAM: 'Admin Dalam', LUAR: 'Admin Luar', POTONG: 'Potong Saldo' };
+  const statusLabels: Record<string, string> = { SUCCESS: 'Sukses', VOIDED: 'Void', FAILED: 'Gagal', PENDING: 'Pending' };
+
+  import('@/shared/services/thermal-print.service').then(async ({ thermalPrint }) => {
+    try {
+      if (!thermalPrint.isConnected) await thermalPrint.connect();
+      await thermalPrint.printBrilinkReceipt({
+        shopName: 'Posify',
+        refNumber: receiptRef.value,
+        date: new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }),
+        cashierName: authStore.user?.username || '-',
+        category: categoryTitle.value,
+        metodeAdmin: selectedCategory.value === 'TARIK_TUNAI' ? metodeLabels[form.feeMethod] : undefined,
+        customerName: form.customerName || '-',
+        customerPhone: form.customerPhone || undefined,
+        destination: selectedCategory.value === 'TARIK_TUNAI' ? undefined : form.destination,
+        bankName: selectedBankName.value || undefined,
+        amount: form.amount,
+        systemFee: calculatedSystemFee.value || undefined,
+        adminFee: calculatedAdminFee.value || undefined,
+        fee: calculatedFee.value,
+        total: totalReceived.value,
+        status: 'Sukses',
+      });
+    } catch (err: any) {
+      if (err.message === 'cancelled') return;
+      window.print(); // fallback
+    }
+  }).catch(() => { window.print(); });
 }
 
 function resetForm() {

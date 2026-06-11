@@ -55,15 +55,22 @@ export interface ReceiptData {
 
 export interface BrilinkReceiptData {
   shopName: string;
+  shopAddress?: string;
   refNumber: string;
   date: string;
   cashierName: string;
-  category: string;
+  category: string; // "Tarik Tunai", "Transfer BRI", "Transfer Antar Bank", dll
+  metodeAdmin?: string; // "Admin Dalam" | "Admin Luar" | "Potong Saldo" — hanya Tarik Tunai
   customerName: string;
-  destination: string;
-  amount: number;
-  fee: number;
-  total: number;
+  customerPhone?: string;
+  destination?: string; // no rek / no hp tujuan (kosong untuk Tarik Tunai)
+  bankName?: string; // nama bank tujuan (untuk transfer)
+  amount: number; // nominal
+  systemFee?: number; // biaya sistem (EDC)
+  adminFee?: number; // biaya admin (profit agen)
+  fee: number; // total fee
+  total: number; // uang yang diterima dari nasabah
+  status: string; // Sukses, Void, Pending
 }
 
 class ThermalPrintService {
@@ -244,50 +251,77 @@ class ThermalPrintService {
 
   /**
    * Print a BRILink transaction receipt.
+   * Format mirip struk BRI EDC: header toko, detail transaksi, nominal, status.
    */
   async printBrilinkReceipt(data: BrilinkReceiptData): Promise<void> {
     const bytes: number[] = [];
 
     bytes.push(...COMMANDS.INIT);
 
-    // Shop name (center, bold, double)
+    // Header: Shop name (center, bold, double)
     bytes.push(...COMMANDS.ALIGN_CENTER);
     bytes.push(...COMMANDS.BOLD_ON);
     bytes.push(...COMMANDS.DOUBLE_HEIGHT);
     bytes.push(...this.line(data.shopName));
     bytes.push(...COMMANDS.NORMAL_SIZE);
-    bytes.push(...this.line('STRUK BRILINK'));
     bytes.push(...COMMANDS.BOLD_OFF);
+    if (data.shopAddress) {
+      bytes.push(...this.line(data.shopAddress));
+    }
     bytes.push(...COMMANDS.LINE);
 
     bytes.push(...this.separator());
 
-    // Transaction info (left align)
+    // Date & Ref
     bytes.push(...COMMANDS.ALIGN_LEFT);
-    bytes.push(...this.line(`Ref: ${data.refNumber}`));
     bytes.push(...this.line(data.date));
-    bytes.push(...this.line(`Kasir: ${data.cashierName}`));
+    bytes.push(...this.line(`No Ref  : ${data.refNumber}`));
+    bytes.push(...this.line(`Kasir   : ${data.cashierName}`));
 
     bytes.push(...this.separator());
 
-    bytes.push(...this.line(`Layanan: ${data.category}`));
-    bytes.push(...this.line(`Customer: ${data.customerName}`));
-    bytes.push(...this.line(`Tujuan: ${data.destination}`));
+    // Transaction detail
+    bytes.push(...this.line(`Transaksi    : ${data.category}`));
+    if (data.metodeAdmin) {
+      bytes.push(...this.line(`Metode Admin : ${data.metodeAdmin}`));
+    }
+    bytes.push(...this.line(`Nama    : ${data.customerName || '-'}`));
+    bytes.push(...this.line(`No HP   : ${data.customerPhone || '-'}`));
+    if (data.destination) {
+      bytes.push(...this.line(`Tujuan  : ${data.destination}`));
+    }
+    if (data.bankName) {
+      bytes.push(...this.line(`Bank    : ${data.bankName}`));
+    }
 
     bytes.push(...this.separator());
 
-    // Totals
+    // Financials
     bytes.push(...this.lineRight('Nominal', this.fmtRp(data.amount)));
-    bytes.push(...this.lineRight('Fee', this.fmtRp(data.fee)));
+    if (data.systemFee && data.systemFee > 0) {
+      bytes.push(...this.lineRight('Biaya Sistem', this.fmtRp(data.systemFee)));
+    }
+    if (data.adminFee && data.adminFee > 0) {
+      bytes.push(...this.lineRight('Biaya Admin', this.fmtRp(data.adminFee)));
+    }
     bytes.push(...COMMANDS.BOLD_ON);
-    bytes.push(...this.lineRight('TOTAL BAYAR', this.fmtRp(data.total)));
+    bytes.push(...this.lineRight('TOTAL', this.fmtRp(data.total)));
+    bytes.push(...COMMANDS.BOLD_OFF);
+
+    bytes.push(...this.separator());
+
+    // Status
+    bytes.push(...COMMANDS.BOLD_ON);
+    bytes.push(...this.lineRight('Status', data.status));
     bytes.push(...COMMANDS.BOLD_OFF);
 
     bytes.push(...this.separator());
 
     // Footer
     bytes.push(...COMMANDS.ALIGN_CENTER);
-    bytes.push(...this.line('Terima kasih!'));
+    bytes.push(...this.line('Terima kasih'));
+    bytes.push(...this.line('Harap simpan resi ini sebagai'));
+    bytes.push(...this.line('bukti transaksi yang sah'));
     bytes.push(...COMMANDS.LINE);
 
     // Feed and cut

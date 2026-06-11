@@ -483,8 +483,45 @@ function handlePrint(trx: any) {
 }
 
 function handlePrintBrilink() {
-  // Basic print for BRILink receipt
-  window.print();
+  if (!selectedBrilink.value) return;
+  const trx = selectedBrilink.value;
+
+  // Determine metode admin label (only for TARIK_TUNAI)
+  let metodeAdmin: string | undefined;
+  if (trx.category === 'TARIK_TUNAI' && trx.feeMethod) {
+    const labels: Record<string, string> = { DALAM: 'Admin Dalam', LUAR: 'Admin Luar', POTONG: 'Potong Saldo' };
+    metodeAdmin = labels[trx.feeMethod] || trx.feeMethod;
+  }
+
+  // Status label
+  const statusLabels: Record<string, string> = { SUCCESS: 'Sukses', VOIDED: 'Void', FAILED: 'Gagal', PENDING: 'Pending' };
+
+  import('@/shared/services/thermal-print.service').then(async ({ thermalPrint }) => {
+    try {
+      if (!thermalPrint.isConnected) await thermalPrint.connect();
+      await thermalPrint.printBrilinkReceipt({
+        shopName: 'Posify', // TODO: dari shop settings
+        refNumber: trx.refNumber,
+        date: formatDateTime(trx.createdAt),
+        cashierName: trx.cashierName || '-',
+        category: BRILINK_CATEGORY_LABELS[trx.category] || trx.category,
+        metodeAdmin,
+        customerName: trx.customerName || '-',
+        customerPhone: trx.customerPhone || undefined,
+        destination: trx.category === 'TARIK_TUNAI' ? undefined : trx.destination,
+        bankName: trx.accountLabel || undefined,
+        amount: trx.amount,
+        adminFee: trx.fee || 0,
+        fee: trx.fee || 0,
+        total: trx.amount + (trx.fee || 0),
+        status: statusLabels[trx.status] || trx.status,
+      });
+      toast.success('Struk BRILink dicetak!');
+    } catch (err: any) {
+      if (err.message === 'cancelled') return;
+      toast.error(err.message || 'Gagal cetak.');
+    }
+  }).catch(() => { window.print(); });
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────────
