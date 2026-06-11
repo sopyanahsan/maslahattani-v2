@@ -628,8 +628,9 @@ const feeMethodLabel = computed(() => {
 });
 
 // ── Form ──────────────────────────────────────────────────────────────────────
+const BRI_BANK_CODE = '002'; // default bank tujuan = BRI
 const form = reactive({
-  bankCode: '',
+  bankCode: BRI_BANK_CODE,
   destination: '',
   customerName: '',
   customerPhone: '',
@@ -804,7 +805,7 @@ function handlePrint() {
 }
 
 function resetForm() {
-  form.bankCode = '';
+  form.bankCode = BRI_BANK_CODE;
   form.destination = '';
   form.customerName = '';
   form.customerPhone = '';
