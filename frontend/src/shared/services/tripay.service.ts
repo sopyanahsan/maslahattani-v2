@@ -163,11 +163,12 @@ export async function getPpobProducts(shopId: string, category?: string): Promis
 // Inquiry API
 // ============================================
 
-export async function ppobInquiry(productCode: string, customerId: string, shopId?: string) {
+export async function ppobInquiry(productCode: string, customerId: string, shopId?: string, phone?: string) {
   const { data } = await api.post('/tripay/inquiry', {
     productCode,
     customerId,
     shopId,
+    phone,
   });
   return data;
 }
@@ -183,6 +184,8 @@ export async function createPpobTransaction(payload: {
   customerName?: string;
   customerPhone?: string;
   amount?: number;
+  noMeterPln?: string;
+  orderId?: string;
 }) {
   const { data } = await api.post('/tripay/transactions', payload);
   return data;

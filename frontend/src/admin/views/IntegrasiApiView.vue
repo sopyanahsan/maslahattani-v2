@@ -58,6 +58,37 @@
           </span>
         </div>
 
+        <!-- Saldo Deposit Card -->
+        <div v-if="config.isActive" class="rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-4">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
+                <WalletIcon class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div>
+                <p class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Saldo Deposit Tripay</p>
+                <div v-if="saldoLoading" class="h-6 w-28 rounded bg-blue-200/50 dark:bg-blue-800/50 animate-pulse mt-0.5" />
+                <p v-else class="text-xl font-bold text-blue-900 dark:text-blue-100 font-mono leading-tight">
+                  {{ saldo !== null ? formatRupiahFull(saldo) : '—' }}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              :disabled="saldoLoading"
+              class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-800/50 text-blue-600 dark:text-blue-400 transition-colors disabled:opacity-50"
+              title="Refresh saldo"
+              @click="loadSaldo"
+            >
+              <RefreshCwIcon :class="['w-4 h-4', saldoLoading && 'animate-spin']" />
+            </button>
+          </div>
+          <p v-if="saldoError" class="text-[10px] text-red-600 dark:text-red-400 mt-2">{{ saldoError }}</p>
+          <p v-else-if="saldo !== null && saldo < 50000" class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-2 flex items-center gap-1">
+            <AlertTriangleIcon class="w-3 h-3" /> Saldo rendah! Segera top-up deposit Tripay.
+          </p>
+        </div>
+
         <!-- Config Form -->
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
           <div class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
@@ -184,12 +215,15 @@ import {
   Phone as PhoneIcon,
   Webhook as WebhookIcon,
   Copy as CopyIcon,
+  RefreshCw as RefreshCwIcon,
+  AlertTriangle as AlertTriangleIcon,
 } from 'lucide-vue-next';
 import { useShopStore } from '@/shared/stores/shop.store';
 import {
   getTripayConfig,
   saveTripayConfig,
   verifyTripayConfig,
+  getTripayBalance,
   type TripayConfig,
   type PpobCategory,
 } from '@/shared/services/tripay.service';
@@ -285,5 +319,36 @@ function formatDate(d: string) {
   return new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-onMounted(() => { loadConfig(); });
+// ============================================
+// Saldo Deposit Tripay
+// ============================================
+const saldo = ref<number | null>(null);
+const saldoLoading = ref(false);
+const saldoError = ref('');
+
+async function loadSaldo() {
+  if (!shopId.value || !config.value.isActive) return;
+  saldoLoading.value = true;
+  saldoError.value = '';
+  try {
+    const data = await getTripayBalance(shopId.value);
+    // Tripay returns saldo as number or in data object
+    saldo.value = typeof data === 'number' ? data : (data?.saldo ?? data?.balance ?? data ?? null);
+  } catch (err: any) {
+    saldoError.value = err?.response?.data?.message || 'Gagal memuat saldo.';
+    saldo.value = null;
+  } finally {
+    saldoLoading.value = false;
+  }
+}
+
+function formatRupiahFull(n: number) {
+  return 'Rp ' + n.toLocaleString('id-ID');
+}
+
+onMounted(() => {
+  loadConfig().then(() => {
+    if (config.value.isActive) loadSaldo();
+  });
+});
 </script>
