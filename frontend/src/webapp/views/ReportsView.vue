@@ -11,7 +11,7 @@
           <p class="text-[10px] text-slate-500 dark:text-slate-400">Ringkasan performa bisnis</p>
         </div>
       </div>
-      <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded text-[10px] font-semibold">{{ period === '7d' ? '7 Hari' : '30 Hari' }}</span>
+      <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded text-[10px] font-semibold">{{ period === 'today' ? 'Hari Ini' : period === '7d' ? '7 Hari' : '30 Hari' }}</span>
     </header>
 
     <!-- Type + Period Toggle -->
@@ -23,6 +23,7 @@
       </div>
       <!-- Period switch -->
       <div class="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1">
+        <button :class="['flex-1 py-1.5 text-xs font-semibold rounded-md transition-all duration-200', period === 'today' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400']" @click="period = 'today'; fetchAll()">Hari Ini</button>
         <button :class="['flex-1 py-1.5 text-xs font-semibold rounded-md transition-all duration-200', period === '7d' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400']" @click="period = '7d'; fetchAll()">7 Hari</button>
         <button :class="['flex-1 py-1.5 text-xs font-semibold rounded-md transition-all duration-200', period === '30d' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400']" @click="period = '30d'; fetchAll()">30 Hari</button>
       </div>
@@ -118,17 +119,20 @@
         <!-- Tren Penjualan Chart -->
         <div class="card-section bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
           <h3 class="text-sm font-bold text-slate-950 dark:text-white mb-4">Tren Penjualan</h3>
-          <div class="flex items-end gap-1 h-40 relative chart-bars">
-            <div v-for="(day, i) in retailChart" :key="i" class="flex-1 flex flex-col items-center justify-end h-full relative group cursor-pointer">
-              <div class="chart-tooltip absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-700 text-white rounded-lg shadow-xl px-3 py-2 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10 scale-90 group-hover:scale-100">
-                <p class="font-bold">{{ day.dateLabel }}</p>
-                <p class="text-blue-300">Penjualan: {{ formatRupiah(day.value) }}</p>
-                <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900 dark:border-t-slate-700"></div>
+          <div class="overflow-x-auto hide-scrollbar -mx-1 px-1">
+            <div class="flex items-end gap-1 h-40 relative chart-bars" :style="{ minWidth: retailChart.length > 10 ? (retailChart.length * 28) + 'px' : 'auto' }">
+              <div v-for="(day, i) in retailChart" :key="i" class="flex-1 flex flex-col items-center justify-end h-full relative group cursor-pointer" :style="{ minWidth: retailChart.length > 10 ? '24px' : 'auto' }">
+                <div class="chart-tooltip absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-700 text-white rounded-lg shadow-xl px-3 py-2 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10 scale-90 group-hover:scale-100">
+                  <p class="font-bold">{{ day.dateLabel }}</p>
+                  <p class="text-blue-300">Penjualan: {{ formatRupiah(day.value) }}</p>
+                  <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900 dark:border-t-slate-700"></div>
+                </div>
+                <div class="chart-bar w-full rounded-t-sm transition-all duration-300 group-hover:brightness-110" :class="day.value > 0 ? 'bg-gradient-to-t from-blue-600 to-blue-400' : 'bg-slate-200 dark:bg-slate-700'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px', animationDelay: (i * 50) + 'ms' }"></div>
+                <span class="text-[7px] text-slate-400 dark:text-slate-500 mt-1.5 font-mono whitespace-nowrap">{{ day.shortLabel }}</span>
               </div>
-              <div class="chart-bar w-full rounded-t-sm transition-all duration-300 group-hover:brightness-110" :class="day.value > 0 ? 'bg-gradient-to-t from-blue-600 to-blue-400' : 'bg-slate-200 dark:bg-slate-700'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px', animationDelay: (i * 50) + 'ms' }"></div>
-              <span class="text-[8px] text-slate-400 dark:text-slate-500 mt-1.5 font-mono">{{ day.shortLabel }}</span>
             </div>
           </div>
+          <p v-if="period === '30d'" class="text-[9px] text-slate-400 dark:text-slate-500 mt-2 text-center">← Geser untuk lihat data sebelumnya →</p>
         </div>
 
         <!-- Produk Terlaris -->
@@ -220,17 +224,20 @@
         <!-- Tren Volume BRILink Chart -->
         <div class="card-section bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
           <h3 class="text-sm font-bold text-slate-950 dark:text-white mb-4">Tren Volume BRILink</h3>
-          <div class="flex items-end gap-1 h-40 relative chart-bars">
-            <div v-for="(day, i) in brilinkChart" :key="i" class="flex-1 flex flex-col items-center justify-end h-full relative group cursor-pointer">
-              <div class="chart-tooltip absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-700 text-white rounded-lg shadow-xl px-3 py-2 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10 scale-90 group-hover:scale-100">
-                <p class="font-bold">{{ day.dateLabel }}</p>
-                <p class="text-emerald-300">Volume: {{ formatRupiah(day.value) }}</p>
-                <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900 dark:border-t-slate-700"></div>
+          <div class="overflow-x-auto hide-scrollbar -mx-1 px-1">
+            <div class="flex items-end gap-1 h-40 relative chart-bars" :style="{ minWidth: brilinkChart.length > 10 ? (brilinkChart.length * 28) + 'px' : 'auto' }">
+              <div v-for="(day, i) in brilinkChart" :key="i" class="flex-1 flex flex-col items-center justify-end h-full relative group cursor-pointer" :style="{ minWidth: brilinkChart.length > 10 ? '24px' : 'auto' }">
+                <div class="chart-tooltip absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-700 text-white rounded-lg shadow-xl px-3 py-2 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10 scale-90 group-hover:scale-100">
+                  <p class="font-bold">{{ day.dateLabel }}</p>
+                  <p class="text-emerald-300">Volume: {{ formatRupiah(day.value) }}</p>
+                  <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900 dark:border-t-slate-700"></div>
+                </div>
+                <div class="chart-bar w-full rounded-t-sm transition-all duration-300 group-hover:brightness-110" :class="day.value > 0 ? 'bg-gradient-to-t from-emerald-600 to-emerald-400' : 'bg-slate-200 dark:bg-slate-700'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px', animationDelay: (i * 50) + 'ms' }"></div>
+                <span class="text-[7px] text-slate-400 dark:text-slate-500 mt-1.5 font-mono whitespace-nowrap">{{ day.shortLabel }}</span>
               </div>
-              <div class="chart-bar w-full rounded-t-sm transition-all duration-300 group-hover:brightness-110" :class="day.value > 0 ? 'bg-gradient-to-t from-emerald-600 to-emerald-400' : 'bg-slate-200 dark:bg-slate-700'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px', animationDelay: (i * 50) + 'ms' }"></div>
-              <span class="text-[8px] text-slate-400 dark:text-slate-500 mt-1.5 font-mono">{{ day.shortLabel }}</span>
             </div>
           </div>
+          <p v-if="period === '30d'" class="text-[9px] text-slate-400 dark:text-slate-500 mt-2 text-center">← Geser untuk lihat data sebelumnya →</p>
         </div>
 
         <!-- Breakdown per Kategori BRILink -->
@@ -276,7 +283,7 @@ import api from '@/shared/services/api';
 const authStore = useAuthStore();
 const loading = ref(true);
 const reportType = ref<'retail' | 'brilink'>('retail');
-const period = ref<'7d' | '30d'>('7d');
+const period = ref<'today' | '7d' | '30d'>('today');
 
 // Retail data
 const retailStats = ref({ omzet: 0, modal: 0, profit: 0, diskon: 0, totalTransaksi: 0, totalVoid: 0, totalHutang: 0, jumlahHutang: 0 });
@@ -307,11 +314,18 @@ function formatRupiahShort(n: number): string {
 function getDateRange(): { startDate: string; endDate: string } {
   const end = new Date();
   const start = new Date();
-  start.setDate(end.getDate() - (period.value === '7d' ? 6 : 29));
+  if (period.value === 'today') {
+    // today only
+  } else {
+    start.setDate(end.getDate() - (period.value === '7d' ? 6 : 29));
+  }
   return { startDate: start.toISOString().slice(0, 10), endDate: end.toISOString().slice(0, 10) };
 }
 
-function getDays(): number { return period.value === '7d' ? 7 : 30; }
+function getDays(): number {
+  if (period.value === 'today') return 1;
+  return period.value === '7d' ? 7 : 30;
+}
 
 // ===== RETAIL FETCH =====
 async function fetchRetailStats() {
@@ -524,4 +538,8 @@ onMounted(fetchAll);
 .font-mono {
   font-variant-numeric: tabular-nums;
 }
+
+/* === Hide scrollbar but keep scroll functional === */
+.hide-scrollbar::-webkit-scrollbar { display: none; }
+.hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
