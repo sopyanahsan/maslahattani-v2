@@ -456,16 +456,20 @@
             <span class="font-mono text-slate-700 dark:text-[#bcc9c7]">{{ form.destination }}</span>
           </div>
           <div class="border-t border-slate-100 dark:border-[#3d4948] pt-2 flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Nominal</span>
+            <span class="text-slate-500 dark:text-[#869392]">{{ selectedCategory === 'TARIK_TUNAI' ? 'Nominal' : 'Jumlah Trf' }}</span>
             <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount) }}</span>
           </div>
           <div class="flex justify-between text-xs">
             <span class="text-slate-500 dark:text-[#869392]">Biaya Admin</span>
-            <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedFee) }}</span>
+            <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedAdminFee) }}</span>
           </div>
           <div class="flex justify-between text-sm font-bold border-t border-slate-200 dark:border-[#3d4948] pt-2">
             <span class="text-slate-800 dark:text-[#e3e2e2]">Total</span>
             <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? form.amount : form.amount + calculatedAdminFee) }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Status</span>
+            <span class="font-semibold text-emerald-600 dark:text-emerald-400">Sukses</span>
           </div>
           <div v-if="selectedCategory === 'TARIK_TUNAI'" class="flex justify-between text-xs">
             <span class="text-slate-500 dark:text-[#869392]">Uang Diterima Nasabah</span>
