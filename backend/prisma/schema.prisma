@@ -161,6 +161,8 @@ model Shop {
   rackZones           RackZone[]
   racks               Rack[]
   customers           Customer[]
+  tripayConfig        TripayConfig?
+  ppobTransactions    PpobTransaction[]
 
   @@map("shops")
 }
@@ -1495,4 +1497,54 @@ model Customer {
   @@index([shopId])
   @@index([name])
   @@map("customers")
+}
+
+
+
+// ============================================
+// TRIPAY PPOB INTEGRATION
+// ============================================
+
+model TripayConfig {
+  id              String    @id @default(cuid())
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String    @unique
+  apiKey          String
+  privateKey      String
+  merchantCode    String
+  mode            String    @default("sandbox") // sandbox | production
+  isActive        Boolean   @default(true)
+  lastVerifiedAt  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("tripay_configs")
+}
+
+model PpobTransaction {
+  id              String    @id @default(cuid())
+  shop            Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  shopId          String
+  cashierId       String
+  refId           String    @unique // Our internal reference
+  tripayRef       String?   // Tripay's reference/trx_id
+  productCode     String
+  customerId      String    // No pelanggan / tujuan
+  customerName    String?
+  customerPhone   String?
+  type            String    // prepaid | postpaid
+  amount          Float     @default(0)
+  fee             Float     @default(0)
+  total           Float     @default(0)
+  status          String    @default("PROCESSING") // PROCESSING | SUCCESS | FAILED | REFUNDED
+  tripayStatus    String?   // Raw status from Tripay
+  serialNumber    String?   // SN token PLN, voucher, dll
+  rawResponse     String?   // JSON string of Tripay response
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([shopId, createdAt])
+  @@index([shopId, status])
+  @@index([refId])
+  @@map("ppob_transactions")
 }

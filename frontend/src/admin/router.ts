@@ -318,6 +318,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'integrasi-api',
+        name: 'admin-integrasi-api',
+        component: () => import('@/admin/views/IntegrasiApiView.vue'),
+        meta: {
+          title: 'Integrasi API',
+          description: 'Kelola koneksi API pihak ketiga — Tripay PPOB, webhook.',
+        },
+      },
+      {
         path: 'billing',
         name: 'admin-billing',
         component: () => import('@/admin/views/BillingView.vue'),

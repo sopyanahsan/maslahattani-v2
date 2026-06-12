@@ -84,6 +84,20 @@ const routes: RouteRecordRaw[] = [
         meta: { title: 'BRILink — Transaksi' },
       },
 
+      // === PPOB (Tripay) ===
+      {
+        path: 'ppob/menu',
+        name: 'webapp-ppob-menu',
+        component: () => import('@/webapp/views/PpobMenuView.vue'),
+        meta: { title: 'PPOB' },
+      },
+      {
+        path: 'ppob/history',
+        name: 'webapp-ppob-history',
+        component: () => import('@/webapp/views/PpobHistoryView.vue'),
+        meta: { title: 'Riwayat PPOB' },
+      },
+
       // === Receipt ===
       {
         path: 'retail/receipt',

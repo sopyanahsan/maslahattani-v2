@@ -568,6 +568,7 @@ import {
   Bell as BellIcon,
   ChevronRight as ChevronRightIcon,
   RefreshCw as RefreshCwIcon,
+  Plug as PlugIcon,
 } from 'lucide-vue-next';
 import { useNotifSound } from '@/shared/composables/useNotifSound';
 
@@ -1019,6 +1020,7 @@ const bottomNav = computed<NavItem[]>(() => {
   const items: NavItem[] = [];
   if (permStore.can('settings.shop') || isSuperAdmin.value) {
     items.push({ to: '/admin/settings', label: 'Pengaturan', icon: SettingsIcon });
+    items.push({ to: '/admin/integrasi-api', label: 'Integrasi API', icon: PlugIcon });
   }
   if (isSuperAdmin.value) {
     items.push({ to: '/admin/super-admin-settings', label: 'Super Admin', icon: ShieldIcon });

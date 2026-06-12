@@ -113,6 +113,10 @@
           <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#292a2a] text-slate-600 dark:text-[#bcc9c7] flex items-center justify-center"><BarChart3Icon class="w-5 h-5" /></div>
           <span class="text-[10px] font-medium text-slate-700 dark:text-[#bcc9c7] text-center">Laporan</span>
         </RouterLink>
+        <RouterLink to="/ppob/menu" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors shadow-sm gap-2">
+          <div class="w-10 h-10 rounded-full bg-indigo-50 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center"><ZapIcon class="w-5 h-5" /></div>
+          <span class="text-[10px] font-medium text-slate-700 dark:text-[#bcc9c7] text-center">PPOB</span>
+        </RouterLink>
         <RouterLink to="/retail/history" class="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors shadow-sm gap-2">
           <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-[#292a2a] text-slate-600 dark:text-[#bcc9c7] flex items-center justify-center"><HistoryIcon class="w-5 h-5" /></div>
           <span class="text-[10px] font-medium text-slate-700 dark:text-[#bcc9c7] text-center">Riwayat</span>
@@ -511,6 +515,7 @@ import {
   ClipboardCheck as ClipboardCheckIcon,
   X as XIcon, Loader2 as Loader2Icon,
   CheckCircle2 as CheckCircleIcon,
+  Zap as ZapIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShiftStore } from '@/shared/stores/shift.store';

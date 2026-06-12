@@ -34,6 +34,7 @@ import { RealtimeModule } from './realtime/realtime.module';
 import { PermissionsModule } from './permissions/permissions.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { TenantsModule } from './tenants/tenants.module';
+import { TripayModule } from './tripay/tripay.module';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { TenantsModule } from './tenants/tenants.module';
     AnalyticsModule,
     DashboardModule,
     DashboardBrilinkModule,
+    TripayModule,
   ],
   controllers: [],
   providers: [],
