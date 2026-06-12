@@ -172,6 +172,22 @@ export class RealtimeGateway implements OnGatewayConnection, OnGatewayDisconnect
     this.server.to(`shop:${shopId}`).emit(REALTIME_EVENTS.DASHBOARD_REFRESH, data);
   }
 
+  /**
+   * Emit ketika transaksi PPOB status berubah (dari callback Tripay).
+   */
+  emitPpobTransactionUpdated(shopId: string, data: {
+    id: string;
+    refId: string;
+    productCode: string;
+    customerId: string;
+    status: string;
+    serialNumber?: string | null;
+    total: number;
+  }) {
+    this.server.to(`shop:${shopId}`).emit(REALTIME_EVENTS.PPOB_TRANSACTION_UPDATED, data);
+    this.emitDataChanged(shopId, 'ppob', 'updated', data.id);
+  }
+
   // ============================================
   // UTILITY
   // ============================================

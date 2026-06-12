@@ -1006,6 +1006,13 @@ const navGroups = computed<NavGroup[]>(() => {
   }
   if (inventarisItems.length > 0) groups.push({ title: 'Inventaris', items: inventarisItems });
 
+  // --- PPOB ---
+  const ppobItems: NavItem[] = [
+    { to: '/admin/ppob-transactions', label: 'Transaksi PPOB', icon: ReceiptIcon },
+    { to: '/admin/integrasi-api', label: 'Integrasi API', icon: PlugIcon },
+  ];
+  groups.push({ title: 'PPOB', items: ppobItems });
+
   // --- OPERASIONAL ---
   const operasionalItems: NavItem[] = [];
   if (can('shifts.view')) operasionalItems.push({ to: '/admin/shifts', label: 'Shift', icon: ShiftIcon });
@@ -1020,7 +1027,6 @@ const bottomNav = computed<NavItem[]>(() => {
   const items: NavItem[] = [];
   if (permStore.can('settings.shop') || isSuperAdmin.value) {
     items.push({ to: '/admin/settings', label: 'Pengaturan', icon: SettingsIcon });
-    items.push({ to: '/admin/integrasi-api', label: 'Integrasi API', icon: PlugIcon });
   }
   if (isSuperAdmin.value) {
     items.push({ to: '/admin/super-admin-settings', label: 'Super Admin', icon: ShieldIcon });

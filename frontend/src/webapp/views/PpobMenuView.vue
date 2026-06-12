@@ -251,18 +251,15 @@
       </Transition>
     </Teleport>
 
-    <!-- Success Modal -->
+    <!-- Success Modal with Receipt -->
     <Teleport to="body">
       <Transition name="fade">
-        <div v-if="showSuccess" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
+        <div v-if="showSuccess" class="fixed inset-0 z-[60] flex items-center justify-center p-4 overflow-y-auto">
           <div class="absolute inset-0 bg-black/50" @click="closeSuccess" />
-          <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
-            <div class="w-16 h-16 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mb-4"><CheckCircleIcon class="w-8 h-8 text-emerald-600 dark:text-emerald-400" /></div>
-            <h3 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">Transaksi Diproses!</h3>
-            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">{{ successData?.productCode }} — {{ successData?.customerId }}</p>
-            <p v-if="successData?.serialNumber" class="text-xs font-mono bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg mb-3 select-all">SN: {{ successData.serialNumber }}</p>
-            <p class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-4">{{ formatRupiah(successData?.total || 0) }}</p>
-            <button type="button" class="w-full h-10 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl" @click="closeSuccess">Selesai</button>
+          <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-sm p-5 my-4 max-h-[90vh] overflow-y-auto">
+            <button type="button" class="absolute top-3 right-3 p-1 z-10" @click="closeSuccess"><XIcon class="w-4 h-4 text-slate-400" /></button>
+            <ReceiptPpob v-if="successData" :transaction="successData" :shop-name="shopStore.currentShopName || 'Posify'" />
+            <button type="button" class="w-full h-10 mt-4 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 font-semibold text-sm rounded-xl no-print" @click="closeSuccess">Tutup</button>
           </div>
         </div>
       </Transition>
@@ -294,6 +291,7 @@ import {
   type PpobProduct,
   type PpobTransaction,
 } from '@/shared/services/tripay.service';
+import ReceiptPpob from '@/webapp/components/ReceiptPpob.vue';
 
 const shopStore = useShopStore();
 const shopId = computed(() => shopStore.currentShopId || '');

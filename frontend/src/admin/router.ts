@@ -327,6 +327,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        path: 'ppob-transactions',
+        name: 'admin-ppob-transactions',
+        component: () => import('@/admin/views/AdminPpobTransactionsView.vue'),
+        meta: {
+          title: 'Transaksi PPOB',
+          description: 'Riwayat transaksi PPOB — pulsa, token PLN, tagihan, e-money.',
+        },
+      },
+      {
         path: 'billing',
         name: 'admin-billing',
         component: () => import('@/admin/views/BillingView.vue'),

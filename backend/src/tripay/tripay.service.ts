@@ -6,6 +6,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 import { UpdateTripayConfigDto, TripayMode, PpobType } from './dto';
 import * as crypto from 'crypto';
 
@@ -39,7 +40,10 @@ export const PPOB_CATEGORIES = [
 export class TripayService {
   private readonly logger = new Logger(TripayService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private realtimeGateway: RealtimeGateway,
+  ) {}
 
   // ============================================
   // CONFIG MANAGEMENT
@@ -700,6 +704,17 @@ export class TripayService {
         rawResponse: JSON.stringify(payload),
         updatedAt: new Date(),
       },
+    });
+
+    // Emit real-time WebSocket event to admin/kasir
+    this.realtimeGateway.emitPpobTransactionUpdated(trx.shopId, {
+      id: trx.id,
+      refId: trx.refId,
+      productCode: trx.productCode,
+      customerId: trx.customerId,
+      status: newStatus,
+      serialNumber: payload.token || null,
+      total: trx.total,
     });
 
     this.logger.log(
