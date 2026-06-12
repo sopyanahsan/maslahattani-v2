@@ -139,23 +139,131 @@
         <p class="text-sm text-slate-500 dark:text-[#bcc9c7]">Belum ada transaksi {{ trxTab === 'retail' ? 'retail' : 'BRILink' }}</p>
       </div>
       <ul v-else class="space-y-2">
-        <li v-for="(trx, index) in visibleTransactions" :key="index" class="flex items-center justify-between p-3 border border-slate-100 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] shadow-sm">
-          <div class="flex items-center gap-3">
-            <div :class="['w-9 h-9 rounded-full flex items-center justify-center shrink-0', trxTab === 'retail' ? 'bg-[#00A19B]/10 text-[#00A19B] dark:text-[#5fd9d2]' : 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400']">
-              <ReceiptIcon class="w-4 h-4" />
+        <li v-for="(trx, index) in visibleTransactions" :key="index">
+          <button v-if="trxTab === 'brilink'" type="button"
+            class="w-full text-left flex items-center justify-between p-3 border border-slate-100 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] shadow-sm hover:border-emerald-400 dark:hover:border-emerald-500 hover:shadow-md transition-all"
+            @click="openBrilinkDetail(index)">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+                <ReceiptIcon class="w-4 h-4" />
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-slate-800 dark:text-[#e3e2e2] truncate">{{ trx.itemNames }}</p>
+                <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400">{{ formatRupiah(trx.amount) }}</p>
+              </div>
             </div>
-            <div class="min-w-0">
-              <p class="text-sm font-medium text-slate-800 dark:text-[#e3e2e2] truncate">{{ trx.itemNames }}</p>
-              <p class="text-xs font-bold" :class="trxTab === 'retail' ? 'text-[#00A19B] dark:text-[#5fd9d2]' : 'text-emerald-600 dark:text-emerald-400'">{{ formatRupiah(trx.amount) }}</p>
+            <div class="text-right shrink-0">
+              <p class="text-[11px] text-slate-500 dark:text-[#bcc9c7]">{{ trx.timestamp }}</p>
+              <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ trx.method }}</p>
             </div>
-          </div>
-          <div class="text-right shrink-0">
-            <p class="text-[11px] text-slate-500 dark:text-[#bcc9c7]">{{ trx.timestamp }}</p>
-            <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ trx.method }}</p>
+          </button>
+          <div v-else class="flex items-center justify-between p-3 border border-slate-100 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-[#00A19B]/10 text-[#00A19B] dark:text-[#5fd9d2]">
+                <ReceiptIcon class="w-4 h-4" />
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-medium text-slate-800 dark:text-[#e3e2e2] truncate">{{ trx.itemNames }}</p>
+                <p class="text-xs font-bold text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(trx.amount) }}</p>
+              </div>
+            </div>
+            <div class="text-right shrink-0">
+              <p class="text-[11px] text-slate-500 dark:text-[#bcc9c7]">{{ trx.timestamp }}</p>
+              <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ trx.method }}</p>
+            </div>
           </div>
         </li>
       </ul>
     </div>
+
+    <!-- ============================================================ -->
+    <!-- DETAIL MODAL: BRILink Transaction (tanpa print button)        -->
+    <!-- ============================================================ -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showBrilinkDetail && selectedBrilink" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center font-hanken">
+          <div class="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-[2px]" @click="showBrilinkDetail = false" />
+          <div class="relative w-full sm:max-w-md bg-white dark:bg-[#1e2020] rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-200 dark:border-[#3d4948] shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="w-10 h-1 rounded-full bg-slate-200 dark:bg-[#3d4948] mx-auto mt-3 sm:hidden" />
+
+            <div class="sticky top-0 bg-white dark:bg-[#1e2020] border-b border-slate-100 dark:border-[#3d4948] px-5 py-3 flex items-center justify-between z-10">
+              <h3 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">Detail Transaksi BRILink</h3>
+              <button class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#292a2a]" @click="showBrilinkDetail = false"><XIcon class="w-4 h-4 text-slate-400 dark:text-[#869392]" /></button>
+            </div>
+
+            <div class="p-5 space-y-4">
+              <!-- Status card -->
+              <div class="bg-slate-50 dark:bg-[#1a1c1c] rounded-2xl p-4 space-y-2">
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Status</span><span :class="['text-xs font-bold px-2 py-0.5 rounded-full', selectedBrilink.status === 'SUCCESS' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : selectedBrilink.status === 'VOIDED' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400']">{{ selectedBrilink.status === 'SUCCESS' ? 'Sukses' : selectedBrilink.status === 'VOIDED' ? 'Void' : 'Pending' }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">No. Ref</span><span class="text-xs font-mono font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ selectedBrilink.refNumber }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Kategori</span><span class="text-xs font-bold text-slate-800 dark:text-[#e3e2e2]">{{ BRILINK_CATEGORY_LABELS[selectedBrilink.category as keyof typeof BRILINK_CATEGORY_LABELS] }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Tanggal</span><span class="text-xs text-slate-700 dark:text-[#bcc9c7]">{{ formatDateTime(selectedBrilink.createdAt) }}</span></div>
+                <div v-if="selectedBrilink.cashierName" class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Kasir</span><span class="text-xs text-slate-700 dark:text-[#bcc9c7]">{{ selectedBrilink.cashierName }}</span></div>
+                <div v-if="selectedBrilink.accountLabel" class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Rekening</span><span class="text-xs text-slate-700 dark:text-[#bcc9c7]">{{ selectedBrilink.accountLabel }}</span></div>
+              </div>
+
+              <!-- Customer & Destination -->
+              <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 space-y-2">
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Customer</span><span class="text-xs font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ selectedBrilink.customerName }}</span></div>
+                <div v-if="selectedBrilink.customerPhone" class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">No. HP</span><span class="text-xs font-mono text-slate-700 dark:text-[#bcc9c7]">{{ selectedBrilink.customerPhone }}</span></div>
+                <div v-if="selectedBrilink.destination" class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Tujuan</span><span class="text-xs font-mono text-slate-700 dark:text-[#bcc9c7]">{{ selectedBrilink.destination }}</span></div>
+              </div>
+
+              <!-- Aliran Dana -->
+              <div class="bg-[#00A19B]/5 dark:bg-[#5fd9d2]/5 border border-[#00A19B]/15 dark:border-[#5fd9d2]/15 rounded-2xl p-4 space-y-2.5">
+                <p class="text-[10px] font-bold text-[#00756f] dark:text-[#5fd9d2] uppercase tracking-wider">Aliran Dana</p>
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="text-[9px] font-bold text-red-600 dark:text-red-400">↑</span>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-[10px] font-semibold text-slate-500 dark:text-[#869392]">Dana Keluar Dari</p>
+                    <p class="text-xs font-bold text-slate-800 dark:text-[#e3e2e2]">
+                      {{ selectedBrilink.accountLabel ? selectedBrilink.accountLabel + (selectedBrilink.accountNumber ? ' (...' + selectedBrilink.accountNumber.slice(-4) + ')' : '') : 'Kartu Customer' }}
+                    </p>
+                    <p v-if="selectedBrilink.accountImpact" class="text-[10px] text-red-500 dark:text-red-400 font-mono">-{{ formatRupiah(Math.abs(selectedBrilink.accountImpact)) }}</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">★</span>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-[10px] font-semibold text-slate-500 dark:text-[#869392]">Profit Agen</p>
+                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">+{{ formatRupiah(selectedBrilink.fee) }}</p>
+                  </div>
+                </div>
+                <div v-if="selectedBrilink.cashImpact && selectedBrilink.cashImpact !== 0" class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                    :class="selectedBrilink.cashImpact > 0 ? 'bg-emerald-100 dark:bg-emerald-900/20' : 'bg-red-100 dark:bg-red-900/20'">
+                    <span :class="['text-[9px] font-bold', selectedBrilink.cashImpact > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400']">{{ selectedBrilink.cashImpact > 0 ? '↓' : '↑' }}</span>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-[10px] font-semibold text-slate-500 dark:text-[#869392]">Kas Tunai Agen</p>
+                    <p :class="['text-[10px] font-mono font-semibold', selectedBrilink.cashImpact > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400']">
+                      {{ selectedBrilink.cashImpact > 0 ? '+' : '-' }}{{ formatRupiah(Math.abs(selectedBrilink.cashImpact)) }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Financial breakdown -->
+              <div class="border-t border-slate-200 dark:border-[#3d4948] pt-3 space-y-1.5">
+                <div class="flex justify-between text-xs text-slate-600 dark:text-[#bcc9c7]"><span>{{ selectedBrilink.category === 'TARIK_TUNAI' ? 'Nominal' : 'Jumlah Trf' }}</span><span class="font-mono">{{ formatRupiah(selectedBrilink.amount) }}</span></div>
+                <div class="flex justify-between text-xs text-[#00A19B] dark:text-[#5fd9d2]"><span>Biaya Admin</span><span class="font-mono font-bold">{{ formatRupiah(selectedBrilink.fee) }}</span></div>
+                <div class="flex justify-between text-base font-bold text-slate-900 dark:text-[#e3e2e2] pt-1 border-t border-slate-100 dark:border-[#3d4948]"><span>Total</span><span class="font-mono">{{ formatRupiah(selectedBrilink.category === 'TARIK_TUNAI' ? selectedBrilink.amount : selectedBrilink.amount + selectedBrilink.fee) }}</span></div>
+              </div>
+
+              <!-- Void info -->
+              <div v-if="selectedBrilink.status === 'VOIDED'" class="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/30 rounded-xl p-3">
+                <p class="text-xs font-semibold text-red-700 dark:text-red-400">Transaksi di-void</p>
+                <p v-if="selectedBrilink.voidReason" class="text-[10px] text-red-600 dark:text-red-400/80 mt-0.5">{{ selectedBrilink.voidReason }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
 
     <!-- ============================================================ -->
     <!-- MODAL: Pengeluaran / Cash In / Transfer                       -->
@@ -378,7 +486,25 @@ const brilinkProgress = computed(() => Math.min(100, Math.round((stats.value.bri
 const trxTab = ref<'retail' | 'brilink'>('retail');
 const retailTransactions = ref<any[]>([]);
 const brilinkTransactions = ref<any[]>([]);
+const brilinkTransactionsRaw = ref<any[]>([]);
 const visibleTransactions = computed(() => trxTab.value === 'retail' ? retailTransactions.value : brilinkTransactions.value);
+
+// ── BRILink detail modal (tanpa print) ────────────────────────────────────────
+const showBrilinkDetail = ref(false);
+const selectedBrilink = ref<any>(null);
+
+function openBrilinkDetail(index: number) {
+  const raw = brilinkTransactionsRaw.value[index];
+  if (raw) {
+    selectedBrilink.value = raw;
+    showBrilinkDetail.value = true;
+  }
+}
+
+function formatDateTime(iso: string) {
+  const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z');
+  return d.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
 
 // ── Saldo sources for modal ────────────────────────────────────────────────────
 const kasRetailBalance = ref(0);
@@ -587,6 +713,7 @@ async function refresh() {
       stats.value.brilink = successTrx.length;
 
       // Recent BRILink transactions (top 5)
+      brilinkTransactionsRaw.value = brilinkData.slice(0, 5);
       brilinkTransactions.value = brilinkData.slice(0, 5).map((t: any) => ({
         itemNames: t.customerName || BRILINK_CATEGORY_LABELS[t.category as keyof typeof BRILINK_CATEGORY_LABELS] || t.refNumber,
         timestamp: new Date(t.createdAt).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }),

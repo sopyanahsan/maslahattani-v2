@@ -197,21 +197,24 @@
         <p class="text-xs text-slate-400 dark:text-[#869392]">Belum ada transaksi BRILink.</p>
       </div>
       <ul v-else class="space-y-2">
-        <li v-for="trx in recentTransactions" :key="trx.id"
-          class="flex items-center justify-between rounded-2xl border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] px-3.5 py-3">
-          <div class="flex items-center gap-2.5 min-w-0">
-            <div class="w-8 h-8 rounded-xl bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 flex items-center justify-center shrink-0">
-              <BanknoteIcon class="w-4 h-4 text-[#00A19B] dark:text-[#5fd9d2]" />
+        <li v-for="trx in recentTransactions" :key="trx.id">
+          <button type="button"
+            class="w-full text-left flex items-center justify-between rounded-2xl border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] px-3.5 py-3 hover:border-[#00A19B] dark:hover:border-[#5fd9d2] hover:shadow-md transition-all"
+            @click="openDetail(trx)">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-xl bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 flex items-center justify-center shrink-0">
+                <BanknoteIcon class="w-4 h-4 text-[#00A19B] dark:text-[#5fd9d2]" />
+              </div>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold text-slate-800 dark:text-[#e3e2e2] truncate">{{ BRILINK_CATEGORY_LABELS[trx.category] }}</p>
+                <p class="text-[10px] text-slate-400 dark:text-[#869392] truncate">{{ trx.customerName }} · {{ formatTime(trx.createdAt) }}</p>
+              </div>
             </div>
-            <div class="min-w-0">
-              <p class="text-sm font-semibold text-slate-800 dark:text-[#e3e2e2] truncate">{{ BRILINK_CATEGORY_LABELS[trx.category] }}</p>
-              <p class="text-[10px] text-slate-400 dark:text-[#869392] truncate">{{ trx.customerName }} · {{ formatTime(trx.createdAt) }}</p>
+            <div class="text-right shrink-0 ml-3">
+              <p class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] font-mono">{{ formatRupiah(trx.amount) }}</p>
+              <p class="text-[10px] text-[#00A19B] dark:text-[#5fd9d2] font-mono font-semibold">+{{ formatRupiah(trx.fee) }}</p>
             </div>
-          </div>
-          <div class="text-right shrink-0 ml-3">
-            <p class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] font-mono">{{ formatRupiah(trx.amount) }}</p>
-            <p class="text-[10px] text-[#00A19B] dark:text-[#5fd9d2] font-mono font-semibold">+{{ formatRupiah(trx.fee) }}</p>
-          </div>
+          </button>
         </li>
       </ul>
     </div>
@@ -523,6 +526,95 @@
     </Teleport>
 
     <!-- ============================================================ -->
+    <!-- DETAIL MODAL: BRILink Transaction (tanpa print button)        -->
+    <!-- ============================================================ -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showDetail && selectedTrx" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center font-hanken">
+          <div class="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-[2px]" @click="showDetail = false" />
+          <div class="relative w-full sm:max-w-md bg-white dark:bg-[#1e2020] rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-200 dark:border-[#3d4948] shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="w-10 h-1 rounded-full bg-slate-200 dark:bg-[#3d4948] mx-auto mt-3 sm:hidden" />
+
+            <div class="sticky top-0 bg-white dark:bg-[#1e2020] border-b border-slate-100 dark:border-[#3d4948] px-5 py-3 flex items-center justify-between z-10">
+              <h3 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">Detail Transaksi BRILink</h3>
+              <button class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#292a2a]" @click="showDetail = false"><XIcon class="w-4 h-4 text-slate-400 dark:text-[#869392]" /></button>
+            </div>
+
+            <div class="p-5 space-y-4">
+              <!-- Status card -->
+              <div class="bg-slate-50 dark:bg-[#1a1c1c] rounded-2xl p-4 space-y-2">
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Status</span><span :class="['text-xs font-bold px-2 py-0.5 rounded-full', selectedTrx.status === 'SUCCESS' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : selectedTrx.status === 'VOIDED' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400']">{{ selectedTrx.status === 'SUCCESS' ? 'Sukses' : selectedTrx.status === 'VOIDED' ? 'Void' : 'Pending' }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">No. Ref</span><span class="text-xs font-mono font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ selectedTrx.refNumber }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Kategori</span><span class="text-xs font-bold text-slate-800 dark:text-[#e3e2e2]">{{ BRILINK_CATEGORY_LABELS[selectedTrx.category] }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Tanggal</span><span class="text-xs text-slate-700 dark:text-[#bcc9c7]">{{ formatDateTime(selectedTrx.createdAt) }}</span></div>
+                <div v-if="selectedTrx.cashierName" class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Kasir</span><span class="text-xs text-slate-700 dark:text-[#bcc9c7]">{{ selectedTrx.cashierName }}</span></div>
+                <div v-if="selectedTrx.accountLabel" class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Rekening</span><span class="text-xs text-slate-700 dark:text-[#bcc9c7]">{{ selectedTrx.accountLabel }}</span></div>
+              </div>
+
+              <!-- Customer & Destination -->
+              <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 space-y-2">
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Customer</span><span class="text-xs font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ selectedTrx.customerName }}</span></div>
+                <div v-if="selectedTrx.customerPhone" class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">No. HP</span><span class="text-xs font-mono text-slate-700 dark:text-[#bcc9c7]">{{ selectedTrx.customerPhone }}</span></div>
+                <div v-if="selectedTrx.destination" class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Tujuan</span><span class="text-xs font-mono text-slate-700 dark:text-[#bcc9c7]">{{ selectedTrx.destination }}</span></div>
+              </div>
+
+              <!-- Aliran Dana -->
+              <div class="bg-[#00A19B]/5 dark:bg-[#5fd9d2]/5 border border-[#00A19B]/15 dark:border-[#5fd9d2]/15 rounded-2xl p-4 space-y-2.5">
+                <p class="text-[10px] font-bold text-[#00756f] dark:text-[#5fd9d2] uppercase tracking-wider">Aliran Dana</p>
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="text-[9px] font-bold text-red-600 dark:text-red-400">↑</span>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-[10px] font-semibold text-slate-500 dark:text-[#869392]">Dana Keluar Dari</p>
+                    <p class="text-xs font-bold text-slate-800 dark:text-[#e3e2e2]">
+                      {{ selectedTrx.accountLabel ? selectedTrx.accountLabel + (selectedTrx.accountNumber ? ' (...' + selectedTrx.accountNumber.slice(-4) + ')' : '') : 'Kartu Customer' }}
+                    </p>
+                    <p v-if="selectedTrx.accountImpact" class="text-[10px] text-red-500 dark:text-red-400 font-mono">-{{ formatRupiah(Math.abs(selectedTrx.accountImpact)) }}</p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <span class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">★</span>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-[10px] font-semibold text-slate-500 dark:text-[#869392]">Profit Agen</p>
+                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">+{{ formatRupiah(selectedTrx.fee) }}</p>
+                  </div>
+                </div>
+                <div v-if="selectedTrx.cashImpact && selectedTrx.cashImpact !== 0" class="flex items-start gap-2">
+                  <div class="w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5"
+                    :class="selectedTrx.cashImpact > 0 ? 'bg-emerald-100 dark:bg-emerald-900/20' : 'bg-red-100 dark:bg-red-900/20'">
+                    <span :class="['text-[9px] font-bold', selectedTrx.cashImpact > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400']">{{ selectedTrx.cashImpact > 0 ? '↓' : '↑' }}</span>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-[10px] font-semibold text-slate-500 dark:text-[#869392]">Kas Tunai Agen</p>
+                    <p :class="['text-[10px] font-mono font-semibold', selectedTrx.cashImpact > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400']">
+                      {{ selectedTrx.cashImpact > 0 ? '+' : '-' }}{{ formatRupiah(Math.abs(selectedTrx.cashImpact)) }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Financial breakdown -->
+              <div class="border-t border-slate-200 dark:border-[#3d4948] pt-3 space-y-1.5">
+                <div class="flex justify-between text-xs text-slate-600 dark:text-[#bcc9c7]"><span>{{ selectedTrx.category === 'TARIK_TUNAI' ? 'Nominal' : 'Jumlah Trf' }}</span><span class="font-mono">{{ formatRupiah(selectedTrx.amount) }}</span></div>
+                <div class="flex justify-between text-xs text-[#00A19B] dark:text-[#5fd9d2]"><span>Biaya Admin</span><span class="font-mono font-bold">{{ formatRupiah(selectedTrx.fee) }}</span></div>
+                <div class="flex justify-between text-base font-bold text-slate-900 dark:text-[#e3e2e2] pt-1 border-t border-slate-100 dark:border-[#3d4948]"><span>Total</span><span class="font-mono">{{ formatRupiah(selectedTrx.category === 'TARIK_TUNAI' ? selectedTrx.amount : selectedTrx.amount + selectedTrx.fee) }}</span></div>
+              </div>
+
+              <!-- Void info -->
+              <div v-if="selectedTrx.status === 'VOIDED'" class="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/30 rounded-xl p-3">
+                <p class="text-xs font-semibold text-red-700 dark:text-red-400">Transaksi di-void</p>
+                <p v-if="selectedTrx.voidReason" class="text-[10px] text-red-600 dark:text-red-400/80 mt-0.5">{{ selectedTrx.voidReason }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- ============================================================ -->
     <!-- TOAST                                                          -->
     <!-- ============================================================ -->
     <Teleport to="body">
@@ -597,6 +689,20 @@ const activeCard = ref(0);
 // toast
 const toast = ref<{ type: 'success' | 'error'; message: string } | null>(null);
 let toastTimer: ReturnType<typeof setTimeout> | null = null;
+
+// ── Detail modal (tanpa print) ────────────────────────────────────────────────
+const showDetail = ref(false);
+const selectedTrx = ref<BrilinkTransactionDto | null>(null);
+
+function openDetail(trx: BrilinkTransactionDto) {
+  selectedTrx.value = trx;
+  showDetail.value = true;
+}
+
+function formatDateTime(iso: string) {
+  const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z');
+  return d.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
 
 // ── Kas Tunai panel ───────────────────────────────────────────────────────────
 const showKasPanel  = ref(false);
