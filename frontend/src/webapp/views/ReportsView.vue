@@ -1,125 +1,155 @@
 <template>
-  <div class="space-y-5 p-4">
+  <div class="report-page space-y-5 p-4 pb-24">
     <!-- Header -->
-    <header class="flex items-center gap-2">
-      <BarChart3Icon class="w-5 h-5 text-blue-600" />
-      <h1 class="font-bold text-lg text-slate-800">Laporan</h1>
+    <header class="flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <div class="p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+          <BarChart3Icon class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        </div>
+        <div>
+          <h1 class="font-bold text-lg text-slate-950 dark:text-white">Laporan</h1>
+          <p class="text-[10px] text-slate-500 dark:text-slate-400">Ringkasan performa bisnis</p>
+        </div>
+      </div>
+      <span class="px-2 py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 rounded text-[10px] font-semibold">{{ period === '7d' ? '7 Hari' : '30 Hari' }}</span>
     </header>
 
     <!-- Type + Period Toggle -->
-    <div class="space-y-2">
+    <div class="space-y-2.5">
       <!-- Retail / BRILink switch -->
-      <div class="flex rounded-xl bg-slate-100 p-1">
-        <button :class="['flex-1 py-2 text-sm font-semibold rounded-lg transition-all', reportType === 'retail' ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-500']" @click="reportType = 'retail'; fetchAll()">Retail</button>
-        <button :class="['flex-1 py-2 text-sm font-semibold rounded-lg transition-all', reportType === 'brilink' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-500']" @click="reportType = 'brilink'; fetchAll()">BRILink</button>
+      <div class="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1 shadow-inner">
+        <button :class="['flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200', reportType === 'retail' ? 'bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700']" @click="reportType = 'retail'; fetchAll()">Retail</button>
+        <button :class="['flex-1 py-2 text-sm font-semibold rounded-md transition-all duration-200', reportType === 'brilink' ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-500 dark:text-slate-400 hover:text-slate-700']" @click="reportType = 'brilink'; fetchAll()">BRILink</button>
       </div>
       <!-- Period switch -->
-      <div class="flex rounded-xl bg-slate-100 p-1">
-        <button :class="['flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all', period === '7d' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500']" @click="period = '7d'; fetchAll()">7 Hari</button>
-        <button :class="['flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all', period === '30d' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500']" @click="period = '30d'; fetchAll()">30 Hari</button>
+      <div class="flex rounded-lg bg-slate-100 dark:bg-slate-800 p-1">
+        <button :class="['flex-1 py-1.5 text-xs font-semibold rounded-md transition-all duration-200', period === '7d' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400']" @click="period = '7d'; fetchAll()">7 Hari</button>
+        <button :class="['flex-1 py-1.5 text-xs font-semibold rounded-md transition-all duration-200', period === '30d' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm' : 'text-slate-500 dark:text-slate-400']" @click="period = '30d'; fetchAll()">30 Hari</button>
       </div>
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+    <div v-if="loading" class="flex flex-col items-center justify-center py-16 gap-3">
+      <div class="relative w-10 h-10">
+        <div class="absolute inset-0 border-4 border-slate-100 dark:border-slate-700 rounded-full"></div>
+        <div class="absolute inset-0 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+      <p class="text-sm text-slate-500 dark:text-slate-400 animate-pulse">Memuat laporan...</p>
     </div>
 
     <template v-else>
       <!-- ========== RETAIL REPORT ========== -->
       <template v-if="reportType === 'retail'">
         <!-- Summary Cards -->
-        <div class="grid grid-cols-3 gap-3">
-          <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
-            <ShoppingCartIcon class="w-5 h-5 text-blue-600 mx-auto mb-2" />
-            <p class="text-xl font-bold text-slate-900">{{ retailStats.totalTransaksi }}</p>
-            <p class="text-[10px] text-slate-500">Transaksi</p>
+        <div class="grid grid-cols-3 gap-3 stagger-in">
+          <div class="stat-card bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+            <div class="flex justify-between items-start mb-2.5">
+              <span class="p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <ShoppingCartIcon class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </span>
+            </div>
+            <p class="text-xl font-bold font-mono text-slate-950 dark:text-white">{{ retailStats.totalTransaksi }}</p>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Transaksi</p>
           </div>
-          <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
-            <TrendingUpIcon class="w-5 h-5 text-emerald-500 mx-auto mb-2" />
-            <p class="text-lg font-bold text-slate-900 font-mono">{{ formatRupiahShort(retailStats.omzet) }}</p>
-            <p class="text-[10px] text-slate-500">Penjualan</p>
+          <div class="stat-card bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+            <div class="flex justify-between items-start mb-2.5">
+              <span class="p-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                <TrendingUpIcon class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </span>
+            </div>
+            <p class="text-base font-bold font-mono text-slate-950 dark:text-white">{{ formatRupiahShort(retailStats.omzet) }}</p>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Penjualan</p>
           </div>
-          <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
-            <TrendingUpIcon class="w-5 h-5 text-emerald-500 mx-auto mb-2" />
-            <p class="text-lg font-bold text-slate-900 font-mono">{{ formatRupiahShort(retailStats.profit) }}</p>
-            <p class="text-[10px] text-slate-500">Profit</p>
+          <div class="stat-card bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+            <div class="flex justify-between items-start mb-2.5">
+              <span class="p-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                <DollarSignIcon class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </span>
+            </div>
+            <p class="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ formatRupiahShort(retailStats.profit) }}</p>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Profit</p>
           </div>
         </div>
 
         <!-- Laba Rugi -->
-        <div class="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
-          <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-            <DollarSignIcon class="w-4 h-4" /> Laba Rugi
+        <div class="card-section bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm space-y-3">
+          <h3 class="text-sm font-bold text-slate-950 dark:text-white flex items-center gap-2">
+            <span class="p-1 bg-indigo-50 dark:bg-indigo-900/20 rounded"><DollarSignIcon class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /></span>
+            Laba Rugi
           </h3>
           <div class="space-y-2 text-sm">
             <div class="flex justify-between items-center">
-              <span class="flex items-center gap-1.5 text-slate-700"><ArrowUpIcon class="w-3.5 h-3.5 text-emerald-500" /> Pendapatan Kotor</span>
-              <span class="font-mono text-slate-900">{{ formatRupiah(retailStats.omzet) }}</span>
+              <span class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300"><ArrowUpIcon class="w-3.5 h-3.5 text-emerald-500" /> Pendapatan Kotor</span>
+              <span class="font-mono font-medium text-slate-900 dark:text-white">{{ formatRupiah(retailStats.omzet) }}</span>
             </div>
-            <div class="border-t border-slate-100 pt-2">
+            <div class="border-t border-slate-100 dark:border-slate-700 pt-2">
               <div class="flex justify-between items-center">
-                <span class="text-slate-700 font-medium">Penjualan Bersih</span>
-                <span class="font-mono text-slate-900">{{ formatRupiah(retailStats.omzet - retailStats.diskon) }}</span>
+                <span class="text-slate-700 dark:text-slate-300 font-medium">Penjualan Bersih</span>
+                <span class="font-mono font-medium text-slate-900 dark:text-white">{{ formatRupiah(retailStats.omzet - retailStats.diskon) }}</span>
               </div>
               <div class="flex justify-between items-center mt-1">
-                <span class="flex items-center gap-1.5 text-red-500"><ArrowDownIcon class="w-3.5 h-3.5" /> HPP (Modal)</span>
-                <span class="font-mono text-red-500">-{{ formatRupiah(retailStats.modal) }}</span>
+                <span class="flex items-center gap-1.5 text-red-500 dark:text-red-400"><ArrowDownIcon class="w-3.5 h-3.5" /> HPP (Modal)</span>
+                <span class="font-mono text-red-500 dark:text-red-400">-{{ formatRupiah(retailStats.modal) }}</span>
               </div>
             </div>
-            <div class="border-t border-slate-100 pt-2">
+            <div class="border-t border-slate-100 dark:border-slate-700 pt-2">
               <div class="flex justify-between items-center">
-                <span class="font-bold text-slate-900">Laba Kotor</span>
-                <span class="font-mono font-bold text-emerald-600">{{ formatRupiah(retailStats.profit) }}</span>
+                <span class="font-bold text-slate-950 dark:text-white">Laba Kotor</span>
+                <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ formatRupiah(retailStats.profit) }}</span>
               </div>
               <div class="flex justify-between items-center mt-0.5">
-                <span class="text-xs text-slate-500">Margin Kotor</span>
-                <span class="text-xs text-slate-500">{{ retailMargin }}%</span>
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">Margin Kotor</span>
+                <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400">{{ retailMargin }}%</span>
               </div>
             </div>
-            <div class="border-t border-slate-100 pt-2">
+            <div class="border-t border-slate-100 dark:border-slate-700 pt-2">
               <div class="flex justify-between items-center">
-                <span class="font-bold text-slate-900">Laba Bersih</span>
-                <span class="font-mono font-bold text-emerald-600">{{ formatRupiah(retailStats.profit) }}</span>
+                <span class="font-bold text-slate-950 dark:text-white">Laba Bersih</span>
+                <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ formatRupiah(retailStats.profit) }}</span>
               </div>
               <div class="flex justify-between items-center mt-0.5">
-                <span class="text-xs text-slate-500">Margin Bersih</span>
-                <span class="text-xs text-slate-500">{{ retailMargin }}%</span>
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">Margin Bersih</span>
+                <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400">{{ retailMargin }}%</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Tren Penjualan Chart -->
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <h3 class="text-sm font-bold text-slate-800 mb-4">Tren Penjualan</h3>
-          <div class="flex items-end gap-1 h-40 relative">
+        <div class="card-section bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+          <h3 class="text-sm font-bold text-slate-950 dark:text-white mb-4">Tren Penjualan</h3>
+          <div class="flex items-end gap-1 h-40 relative chart-bars">
             <div v-for="(day, i) in retailChart" :key="i" class="flex-1 flex flex-col items-center justify-end h-full relative group cursor-pointer">
-              <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white border border-slate-200 rounded-lg shadow-lg px-3 py-2 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                <p class="font-bold text-slate-800">{{ day.dateLabel }}</p>
-                <p class="text-blue-600">Penjualan: {{ formatRupiah(day.value) }}</p>
+              <div class="chart-tooltip absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-700 text-white rounded-lg shadow-xl px-3 py-2 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10 scale-90 group-hover:scale-100">
+                <p class="font-bold">{{ day.dateLabel }}</p>
+                <p class="text-blue-300">Penjualan: {{ formatRupiah(day.value) }}</p>
+                <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900 dark:border-t-slate-700"></div>
               </div>
-              <div class="w-full rounded-t transition-all group-hover:opacity-80" :class="day.value > 0 ? 'bg-blue-500' : 'bg-slate-200'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px' }"></div>
-              <span class="text-[9px] text-slate-500 mt-1.5">{{ day.shortLabel }}</span>
+              <div class="chart-bar w-full rounded-t-sm transition-all duration-300 group-hover:brightness-110" :class="day.value > 0 ? 'bg-gradient-to-t from-blue-600 to-blue-400' : 'bg-slate-200 dark:bg-slate-700'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px', animationDelay: (i * 50) + 'ms' }"></div>
+              <span class="text-[8px] text-slate-400 dark:text-slate-500 mt-1.5 font-mono">{{ day.shortLabel }}</span>
             </div>
           </div>
         </div>
 
         <!-- Produk Terlaris -->
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-1.5">
-            <PackageIcon class="w-4 h-4" /> Produk Terlaris
+        <div class="card-section bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+          <h3 class="text-sm font-bold text-slate-950 dark:text-white mb-3 flex items-center gap-2">
+            <span class="p-1 bg-amber-50 dark:bg-amber-900/20 rounded"><PackageIcon class="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" /></span>
+            Produk Terlaris
           </h3>
-          <div v-if="topProducts.length === 0" class="text-center py-6 text-xs text-slate-400">Belum ada data produk</div>
-          <div v-else class="space-y-3">
-            <div v-for="(prod, idx) in topProducts" :key="prod.name" class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span :class="['w-6 h-6 rounded-full text-[10px] font-bold flex items-center justify-center', idx < 3 ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-600']">{{ idx + 1 }}</span>
-                <span class="text-sm font-medium text-slate-800">{{ prod.name }}</span>
+          <div v-if="topProducts.length === 0" class="text-center py-8">
+            <span class="text-3xl opacity-40">📦</span>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">Belum ada data produk</p>
+          </div>
+          <div v-else class="space-y-2.5">
+            <div v-for="(prod, idx) in topProducts" :key="prod.name" class="product-row flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span :class="['w-6 h-6 rounded-md text-[10px] font-bold flex items-center justify-center shrink-0', idx === 0 ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' : idx < 3 ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400' : 'bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400']">{{ idx + 1 }}</span>
+                <span class="text-sm font-medium text-slate-800 dark:text-slate-200 truncate max-w-[120px]">{{ prod.name }}</span>
               </div>
               <div class="text-right">
-                <p class="text-sm font-bold font-mono text-slate-900">{{ formatRupiah(prod.totalRevenue) }}</p>
-                <p class="text-[10px] text-slate-500">{{ prod.totalQty }} terjual · laba {{ formatRupiah(prod.profit) }}</p>
+                <p class="text-sm font-bold font-mono text-slate-950 dark:text-white">{{ formatRupiah(prod.totalRevenue) }}</p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400">{{ prod.totalQty }} terjual</p>
               </div>
             </div>
           </div>
@@ -129,81 +159,99 @@
       <!-- ========== BRILINK REPORT ========== -->
       <template v-if="reportType === 'brilink'">
         <!-- Summary Cards -->
-        <div class="grid grid-cols-3 gap-3">
-          <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
-            <LandmarkIcon class="w-5 h-5 text-emerald-600 mx-auto mb-2" />
-            <p class="text-xl font-bold text-slate-900">{{ brilinkStats.totalTrx }}</p>
-            <p class="text-[10px] text-slate-500">Transaksi</p>
+        <div class="grid grid-cols-3 gap-3 stagger-in">
+          <div class="stat-card bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+            <div class="flex justify-between items-start mb-2.5">
+              <span class="p-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                <LandmarkIcon class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </span>
+            </div>
+            <p class="text-xl font-bold font-mono text-slate-950 dark:text-white">{{ brilinkStats.totalTrx }}</p>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Transaksi</p>
           </div>
-          <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
-            <BanknoteIcon class="w-5 h-5 text-emerald-500 mx-auto mb-2" />
-            <p class="text-lg font-bold text-slate-900 font-mono">{{ formatRupiahShort(brilinkStats.totalVolume) }}</p>
-            <p class="text-[10px] text-slate-500">Volume</p>
+          <div class="stat-card bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+            <div class="flex justify-between items-start mb-2.5">
+              <span class="p-1.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                <BanknoteIcon class="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              </span>
+            </div>
+            <p class="text-base font-bold font-mono text-slate-950 dark:text-white">{{ formatRupiahShort(brilinkStats.totalVolume) }}</p>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Volume</p>
           </div>
-          <div class="bg-white rounded-xl border border-slate-200 p-4 text-center">
-            <TrendingUpIcon class="w-5 h-5 text-emerald-500 mx-auto mb-2" />
-            <p class="text-lg font-bold text-slate-900 font-mono">{{ formatRupiahShort(brilinkStats.totalFee) }}</p>
-            <p class="text-[10px] text-slate-500">Total Fee</p>
+          <div class="stat-card bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+            <div class="flex justify-between items-start mb-2.5">
+              <span class="p-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                <TrendingUpIcon class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              </span>
+            </div>
+            <p class="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ formatRupiahShort(brilinkStats.totalFee) }}</p>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-0.5">Total Fee</p>
           </div>
         </div>
 
         <!-- Laba Rugi BRILink -->
-        <div class="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
-          <h3 class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
-            <DollarSignIcon class="w-4 h-4" /> Laba Rugi BRILink
+        <div class="card-section bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm space-y-3">
+          <h3 class="text-sm font-bold text-slate-950 dark:text-white flex items-center gap-2">
+            <span class="p-1 bg-indigo-50 dark:bg-indigo-900/20 rounded"><DollarSignIcon class="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" /></span>
+            Laba Rugi BRILink
           </h3>
           <div class="space-y-2 text-sm">
             <div class="flex justify-between items-center">
-              <span class="flex items-center gap-1.5 text-slate-700"><ArrowUpIcon class="w-3.5 h-3.5 text-emerald-500" /> Total Fee Pelanggan</span>
-              <span class="font-mono text-slate-900">{{ formatRupiah(brilinkStats.totalFee) }}</span>
+              <span class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300"><ArrowUpIcon class="w-3.5 h-3.5 text-emerald-500" /> Total Fee Pelanggan</span>
+              <span class="font-mono font-medium text-slate-900 dark:text-white">{{ formatRupiah(brilinkStats.totalFee) }}</span>
             </div>
             <div class="flex justify-between items-center">
-              <span class="flex items-center gap-1.5 text-red-500"><ArrowDownIcon class="w-3.5 h-3.5" /> Biaya Sistem BRI</span>
-              <span class="font-mono text-red-500">-{{ formatRupiah(brilinkStats.systemCost) }}</span>
+              <span class="flex items-center gap-1.5 text-red-500 dark:text-red-400"><ArrowDownIcon class="w-3.5 h-3.5" /> Biaya Sistem BRI</span>
+              <span class="font-mono text-red-500 dark:text-red-400">-{{ formatRupiah(brilinkStats.systemCost) }}</span>
             </div>
-            <div class="border-t border-slate-100 pt-2">
+            <div class="border-t border-slate-100 dark:border-slate-700 pt-2">
               <div class="flex justify-between items-center">
-                <span class="font-bold text-slate-900">Profit Bersih BRILink</span>
-                <span class="font-mono font-bold text-emerald-600">{{ formatRupiah(brilinkStats.netProfit) }}</span>
+                <span class="font-bold text-slate-950 dark:text-white">Profit Bersih BRILink</span>
+                <span class="font-mono font-bold text-emerald-600 dark:text-emerald-400">{{ formatRupiah(brilinkStats.netProfit) }}</span>
               </div>
               <div class="flex justify-between items-center mt-0.5">
-                <span class="text-xs text-slate-500">Margin</span>
-                <span class="text-xs text-slate-500">{{ brilinkMargin }}%</span>
+                <span class="text-[11px] text-slate-500 dark:text-slate-400">Margin</span>
+                <span class="text-[11px] font-mono text-slate-500 dark:text-slate-400">{{ brilinkMargin }}%</span>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Tren Volume BRILink Chart -->
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <h3 class="text-sm font-bold text-slate-800 mb-4">Tren Volume BRILink</h3>
-          <div class="flex items-end gap-1 h-40 relative">
+        <div class="card-section bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+          <h3 class="text-sm font-bold text-slate-950 dark:text-white mb-4">Tren Volume BRILink</h3>
+          <div class="flex items-end gap-1 h-40 relative chart-bars">
             <div v-for="(day, i) in brilinkChart" :key="i" class="flex-1 flex flex-col items-center justify-end h-full relative group cursor-pointer">
-              <div class="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-white border border-slate-200 rounded-lg shadow-lg px-3 py-2 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                <p class="font-bold text-slate-800">{{ day.dateLabel }}</p>
-                <p class="text-emerald-600">Volume: {{ formatRupiah(day.value) }}</p>
+              <div class="chart-tooltip absolute bottom-full mb-2 left-1/2 -translate-x-1/2 bg-slate-900 dark:bg-slate-700 text-white rounded-lg shadow-xl px-3 py-2 text-xs whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10 scale-90 group-hover:scale-100">
+                <p class="font-bold">{{ day.dateLabel }}</p>
+                <p class="text-emerald-300">Volume: {{ formatRupiah(day.value) }}</p>
+                <div class="absolute top-full left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-slate-900 dark:border-t-slate-700"></div>
               </div>
-              <div class="w-full rounded-t transition-all group-hover:opacity-80" :class="day.value > 0 ? 'bg-emerald-500' : 'bg-slate-200'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px' }"></div>
-              <span class="text-[9px] text-slate-500 mt-1.5">{{ day.shortLabel }}</span>
+              <div class="chart-bar w-full rounded-t-sm transition-all duration-300 group-hover:brightness-110" :class="day.value > 0 ? 'bg-gradient-to-t from-emerald-600 to-emerald-400' : 'bg-slate-200 dark:bg-slate-700'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px', animationDelay: (i * 50) + 'ms' }"></div>
+              <span class="text-[8px] text-slate-400 dark:text-slate-500 mt-1.5 font-mono">{{ day.shortLabel }}</span>
             </div>
           </div>
         </div>
 
         <!-- Breakdown per Kategori BRILink -->
-        <div class="bg-white rounded-xl border border-slate-200 p-4">
-          <h3 class="text-sm font-bold text-slate-800 mb-3 flex items-center gap-1.5">
-            <LandmarkIcon class="w-4 h-4" /> Breakdown Kategori
+        <div class="card-section bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
+          <h3 class="text-sm font-bold text-slate-950 dark:text-white mb-3 flex items-center gap-2">
+            <span class="p-1 bg-purple-50 dark:bg-purple-900/20 rounded"><LandmarkIcon class="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" /></span>
+            Breakdown Kategori
           </h3>
-          <div v-if="brilinkBreakdown.length === 0" class="text-center py-6 text-xs text-slate-400">Belum ada data BRILink</div>
-          <div v-else class="space-y-3">
-            <div v-for="cat in brilinkBreakdown" :key="cat.category" class="flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: cat.color }"></span>
-                <span class="text-sm font-medium text-slate-800">{{ cat.label }}</span>
+          <div v-if="brilinkBreakdown.length === 0" class="text-center py-8">
+            <span class="text-3xl opacity-40">📊</span>
+            <p class="text-xs text-slate-400 dark:text-slate-500 mt-2">Belum ada data BRILink</p>
+          </div>
+          <div v-else class="space-y-2.5">
+            <div v-for="cat in brilinkBreakdown" :key="cat.category" class="product-row flex items-center justify-between p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-white dark:ring-slate-800 shadow-sm" :style="{ backgroundColor: cat.color }"></span>
+                <span class="text-sm font-medium text-slate-800 dark:text-slate-200">{{ cat.label }}</span>
               </div>
               <div class="text-right">
-                <p class="text-sm font-bold font-mono text-slate-900">{{ cat.count }} trx</p>
-                <p class="text-[10px] text-slate-500">Vol {{ formatRupiahShort(cat.volume) }} · Fee {{ formatRupiahShort(cat.fee) }}</p>
+                <p class="text-sm font-bold font-mono text-slate-950 dark:text-white">{{ cat.count }} trx</p>
+                <p class="text-[10px] text-slate-500 dark:text-slate-400">Vol {{ formatRupiahShort(cat.volume) }} · Fee {{ formatRupiahShort(cat.fee) }}</p>
               </div>
             </div>
           </div>
@@ -329,14 +377,11 @@ async function fetchBrilinkStats() {
   if (!shopId) return;
   try {
     const { startDate, endDate } = getDateRange();
-    const { data } = await api.get('/transactions', { params: { shopId, startDate, endDate, limit: 1 } });
-    // Use brilink transactions endpoint if available, otherwise calculate from brilink_transactions table
     const res = await api.get('/brilink/transactions', { params: { shopId, startDate, endDate, limit: 1000 } }).catch(() => ({ data: { data: [] } }));
     const trxList = res.data?.data || [];
     const totalTrx = trxList.length;
     const totalVolume = trxList.reduce((s: number, t: any) => s + (t.amount || 0), 0);
     const totalFee = trxList.reduce((s: number, t: any) => s + (t.fee || 0), 0);
-    // Estimate system cost as ~35% of fee (configurable in admin later)
     const systemCost = Math.round(totalFee * 0.35);
     const netProfit = totalFee - systemCost;
     brilinkStats.value = { totalTrx, totalVolume, totalFee, systemCost, netProfit };
@@ -407,3 +452,76 @@ async function fetchAll() {
 
 onMounted(fetchAll);
 </script>
+
+<style scoped>
+/* === Page fade-in === */
+.report-page {
+  animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Stat cards stagger entrance === */
+.stagger-in > .stat-card {
+  animation: scaleIn 0.35s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+.stagger-in > .stat-card:nth-child(1) { animation-delay: 0ms; }
+.stagger-in > .stat-card:nth-child(2) { animation-delay: 80ms; }
+.stagger-in > .stat-card:nth-child(3) { animation-delay: 160ms; }
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* === Card sections slide-in === */
+.card-section {
+  animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+  animation-delay: 200ms;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Chart bar grow animation === */
+.chart-bars .chart-bar {
+  animation: growUp 0.6s cubic-bezier(0.4, 0, 0.2, 1) backwards;
+}
+
+@keyframes growUp {
+  from { transform: scaleY(0); transform-origin: bottom; }
+  to { transform: scaleY(1); transform-origin: bottom; }
+}
+
+/* === Chart tooltip arrow & glow === */
+.chart-tooltip {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+/* === Product row hover effect === */
+.product-row {
+  transition: all 0.2s ease;
+}
+.product-row:hover {
+  transform: translateX(2px);
+}
+
+/* === Stat card hover glow === */
+.stat-card {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* === Smooth number transitions (visual polish) === */
+.font-mono {
+  font-variant-numeric: tabular-nums;
+}
+</style>
