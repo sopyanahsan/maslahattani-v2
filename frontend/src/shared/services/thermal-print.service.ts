@@ -184,7 +184,7 @@ class ThermalPrintService {
   }
 
   /**
-   * Print a full receipt.
+   * Print a retail receipt. Layout sama dengan BRILink (compact, ":" aligned).
    */
   async printReceipt(data: ReceiptData): Promise<void> {
     const bytes: number[] = [];
@@ -192,27 +192,25 @@ class ThermalPrintService {
     // Initialize
     bytes.push(...COMMANDS.INIT);
 
-    // Shop name (center, bold, double)
+    // Header (center, bold, double)
     bytes.push(...COMMANDS.ALIGN_CENTER);
     bytes.push(...COMMANDS.BOLD_ON);
     bytes.push(...COMMANDS.DOUBLE_HEIGHT);
     bytes.push(...this.line(data.shopName));
     bytes.push(...COMMANDS.NORMAL_SIZE);
     bytes.push(...COMMANDS.BOLD_OFF);
-    bytes.push(...COMMANDS.LINE);
-
-    // Separator
     bytes.push(...this.separator());
 
-    // Transaction info (left align)
+    // Date & Ref (compact, padded ":")
     bytes.push(...COMMANDS.ALIGN_LEFT);
-    bytes.push(...this.line(`No: ${data.trxNumber}`));
-    bytes.push(...this.line(`${data.date}    ${data.method}`));
-    bytes.push(...this.line(`Kasir: ${data.cashierName}`));
-
+    bytes.push(...this.line(data.date));
+    bytes.push(...this.linePad('No Struk', data.trxNumber));
+    bytes.push(...this.linePad('Kasir', data.cashierName));
+    bytes.push(...this.linePad('Bayar', data.method));
+    if (data.customerName) bytes.push(...this.linePad('Customer', data.customerName));
     bytes.push(...this.separator());
 
-    // Items
+    // Items (compact: name + qty x price = subtotal)
     for (const item of data.items) {
       bytes.push(...this.line(item.name));
       const itemLine = `${item.qty} x ${this.fmtRp(item.price)}`;
@@ -220,10 +218,9 @@ class ThermalPrintService {
       const padding = ' '.repeat(Math.max(1, 32 - itemLine.length - subtotalStr.length));
       bytes.push(...this.line(`${itemLine}${padding}${subtotalStr}`));
     }
-
     bytes.push(...this.separator());
 
-    // Totals
+    // Financials (aligned right, same style as BRILink)
     bytes.push(...this.lineRight('Subtotal', this.fmtRp(data.subtotal)));
     if (data.discount && data.discount > 0) {
       bytes.push(...this.lineRight('Diskon', `-${this.fmtRp(data.discount)}`));
@@ -235,12 +232,18 @@ class ThermalPrintService {
     if (data.change > 0) {
       bytes.push(...this.lineRight('Kembali', this.fmtRp(data.change)));
     }
-
     bytes.push(...this.separator());
 
-    // Footer
+    // Status
+    bytes.push(...COMMANDS.BOLD_ON);
+    bytes.push(...this.linePad('Status', 'Lunas'));
+    bytes.push(...COMMANDS.BOLD_OFF);
+    bytes.push(...this.separator());
+
+    // Footer (compact, same as BRILink)
     bytes.push(...COMMANDS.ALIGN_CENTER);
-    bytes.push(...this.line('Terima kasih atas kunjungan Anda!'));
+    bytes.push(...this.line('Terima kasih'));
+    bytes.push(...this.line('Simpan resi sebagai bukti'));
     bytes.push(...COMMANDS.LINE);
     bytes.push(...COMMANDS.LINE);
 
