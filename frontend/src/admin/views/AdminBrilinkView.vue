@@ -279,6 +279,7 @@ import {
   Settings as SettingsIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import { useDashboardBrilinkStore } from '@/shared/stores/dashboard-brilink.store';
 import { useRealtimeRefresh } from '@/shared/composables/useRealtimeRefresh';
 import type { DashboardPeriod } from '@/shared/services/dashboard-brilink.service';
@@ -293,6 +294,7 @@ import BrilinkTopCustomers from '@/admin/components/dashboard-brilink/BrilinkTop
 import BrilinkCashierPerformance from '@/admin/components/dashboard-brilink/BrilinkCashierPerformance.vue';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const store = useDashboardBrilinkStore();
 
 // Auto-refresh saat ada real-time event (tanpa unmount halaman)
@@ -372,7 +374,7 @@ function handlePeriodChange(p: DashboardPeriod) {
 
 // Watch shop changes
 watch(
-  () => authStore.user?.shopId,
+  () => shopStore.currentShopId || authStore.user?.shopId,
   (newShopId) => {
     if (newShopId) {
       store.setShopId(newShopId);
@@ -382,7 +384,7 @@ watch(
 );
 
 onMounted(() => {
-  const shopId = authStore.user?.shopId;
+  const shopId = shopStore.currentShopId || authStore.user?.shopId;
   if (shopId) {
     store.setShopId(shopId);
     store.fetchAll();

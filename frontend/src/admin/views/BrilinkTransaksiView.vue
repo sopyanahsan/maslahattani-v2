@@ -456,6 +456,7 @@ import {
   Trophy as TrophyIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import BrilinkTrxProfitChart from '@/admin/components/dashboard-brilink/BrilinkTrxProfitChart.vue';
 import brilinkService, {
   BRILINK_CATEGORIES,
@@ -472,6 +473,7 @@ import brilinkService, {
 } from '@/shared/services/brilink.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const route = useRoute();
 
 // ============================================
@@ -518,7 +520,7 @@ const voidReason = ref('');
 // Helpers
 // ============================================
 function getShopId(): string | undefined {
-  return authStore.user?.shopId || undefined;
+  return shopStore.currentShopId || authStore.user?.shopId || undefined;
 }
 
 function formatRupiah(amount: number): string {

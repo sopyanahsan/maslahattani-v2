@@ -824,6 +824,7 @@ import {
   ChevronRight as ChevronRightIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import { useConfirm } from '@/shared/composables/useConfirm';
 import brilinkCashboxService, {
   type BrilinkCashBox,
@@ -844,6 +845,7 @@ import settingsService from '@/shared/services/settings.service';
 
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 const { ask } = useConfirm();
 
 // Tabs
@@ -900,7 +902,7 @@ const historyMeta = ref<MutationsResponse['meta'] | null>(null);
 // Helpers
 // ============================================
 function getShopId(): string | undefined {
-  return authStore.user?.shopId || undefined;
+  return shopStore.currentShopId || authStore.user?.shopId || undefined;
 }
 
 function formatRupiah(amount: number): string {
