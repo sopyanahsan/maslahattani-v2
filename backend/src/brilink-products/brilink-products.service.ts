@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateBrilinkProductDto,
@@ -6,6 +6,10 @@ import {
   QueryBrilinkProductsDto,
   SeedProductsDto,
 } from './dto';
+
+// Dynamic import for xlsx (optional dependency)
+let XLSX: any = null;
+try { XLSX = require('xlsx'); } catch { /* not installed */ }
 
 @Injectable()
 export class BrilinkProductsService {
@@ -200,6 +204,146 @@ export class BrilinkProductsService {
     }
 
     return products;
+  }
+
+  // ============================================
+  // BULK TEMPLATE & UPLOAD
+  // ============================================
+
+  /**
+   * Generate template Excel untuk bulk upload produk BRILink.
+   * Columns: Kategori, Operator, Provider, Nama Produk, Nominal, Harga Beli, Harga Jual, Aktif
+   */
+  generateBulkTemplate(): Buffer {
+    if (!XLSX) throw new BadRequestException('Module xlsx belum terinstall.');
+
+    const headers = [
+      'Kategori', 'Operator', 'Provider', 'Nama Produk', 'Nominal', 'Harga Beli', 'Harga Jual', 'Aktif',
+    ];
+
+    // Sample data rows
+    const sampleData = [
+      ['TOPUP_PULSA', 'TELKOMSEL', '', 'Pulsa 5rb', 5000, 5100, 5500, 'Ya'],
+      ['TOPUP_PULSA', 'XL', '', 'Pulsa 10rb', 10000, 10200, 11000, 'Ya'],
+      ['TOPUP_DATA', 'INDOSAT', '', 'Indosat 3GB 30hr', 0, 25000, 30000, 'Ya'],
+      ['TOPUP_EWALLET', '', 'GOPAY', 'GoPay 50rb', 50000, 50000, 52500, 'Ya'],
+      ['TOPUP_EWALLET', '', 'OVO', 'OVO 100rb', 100000, 100000, 102500, 'Ya'],
+      ['TOPUP_PLN', '', '', 'Token 50rb', 50000, 50000, 52000, 'Ya'],
+      ['TOPUP_PLN', '', '', 'Token 100rb', 100000, 100000, 102000, 'Ya'],
+    ];
+
+    const ws = XLSX.utils.aoa_to_sheet([headers, ...sampleData]);
+
+    // Set column widths
+    ws['!cols'] = [
+      { wch: 14 }, // Kategori
+      { wch: 12 }, // Operator
+      { wch: 12 }, // Provider
+      { wch: 22 }, // Nama Produk
+      { wch: 10 }, // Nominal
+      { wch: 12 }, // Harga Beli
+      { wch: 12 }, // Harga Jual
+      { wch: 6 },  // Aktif
+    ];
+
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Produk BRILink');
+
+    // Add info sheet
+    const infoData = [
+      ['PANDUAN PENGISIAN TEMPLATE'],
+      [''],
+      ['Kolom', 'Keterangan', 'Wajib', 'Contoh'],
+      ['Kategori', 'TOPUP_PULSA / TOPUP_DATA / TOPUP_EWALLET / TOPUP_PLN', 'Ya', 'TOPUP_PULSA'],
+      ['Operator', 'Untuk pulsa/data: TELKOMSEL, XL, INDOSAT, THREE, AXIS, SMARTFREN', 'Kondisional', 'TELKOMSEL'],
+      ['Provider', 'Untuk e-wallet: GOPAY, OVO, DANA, SHOPEEPAY, LINKAJA', 'Kondisional', 'GOPAY'],
+      ['Nama Produk', 'Nama tampilan produk', 'Ya', 'Pulsa 50rb'],
+      ['Nominal', 'Nilai nominal (0 jika paket data tanpa nominal tetap)', 'Tidak', '50000'],
+      ['Harga Beli', 'Harga modal/beli dari distributor (Rp)', 'Ya', '50000'],
+      ['Harga Jual', 'Harga jual ke nasabah (Rp)', 'Ya', '52500'],
+      ['Aktif', 'Ya / Tidak', 'Tidak (default: Ya)', 'Ya'],
+    ];
+    const wsInfo = XLSX.utils.aoa_to_sheet(infoData);
+    wsInfo['!cols'] = [{ wch: 14 }, { wch: 55 }, { wch: 20 }, { wch: 14 }];
+    XLSX.utils.book_append_sheet(wb, wsInfo, 'Panduan');
+
+    return XLSX.write(wb, { type: 'buffer', bookType: 'xlsx' });
+  }
+
+  /**
+   * Bulk upload produk BRILink dari file Excel.
+   */
+  async bulkUpload(shopId: string, fileBuffer: Buffer) {
+    if (!XLSX) throw new BadRequestException('Module xlsx belum terinstall.');
+
+    const workbook = XLSX.read(fileBuffer, { type: 'buffer' });
+    const sheetName = workbook.SheetNames[0];
+    if (!sheetName) throw new BadRequestException('File Excel kosong atau format tidak valid.');
+
+    const sheet = workbook.Sheets[sheetName];
+    const rows: any[] = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+    if (rows.length === 0) throw new BadRequestException('Tidak ada data produk di file.');
+    if (rows.length > 1000) throw new BadRequestException('Maksimal 1000 produk per upload.');
+
+    const validCategories = ['TOPUP_PULSA', 'TOPUP_DATA', 'TOPUP_EWALLET', 'TOPUP_PLN'];
+    const results = { success: 0, skipped: 0, updated: 0, errors: [] as string[] };
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const rowNum = i + 2;
+
+      const category = String(row['Kategori'] || row['category'] || '').trim().toUpperCase();
+      const operator = String(row['Operator'] || row['operator'] || '').trim().toUpperCase() || null;
+      const provider = String(row['Provider'] || row['provider'] || '').trim().toUpperCase() || null;
+      const name = String(row['Nama Produk'] || row['nama'] || row['name'] || '').trim();
+      const nominalRaw = row['Nominal'] || row['nominal'] || 0;
+      const buyPriceRaw = row['Harga Beli'] || row['harga_beli'] || row['buyPrice'] || 0;
+      const sellPriceRaw = row['Harga Jual'] || row['harga_jual'] || row['sellPrice'] || 0;
+      const isActiveRaw = String(row['Aktif'] || row['aktif'] || row['isActive'] || 'Ya').trim().toLowerCase();
+
+      // Validate
+      if (!name) { results.errors.push(`Baris ${rowNum}: Nama produk kosong.`); results.skipped++; continue; }
+      if (!category || !validCategories.includes(category)) {
+        results.errors.push(`Baris ${rowNum} (${name}): Kategori tidak valid. Harus: ${validCategories.join(', ')}`);
+        results.skipped++;
+        continue;
+      }
+
+      const buyPrice = Math.round(Number(buyPriceRaw) || 0);
+      const sellPrice = Math.round(Number(sellPriceRaw) || 0);
+      const nominal = Math.round(Number(nominalRaw) || 0) || null;
+      const isActive = ['ya', 'yes', 'true', '1', 'aktif'].includes(isActiveRaw);
+
+      if (sellPrice <= 0) { results.errors.push(`Baris ${rowNum} (${name}): Harga Jual harus > 0.`); results.skipped++; continue; }
+
+      // Upsert: match by shopId + category + name (update if exists, create if not)
+      const existing = await this.prisma.brilinkProduct.findFirst({
+        where: { shopId, category, name: { equals: name, mode: 'insensitive' } },
+      });
+
+      if (existing) {
+        await this.prisma.brilinkProduct.update({
+          where: { id: existing.id },
+          data: { operator, provider, nominal, buyPrice, sellPrice, isActive },
+        });
+        results.updated++;
+      } else {
+        await this.prisma.brilinkProduct.create({
+          data: {
+            shopId, category, operator, provider, name, nominal, buyPrice, sellPrice, isActive,
+            sortOrder: i,
+          },
+        });
+        results.success++;
+      }
+    }
+
+    return {
+      message: `Upload selesai: ${results.success} produk baru, ${results.updated} di-update, ${results.skipped} dilewati.`,
+      ...results,
+      total: rows.length,
+    };
   }
 
   // ============================================

@@ -115,6 +115,22 @@ const brilinkProductsService = {
     await api.delete(`/brilink/products/${id}`);
   },
 
+  // --- Bulk Template & Upload ---
+  async downloadBulkTemplate(): Promise<Blob> {
+    const { data } = await api.get('/brilink/products/bulk-template', { responseType: 'blob' });
+    return data;
+  },
+
+  async bulkUpload(shopId: string, file: File): Promise<{ message: string; success: number; updated: number; skipped: number; errors: string[]; total: number }> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('shopId', shopId);
+    const { data } = await api.post('/brilink/products/bulk-upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return data;
+  },
+
   async seedProducts(shopId: string, template: string): Promise<{ created: number; template: string }> {
     const { data } = await api.post('/brilink/products/seed', { shopId, template });
     return data;

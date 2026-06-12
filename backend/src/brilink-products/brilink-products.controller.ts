@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -7,9 +8,14 @@ import {
   Patch,
   Post,
   Query,
+  Res,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { Response } from 'express';
 import { BrilinkProductsService } from './brilink-products.service';
 import {
   CreateBrilinkProductDto,
@@ -74,6 +80,44 @@ export class BrilinkProductsController {
   @ApiOperation({ summary: 'Seed produk dari template (standard/premium/economy)' })
   async seedProducts(@Body() dto: SeedProductsDto) {
     return this.service.seedProducts(dto);
+  }
+
+  @Get('products/bulk-template')
+  @ApiOperation({ summary: 'Download template Excel untuk bulk upload produk BRILink' })
+  async downloadTemplate(@Res() res: Response) {
+    const buffer = this.service.generateBulkTemplate();
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': 'attachment; filename="template-produk-brilink.xlsx"',
+      'Content-Length': buffer.length.toString(),
+    });
+    res.end(buffer);
+  }
+
+  @Post('products/bulk-upload')
+  @UseInterceptors(FileInterceptor('file'))
+  @ApiConsumes('multipart/form-data')
+  @ApiOperation({ summary: 'Upload massal produk BRILink dari file Excel' })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+        shopId: { type: 'string' },
+      },
+    },
+  })
+  async bulkUpload(
+    @UploadedFile() file: any,
+    @Body('shopId') shopId: string,
+  ) {
+    if (!file) {
+      throw new BadRequestException('File tidak ditemukan. Upload file .xlsx.');
+    }
+    if (!shopId) {
+      throw new BadRequestException('shopId wajib diisi.');
+    }
+    return this.service.bulkUpload(shopId, file.buffer);
   }
 
   // ============================================
