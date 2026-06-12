@@ -386,7 +386,7 @@
           <div class="border-t border-slate-200 dark:border-[#3d4948] pt-2 mt-2">
             <div class="flex justify-between text-base font-bold">
               <span class="text-slate-800 dark:text-[#e3e2e2]">Total</span>
-              <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount + calculatedFee) }}</span>
+              <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? form.amount : form.amount + calculatedFee) }}</span>
             </div>
             <div class="flex justify-between text-sm mt-1">
               <span class="text-slate-500 dark:text-[#869392]">Uang Diterima</span>
@@ -680,23 +680,26 @@ const selectedBankName = computed(() => {
 });
 
 const totalReceived = computed(() => {
-  // Untuk Tarik Tunai: tergantung metode admin
+  // Untuk Tarik Tunai: berapa uang tunai yang nasabah terima
   if (selectedCategory.value === 'TARIK_TUNAI') {
-    if (form.feeMethod === 'DALAM') return form.amount; // nasabah bayar nominal saja (fee sudah included)
-    if (form.feeMethod === 'LUAR') return form.amount + calculatedFee.value; // nominal + fee
-    return form.amount; // POTONG: nasabah bayar nominal, fee dari agen
+    if (form.feeMethod === 'DALAM') return form.amount; // nasabah terima tunai = nominal (fee didebit dari rek)
+    if (form.feeMethod === 'LUAR') return form.amount; // nasabah terima tunai = nominal (fee bayar cash terpisah)
+    if (form.feeMethod === 'POTONG') return form.amount - calculatedFee.value; // nasabah terima = nominal - fee
+    return form.amount;
   }
-  // Untuk Transfer dll: nasabah selalu bayar nominal + total fee (biaya sistem + admin)
+  // Untuk Transfer dll: nasabah bayar tunai = nominal + total fee
   return form.amount + calculatedFee.value;
 });
 
 const debitAmount = computed(() => {
-  // Berapa yang didebit dari rekening agen
+  // Berapa yang didebit dari rekening agen (masuk ke rekening dari nasabah)
   if (selectedCategory.value === 'TARIK_TUNAI') {
-    if (form.feeMethod === 'POTONG') return form.amount + calculatedFee.value;
+    if (form.feeMethod === 'DALAM') return form.amount + calculatedFee.value; // nasabah potong nominal+fee dari rek
+    if (form.feeMethod === 'LUAR') return form.amount; // nasabah potong nominal saja dari rek
+    if (form.feeMethod === 'POTONG') return form.amount; // nasabah potong nominal saja dari rek
     return form.amount;
   }
-  // Transfer: selalu debit nominal saja dari rekening (fee dibayar nasabah)
+  // Transfer: selalu debit nominal saja dari rekening (fee dibayar nasabah tunai)
   return form.amount;
 });
 
