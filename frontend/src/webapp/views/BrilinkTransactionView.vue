@@ -742,25 +742,21 @@ function calculateFee() {
     calculatedAdminFee.value = 0;
     return;
   }
-  // Find matching rule for this category & amount range
+  // Strict match: nominal HARUS dalam range min-max rule
   const rule = feeRules.value.find(
     r => r.category === selectedCategory.value && r.isActive && form.amount >= r.minAmount && form.amount <= r.maxAmount
   );
+
   if (!rule) {
-    // Fallback: first active rule for this category
-    const fallback = feeRules.value.find(r => r.category === selectedCategory.value && r.isActive);
-    if (fallback) {
-      calculatedSystemFee.value = fallback.systemFee ?? 0;
-      calculatedAdminFee.value = fallback.feeType === 'FLAT' ? fallback.feeAmount : Math.round(form.amount * fallback.feePercent / 100);
-    } else {
-      calculatedSystemFee.value = 0;
-      calculatedAdminFee.value = 0;
-    }
-  } else {
-    calculatedSystemFee.value = rule.systemFee ?? 0;
-    calculatedAdminFee.value = rule.feeType === 'FLAT' ? rule.feeAmount : Math.round(form.amount * rule.feePercent / 100);
+    // Nominal di luar semua range yang diatur → fee = 0
+    calculatedSystemFee.value = 0;
+    calculatedAdminFee.value = 0;
+    calculatedFee.value = 0;
+    return;
   }
-  // Total fee = sistem + admin
+
+  calculatedSystemFee.value = rule.systemFee ?? 0;
+  calculatedAdminFee.value = rule.feeType === 'FLAT' ? rule.feeAmount : Math.round(form.amount * rule.feePercent / 100);
   calculatedFee.value = calculatedSystemFee.value + calculatedAdminFee.value;
 }
 
