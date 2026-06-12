@@ -364,6 +364,25 @@
             </div>
           </div>
 
+          <!-- Arus Kas Tunai BRILink -->
+          <div v-if="cashBox" class="border-t border-slate-100 dark:border-[#3d4948] pt-2 mt-2 space-y-1.5">
+            <p class="text-[10px] font-bold text-slate-500 dark:text-[#869392] uppercase tracking-wider">Arus Kas Tunai</p>
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500 dark:text-[#869392]">Kas Tunai Sebelum</span>
+              <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(cashBox.balance) }}</span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500 dark:text-[#869392]">{{ cashImpact >= 0 ? 'Kas Masuk' : 'Kas Keluar' }}</span>
+              <span :class="['font-mono font-semibold', cashImpact >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400']">
+                {{ cashImpact >= 0 ? '+' : '' }}{{ formatRupiah(cashImpact) }}
+              </span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500 dark:text-[#869392]">Kas Tunai Setelah</span>
+              <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(cashBox.balance + cashImpact) }}</span>
+            </div>
+          </div>
+
           <div class="border-t border-slate-200 dark:border-[#3d4948] pt-2 mt-2">
             <div class="flex justify-between text-base font-bold">
               <span class="text-slate-800 dark:text-[#e3e2e2]">Total</span>
@@ -534,6 +553,7 @@ import {
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
 import brilinkAccountService, { type BrilinkAccount } from '@/shared/services/brilink-account.service';
+import brilinkCashboxService, { type BrilinkCashBox } from '@/shared/services/brilink-cashbox.service';
 import brilinkProductsService, { type BankItem } from '@/shared/services/brilink-products.service';
 import brilinkService, {
   BRILINK_CATEGORY_LABELS,
@@ -591,6 +611,7 @@ const selectedAccountId = ref('');
 const sourceStrip = ref<HTMLElement | null>(null);
 const banks = ref<BankItem[]>([]);
 const feeRules = ref<BrilinkFeeDto[]>([]);
+const cashBox = ref<BrilinkCashBox | null>(null);
 const calculatedFee = ref(0);
 const calculatedSystemFee = ref(0); // biaya sistem (potongan EDC)
 const calculatedAdminFee = ref(0); // biaya admin (profit agen)
@@ -677,6 +698,21 @@ const debitAmount = computed(() => {
   }
   // Transfer: selalu debit nominal saja dari rekening (fee dibayar nasabah)
   return form.amount;
+});
+
+// Estimasi dampak ke kas tunai BRILink
+const cashImpact = computed(() => {
+  if (form.amount <= 0) return 0;
+  const fee = calculatedFee.value;
+  if (selectedCategory.value === 'TARIK_TUNAI') {
+    // Kas tunai keluar: nasabah terima uang tunai
+    if (form.feeMethod === 'DALAM') return -form.amount; // tunai keluar = nominal
+    if (form.feeMethod === 'LUAR') return -(form.amount - fee); // tunai keluar = nominal - fee (fee dibayar terpisah)
+    if (form.feeMethod === 'POTONG') return -(form.amount - fee); // tunai keluar = nominal - fee
+    return -(form.amount - fee);
+  }
+  // Transfer/Topup: nasabah bayar tunai (nominal + fee) → kas masuk
+  return form.amount + fee;
 });
 
 const insufficientBalance = computed(() => {
@@ -791,10 +827,19 @@ async function handleSubmit() {
       clientCreatedAt: new Date().toISOString(),
     });
     receiptRef.value = result.summary?.refNumber ?? result.id ?? '';
-    // Update local account balance (hanya kalau pakai rekening agen)
-    if (result.account && selectedAccountId.value) {
-      const idx = accounts.value.findIndex(a => a.id === result.account!.id);
-      if (idx !== -1) accounts.value[idx] = { ...accounts.value[idx], balance: result.account.balance };
+    // Update local account balance
+    if (result.impact?.account && selectedAccountId.value) {
+      const idx = accounts.value.findIndex(a => a.id === result.impact!.account.id);
+      if (idx !== -1) accounts.value[idx] = { ...accounts.value[idx], balance: result.impact!.account.balanceAfter };
+    } else if ((result as any).account && selectedAccountId.value) {
+      // Legacy fallback
+      const acc = (result as any).account;
+      const idx = accounts.value.findIndex(a => a.id === acc.id);
+      if (idx !== -1) accounts.value[idx] = { ...accounts.value[idx], balance: acc.balance };
+    }
+    // Update local cashBox balance
+    if (result.impact?.cashBox && cashBox.value) {
+      cashBox.value = { ...cashBox.value, balance: result.impact.cashBox.balanceAfter };
     }
     step.value = 'success';
   } catch (e: any) {
@@ -867,10 +912,11 @@ onMounted(async () => {
   }
 
   // Load accounts, banks, fee rules in parallel
-  const [accsRes, banksRes, feesRes] = await Promise.allSettled([
+  const [accsRes, banksRes, feesRes, cashBoxRes] = await Promise.allSettled([
     brilinkAccountService.list(shopId),
     brilinkProductsService.listBanks(undefined, true),
     brilinkService.listFees(shopId),
+    brilinkCashboxService.getCashBox(shopId),
   ]);
 
   if (accsRes.status === 'fulfilled') {
@@ -896,6 +942,10 @@ onMounted(async () => {
 
   if (feesRes.status === 'fulfilled') {
     feeRules.value = feesRes.value;
+  }
+
+  if (cashBoxRes.status === 'fulfilled') {
+    cashBox.value = cashBoxRes.value;
   }
 });
 </script>

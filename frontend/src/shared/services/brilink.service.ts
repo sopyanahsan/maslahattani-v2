@@ -167,6 +167,7 @@ export interface BrilinkTransactionAccountInfo {
 
 export interface CreateBrilinkTransactionResult {
   id: string;
+  deduplicated?: boolean;
   summary: {
     refNumber: string;
     category: BrilinkCategory;
@@ -176,8 +177,13 @@ export interface CreateBrilinkTransactionResult {
     fee: number;
     total: number;
     status: 'SUCCESS' | 'FAILED' | 'PENDING';
+    flowDirection?: string;
   };
   account: BrilinkTransactionAccountInfo | null;
+  impact?: {
+    account: { id: string; label: string; impact: number; balanceAfter: number };
+    cashBox: { impact: number; balanceAfter: number };
+  };
 }
 
 export interface CreateBrilinkFeePayload {
