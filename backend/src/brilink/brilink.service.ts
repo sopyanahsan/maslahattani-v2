@@ -1197,9 +1197,11 @@ export class BrilinkService {
         label: dto.label,
         minAmount: dto.minAmount,
         maxAmount: dto.maxAmount,
+        systemFee: dto.systemFee ?? 0,
         feeType: dto.feeType,
         feeAmount: dto.feeAmount,
         feePercent: dto.feePercent,
+        isActive: dto.isActive ?? true,
       },
     });
 

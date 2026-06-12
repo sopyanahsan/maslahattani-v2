@@ -1,4 +1,4 @@
-import { IsEnum, IsInt, IsNotEmpty, IsNumber, IsString, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 import { BrilinkCategoryEnum } from './create-brilink-transaction.dto';
 
 export enum BrilinkFeeTypeEnum {
@@ -26,6 +26,11 @@ export class CreateBrilinkFeeDto {
   @Min(0)
   maxAmount: number;
 
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  systemFee?: number;
+
   @IsEnum(BrilinkFeeTypeEnum)
   feeType: BrilinkFeeTypeEnum;
 
@@ -36,4 +41,8 @@ export class CreateBrilinkFeeDto {
   @IsNumber()
   @Min(0)
   feePercent: number;
+
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }

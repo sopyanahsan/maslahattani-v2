@@ -16,6 +16,11 @@ export class UpdateBrilinkFeeDto {
   @IsOptional()
   maxAmount?: number;
 
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  systemFee?: number;
+
   @IsEnum(BrilinkFeeTypeEnum)
   @IsOptional()
   feeType?: BrilinkFeeTypeEnum;
