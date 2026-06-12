@@ -37,8 +37,12 @@
       <div v-if="settingsStore.settings.shiftCorrectionRequired" class="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-3">
         <p class="text-xs font-semibold text-amber-700">Koreksi saldo (jika ada selisih):</p>
         <div class="flex items-center gap-2">
-          <span class="text-xs text-slate-600 w-20">Kas Retail:</span>
+          <span class="text-xs text-slate-600 w-24">Kas Retail:</span>
           <input v-model.number="correction.retail" type="number" placeholder="0" class="flex-1 h-8 px-3 text-sm font-mono border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-right" />
+        </div>
+        <div v-if="settingsStore.isBrilinkEnabled" class="flex items-center gap-2">
+          <span class="text-xs text-slate-600 w-24">Kas BRILink:</span>
+          <input v-model.number="correction.brilink" type="number" placeholder="0" class="flex-1 h-8 px-3 text-sm font-mono border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-right" />
         </div>
         <input v-model="correction.notes" type="text" placeholder="Catatan koreksi (opsional)" class="w-full h-8 px-3 text-xs border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
       </div>
@@ -265,7 +269,7 @@ const shiftDurationLabel = computed(() => {
 const lastBalance = reactive({ retail: 0, brilink: 0 });
 const realtimeBalance = reactive({ retail: 0, brilink: 0 });
 const activity = reactive({ sales: 0, brilinkFee: 0, cashIn: 0, cashOut: 0 });
-const correction = reactive({ retail: 0, notes: '' });
+const correction = reactive({ retail: 0, brilink: 0, notes: '' });
 const openForm = reactive({ startingCash: 0 });
 const cashForm = reactive({ categoryId: '', amount: 0, notes: '' });
 const closeForm = reactive({ actualRetail: 0, actualBrilink: 0, notes: '' });
@@ -305,6 +309,22 @@ async function handleOpenShift() {
           ? correction.notes
           : undefined,
     });
+
+    // Apply BRILink kas correction if needed
+    if (settingsStore.isBrilinkEnabled && settingsStore.settings.shiftCorrectionRequired && correction.brilink !== 0) {
+      try {
+        const shopId = authStore.user?.shopId || '';
+        if (shopId) {
+          const amount = Math.abs(correction.brilink);
+          const notes = `Koreksi buka shift${correction.notes ? ': ' + correction.notes : ''}`;
+          if (correction.brilink > 0) {
+            await brilinkCashboxService.setor(shopId, { amount, notes });
+          } else {
+            await brilinkCashboxService.tarik(shopId, { amount, notes });
+          }
+        }
+      } catch { /* non-blocking */ }
+    }
   } catch (err: any) {
     openError.value = err?.message || 'Gagal membuka shift.';
   }
