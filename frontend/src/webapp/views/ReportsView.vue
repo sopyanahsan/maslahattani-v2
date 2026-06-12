@@ -119,7 +119,7 @@
         <div class="card-section bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
           <h3 class="text-sm font-bold text-slate-950 dark:text-white mb-4">Tren Penjualan</h3>
           <div class="relative pt-12">
-            <div ref="retailChartScroll" class="overflow-x-auto hide-scrollbar pb-1">
+            <div ref="retailChartScroll" class="chart-scroll-wrap hide-scrollbar pb-1">
               <div class="flex items-end gap-1 h-36 relative chart-bars" :style="{ minWidth: retailChart.length > 10 ? (retailChart.length * 28) + 'px' : 'auto' }">
                 <div v-for="(day, i) in retailChart" :key="i" class="chart-col flex-1 flex flex-col items-center justify-end h-full relative group" :style="{ minWidth: retailChart.length > 10 ? '24px' : 'auto' }">
                   <!-- Custom Tooltip -->
@@ -226,7 +226,7 @@
         <div class="card-section bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
           <h3 class="text-sm font-bold text-slate-950 dark:text-white mb-4">Tren Volume BRILink</h3>
           <div class="relative pt-12">
-            <div ref="brilinkChartScroll" class="overflow-x-auto hide-scrollbar pb-1">
+            <div ref="brilinkChartScroll" class="chart-scroll-wrap hide-scrollbar pb-1">
               <div class="flex items-end gap-1 h-36 relative chart-bars" :style="{ minWidth: brilinkChart.length > 10 ? (brilinkChart.length * 28) + 'px' : 'auto' }">
                 <div v-for="(day, i) in brilinkChart" :key="i" class="chart-col flex-1 flex flex-col items-center justify-end h-full relative group" :style="{ minWidth: brilinkChart.length > 10 ? '24px' : 'auto' }">
                   <!-- Custom Tooltip -->
@@ -549,6 +549,12 @@ onMounted(fetchAll);
 .chart-col:hover .chart-tip {
   opacity: 1;
   transform: translateX(-50%) scale(1);
+}
+
+/* Chart scroll: clip only X axis, allow Y overflow for tooltips */
+.chart-scroll-wrap {
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 /* === Chart bar grow animation === */
