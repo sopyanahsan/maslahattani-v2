@@ -692,11 +692,11 @@ const totalReceived = computed(() => {
 });
 
 const debitAmount = computed(() => {
-  // Berapa yang didebit dari rekening agen (masuk ke rekening dari nasabah)
+  // Berapa yang masuk ke rekening agen (debit dari nasabah)
   if (selectedCategory.value === 'TARIK_TUNAI') {
     if (form.feeMethod === 'DALAM') return form.amount + calculatedFee.value; // nasabah potong nominal+fee dari rek
-    if (form.feeMethod === 'LUAR') return form.amount; // nasabah potong nominal saja dari rek
-    if (form.feeMethod === 'POTONG') return form.amount; // nasabah potong nominal saja dari rek
+    if (form.feeMethod === 'LUAR') return form.amount; // nasabah potong nominal saja
+    if (form.feeMethod === 'POTONG') return form.amount + calculatedFee.value; // nominal+fee masuk rek
     return form.amount;
   }
   // Transfer: selalu debit nominal saja dari rekening (fee dibayar nasabah tunai)
@@ -708,10 +708,10 @@ const cashImpact = computed(() => {
   if (form.amount <= 0) return 0;
   const fee = calculatedFee.value;
   if (selectedCategory.value === 'TARIK_TUNAI') {
-    // Kas tunai keluar: nasabah terima uang tunai
-    if (form.feeMethod === 'DALAM') return -form.amount; // tunai keluar = nominal
-    if (form.feeMethod === 'LUAR') return -(form.amount - fee); // tunai keluar = nominal - fee (fee dibayar terpisah)
-    if (form.feeMethod === 'POTONG') return -(form.amount - fee); // tunai keluar = nominal - fee
+    // Kas tunai keluar: uang tunai yang diberikan ke nasabah
+    if (form.feeMethod === 'DALAM') return -form.amount; // keluar = nominal (fee di rek)
+    if (form.feeMethod === 'LUAR') return -(form.amount - fee); // keluar nominal, masuk fee → net -(nominal-fee)
+    if (form.feeMethod === 'POTONG') return -(form.amount - fee); // keluar = nominal-fee (fee di rek)
     return -(form.amount - fee);
   }
   // Transfer/Topup: nasabah bayar tunai (nominal + fee) → kas masuk

@@ -46,7 +46,8 @@ export class BrilinkService {
     if (category === BrilinkCategoryEnum.TARIK_TUNAI) {
       switch (feeMethod) {
         case 'DALAM':
-          // Nasabah tarik (nominal+fee) dari rekening, terima tunai = nominal
+          // Nasabah potong (nominal+fee) dari rekening, terima tunai = nominal
+          // Fee masuk REKENING (profit agen di rek)
           // Rekening: +(nominal+fee), Kas tunai: -nominal
           return {
             flowDirection: 'CREDIT',
@@ -55,7 +56,8 @@ export class BrilinkService {
           };
 
         case 'LUAR':
-          // Nasabah tarik nominal dari rekening, bayar fee cash terpisah
+          // Nasabah potong nominal dari rekening, terima tunai = nominal
+          // Fee dibayar nasabah cash TERPISAH → masuk KAS TUNAI
           // Rekening: +nominal, Kas tunai: -nominal + fee = -(nominal-fee)
           return {
             flowDirection: 'CREDIT',
@@ -64,16 +66,16 @@ export class BrilinkService {
           };
 
         case 'POTONG':
-          // Nasabah tarik nominal dari rekening, terima tunai = nominal-fee
-          // Rekening: +nominal, Kas tunai: -(nominal-fee)
+          // Nasabah potong nominal dari rekening, terima tunai = nominal-fee
+          // Fee masuk REKENING (profit agen di rek)
+          // Rekening: +(nominal+fee), Kas tunai: -(nominal-fee)
           return {
             flowDirection: 'CREDIT',
-            accountImpact: +amount,
+            accountImpact: +(amount + fee),
             cashImpact: -(amount - fee),
           };
 
         default:
-          // Default = LUAR (backward compat)
           return {
             flowDirection: 'CREDIT',
             accountImpact: +amount,
