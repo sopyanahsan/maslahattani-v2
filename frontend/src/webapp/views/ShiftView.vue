@@ -342,17 +342,15 @@ async function handleCloseShift() {
   const actualCash = settingsStore.settings.shiftPhysicalCountRequired
     ? closeForm.actualRetail || 0
     : realtimeBalance.retail;
-  // Build notes including BRILink info
-  let notes = closeForm.notes || '';
-  if (settingsStore.isBrilinkEnabled && settingsStore.settings.shiftPhysicalCountRequired) {
-    const brilinkInfo = `[BRILink] Expected: ${realtimeBalance.brilink}, Actual: ${closeForm.actualBrilink || 0}, Selisih: ${(closeForm.actualBrilink || 0) - realtimeBalance.brilink}`;
-    notes = notes ? `${notes} | ${brilinkInfo}` : brilinkInfo;
-  }
+  // Build notes
+  const notes = closeForm.notes || undefined;
   try {
     await shiftStore.closeShift(shiftStore.currentShift.id, {
-      // actualQRIS sengaja tidak dikirim → backend rekonsiliasi otomatis ke expected.
       actualByCategory: [{ categoryId: closeCategoryId.value, actualCash }],
-      notes: notes || undefined,
+      actualBrilinkCash: settingsStore.isBrilinkEnabled && settingsStore.settings.shiftPhysicalCountRequired
+        ? (closeForm.actualBrilink || 0)
+        : undefined,
+      notes,
     });
     showCloseShift.value = false;
     showClosedSummary.value = true;
@@ -383,11 +381,41 @@ async function fetchDefaultCategory() {
 async function refreshActivity() {
   try {
     const today = new Date().toISOString().slice(0, 10);
-    const { data } = await api.get('/cash-flows/summary', {
-      params: { shiftId: shiftStore.currentShift?.id, startDate: today, endDate: today },
-    });
-    activity.cashIn = data.cashIn?.total || 0;
-    activity.cashOut = data.cashOut?.total || 0;
+    const shopId = authStore.user?.shopId || '';
+
+    // Fetch cash flow summary and BRILink KPI in parallel
+    const requests: Promise<any>[] = [
+      api.get('/cash-flows/summary', {
+        params: { shiftId: shiftStore.currentShift?.id, startDate: today, endDate: today },
+      }),
+    ];
+
+    if (settingsStore.isBrilinkEnabled && shopId) {
+      requests.push(api.get('/brilink/transactions/kpi', { params: { shopId } }));
+    }
+
+    const results = await Promise.allSettled(requests);
+
+    // Cash flows (in/out)
+    if (results[0].status === 'fulfilled') {
+      const data = results[0].value.data;
+      activity.cashIn = data.cashIn?.total || 0;
+      activity.cashOut = data.cashOut?.total || 0;
+    }
+
+    // BRILink fee (today)
+    if (results.length > 1 && results[1].status === 'fulfilled') {
+      const kpi = results[1].value.data;
+      activity.brilinkFee = kpi.currentFee || kpi.fee || 0;
+    }
+
+    // Retail sales = total cash in hand from shift transactions (excluding starting cash)
+    if (shiftStore.currentShift) {
+      const defaultCb = shiftStore.currentShift.cashBoxes.find(cb => cb.category?.isDefault);
+      if (defaultCb) {
+        activity.sales = defaultCb.expectedCash || 0;
+      }
+    }
   } catch { /* silent */ }
 }
 

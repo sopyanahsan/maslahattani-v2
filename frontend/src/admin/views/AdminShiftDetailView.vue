@@ -303,6 +303,82 @@
       </div>
 
       <!-- ============================================ -->
+      <!-- COLUMN 2B: Kas BRILink & Rek BRILink         -->
+      <!-- ============================================ -->
+      <div v-if="brilinkEnabled" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm lg:col-span-3">
+        <div class="px-5 py-3 border-b border-slate-200 bg-teal-50">
+          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <CreditCardIcon class="w-4 h-4 text-teal-600" />
+            Kas & Rekening BRILink
+          </h3>
+          <p class="text-[11px] text-slate-500 mt-0.5">Saldo kas tunai BRILink dan semua rekening agen yang terdaftar.</p>
+        </div>
+
+        <div class="p-5">
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Kas Tunai BRILink -->
+            <div class="border border-slate-200 rounded-lg p-4 space-y-2">
+              <p class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
+                <BanknoteIcon class="w-3.5 h-3.5 text-teal-500" />
+                Kas Tunai BRILink
+              </p>
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-500">Saldo Sistem</span>
+                <span class="font-mono font-semibold text-slate-900">{{ formatRupiah(brilinkCashBoxBalance) }}</span>
+              </div>
+              <div v-if="brilinkCloseData?.actualBrilinkCash != null" class="flex justify-between text-xs">
+                <span class="text-slate-500">Aktual (Kasir)</span>
+                <span class="font-mono font-semibold text-slate-900">{{ formatRupiah(brilinkCloseData.actualBrilinkCash) }}</span>
+              </div>
+              <div v-if="brilinkCloseData?.actualBrilinkCash != null" class="flex justify-between text-xs font-semibold" :class="brilinkCloseData.actualBrilinkCash - brilinkCashBoxBalance >= 0 ? 'text-emerald-600' : 'text-red-600'">
+                <span>Selisih</span>
+                <span class="font-mono">{{ formatVariance(brilinkCloseData.actualBrilinkCash - brilinkCashBoxBalance) }}</span>
+              </div>
+              <div v-else class="text-[10px] text-slate-400 italic">Kasir tidak menginput kas BRILink saat tutup shift</div>
+            </div>
+
+            <!-- Per Rekening BRILink -->
+            <div
+              v-for="acc in brilinkAccounts"
+              :key="acc.id"
+              class="border border-slate-200 rounded-lg p-4 space-y-2"
+            >
+              <p class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
+                <CreditCardIcon class="w-3.5 h-3.5 text-blue-500" />
+                {{ acc.label }}
+              </p>
+              <p class="text-[10px] font-mono text-slate-400">{{ acc.accountNumber }}</p>
+              <div class="flex justify-between text-xs">
+                <span class="text-slate-500">Saldo Sistem</span>
+                <span class="font-mono font-semibold text-slate-900">{{ formatRupiah(acc.balance) }}</span>
+              </div>
+              <div v-if="getAccountSnapshot(acc.id)" class="flex justify-between text-xs">
+                <span class="text-slate-500">Aktual (Cek Mutasi)</span>
+                <span class="font-mono font-semibold text-slate-900">{{ formatRupiah(getAccountSnapshot(acc.id)!) }}</span>
+              </div>
+              <div v-if="getAccountSnapshot(acc.id)" class="flex justify-between text-xs font-semibold" :class="getAccountSnapshot(acc.id)! - acc.balance >= 0 ? 'text-emerald-600' : 'text-red-600'">
+                <span>Selisih</span>
+                <span class="font-mono">{{ formatVariance(getAccountSnapshot(acc.id)! - acc.balance) }}</span>
+              </div>
+              <div v-else class="text-[10px] text-slate-400 italic">Belum ada data aktual</div>
+            </div>
+          </div>
+
+          <!-- Total Summary -->
+          <div v-if="brilinkAccounts.length > 0" class="mt-4 pt-4 border-t border-slate-200 flex flex-wrap gap-6 text-xs">
+            <div>
+              <span class="text-slate-500">Total Saldo Rek BRILink (Sistem):</span>
+              <span class="ml-2 font-mono font-bold text-slate-900">{{ formatRupiah(totalBrilinkAccountBalance) }}</span>
+            </div>
+            <div>
+              <span class="text-slate-500">Kas Tunai BRILink:</span>
+              <span class="ml-2 font-mono font-bold text-slate-900">{{ formatRupiah(brilinkCashBoxBalance) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================ -->
       <!-- COLUMN 3: Reconciliation & Finalize          -->
       <!-- ============================================ -->
       <div class="space-y-5">
@@ -536,8 +612,12 @@ import shiftService, {
   type ShiftDetailTransaction,
   type CashDenominations,
 } from '@/shared/services/shift.service';
+import brilinkAccountService, { type BrilinkAccount } from '@/shared/services/brilink-account.service';
+import brilinkCashboxService from '@/shared/services/brilink-cashbox.service';
+import { useSettingsStore } from '@/shared/stores/settings.store';
 
 const route = useRoute();
+const settingsStore = useSettingsStore();
 
 // ============================================
 // State
@@ -549,6 +629,12 @@ const loadError = ref<string | null>(null);
 const finalizing = ref(false);
 const finalizeError = ref<string | null>(null);
 const finalizeNotes = ref('');
+
+// BRILink state
+const brilinkEnabled = computed(() => settingsStore.isBrilinkEnabled);
+const brilinkAccounts = ref<BrilinkAccount[]>([]);
+const brilinkCashBoxBalance = ref(0);
+const brilinkCloseData = ref<{ actualBrilinkCash: number | null; brilinkAccountSnapshots: Array<{ accountId: string; actualBalance: number }> } | null>(null);
 
 /** Per-category denomination inputs: categoryId → CashDenominations */
 const denominationInputs = reactive<Record<string, CashDenominations>>({});
@@ -622,6 +708,16 @@ const totalOmzetShift = computed(() => {
   return transactions.value.reduce((sum, trx) => sum + trx.totalPrice, 0);
 });
 
+// BRILink computed
+const totalBrilinkAccountBalance = computed(() =>
+  brilinkAccounts.value.reduce((sum, acc) => sum + acc.balance, 0)
+);
+
+function getAccountSnapshot(accountId: string): number | null {
+  const snap = brilinkCloseData.value?.brilinkAccountSnapshots?.find(s => s.accountId === accountId);
+  return snap?.actualBalance ?? null;
+}
+
 // ============================================
 // Methods
 // ============================================
@@ -675,6 +771,29 @@ async function loadDetail() {
     for (const cb of response.shift.cashBoxes) {
       if (cb.cashDenominations) {
         denominationInputs[cb.categoryId] = { ...cb.cashDenominations };
+      }
+    }
+
+    // Load BRILink data
+    if (brilinkEnabled.value && response.shift.shopId) {
+      try {
+        const [accs, cb] = await Promise.allSettled([
+          brilinkAccountService.list(response.shift.shopId),
+          brilinkCashboxService.getCashBox(response.shift.shopId),
+        ]);
+        if (accs.status === 'fulfilled') brilinkAccounts.value = accs.value.filter(a => a.isActive);
+        if (cb.status === 'fulfilled') brilinkCashBoxBalance.value = cb.value.balance;
+      } catch { /* silent */ }
+
+      // Parse BRILink close data from shift notes
+      if (response.shift.notes) {
+        const match = response.shift.notes.match(/<!--BRILINK_DATA:(.*?)-->/);
+        if (match) {
+          try {
+            const parsed = JSON.parse(match[1]);
+            brilinkCloseData.value = parsed;
+          } catch { /* invalid JSON */ }
+        }
       }
     }
   } catch (err: any) {

@@ -182,6 +182,8 @@ export interface ActualCashByCategoryEntry {
 
 export interface CloseShiftPayload {
   actualByCategory: ActualCashByCategoryEntry[];
+  actualBrilinkCash?: number;
+  brilinkAccountSnapshots?: Array<{ accountId: string; actualBalance: number }>;
   notes?: string;
 }
 

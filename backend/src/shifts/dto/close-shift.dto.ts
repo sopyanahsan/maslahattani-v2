@@ -139,6 +139,17 @@ export class ActualCashByCategoryDto {
   denominations?: CashDenominations;
 }
 
+export class BrilinkAccountSnapshotDto {
+  @ApiProperty({ example: 'acc-123' })
+  @IsString()
+  accountId: string;
+
+  @ApiProperty({ example: 15000000, description: 'Saldo aktual rekening (dari cek mutasi/mobile banking)' })
+  @IsInt()
+  @Min(0)
+  actualBalance: number;
+}
+
 export class CloseShiftDto {
   @ApiProperty({
     type: [ActualCashByCategoryDto],
@@ -152,6 +163,25 @@ export class CloseShiftDto {
   @ValidateNested({ each: true })
   @Type(() => ActualCashByCategoryDto)
   actualByCategory: ActualCashByCategoryDto[];
+
+  @ApiPropertyOptional({
+    example: 500000,
+    description: 'Aktual kas tunai BRILink fisik yang dihitung kasir',
+  })
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  actualBrilinkCash?: number;
+
+  @ApiPropertyOptional({
+    type: [BrilinkAccountSnapshotDto],
+    description: 'Snapshot saldo aktual per rekening BRILink (opsional, dari cek mobile banking)',
+  })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => BrilinkAccountSnapshotDto)
+  brilinkAccountSnapshots?: BrilinkAccountSnapshotDto[];
 
   @ApiPropertyOptional({
     example: 'Selisih kecil karena kembalian receh',

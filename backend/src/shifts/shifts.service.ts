@@ -322,9 +322,7 @@ export class ShiftsService {
         data: {
           endTime: new Date(),
           status: ShiftStatus.CLOSED,
-          notes: dto.notes
-            ? `${shift.notes ? shift.notes + '\n\n' : ''}Catatan tutup shift: ${dto.notes}`
-            : shift.notes,
+          notes: this.buildCloseShiftNotes(shift.notes, dto),
         },
         include: SHIFT_INCLUDE,
       });
@@ -356,11 +354,36 @@ export class ShiftsService {
       shift: updatedShift,
       summary,
       totalTransactions: transactions.length,
+      brilinkClose: dto.actualBrilinkCash !== undefined ? {
+        actualBrilinkCash: dto.actualBrilinkCash,
+        brilinkAccountSnapshots: dto.brilinkAccountSnapshots ?? [],
+      } : undefined,
       message:
         totalVariance > 10000
           ? `⚠️ Shift ditutup dengan total variance Rp ${totalVariance.toLocaleString('id-ID')}. Harap review oleh admin.`
           : 'Shift berhasil ditutup. Terima kasih atas kerja keras Anda!',
     };
+  }
+
+  /**
+   * Build notes string for closed shift including BRILink data.
+   */
+  private buildCloseShiftNotes(existingNotes: string | null, dto: CloseShiftDto): string | null {
+    const parts: string[] = [];
+    if (existingNotes) parts.push(existingNotes);
+    if (dto.notes) parts.push(`Catatan tutup shift: ${dto.notes}`);
+
+    // Store BRILink data as JSON metadata in notes
+    if (dto.actualBrilinkCash !== undefined || dto.brilinkAccountSnapshots?.length) {
+      const brilinkMeta = {
+        _type: 'BRILINK_CLOSE_DATA',
+        actualBrilinkCash: dto.actualBrilinkCash ?? null,
+        brilinkAccountSnapshots: dto.brilinkAccountSnapshots ?? [],
+      };
+      parts.push(`<!--BRILINK_DATA:${JSON.stringify(brilinkMeta)}-->`);
+    }
+
+    return parts.length > 0 ? parts.join('\n\n') : null;
   }
 
   /**
