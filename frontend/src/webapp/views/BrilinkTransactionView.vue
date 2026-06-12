@@ -443,11 +443,15 @@
             <span class="text-slate-500 dark:text-[#869392]">Kategori</span>
             <span class="font-bold text-slate-800 dark:text-[#e3e2e2]">{{ categoryTitle }}</span>
           </div>
-          <div class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Penerima</span>
+          <div v-if="selectedCategory === 'TARIK_TUNAI'" class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Metode Admin</span>
+            <span class="font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ feeMethodLabel }}</span>
+          </div>
+          <div v-if="form.customerName" class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Nasabah</span>
             <span class="font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ form.customerName }}</span>
           </div>
-          <div class="flex justify-between text-xs">
+          <div v-if="form.destination && selectedCategory !== 'TARIK_TUNAI'" class="flex justify-between text-xs">
             <span class="text-slate-500 dark:text-[#869392]">Tujuan</span>
             <span class="font-mono text-slate-700 dark:text-[#bcc9c7]">{{ form.destination }}</span>
           </div>
@@ -456,12 +460,16 @@
             <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount) }}</span>
           </div>
           <div class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Fee</span>
+            <span class="text-slate-500 dark:text-[#869392]">Biaya Admin</span>
             <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedFee) }}</span>
           </div>
           <div class="flex justify-between text-sm font-bold border-t border-slate-200 dark:border-[#3d4948] pt-2">
             <span class="text-slate-800 dark:text-[#e3e2e2]">Total</span>
-            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount + calculatedFee) }}</span>
+            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? form.amount : form.amount + calculatedFee) }}</span>
+          </div>
+          <div v-if="selectedCategory === 'TARIK_TUNAI'" class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Uang Diterima Nasabah</span>
+            <span class="font-mono font-bold text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(totalReceived) }}</span>
           </div>
         </div>
 
@@ -643,9 +651,9 @@ const filteredBanks = computed(() => {
 
 // ── Fee method ────────────────────────────────────────────────────────────────
 const feeMethodOptions = [
-  { value: 'DALAM', label: 'Admin Dalam', hint: 'Termasuk dalam nominal' },
-  { value: 'LUAR', label: 'Admin Luar', hint: 'Nominal + admin terpisah' },
-  { value: 'POTONG', label: 'Potong Saldo', hint: 'Admin dari saldo agen' },
+  { value: 'DALAM', label: 'Admin Dalam', hint: 'Fee dari rekening nasabah' },
+  { value: 'LUAR', label: 'Admin Luar', hint: 'Fee tunai terpisah ke kas' },
+  { value: 'POTONG', label: 'Admin Potong', hint: 'Fee dipotong dari tunai nasabah' },
 ] as const;
 
 const feeMethodLabel = computed(() => {
