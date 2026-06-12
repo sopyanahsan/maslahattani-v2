@@ -348,34 +348,22 @@ async function handleSaveFee() {
   savingFee.value = true;
   feeError.value = null;
   try {
+    const payload = {
+      category: feeForm.category as BrilinkCategory,
+      label: feeForm.label,
+      minAmount: feeForm.minAmount,
+      maxAmount: feeForm.maxAmount,
+      systemFee: feeForm.systemFee || 0,
+      feeType: feeForm.feeType,
+      feeAmount: feeForm.feeType === 'FLAT' ? feeForm.feeAmount : 0,
+      feePercent: feeForm.feeType === 'PERCENT' ? feeForm.feePercent : 0,
+      isActive: feeForm.isActive,
+    };
+
     if (editingFee.value) {
-      // Update: don't send category (not allowed by UpdateBrilinkFeeDto)
-      const updatePayload = {
-        label: feeForm.label,
-        minAmount: feeForm.minAmount,
-        maxAmount: feeForm.maxAmount,
-        systemFee: feeForm.systemFee || 0,
-        feeType: feeForm.feeType,
-        feeAmount: feeForm.feeType === 'FLAT' ? feeForm.feeAmount : 0,
-        feePercent: feeForm.feeType === 'PERCENT' ? feeForm.feePercent : 0,
-        isActive: feeForm.isActive,
-      };
-      await brilinkService.updateFee(editingFee.value.id, updatePayload);
+      await brilinkService.updateFee(editingFee.value.id, payload);
     } else {
-      // Create: include category and shopId
-      const createPayload = {
-        shopId,
-        category: feeForm.category as BrilinkCategory,
-        label: feeForm.label,
-        minAmount: feeForm.minAmount,
-        maxAmount: feeForm.maxAmount,
-        systemFee: feeForm.systemFee || 0,
-        feeType: feeForm.feeType,
-        feeAmount: feeForm.feeType === 'FLAT' ? feeForm.feeAmount : 0,
-        feePercent: feeForm.feeType === 'PERCENT' ? feeForm.feePercent : 0,
-        isActive: feeForm.isActive,
-      };
-      await brilinkService.createFee(createPayload);
+      await brilinkService.createFee({ shopId, ...payload });
     }
     showFeeModal.value = false;
     await fetchFees();

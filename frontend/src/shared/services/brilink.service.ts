@@ -192,6 +192,7 @@ export interface CreateBrilinkFeePayload {
 }
 
 export interface UpdateBrilinkFeePayload {
+  category?: BrilinkCategory;
   label?: string;
   minAmount?: number;
   maxAmount?: number;
