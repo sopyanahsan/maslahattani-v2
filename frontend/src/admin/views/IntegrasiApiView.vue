@@ -84,6 +84,10 @@
                 <input v-model="form.merchantCode" type="text" placeholder="T12345" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
               </div>
               <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">PIN Transaksi</label>
+                <input v-model="form.pin" type="password" placeholder="4 digit" maxlength="4" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+              </div>
+              <div>
                 <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Mode</label>
                 <select v-model="form.mode" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none">
                   <option value="sandbox">Sandbox (Testing)</option>
@@ -211,7 +215,7 @@ const feedbackClass = computed(() =>
 );
 
 const config = ref<TripayConfig>({ apiKey: '', privateKey: '', merchantCode: '', mode: 'sandbox', isActive: false, lastVerifiedAt: null });
-const form = ref({ apiKey: '', privateKey: '', merchantCode: '', mode: 'sandbox' as 'sandbox' | 'production', isActive: false });
+const form = ref({ apiKey: '', privateKey: '', merchantCode: '', pin: '', mode: 'sandbox' as 'sandbox' | 'production', isActive: false });
 
 const ppobCategories: PpobCategory[] = [
   { code: 'pulsa', label: 'Pulsa', icon: 'smartphone', color: 'pink' },
@@ -247,13 +251,13 @@ async function loadConfig() {
   try {
     const data = await getTripayConfig(shopId.value);
     config.value = data;
-    form.value = { apiKey: '', privateKey: '', merchantCode: data.merchantCode || '', mode: data.mode || 'sandbox', isActive: data.isActive };
+    form.value = { apiKey: '', privateKey: '', merchantCode: data.merchantCode || '', pin: '', mode: data.mode || 'sandbox', isActive: data.isActive };
   } catch { /* defaults */ } finally { loading.value = false; }
 }
 
 async function handleSaveConfig() {
-  if (!form.value.apiKey || !form.value.privateKey || !form.value.merchantCode) {
-    feedback.value = 'Semua field wajib diisi.'; feedbackType.value = 'error'; return;
+  if (!form.value.apiKey || !form.value.privateKey || !form.value.merchantCode || !form.value.pin) {
+    feedback.value = 'Semua field wajib diisi (termasuk PIN transaksi).'; feedbackType.value = 'error'; return;
   }
   saving.value = true; feedback.value = '';
   try {

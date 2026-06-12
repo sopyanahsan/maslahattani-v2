@@ -19,6 +19,10 @@ export class UpdateTripayConfigDto {
   @IsString()
   merchantCode: string;
 
+  @ApiProperty({ description: 'PIN transaksi 4 digit akun Tripay' })
+  @IsString()
+  pin: string;
+
   @ApiPropertyOptional({ enum: TripayMode, default: TripayMode.SANDBOX })
   @IsOptional()
   @IsEnum(TripayMode)

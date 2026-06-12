@@ -12,7 +12,7 @@ export class CreatePpobTransactionDto {
   @IsString()
   productCode: string;
 
-  @ApiProperty({ description: 'Nomor pelanggan / tujuan' })
+  @ApiProperty({ description: 'Nomor pelanggan / tujuan (No HP / ID Pelanggan)' })
   @IsString()
   customerId: string;
 
@@ -35,6 +35,16 @@ export class CreatePpobTransactionDto {
   @IsNumber()
   @Type(() => Number)
   amount?: number;
+
+  @ApiPropertyOptional({ description: 'No meter PLN (khusus pembelian token PLN prabayar)' })
+  @IsOptional()
+  @IsString()
+  noMeterPln?: string;
+
+  @ApiPropertyOptional({ description: 'Order ID dari response cek tagihan (wajib untuk pascabayar)' })
+  @IsOptional()
+  @IsString()
+  orderId?: string;
 }
 
 export class QueryPpobTransactionsDto {

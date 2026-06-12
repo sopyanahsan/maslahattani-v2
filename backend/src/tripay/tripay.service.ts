@@ -76,6 +76,7 @@ export class TripayService {
       apiKey: dto.apiKey,
       privateKey: dto.privateKey,
       merchantCode: dto.merchantCode,
+      pin: dto.pin,
       mode: dto.mode || TripayMode.SANDBOX,
       isActive: dto.isActive ?? true,
     };
@@ -350,6 +351,11 @@ export class TripayService {
   // INQUIRY (CEK TAGIHAN)
   // ============================================
 
+  /**
+   * Cek Tagihan Pascabayar
+   * POST /v2/transaksi/cek-tagihan
+   * Params: code, phone, api_trxid, pin
+   */
   async inquiry(shopId: string, productCode: string, customerId: string) {
     const config = await this.getFullConfig(shopId);
     if (!config || !config.isActive) {
@@ -358,33 +364,33 @@ export class TripayService {
 
     try {
       const baseUrl = TRIPAY_BASE[config.mode as keyof typeof TRIPAY_BASE];
-      const signature = this.createSignature(
-        config.privateKey,
-        config.merchantCode + productCode + customerId,
-      );
+      const apiTrxId = this.generateRefId(shopId);
 
-      const response = await fetch(`${baseUrl}/transaksi/inquiry`, {
+      // Tripay uses form-urlencoded (not JSON)
+      const formData = new URLSearchParams();
+      formData.append('code', productCode);
+      formData.append('phone', customerId);
+      formData.append('api_trxid', apiTrxId);
+      formData.append('pin', config.pin || '');
+
+      const response = await fetch(`${baseUrl}/transaksi/cek-tagihan`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${config.apiKey}`,
-          'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
-        body: JSON.stringify({
-          code: productCode,
-          customer_id: customerId,
-          signature,
-        }),
+        body: formData,
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
+      const result = await response.json().catch(() => ({}));
+
+      if (!result.success) {
         throw new BadRequestException(
-          errorData?.message || 'Gagal melakukan inquiry. Periksa nomor pelanggan.',
+          result.message || 'Gagal melakukan inquiry. Periksa nomor pelanggan.',
         );
       }
 
-      const data = await response.json();
-      return data.data;
+      return result.data;
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       this.logger.error(`Tripay inquiry error: ${error.message}`);
@@ -396,6 +402,15 @@ export class TripayService {
   // TRANSACTIONS
   // ============================================
 
+  /**
+   * Request Transaksi Prabayar (Pembelian)
+   * POST /v2/transaksi/pembelian
+   * Params: inquiry (PLN|I), code, phone, no_meter_pln?, api_trxid?, pin
+   *
+   * Bayar Tagihan Pascabayar (Pembayaran)
+   * POST /v2/transaksi/pembayaran
+   * Params: order_id, api_trxid?, pin
+   */
   async createTransaction(
     shopId: string,
     cashierId: string,
@@ -406,6 +421,8 @@ export class TripayService {
       customerName?: string;
       customerPhone?: string;
       amount?: number;
+      noMeterPln?: string;
+      orderId?: string; // For postpaid: order_id from cek tagihan response
     },
   ) {
     const config = await this.getFullConfig(shopId);
@@ -413,72 +430,98 @@ export class TripayService {
       throw new BadRequestException('Integrasi Tripay belum diaktifkan.');
     }
 
+    if (!config.pin) {
+      throw new BadRequestException('PIN transaksi Tripay belum diatur di konfigurasi.');
+    }
+
     const refId = this.generateRefId(shopId);
 
     try {
       const baseUrl = TRIPAY_BASE[config.mode as keyof typeof TRIPAY_BASE];
-      const endpoint =
-        dto.type === PpobType.PREPAID
-          ? `${baseUrl}/transaksi/pembelian`
-          : `${baseUrl}/transaksi/pembayaran`;
 
-      const signature = this.createSignature(
-        config.privateKey,
-        config.merchantCode + dto.productCode + dto.customerId,
-      );
+      // Tripay uses form-urlencoded
+      const formData = new URLSearchParams();
+      formData.append('pin', config.pin);
+      formData.append('api_trxid', refId);
 
-      const payload: Record<string, any> = {
-        merchant_ref: refId,
-        code: dto.productCode,
-        customer_id: dto.customerId,
-        signature,
-      };
+      let endpoint: string;
 
-      if (dto.amount) {
-        payload.amount = dto.amount;
+      if (dto.type === PpobType.PREPAID) {
+        // === PRABAYAR (Pembelian) ===
+        endpoint = `${baseUrl}/transaksi/pembelian`;
+
+        // inquiry field: "PLN" untuk PLN Prabayar, "I" untuk produk lainnya
+        const isPln = dto.productCode.toUpperCase().includes('PLN');
+        formData.append('inquiry', isPln ? 'PLN' : 'I');
+        formData.append('code', dto.productCode);
+        formData.append('phone', dto.customerId);
+
+        if (isPln && dto.noMeterPln) {
+          formData.append('no_meter_pln', dto.noMeterPln);
+        }
+      } else {
+        // === PASCABAYAR (Pembayaran) ===
+        endpoint = `${baseUrl}/transaksi/pembayaran`;
+
+        if (!dto.orderId) {
+          throw new BadRequestException(
+            'order_id wajib diisi untuk transaksi pascabayar. Lakukan cek tagihan terlebih dahulu.',
+          );
+        }
+        formData.append('order_id', dto.orderId);
       }
 
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${config.apiKey}`,
-          'Content-Type': 'application/json',
+          'Accept': 'application/json',
         },
-        body: JSON.stringify(payload),
+        body: formData,
       });
 
       const responseData = await response.json().catch(() => ({}));
 
-      if (!response.ok) {
+      if (!responseData.success) {
         throw new BadRequestException(
           responseData?.message || 'Gagal membuat transaksi PPOB.',
         );
       }
 
+      // Map response fields
       const trxData = responseData.data || responseData;
+      const tripayTrxId = responseData.trxid || trxData.id || null;
+      const tripayApiTrxId = responseData.api_trxid || trxData.api_trxid || refId;
+
+      // Determine status from response
+      // Tripay status: 0 = Proses, 1 = Sukses, 2 = Gagal, 3 = Refund
+      const tripayStatusNum = trxData.status ?? '0';
+      const mappedStatus = this.mapTripayStatusNumeric(tripayStatusNum);
+
       const ppobTrx = await this.prisma.ppobTransaction.create({
         data: {
           shopId,
           cashierId,
           refId,
-          tripayRef: trxData.reference || trxData.trx_id || null,
+          tripayRef: String(tripayTrxId || tripayApiTrxId),
           productCode: dto.productCode,
           customerId: dto.customerId,
-          customerName: dto.customerName || trxData.customer_name || null,
-          customerPhone: dto.customerPhone || null,
+          customerName: dto.customerName || trxData.target || null,
+          customerPhone: dto.customerPhone || dto.customerId,
           type: dto.type,
-          amount: trxData.amount || dto.amount || 0,
-          fee: trxData.fee || 0,
-          total: trxData.total || (trxData.amount || 0) + (trxData.fee || 0),
-          status: 'PROCESSING',
-          tripayStatus: trxData.status || 'pending',
-          rawResponse: JSON.stringify(trxData),
+          amount: parseFloat(trxData.harga_default || trxData.amount || dto.amount || '0'),
+          fee: parseFloat(trxData.harga_markup || trxData.fee || '0'),
+          total: parseFloat(trxData.total || '0') || (dto.amount || 0),
+          status: mappedStatus,
+          tripayStatus: String(tripayStatusNum),
+          serialNumber: trxData.token || trxData.sn || null,
+          rawResponse: JSON.stringify(responseData),
         },
       });
 
       return {
         success: true,
-        message: 'Transaksi PPOB berhasil dibuat.',
+        message: responseData.message || 'Transaksi PPOB berhasil dibuat.',
         transaction: ppobTrx,
       };
     } catch (error) {
@@ -673,20 +716,38 @@ export class TripayService {
       case 'success':
       case 'sukses':
       case 'berhasil':
+      case '1':
         return 'SUCCESS';
       case 'failed':
       case 'gagal':
       case 'expired':
+      case '2':
         return 'FAILED';
       case 'pending':
       case 'process':
       case 'processing':
+      case '0':
         return 'PROCESSING';
       case 'refund':
       case 'refunded':
+      case '3':
         return 'REFUNDED';
       default:
         return 'PROCESSING';
+    }
+  }
+
+  /**
+   * Map Tripay numeric status:
+   * 0 = Proses, 1 = Sukses, 2 = Gagal, 3 = Refund
+   */
+  private mapTripayStatusNumeric(status: string | number): string {
+    switch (String(status)) {
+      case '1': return 'SUCCESS';
+      case '2': return 'FAILED';
+      case '3': return 'REFUNDED';
+      case '0':
+      default: return 'PROCESSING';
     }
   }
 }

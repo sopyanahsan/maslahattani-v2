@@ -19,6 +19,7 @@ export interface TripayConfigPayload {
   apiKey: string;
   privateKey: string;
   merchantCode: string;
+  pin: string;
   mode?: TripayMode;
   isActive?: boolean;
 }
