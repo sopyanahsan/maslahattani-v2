@@ -105,15 +105,7 @@
         </div>
       </div>
 
-      <!-- Cash In / Out buttons -->
-      <div class="grid grid-cols-2 gap-3">
-        <button class="h-11 rounded-xl border-2 border-emerald-200 bg-emerald-50 text-emerald-700 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-emerald-100 transition-colors" @click="showCashModal = 'CASH_IN'">
-          <ArrowDownIcon class="w-4 h-4" /> Cash In
-        </button>
-        <button class="h-11 rounded-xl border-2 border-red-200 bg-red-50 text-red-700 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-red-100 transition-colors" @click="showCashModal = 'CASH_OUT'">
-          <ArrowUpIcon class="w-4 h-4" /> Cash Out
-        </button>
-      </div>
+      <!-- Cash In / Out buttons — removed (not synced yet) -->
 
       <!-- Close Shift -->
       <button class="w-full h-11 rounded-xl border-2 border-slate-300 text-slate-700 font-semibold text-sm flex items-center justify-center gap-2 hover:bg-slate-100 transition-colors" @click="showCloseShift = true">
@@ -435,7 +427,9 @@ async function refreshActivity() {
     // BRILink fee (today)
     if (results.length > 2 && results[2].status === 'fulfilled') {
       const kpi = results[2].value.data;
-      activity.brilinkFee = kpi.currentFee || kpi.fee || 0;
+      // kpi.fee might be an object {current, target, percent} — extract number
+      const feeVal = kpi.fee?.current ?? kpi.currentFee ?? kpi.fee ?? 0;
+      activity.brilinkFee = typeof feeVal === 'number' ? feeVal : 0;
     }
   } catch { /* silent */ }
 }

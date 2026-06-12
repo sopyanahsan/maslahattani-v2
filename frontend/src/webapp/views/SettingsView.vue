@@ -15,35 +15,61 @@
     <!-- Profile Card (floating over header) -->
     <div class="px-4 -mt-10 relative z-10">
       <div class="profile-card bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-lg">
-        <div class="flex items-center gap-4 mb-5">
-          <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-md shadow-blue-200 dark:shadow-blue-900/30">
-            <UserIcon class="w-7 h-7" />
+        <!-- View Mode (default) -->
+        <template v-if="!editingProfile">
+          <div class="flex items-start gap-4">
+            <div class="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center text-white shrink-0 shadow-md shadow-blue-200 dark:shadow-blue-900/30">
+              <UserIcon class="w-7 h-7" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-slate-900 dark:text-white truncate text-base">{{ profileData.fullName || userName }}</p>
+              <div class="mt-1.5 space-y-0.5">
+                <p v-if="profileData.phone" class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <PhoneIcon class="w-3 h-3" /> {{ profileData.phone }}
+                </p>
+                <p v-if="profileData.address" class="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+                  <MapPinIcon class="w-3 h-3" /> {{ profileData.address }}
+                </p>
+                <p class="text-[10px] text-slate-400 dark:text-slate-500">Kasir · {{ shopName }}</p>
+              </div>
+            </div>
           </div>
-          <div class="min-w-0">
-            <p class="font-bold text-slate-900 dark:text-white truncate text-base">{{ profileData.fullName || userName }}</p>
-            <p class="text-xs text-slate-500 dark:text-slate-400">Kasir · {{ shopName }}</p>
-          </div>
-        </div>
-        <!-- Editable fields -->
-        <div class="space-y-3 border-t border-slate-100 dark:border-slate-700 pt-4">
-          <div>
-            <label class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">Nama Lengkap</label>
-            <input v-model="profileData.fullName" type="text" placeholder="Belum diisi" class="w-full h-9 px-3 mt-1 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 outline-none transition-all" />
-          </div>
-          <div>
-            <label class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">No HP</label>
-            <input v-model="profileData.phone" type="text" placeholder="08xxxxxxxxxx" class="w-full h-9 px-3 mt-1 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 outline-none transition-all" />
-          </div>
-          <div>
-            <label class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">Alamat</label>
-            <input v-model="profileData.address" type="text" placeholder="Alamat lengkap" class="w-full h-9 px-3 mt-1 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 outline-none transition-all" />
-          </div>
-          <button :disabled="savingProfile" class="w-full h-10 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold rounded-lg disabled:opacity-50 flex items-center justify-center gap-2 transition-all shadow-sm shadow-blue-200 dark:shadow-blue-900/30" @click="handleSaveProfile">
-            <Loader2Icon v-if="savingProfile" class="w-4 h-4 animate-spin" />
-            <span>{{ savingProfile ? 'Menyimpan...' : 'Simpan Profil' }}</span>
+          <button class="mt-4 w-full h-9 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5" @click="editingProfile = true">
+            <EditIcon class="w-3.5 h-3.5" /> Edit Profil
           </button>
-          <p v-if="profileSuccess" class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium text-center animate-fade-in">Profil berhasil disimpan!</p>
-        </div>
+        </template>
+
+        <!-- Edit Mode -->
+        <template v-else>
+          <div class="flex items-center gap-3 mb-4">
+            <div class="w-10 h-10 bg-blue-50 dark:bg-blue-900/20 rounded-xl flex items-center justify-center">
+              <EditIcon class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-white">Edit Profil</h3>
+          </div>
+          <div class="space-y-3">
+            <div>
+              <label class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">Nama Lengkap</label>
+              <input v-model="profileData.fullName" type="text" placeholder="Belum diisi" class="w-full h-9 px-3 mt-1 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 outline-none transition-all" />
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">No HP</label>
+              <input v-model="profileData.phone" type="tel" placeholder="08xxxxxxxxxx" class="w-full h-9 px-3 mt-1 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 outline-none transition-all" />
+            </div>
+            <div>
+              <label class="text-[10px] text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">Alamat</label>
+              <input v-model="profileData.address" type="text" placeholder="Alamat lengkap" class="w-full h-9 px-3 mt-1 text-sm border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/30 outline-none transition-all" />
+            </div>
+            <div class="flex gap-2 pt-1">
+              <button class="flex-1 h-9 border border-slate-200 dark:border-slate-600 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors" @click="editingProfile = false">Batal</button>
+              <button :disabled="savingProfile" class="flex-1 h-9 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white text-sm font-semibold rounded-lg disabled:opacity-50 flex items-center justify-center gap-1.5 transition-all shadow-sm shadow-blue-200 dark:shadow-blue-900/30" @click="handleSaveProfile">
+                <Loader2Icon v-if="savingProfile" class="w-3.5 h-3.5 animate-spin" />
+                <span>{{ savingProfile ? 'Menyimpan...' : 'Simpan' }}</span>
+              </button>
+            </div>
+            <p v-if="profileSuccess" class="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium text-center animate-fade-in">Profil berhasil disimpan!</p>
+          </div>
+        </template>
       </div>
     </div>
 
@@ -188,6 +214,9 @@ import {
   ChevronRight as ChevronRightIcon,
   Loader2 as Loader2Icon,
   Info as InfoIcon,
+  Phone as PhoneIcon,
+  MapPin as MapPinIcon,
+  Pencil as EditIcon,
 } from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import { useShopStore } from '@/shared/stores/shop.store';
@@ -213,6 +242,7 @@ const shiftDurationLabel = computed(() => {
 const shiftHistory = ref<Array<{ id: string; date: string; duration: string; status: string }>>([]);
 
 // Profile edit
+const editingProfile = ref(false);
 const profileData = reactive({ fullName: '', phone: '', address: '' });
 const savingProfile = ref(false);
 const profileSuccess = ref(false);
@@ -227,7 +257,7 @@ async function handleSaveProfile() {
       address: profileData.address || undefined,
     });
     profileSuccess.value = true;
-    setTimeout(() => { profileSuccess.value = false; }, 3000);
+    setTimeout(() => { profileSuccess.value = false; editingProfile.value = false; }, 1500);
   } catch { /* silent */ }
   finally { savingProfile.value = false; }
 }
