@@ -42,6 +42,7 @@ export class BrilinkService {
     amount: number,
     fee: number,
     feeMethod?: string,
+    systemFee: number = 0,
   ) {
     if (category === BrilinkCategoryEnum.TARIK_TUNAI) {
       switch (feeMethod) {
@@ -84,10 +85,12 @@ export class BrilinkService {
           };
       }
     } else {
-      // Transfer, Topup, PLN — nasabah bayar tunai (nominal + fee)
+      // Transfer, Topup, PLN — nasabah bayar tunai (nominal + biaya admin)
+      // Kas masuk = nominal + biaya admin (yang dibayar nasabah)
+      // Biaya sistem dipotong dari rekening saat transfer (bukan dari kas)
       return {
         flowDirection: 'DEBIT',
-        accountImpact: -amount,
+        accountImpact: -(amount + systemFee),
         cashImpact: +(amount + fee),
       };
     }
@@ -237,11 +240,13 @@ export class BrilinkService {
     });
 
     let fee = 0;
+    let systemFee = 0;
     const matchingRule = feeRules.find(
       (rule) => dto.amount >= rule.minAmount && dto.amount <= rule.maxAmount,
     );
 
     if (matchingRule) {
+      systemFee = matchingRule.systemFee ?? 0;
       if (matchingRule.feeType === 'FLAT') {
         fee = matchingRule.feeAmount;
       } else {
@@ -253,7 +258,7 @@ export class BrilinkService {
     const refNumber = this.generateRefNumber();
 
     // 2. Calculate impact
-    const impact = this.calculateImpact(dto.category, dto.amount, fee, dto.feeMethod);
+    const impact = this.calculateImpact(dto.category, dto.amount, fee, dto.feeMethod, systemFee);
 
     // 3. Resolve account: use provided accountId, else fall back to
     // default active account (preserves existing kasir flow that doesn't

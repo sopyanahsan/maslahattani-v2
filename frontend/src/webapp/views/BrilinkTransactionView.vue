@@ -212,18 +212,18 @@
             <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount) }}</span>
           </div>
           <div class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Biaya Sistem <span class="text-[9px]">(EDC)</span></span>
+            <span class="text-slate-500 dark:text-[#869392]">Biaya Sistem <span class="text-[9px]">(potongan bank)</span></span>
             <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(calculatedSystemFee) }}</span>
           </div>
           <div class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Biaya Admin <span class="text-[9px]">(profit)</span></span>
-            <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedAdminFee) }}</span>
+            <span class="text-slate-500 dark:text-[#869392]">Biaya Admin <span class="text-[9px]">(charge nasabah)</span></span>
+            <span class="font-mono text-slate-800 dark:text-[#e3e2e2]">{{ formatRupiah(calculatedAdminFee) }}</span>
+          </div>
+          <div v-if="selectedCategory !== 'TARIK_TUNAI'" class="flex justify-between text-xs">
+            <span class="text-slate-500 dark:text-[#869392]">Profit Agen</span>
+            <span class="font-mono font-semibold text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedAdminFee - calculatedSystemFee) }}</span>
           </div>
           <div class="flex justify-between text-sm font-bold border-t border-slate-100 dark:border-[#3d4948] pt-1.5">
-            <span class="text-slate-700 dark:text-[#bcc9c7]">Total Biaya</span>
-            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(calculatedFee) }}</span>
-          </div>
-          <div class="flex justify-between text-sm font-bold">
             <span class="text-slate-700 dark:text-[#bcc9c7]">Uang Diterima</span>
             <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(totalReceived) }}</span>
           </div>
@@ -393,7 +393,7 @@
           <div class="border-t border-slate-200 dark:border-[#3d4948] pt-2 mt-2">
             <div class="flex justify-between text-base font-bold">
               <span class="text-slate-800 dark:text-[#e3e2e2]">Total</span>
-              <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? form.amount : form.amount + calculatedFee) }}</span>
+              <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? form.amount : form.amount + calculatedAdminFee) }}</span>
             </div>
             <div class="flex justify-between text-sm mt-1">
               <span class="text-slate-500 dark:text-[#869392]">Uang Diterima</span>
@@ -465,7 +465,7 @@
           </div>
           <div class="flex justify-between text-sm font-bold border-t border-slate-200 dark:border-[#3d4948] pt-2">
             <span class="text-slate-800 dark:text-[#e3e2e2]">Total</span>
-            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? form.amount : form.amount + calculatedFee) }}</span>
+            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? form.amount : form.amount + calculatedAdminFee) }}</span>
           </div>
           <div v-if="selectedCategory === 'TARIK_TUNAI'" class="flex justify-between text-xs">
             <span class="text-slate-500 dark:text-[#869392]">Uang Diterima Nasabah</span>
@@ -697,13 +697,13 @@ const selectedBankName = computed(() => {
 const totalReceived = computed(() => {
   // Untuk Tarik Tunai: berapa uang tunai yang nasabah terima
   if (selectedCategory.value === 'TARIK_TUNAI') {
-    if (form.feeMethod === 'DALAM') return form.amount; // nasabah terima tunai = nominal (fee didebit dari rek)
-    if (form.feeMethod === 'LUAR') return form.amount; // nasabah terima tunai = nominal (fee bayar cash terpisah)
-    if (form.feeMethod === 'POTONG') return form.amount - calculatedFee.value; // nasabah terima = nominal - fee
+    if (form.feeMethod === 'DALAM') return form.amount;
+    if (form.feeMethod === 'LUAR') return form.amount;
+    if (form.feeMethod === 'POTONG') return form.amount - calculatedFee.value;
     return form.amount;
   }
-  // Untuk Transfer dll: nasabah bayar tunai = nominal + total fee
-  return form.amount + calculatedFee.value;
+  // Transfer/Topup: nasabah bayar = nominal + biaya admin (biaya sistem bukan charge nasabah)
+  return form.amount + calculatedAdminFee.value;
 });
 
 const debitAmount = computed(() => {
@@ -729,8 +729,8 @@ const cashImpact = computed(() => {
     if (form.feeMethod === 'POTONG') return -(form.amount - fee); // keluar = nominal-fee (fee di rek)
     return -(form.amount - fee);
   }
-  // Transfer/Topup: nasabah bayar tunai (nominal + fee) → kas masuk
-  return form.amount + fee;
+  // Transfer/Topup: kas masuk = nominal + biaya admin (yang dibayar nasabah)
+  return form.amount + calculatedAdminFee.value;
 });
 
 const insufficientBalance = computed(() => {
