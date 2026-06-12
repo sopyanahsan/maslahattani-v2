@@ -236,6 +236,13 @@ export interface CurrentShiftResponse {
   shift: ShiftDto | null;
   transactionCount?: number;
   message?: string;
+  lastBalance?: {
+    retail: number;
+    brilink: number;
+    categories?: Array<{ categoryId: string; categoryName: string; isDefault: boolean; endingBalance: number }>;
+    shiftId?: string;
+    closedAt?: string | null;
+  } | null;
 }
 
 export interface ListShiftsResponse {

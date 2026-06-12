@@ -422,7 +422,12 @@ async function refreshActivity() {
 onMounted(async () => {
   loading.value = true;
   try {
-    await Promise.all([shiftStore.fetchCurrentShift(), fetchDefaultCategory()]);
+    const [shiftRes] = await Promise.all([shiftStore.fetchCurrentShift(), fetchDefaultCategory()]);
+    // Populate lastBalance from server response (for "Saldo Terakhir" saat buka shift)
+    if (shiftRes?.lastBalance) {
+      lastBalance.retail = shiftRes.lastBalance.retail ?? 0;
+      lastBalance.brilink = shiftRes.lastBalance.brilink ?? 0;
+    }
     if (hasOpenShift.value) {
       await Promise.all([refreshActivity(), fetchCategories()]);
       // Calculate realtime balance (simplified)

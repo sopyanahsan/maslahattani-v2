@@ -524,7 +524,7 @@ export class ShiftsService {
    */
   async getCurrentShift(userId: string, shopId: string | null) {
     if (!shopId) {
-      return { shift: null, message: 'Cabang belum dipilih.' };
+      return { shift: null, message: 'Cabang belum dipilih.', lastBalance: null };
     }
 
     const shift = await this.prisma.shift.findFirst({
@@ -533,7 +533,9 @@ export class ShiftsService {
     });
 
     if (!shift) {
-      return { shift: null, message: 'Belum ada shift aktif.' };
+      // No open shift — get last closed/finalized shift's ending balance
+      const lastBalance = await this.getLastShiftBalance(shopId);
+      return { shift: null, message: 'Belum ada shift aktif.', lastBalance };
     }
 
     const transactionCount = await this.prisma.transaction.count({
@@ -545,6 +547,57 @@ export class ShiftsService {
       },
     });
 
-    return { shift, transactionCount };
+    return { shift, transactionCount, lastBalance: null };
+  }
+
+  /**
+   * Get ending balance from the last closed/finalized shift for this shop.
+   * Used to show "Saldo Terakhir" when opening a new shift (FLOWING mode).
+   */
+  private async getLastShiftBalance(shopId: string) {
+    const lastShift = await this.prisma.shift.findFirst({
+      where: {
+        shopId,
+        status: { in: [ShiftStatus.CLOSED, ShiftStatus.FINALIZED] },
+      },
+      orderBy: { endTime: 'desc' },
+      include: {
+        cashBoxes: {
+          include: {
+            category: { select: { id: true, code: true, name: true, isDefault: true } },
+          },
+        },
+      },
+    });
+
+    if (!lastShift) return null;
+
+    // Calculate ending balance per category: startingCash + expectedCash
+    // If actualCash is available (kasir already counted), use that instead
+    const categories = lastShift.cashBoxes.map((cb) => ({
+      categoryId: cb.categoryId,
+      categoryName: cb.category.name,
+      isDefault: cb.category.isDefault,
+      endingBalance: cb.actualCash ?? (cb.startingCash + cb.expectedCash),
+    }));
+
+    // Total retail = sum of all default category ending balances
+    const retail = categories
+      .filter((c) => c.isDefault)
+      .reduce((sum, c) => sum + c.endingBalance, 0);
+
+    // BRILink kas tunai — get from BrilinkCashBox (separate system)
+    const brilinkCashBox = await this.prisma.brilinkCashBox.findFirst({
+      where: { shopId },
+      select: { balance: true },
+    });
+
+    return {
+      retail,
+      brilink: brilinkCashBox?.balance ?? 0,
+      categories,
+      shiftId: lastShift.id,
+      closedAt: lastShift.endTime?.toISOString() ?? null,
+    };
   }
 }
