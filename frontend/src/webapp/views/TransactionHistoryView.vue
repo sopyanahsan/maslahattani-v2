@@ -245,17 +245,14 @@
                     <p v-if="selectedBrilink.accountImpact" class="text-[10px] text-red-500 dark:text-red-400 font-mono">-{{ formatRupiah(Math.abs(selectedBrilink.accountImpact)) }}</p>
                   </div>
                 </div>
-                <!-- Profit fee masuk ke -->
+                <!-- Profit summary -->
                 <div class="flex items-start gap-2">
                   <div class="w-5 h-5 rounded-full bg-emerald-100 dark:bg-emerald-900/20 flex items-center justify-center shrink-0 mt-0.5">
-                    <span class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">↓</span>
+                    <span class="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">★</span>
                   </div>
                   <div class="flex-1">
-                    <p class="text-[10px] font-semibold text-slate-500 dark:text-[#869392]">Profit Admin Masuk Ke</p>
-                    <p class="text-xs font-bold text-slate-800 dark:text-[#e3e2e2]">
-                      {{ selectedBrilink.accountLabel ? selectedBrilink.accountLabel : 'Kas Tunai Agen' }}
-                    </p>
-                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">+{{ formatRupiah(selectedBrilink.fee) }}</p>
+                    <p class="text-[10px] font-semibold text-slate-500 dark:text-[#869392]">Profit Agen</p>
+                    <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-mono font-semibold">+{{ formatRupiah(selectedBrilink.fee - (selectedBrilink.systemFee || 0)) }}</p>
                   </div>
                 </div>
                 <!-- Kas tunai impact (jika ada) -->
@@ -282,11 +279,10 @@
 
               <!-- Financial breakdown -->
               <div class="border-t border-slate-200 dark:border-[#3d4948] pt-3 space-y-1.5">
-                <div class="flex justify-between text-xs text-slate-600 dark:text-[#bcc9c7]"><span>Nominal</span><span class="font-mono">{{ formatRupiah(selectedBrilink.amount) }}</span></div>
-                <div class="flex justify-between text-xs text-[#00A19B] dark:text-[#5fd9d2]"><span>Fee (profit)</span><span class="font-mono font-bold">+{{ formatRupiah(selectedBrilink.fee) }}</span></div>
-                <div class="flex justify-between text-base font-bold text-slate-900 dark:text-[#e3e2e2] pt-1 border-t border-slate-100 dark:border-[#3d4948]"><span>Total</span><span class="font-mono">{{ formatRupiah(selectedBrilink.amount + selectedBrilink.fee) }}</span></div>
-                <div v-if="selectedBrilink.feeMethod" class="flex justify-between text-xs text-slate-500 dark:text-[#869392]"><span>Metode Admin</span><span class="font-semibold">{{ selectedBrilink.feeMethod }}</span></div>
-                <div v-if="selectedBrilink.flowDirection" class="flex justify-between text-xs text-slate-500 dark:text-[#869392]"><span>Flow</span><span :class="selectedBrilink.flowDirection === 'CREDIT' ? 'text-emerald-600 dark:text-emerald-400' : 'text-blue-600 dark:text-blue-400'" class="font-semibold">{{ selectedBrilink.flowDirection === 'CREDIT' ? '↑ Kredit' : '↓ Debit' }}</span></div>
+                <div class="flex justify-between text-xs text-slate-600 dark:text-[#bcc9c7]"><span>{{ selectedBrilink.category === 'TARIK_TUNAI' ? 'Nominal' : 'Jumlah Trf' }}</span><span class="font-mono">{{ formatRupiah(selectedBrilink.amount) }}</span></div>
+                <div class="flex justify-between text-xs text-[#00A19B] dark:text-[#5fd9d2]"><span>Biaya Admin</span><span class="font-mono font-bold">{{ formatRupiah(selectedBrilink.fee) }}</span></div>
+                <div class="flex justify-between text-base font-bold text-slate-900 dark:text-[#e3e2e2] pt-1 border-t border-slate-100 dark:border-[#3d4948]"><span>Total</span><span class="font-mono">{{ formatRupiah(selectedBrilink.category === 'TARIK_TUNAI' ? selectedBrilink.amount : selectedBrilink.amount + selectedBrilink.fee) }}</span></div>
+                <div class="flex justify-between text-xs text-slate-500 dark:text-[#869392]"><span>Status</span><span class="font-semibold" :class="selectedBrilink.status === 'SUCCESS' ? 'text-emerald-600' : selectedBrilink.status === 'VOIDED' ? 'text-red-500' : 'text-amber-500'">{{ selectedBrilink.status === 'SUCCESS' ? 'Sukses' : selectedBrilink.status === 'VOIDED' ? 'Void' : 'Pending' }}</span></div>
               </div>
 
               <!-- Void info -->
@@ -505,7 +501,7 @@ function handlePrintBrilink() {
     try {
       if (!thermalPrint.isConnected) await thermalPrint.connect();
       await thermalPrint.printBrilinkReceipt({
-        shopName: 'Posify', // TODO: dari shop settings
+        shopName: 'Posify',
         refNumber: trx.refNumber,
         date: formatDateTime(trx.createdAt),
         cashierName: trx.cashierName || '-',
@@ -516,9 +512,10 @@ function handlePrintBrilink() {
         destination: trx.category === 'TARIK_TUNAI' ? undefined : trx.destination,
         bankName: trx.accountLabel || undefined,
         amount: trx.amount,
+        amountLabel: trx.category === 'TARIK_TUNAI' ? 'Nominal' : 'Jumlah Trf',
         adminFee: trx.fee || 0,
         fee: trx.fee || 0,
-        total: trx.amount + (trx.fee || 0),
+        total: trx.category === 'TARIK_TUNAI' ? trx.amount : trx.amount + (trx.fee || 0),
         status: statusLabels[trx.status] || trx.status,
       });
       toast.success('Struk BRILink dicetak!');
