@@ -44,7 +44,20 @@
             <option value="TOPUP_PLN">Token PLN</option>
           </select>
         </div>
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 flex-wrap">
+          <button
+            type="button"
+            class="h-8 px-3 text-[10px] font-semibold text-slate-600 dark:text-slate-400 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-1"
+            @click="handleDownloadTemplate"
+          >
+            <DownloadIcon class="w-3 h-3" /> Template
+          </button>
+          <label
+            class="h-8 px-3 text-[10px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-950/50 cursor-pointer flex items-center gap-1"
+          >
+            <UploadIcon class="w-3 h-3" /> Upload Excel
+            <input type="file" accept=".xlsx,.xls" class="hidden" @change="handleBulkUpload" />
+          </label>
           <button
             type="button"
             class="h-8 px-3 text-[10px] font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md hover:bg-amber-100 dark:hover:bg-amber-950/50"
@@ -321,7 +334,12 @@
 
 <script setup lang="ts">
 import { onMounted, ref, reactive, computed } from 'vue';
+import {
+  Download as DownloadIcon,
+  Upload as UploadIcon,
+} from 'lucide-vue-next';
 import { useAuthStore } from '@/shared/stores/auth.store';
+import { useShopStore } from '@/shared/stores/shop.store';
 import brilinkProductsService, {
   type BrilinkProductItem,
   type BankItem,
@@ -329,6 +347,7 @@ import brilinkProductsService, {
 } from '@/shared/services/brilink-products.service';
 
 const authStore = useAuthStore();
+const shopStore = useShopStore();
 
 type SubTab = 'produk' | 'bank' | 'ewallet';
 const subTabs: { key: SubTab; label: string }[] = [
@@ -388,7 +407,41 @@ const plnProducts = computed(() => products.value.filter(p => p.category === 'TO
 // Helpers
 // ============================================
 function getShopId(): string | undefined {
-  return authStore.user?.shopId || undefined;
+  return shopStore.currentShopId || authStore.user?.shopId || undefined;
+}
+
+// ── Bulk Upload Handlers ──────────────────────────────────────────────────────
+async function handleDownloadTemplate() {
+  try {
+    const blob = await brilinkProductsService.downloadBulkTemplate();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'template-produk-brilink.xlsx';
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch { alert('Gagal download template.'); }
+}
+
+const uploadResult = ref<{ message: string; success: number; updated: number; skipped: number; errors: string[] } | null>(null);
+
+async function handleBulkUpload(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+  const shopId = getShopId();
+  if (!shopId) { alert('Shop belum dipilih.'); return; }
+
+  try {
+    const result = await brilinkProductsService.bulkUpload(shopId, file);
+    uploadResult.value = result;
+    alert(result.message);
+    await fetchProducts();
+  } catch (err: any) {
+    alert(err?.response?.data?.message || 'Gagal upload.');
+  } finally {
+    // Reset file input
+    (e.target as HTMLInputElement).value = '';
+  }
 }
 
 function formatRupiah(amount: number): string {
