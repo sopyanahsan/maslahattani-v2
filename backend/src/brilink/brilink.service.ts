@@ -1214,9 +1214,20 @@ export class BrilinkService {
       throw new NotFoundException('Fee rule tidak ditemukan.');
     }
 
+    const data: Record<string, any> = {};
+    if (dto.category !== undefined) data.category = dto.category;
+    if (dto.label !== undefined) data.label = dto.label;
+    if (dto.minAmount !== undefined) data.minAmount = dto.minAmount;
+    if (dto.maxAmount !== undefined) data.maxAmount = dto.maxAmount;
+    if (dto.systemFee !== undefined) data.systemFee = dto.systemFee;
+    if (dto.feeType !== undefined) data.feeType = dto.feeType;
+    if (dto.feeAmount !== undefined) data.feeAmount = dto.feeAmount;
+    if (dto.feePercent !== undefined) data.feePercent = dto.feePercent;
+    if (dto.isActive !== undefined) data.isActive = dto.isActive;
+
     const updated = await this.prisma.brilinkFee.update({
       where: { id },
-      data: dto,
+      data,
     });
 
     return updated;
