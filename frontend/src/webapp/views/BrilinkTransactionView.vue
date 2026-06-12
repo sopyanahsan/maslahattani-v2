@@ -696,7 +696,7 @@ const debitAmount = computed(() => {
   if (selectedCategory.value === 'TARIK_TUNAI') {
     if (form.feeMethod === 'DALAM') return form.amount + calculatedFee.value; // nasabah potong nominal+fee dari rek
     if (form.feeMethod === 'LUAR') return form.amount; // nasabah potong nominal saja
-    if (form.feeMethod === 'POTONG') return form.amount + calculatedFee.value; // nominal+fee masuk rek
+    if (form.feeMethod === 'POTONG') return form.amount; // nasabah potong nominal saja (fee termasuk di dalamnya)
     return form.amount;
   }
   // Transfer: selalu debit nominal saja dari rekening (fee dibayar nasabah tunai)

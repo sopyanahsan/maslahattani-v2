@@ -66,12 +66,13 @@ export class BrilinkService {
           };
 
         case 'POTONG':
-          // Nasabah potong nominal dari rekening, terima tunai = nominal-fee
-          // Fee masuk REKENING (profit agen di rek)
-          // Rekening: +(nominal+fee), Kas tunai: -(nominal-fee)
+          // Fee TERMASUK di dalam nominal (bukan ditambah di atas)
+          // Nasabah potong nominal dari rek, terima tunai = nominal-fee
+          // Fee tetap di rekening sebagai profit agen
+          // Rekening: +nominal, Kas tunai: -(nominal-fee)
           return {
             flowDirection: 'CREDIT',
-            accountImpact: +(amount + fee),
+            accountImpact: +amount,
             cashImpact: -(amount - fee),
           };
 
