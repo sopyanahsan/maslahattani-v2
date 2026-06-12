@@ -157,7 +157,9 @@
               <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ trx.method }}</p>
             </div>
           </button>
-          <div v-else class="flex items-center justify-between p-3 border border-slate-100 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] shadow-sm">
+          <button v-else type="button"
+            class="w-full text-left flex items-center justify-between p-3 border border-slate-100 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] shadow-sm hover:border-[#00A19B] dark:hover:border-[#5fd9d2] hover:shadow-md transition-all"
+            @click="openRetailDetail(index)">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 rounded-full flex items-center justify-center shrink-0 bg-[#00A19B]/10 text-[#00A19B] dark:text-[#5fd9d2]">
                 <ReceiptIcon class="w-4 h-4" />
@@ -171,7 +173,7 @@
               <p class="text-[11px] text-slate-500 dark:text-[#bcc9c7]">{{ trx.timestamp }}</p>
               <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ trx.method }}</p>
             </div>
-          </div>
+          </button>
         </li>
       </ul>
     </div>
@@ -258,6 +260,65 @@
               <div v-if="selectedBrilink.status === 'VOIDED'" class="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/30 rounded-xl p-3">
                 <p class="text-xs font-semibold text-red-700 dark:text-red-400">Transaksi di-void</p>
                 <p v-if="selectedBrilink.voidReason" class="text-[10px] text-red-600 dark:text-red-400/80 mt-0.5">{{ selectedBrilink.voidReason }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- ============================================================ -->
+    <!-- DETAIL MODAL: Retail Transaction (tanpa print button)          -->
+    <!-- ============================================================ -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showRetailDetail && selectedRetail" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center font-hanken">
+          <div class="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-[2px]" @click="showRetailDetail = false" />
+          <div class="relative w-full sm:max-w-md bg-white dark:bg-[#1e2020] rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-200 dark:border-[#3d4948] shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="w-10 h-1 rounded-full bg-slate-200 dark:bg-[#3d4948] mx-auto mt-3 sm:hidden" />
+
+            <div class="sticky top-0 bg-white dark:bg-[#1e2020] border-b border-slate-100 dark:border-[#3d4948] px-5 py-3 flex items-center justify-between z-10">
+              <h3 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">Detail Transaksi</h3>
+              <button class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#292a2a]" @click="showRetailDetail = false"><XIcon class="w-4 h-4 text-slate-400 dark:text-[#869392]" /></button>
+            </div>
+
+            <div class="p-5 space-y-4">
+              <!-- Status card -->
+              <div class="bg-slate-50 dark:bg-[#1a1c1c] rounded-2xl p-4 space-y-2">
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Status</span><span :class="['text-xs font-bold px-2 py-0.5 rounded-full', selectedRetail.status === 'COMPLETED' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' : selectedRetail.status === 'VOIDED' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400']">{{ selectedRetail.status === 'COMPLETED' ? 'Lunas' : selectedRetail.status === 'VOIDED' ? 'Void' : 'Pending' }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">No. Struk</span><span class="text-xs font-mono font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ selectedRetail.transactionNumber }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Tanggal</span><span class="text-xs text-slate-700 dark:text-[#bcc9c7]">{{ formatDateTime(selectedRetail.createdAt) }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Pembayaran</span><span class="text-xs text-slate-700 dark:text-[#bcc9c7]">{{ selectedRetail.payments?.[0]?.method || 'CASH' }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500 dark:text-[#869392]">Kasir</span><span class="text-xs text-slate-700 dark:text-[#bcc9c7]">{{ selectedRetail.user?.username || selectedRetail.user?.email || '-' }}</span></div>
+              </div>
+
+              <!-- Items -->
+              <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4">
+                <p class="text-xs font-bold text-slate-800 dark:text-[#e3e2e2] mb-2">Item ({{ selectedRetail.items?.length || 0 }})</p>
+                <div class="space-y-1.5">
+                  <div v-for="item in selectedRetail.items" :key="item.id" class="flex items-center justify-between p-2 rounded-xl bg-slate-50 dark:bg-[#1a1c1c]">
+                    <div>
+                      <p class="text-sm font-medium text-slate-800 dark:text-[#e3e2e2]">{{ item.product?.name || 'Produk' }}</p>
+                      <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ item.quantity }} x {{ formatRupiah(item.unitPrice) }}</p>
+                    </div>
+                    <span class="text-sm font-bold font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(item.subtotal) }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Financial breakdown -->
+              <div class="border-t border-slate-200 dark:border-[#3d4948] pt-3 space-y-1.5">
+                <div class="flex justify-between text-xs text-slate-600 dark:text-[#bcc9c7]"><span>Subtotal</span><span class="font-mono">{{ formatRupiah(selectedRetail.totalPrice + (selectedRetail.totalDiscount || 0)) }}</span></div>
+                <div v-if="selectedRetail.totalDiscount > 0" class="flex justify-between text-xs text-red-500 dark:text-red-400"><span>Diskon</span><span class="font-mono">-{{ formatRupiah(selectedRetail.totalDiscount) }}</span></div>
+                <div class="flex justify-between text-base font-bold text-slate-900 dark:text-[#e3e2e2] pt-1 border-t border-slate-100 dark:border-[#3d4948]"><span>Total</span><span class="font-mono">{{ formatRupiah(selectedRetail.totalPrice) }}</span></div>
+                <div v-if="selectedRetail.payments?.[0]" class="flex justify-between text-xs text-slate-600 dark:text-[#bcc9c7]"><span>Bayar</span><span class="font-mono">{{ formatRupiah(selectedRetail.payments[0].amount) }}</span></div>
+                <div v-if="selectedRetail.payments?.[0]?.amount > selectedRetail.totalPrice" class="flex justify-between text-xs text-[#00A19B] dark:text-[#5fd9d2]"><span>Kembali</span><span class="font-mono">{{ formatRupiah(selectedRetail.payments[0].amount - selectedRetail.totalPrice) }}</span></div>
+              </div>
+
+              <!-- Void info -->
+              <div v-if="selectedRetail.status === 'VOIDED'" class="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/30 rounded-xl p-3">
+                <p class="text-xs font-semibold text-red-700 dark:text-red-400">Transaksi dibatalkan</p>
+                <p v-if="selectedRetail.voidReason" class="text-[10px] text-red-600 dark:text-red-400/80 mt-0.5">{{ selectedRetail.voidReason }}</p>
               </div>
             </div>
           </div>
@@ -485,6 +546,7 @@ const brilinkProgress = computed(() => Math.min(100, Math.round((stats.value.bri
 // ── Transactions ──────────────────────────────────────────────────────────────
 const trxTab = ref<'retail' | 'brilink'>('retail');
 const retailTransactions = ref<any[]>([]);
+const retailTransactionsRaw = ref<any[]>([]);
 const brilinkTransactions = ref<any[]>([]);
 const brilinkTransactionsRaw = ref<any[]>([]);
 const visibleTransactions = computed(() => trxTab.value === 'retail' ? retailTransactions.value : brilinkTransactions.value);
@@ -498,6 +560,18 @@ function openBrilinkDetail(index: number) {
   if (raw) {
     selectedBrilink.value = raw;
     showBrilinkDetail.value = true;
+  }
+}
+
+// ── Retail detail modal (tanpa print) ─────────────────────────────────────────
+const showRetailDetail = ref(false);
+const selectedRetail = ref<any>(null);
+
+function openRetailDetail(index: number) {
+  const raw = retailTransactionsRaw.value[index];
+  if (raw) {
+    selectedRetail.value = raw;
+    showRetailDetail.value = true;
   }
 }
 
@@ -678,6 +752,7 @@ async function refresh() {
     retailOmzet.value = completed.reduce((sum: number, t: any) => sum + t.totalPrice, 0);
     profitRetail.value = completed.reduce((sum: number, t: any) => sum + (t.totalPrice - t.totalCost), 0);
     stats.value.retail = completed.length;
+    retailTransactionsRaw.value = completed.slice(0, 5);
     retailTransactions.value = completed.slice(0, 5).map((t: any) => ({
       itemNames: t.items?.map((i: any) => i.product?.name || i.productId).join(', ') || `#${t.transactionNumber}`,
       timestamp: new Date(t.createdAt).toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta', hour: '2-digit', minute: '2-digit' }),
