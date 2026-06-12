@@ -21,7 +21,7 @@
           <span class="font-mono font-bold text-slate-900">{{ formatRupiah(lastBalance.retail) }}</span>
         </div>
         <div v-if="settingsStore.isBrilinkEnabled" class="flex justify-between text-sm">
-          <span class="text-slate-700">Kas BRILink</span>
+          <span class="text-slate-700">Kas Tunai Agen</span>
           <span class="font-mono font-bold text-slate-900">{{ formatRupiah(lastBalance.brilink) }}</span>
         </div>
       </div>
@@ -41,7 +41,7 @@
           <input v-model.number="correction.retail" type="number" placeholder="0" class="flex-1 h-8 px-3 text-sm font-mono border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-right" />
         </div>
         <div v-if="settingsStore.isBrilinkEnabled" class="flex items-center gap-2">
-          <span class="text-xs text-slate-600 w-24">Kas BRILink:</span>
+          <span class="text-xs text-slate-600 w-24">Kas Tunai Agen:</span>
           <input v-model.number="correction.brilink" type="number" placeholder="0" class="flex-1 h-8 px-3 text-sm font-mono border border-slate-200 rounded-lg focus:border-blue-500 outline-none text-right" />
         </div>
         <input v-model="correction.notes" type="text" placeholder="Catatan koreksi (opsional)" class="w-full h-8 px-3 text-xs border border-slate-200 rounded-lg focus:border-blue-500 outline-none" />
@@ -79,7 +79,7 @@
           <span class="font-mono font-bold text-slate-900">{{ formatRupiah(realtimeBalance.retail) }}</span>
         </div>
         <div v-if="settingsStore.isBrilinkEnabled" class="flex justify-between text-sm">
-          <span class="text-slate-700">Kas BRILink</span>
+          <span class="text-slate-700">Kas Tunai Agen</span>
           <span class="font-mono font-bold text-slate-900">{{ formatRupiah(realtimeBalance.brilink) }}</span>
         </div>
       </div>
@@ -188,9 +188,9 @@
               <div class="flex justify-between"><span class="text-slate-500">Actual</span><span class="font-mono">{{ formatRupiah(closeForm.actualRetail || 0) }}</span></div>
               <div class="flex justify-between font-semibold" :class="variance >= 0 ? 'text-emerald-600' : 'text-red-600'"><span>Selisih</span><span class="font-mono">{{ formatRupiah(variance) }}</span></div>
             </div>
-            <!-- Kas BRILink -->
+            <!-- Kas Tunai Agen -->
             <div v-if="settingsStore.isBrilinkEnabled">
-              <label class="text-xs font-semibold text-slate-600 mb-1 block">Kas BRILink Tunai (Rp)</label>
+              <label class="text-xs font-semibold text-slate-600 mb-1 block">Kas Tunai Agen (Rp)</label>
               <input v-model.number="closeForm.actualBrilink" type="number" placeholder="0" class="w-full h-10 px-3 text-lg font-mono border border-slate-200 rounded-lg text-center focus:border-blue-500 outline-none" />
             </div>
             <div v-if="settingsStore.isBrilinkEnabled" class="bg-slate-50 rounded-lg p-3 space-y-1 text-xs">

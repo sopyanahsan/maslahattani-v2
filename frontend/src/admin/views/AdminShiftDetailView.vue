@@ -303,7 +303,7 @@
       </div>
 
       <!-- ============================================ -->
-      <!-- COLUMN 2B: Kas BRILink & Rek BRILink         -->
+      <!-- COLUMN 2B: Kas Tunai Agen & Rek BRILink         -->
       <!-- ============================================ -->
       <div v-if="brilinkEnabled" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm lg:col-span-3">
         <div class="px-5 py-3 border-b border-slate-200 bg-teal-50">
@@ -316,11 +316,11 @@
 
         <div class="p-5">
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <!-- Kas Tunai BRILink -->
+            <!-- Kas Tunai Agen -->
             <div class="border border-slate-200 rounded-lg p-4 space-y-2">
               <p class="text-xs font-bold text-slate-700 uppercase tracking-wide flex items-center gap-1.5">
                 <BanknoteIcon class="w-3.5 h-3.5 text-teal-500" />
-                Kas Tunai BRILink
+                Kas Tunai Agen
               </p>
               <div class="flex justify-between text-xs">
                 <span class="text-slate-500">Saldo Sistem</span>
@@ -371,7 +371,7 @@
               <span class="ml-2 font-mono font-bold text-slate-900">{{ formatRupiah(totalBrilinkAccountBalance) }}</span>
             </div>
             <div>
-              <span class="text-slate-500">Kas Tunai BRILink:</span>
+              <span class="text-slate-500">Kas Tunai Agen:</span>
               <span class="ml-2 font-mono font-bold text-slate-900">{{ formatRupiah(brilinkCashBoxBalance) }}</span>
             </div>
           </div>

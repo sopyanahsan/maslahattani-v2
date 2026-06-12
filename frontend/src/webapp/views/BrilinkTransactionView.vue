@@ -364,7 +364,7 @@
             </div>
           </div>
 
-          <!-- Arus Kas Tunai BRILink -->
+          <!-- Arus Kas Tunai Agen -->
           <div v-if="cashBox" class="border-t border-slate-100 dark:border-[#3d4948] pt-2 mt-2 space-y-1.5">
             <p class="text-[10px] font-bold text-slate-500 dark:text-[#869392] uppercase tracking-wider">Arus Kas Tunai</p>
             <div class="flex justify-between text-xs">
