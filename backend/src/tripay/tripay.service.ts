@@ -673,7 +673,7 @@ export class TripayService {
     }
 
     // Find transaction by our refId (api_trxid) or tripayRef (trxid)
-    let trx = null;
+    let trx: any = null;
     if (apiTrxId) {
       trx = await this.prisma.ppobTransaction.findFirst({
         where: { refId: apiTrxId },
