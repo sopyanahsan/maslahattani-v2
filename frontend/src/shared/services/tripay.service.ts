@@ -91,7 +91,16 @@ export async function verifyTripayConfig() {
 }
 
 // ============================================
-// Products API
+// Balance API
+// ============================================
+
+export async function getTripayBalance(shopId: string) {
+  const { data } = await api.get('/tripay/balance', { params: { shopId } });
+  return data;
+}
+
+// ============================================
+// Products API — Prabayar (Prepaid)
 // ============================================
 
 export async function getPpobCategories(): Promise<PpobCategory[]> {
@@ -99,9 +108,52 @@ export async function getPpobCategories(): Promise<PpobCategory[]> {
   return data;
 }
 
+export async function getPrepaidCategories(shopId: string) {
+  const { data } = await api.get('/tripay/prepaid/categories', { params: { shopId } });
+  return data;
+}
+
+export async function getPrepaidOperators(shopId: string, categoryId?: string) {
+  const { data } = await api.get('/tripay/prepaid/operators', {
+    params: { shopId, category_id: categoryId },
+  });
+  return data;
+}
+
+export async function getPrepaidProducts(shopId: string, operatorId?: string) {
+  const { data } = await api.get('/tripay/prepaid/products', {
+    params: { shopId, operator_id: operatorId },
+  });
+  return data;
+}
+
+// ============================================
+// Products API — Pascabayar (Postpaid)
+// ============================================
+
+export async function getPostpaidCategories(shopId: string) {
+  const { data } = await api.get('/tripay/postpaid/categories', { params: { shopId } });
+  return data;
+}
+
+export async function getPostpaidOperators(shopId: string, categoryId?: string) {
+  const { data } = await api.get('/tripay/postpaid/operators', {
+    params: { shopId, category_id: categoryId },
+  });
+  return data;
+}
+
+export async function getPostpaidProducts(shopId: string, operatorId?: string) {
+  const { data } = await api.get('/tripay/postpaid/products', {
+    params: { shopId, operator_id: operatorId },
+  });
+  return data;
+}
+
+/** @deprecated Use getPrepaidProducts or getPostpaidProducts instead */
 export async function getPpobProducts(shopId: string, category?: string): Promise<PpobProduct[]> {
-  const { data } = await api.get('/tripay/products', {
-    params: { shopId, category },
+  const { data } = await api.get('/tripay/prepaid/products', {
+    params: { shopId, operator_id: category },
   });
   return data;
 }

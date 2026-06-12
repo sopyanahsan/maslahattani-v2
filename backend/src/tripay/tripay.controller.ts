@@ -64,26 +64,92 @@ export class TripayController {
   }
 
   // ============================================
-  // PRODUCTS
+  // BALANCE
+  // ============================================
+
+  @Get('balance')
+  @UseGuards(JwtAuthGuard, ShopScopeGuard)
+  @ApiBearerAuth()
+  @RequirePermission('settings.manage')
+  @ApiOperation({ summary: 'Cek saldo deposit Tripay' })
+  async checkBalance(@Query('shopId') shopId: string) {
+    return this.tripayService.checkBalance(shopId);
+  }
+
+  // ============================================
+  // PRODUCTS — PRABAYAR (PREPAID)
   // ============================================
 
   @Get('products/categories')
   @UseGuards(JwtAuthGuard, ShopScopeGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Daftar kategori produk PPOB' })
+  @ApiOperation({ summary: 'Daftar kategori static PPOB (UI)' })
   getProductCategories() {
     return this.tripayService.getProductCategories();
   }
 
-  @Get('products')
+  @Get('prepaid/categories')
   @UseGuards(JwtAuthGuard, ShopScopeGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Daftar produk PPOB dari Tripay (per kategori)' })
-  async getProducts(
+  @ApiOperation({ summary: 'Daftar kategori prabayar dari Tripay' })
+  async getPrepaidCategories(@Query('shopId') shopId: string) {
+    return this.tripayService.getPrepaidCategories(shopId);
+  }
+
+  @Get('prepaid/operators')
+  @UseGuards(JwtAuthGuard, ShopScopeGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Daftar operator prabayar dari Tripay' })
+  async getPrepaidOperators(
     @Query('shopId') shopId: string,
-    @Query('category') category?: string,
+    @Query('category_id') categoryId?: string,
   ) {
-    return this.tripayService.getProducts(shopId, category);
+    return this.tripayService.getPrepaidOperators(shopId, categoryId);
+  }
+
+  @Get('prepaid/products')
+  @UseGuards(JwtAuthGuard, ShopScopeGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Daftar produk prabayar dari Tripay' })
+  async getPrepaidProducts(
+    @Query('shopId') shopId: string,
+    @Query('operator_id') operatorId?: string,
+  ) {
+    return this.tripayService.getPrepaidProducts(shopId, operatorId);
+  }
+
+  // ============================================
+  // PRODUCTS — PASCABAYAR (POSTPAID)
+  // ============================================
+
+  @Get('postpaid/categories')
+  @UseGuards(JwtAuthGuard, ShopScopeGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Daftar kategori pascabayar dari Tripay' })
+  async getPostpaidCategories(@Query('shopId') shopId: string) {
+    return this.tripayService.getPostpaidCategories(shopId);
+  }
+
+  @Get('postpaid/operators')
+  @UseGuards(JwtAuthGuard, ShopScopeGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Daftar operator pascabayar dari Tripay' })
+  async getPostpaidOperators(
+    @Query('shopId') shopId: string,
+    @Query('category_id') categoryId?: string,
+  ) {
+    return this.tripayService.getPostpaidOperators(shopId, categoryId);
+  }
+
+  @Get('postpaid/products')
+  @UseGuards(JwtAuthGuard, ShopScopeGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Daftar produk pascabayar dari Tripay' })
+  async getPostpaidProducts(
+    @Query('shopId') shopId: string,
+    @Query('operator_id') operatorId?: string,
+  ) {
+    return this.tripayService.getPostpaidProducts(shopId, operatorId);
   }
 
   // ============================================

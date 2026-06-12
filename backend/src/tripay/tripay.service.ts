@@ -10,11 +10,13 @@ import { UpdateTripayConfigDto, TripayMode, PpobType } from './dto';
 import * as crypto from 'crypto';
 
 /**
- * Tripay base URLs
+ * Tripay base URLs (official docs: tripay.id)
+ * Sandbox: https://tripay.id/api-sandbox/v2
+ * Production: https://tripay.id/api/v2
  */
 const TRIPAY_BASE = {
-  sandbox: 'https://tripay.co.id/api-sandbox',
-  production: 'https://tripay.co.id/api',
+  sandbox: 'https://tripay.id/api-sandbox/v2',
+  production: 'https://tripay.id/api/v2',
 };
 
 /**
@@ -103,22 +105,25 @@ export class TripayService {
 
     try {
       const baseUrl = TRIPAY_BASE[config.mode as keyof typeof TRIPAY_BASE];
-      const response = await fetch(`${baseUrl}/merchant/payment-channel`, {
+      const response = await fetch(`${baseUrl}/cekserver`, {
         headers: { Authorization: `Bearer ${config.apiKey}` },
       });
 
-      if (!response.ok) {
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || !result.success) {
         throw new BadRequestException(
-          'Verifikasi gagal. Periksa API Key dan mode (sandbox/production).',
+          result.message || 'Verifikasi gagal. Periksa API Key dan mode (sandbox/production).',
         );
       }
 
+      // Update lastVerifiedAt
       await this.prisma.tripayConfig.update({
         where: { shopId },
         data: { lastVerifiedAt: new Date() },
       });
 
-      return { success: true, message: 'Koneksi Tripay berhasil diverifikasi!' };
+      return { success: true, message: 'Koneksi Tripay berhasil diverifikasi! Server online.' };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       this.logger.error(`Tripay verify error: ${error.message}`);
@@ -136,7 +141,10 @@ export class TripayService {
     return PPOB_CATEGORIES;
   }
 
-  async getProducts(shopId: string, category?: string) {
+  /**
+   * Cek saldo deposit Tripay
+   */
+  async checkBalance(shopId: string) {
     const config = await this.getFullConfig(shopId);
     if (!config || !config.isActive) {
       throw new BadRequestException('Integrasi Tripay belum diaktifkan.');
@@ -144,28 +152,197 @@ export class TripayService {
 
     try {
       const baseUrl = TRIPAY_BASE[config.mode as keyof typeof TRIPAY_BASE];
-      let url = `${baseUrl}/transaksi/produk`;
-      if (category) {
-        url += `?category=${category}`;
+      const response = await fetch(`${baseUrl}/ceksaldo`, {
+        headers: { Authorization: `Bearer ${config.apiKey}` },
+      });
+
+      const result = await response.json().catch(() => ({}));
+
+      if (!response.ok || !result.success) {
+        throw new BadRequestException(
+          result.message || 'Gagal mengambil info saldo.',
+        );
       }
+
+      return result.data;
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error(`Tripay checkBalance error: ${error.message}`);
+      throw new InternalServerErrorException('Gagal cek saldo Tripay.');
+    }
+  }
+
+  /**
+   * Get prepaid categories from Tripay
+   */
+  async getPrepaidCategories(shopId: string) {
+    const config = await this.getFullConfig(shopId);
+    if (!config || !config.isActive) {
+      throw new BadRequestException('Integrasi Tripay belum diaktifkan.');
+    }
+
+    try {
+      const baseUrl = TRIPAY_BASE[config.mode as keyof typeof TRIPAY_BASE];
+      const response = await fetch(`${baseUrl}/pembelian/kategori`, {
+        headers: { Authorization: `Bearer ${config.apiKey}` },
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!result.success) {
+        throw new BadRequestException(result.message || 'Gagal mengambil kategori prabayar.');
+      }
+      return result.data || [];
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error(`Tripay getPrepaidCategories error: ${error.message}`);
+      throw new InternalServerErrorException('Gagal mengambil kategori prabayar.');
+    }
+  }
+
+  /**
+   * Get prepaid operators from Tripay
+   */
+  async getPrepaidOperators(shopId: string, categoryId?: string) {
+    const config = await this.getFullConfig(shopId);
+    if (!config || !config.isActive) {
+      throw new BadRequestException('Integrasi Tripay belum diaktifkan.');
+    }
+
+    try {
+      const baseUrl = TRIPAY_BASE[config.mode as keyof typeof TRIPAY_BASE];
+      let url = `${baseUrl}/pembelian/operator`;
+      if (categoryId) url += `?category_id=${categoryId}`;
 
       const response = await fetch(url, {
         headers: { Authorization: `Bearer ${config.apiKey}` },
       });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new BadRequestException(
-          errorData?.message || 'Gagal mengambil daftar produk dari Tripay.',
-        );
+      const result = await response.json().catch(() => ({}));
+      if (!result.success) {
+        throw new BadRequestException(result.message || 'Gagal mengambil operator prabayar.');
       }
-
-      const data = await response.json();
-      return data.data || [];
+      return result.data || [];
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
-      this.logger.error(`Tripay getProducts error: ${error.message}`);
-      throw new InternalServerErrorException('Gagal mengambil daftar produk PPOB.');
+      this.logger.error(`Tripay getPrepaidOperators error: ${error.message}`);
+      throw new InternalServerErrorException('Gagal mengambil operator prabayar.');
+    }
+  }
+
+  /**
+   * Get prepaid products from Tripay
+   */
+  async getPrepaidProducts(shopId: string, operatorId?: string) {
+    const config = await this.getFullConfig(shopId);
+    if (!config || !config.isActive) {
+      throw new BadRequestException('Integrasi Tripay belum diaktifkan.');
+    }
+
+    try {
+      const baseUrl = TRIPAY_BASE[config.mode as keyof typeof TRIPAY_BASE];
+      let url = `${baseUrl}/pembelian/produk`;
+      if (operatorId) url += `?operator_id=${operatorId}`;
+
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${config.apiKey}` },
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!result.success) {
+        throw new BadRequestException(result.message || 'Gagal mengambil produk prabayar.');
+      }
+      return result.data || [];
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error(`Tripay getPrepaidProducts error: ${error.message}`);
+      throw new InternalServerErrorException('Gagal mengambil produk prabayar.');
+    }
+  }
+
+  /**
+   * Get postpaid categories from Tripay
+   */
+  async getPostpaidCategories(shopId: string) {
+    const config = await this.getFullConfig(shopId);
+    if (!config || !config.isActive) {
+      throw new BadRequestException('Integrasi Tripay belum diaktifkan.');
+    }
+
+    try {
+      const baseUrl = TRIPAY_BASE[config.mode as keyof typeof TRIPAY_BASE];
+      const response = await fetch(`${baseUrl}/pembayaran/kategori`, {
+        headers: { Authorization: `Bearer ${config.apiKey}` },
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!result.success) {
+        throw new BadRequestException(result.message || 'Gagal mengambil kategori pascabayar.');
+      }
+      return result.data || [];
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error(`Tripay getPostpaidCategories error: ${error.message}`);
+      throw new InternalServerErrorException('Gagal mengambil kategori pascabayar.');
+    }
+  }
+
+  /**
+   * Get postpaid operators from Tripay
+   */
+  async getPostpaidOperators(shopId: string, categoryId?: string) {
+    const config = await this.getFullConfig(shopId);
+    if (!config || !config.isActive) {
+      throw new BadRequestException('Integrasi Tripay belum diaktifkan.');
+    }
+
+    try {
+      const baseUrl = TRIPAY_BASE[config.mode as keyof typeof TRIPAY_BASE];
+      let url = `${baseUrl}/pembayaran/operator`;
+      if (categoryId) url += `?category_id=${categoryId}`;
+
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${config.apiKey}` },
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!result.success) {
+        throw new BadRequestException(result.message || 'Gagal mengambil operator pascabayar.');
+      }
+      return result.data || [];
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error(`Tripay getPostpaidOperators error: ${error.message}`);
+      throw new InternalServerErrorException('Gagal mengambil operator pascabayar.');
+    }
+  }
+
+  /**
+   * Get postpaid products from Tripay
+   */
+  async getPostpaidProducts(shopId: string, operatorId?: string) {
+    const config = await this.getFullConfig(shopId);
+    if (!config || !config.isActive) {
+      throw new BadRequestException('Integrasi Tripay belum diaktifkan.');
+    }
+
+    try {
+      const baseUrl = TRIPAY_BASE[config.mode as keyof typeof TRIPAY_BASE];
+      let url = `${baseUrl}/pembayaran/produk`;
+      if (operatorId) url += `?operator_id=${operatorId}`;
+
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${config.apiKey}` },
+      });
+
+      const result = await response.json().catch(() => ({}));
+      if (!result.success) {
+        throw new BadRequestException(result.message || 'Gagal mengambil produk pascabayar.');
+      }
+      return result.data || [];
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      this.logger.error(`Tripay getPostpaidProducts error: ${error.message}`);
+      throw new InternalServerErrorException('Gagal mengambil produk pascabayar.');
     }
   }
 
