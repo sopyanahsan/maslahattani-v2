@@ -249,7 +249,8 @@
         <!-- Insufficient balance -->
         <div v-if="insufficientBalance" class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-3 flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300">
           <AlertTriangleIcon class="w-4 h-4 shrink-0 mt-0.5" />
-          <span>Nominal melebihi saldo rekening ({{ formatRupiah(selectedAccount?.balance ?? 0) }}). Setor saldo dulu.</span>
+          <span v-if="selectedCategory === 'TARIK_TUNAI'">Kas tunai tidak cukup ({{ formatRupiah(cashBox?.balance ?? 0) }}). Setor kas dulu.</span>
+          <span v-else>Nominal melebihi saldo rekening ({{ formatRupiah(selectedAccount?.balance ?? 0) }}). Setor saldo dulu.</span>
         </div>
 
         <!-- Selanjutnya -->
@@ -355,12 +356,18 @@
               <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedAdminFee) }}</span>
             </div>
             <div class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">Saldo Sebelum</span>
+              <span class="text-slate-500 dark:text-[#869392]">Saldo Rek Sebelum</span>
               <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(selectedAccount?.balance ?? 0) }}</span>
             </div>
             <div class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">Saldo Setelah</span>
-              <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah((selectedAccount?.balance ?? 0) - debitAmount) }}</span>
+              <span class="text-slate-500 dark:text-[#869392]">{{ selectedCategory === 'TARIK_TUNAI' ? 'Rek Masuk' : 'Rek Keluar' }}</span>
+              <span :class="['font-mono font-semibold', selectedCategory === 'TARIK_TUNAI' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400']">
+                {{ selectedCategory === 'TARIK_TUNAI' ? '+' : '-' }}{{ formatRupiah(debitAmount) }}
+              </span>
+            </div>
+            <div class="flex justify-between text-xs">
+              <span class="text-slate-500 dark:text-[#869392]">Saldo Rek Setelah</span>
+              <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? (selectedAccount?.balance ?? 0) + debitAmount : (selectedAccount?.balance ?? 0) - debitAmount) }}</span>
             </div>
           </div>
 
@@ -719,7 +726,13 @@ const cashImpact = computed(() => {
 });
 
 const insufficientBalance = computed(() => {
-  if (isCustomerCard.value) return false; // customer card: no balance check on agen
+  if (isCustomerCard.value) return false;
+  if (selectedCategory.value === 'TARIK_TUNAI') {
+    // Tarik Tunai: cek kas tunai cukup untuk keluar
+    if (!cashBox.value) return false;
+    return form.amount > 0 && Math.abs(cashImpact.value) > cashBox.value.balance;
+  }
+  // Transfer/Topup: cek saldo rekening cukup untuk debit
   return selectedAccount.value !== null &&
     form.amount > 0 &&
     debitAmount.value > selectedAccount.value.balance;
