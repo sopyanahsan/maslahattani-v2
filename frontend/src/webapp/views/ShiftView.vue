@@ -383,10 +383,13 @@ async function refreshActivity() {
     const today = new Date().toISOString().slice(0, 10);
     const shopId = authStore.user?.shopId || '';
 
-    // Fetch cash flow summary and BRILink KPI in parallel
+    // Fetch cash flow summary, retail stats, and BRILink KPI in parallel
     const requests: Promise<any>[] = [
       api.get('/cash-flows/summary', {
         params: { shiftId: shiftStore.currentShift?.id, startDate: today, endDate: today },
+      }),
+      api.get('/transactions/stats', {
+        params: { shopId, startDate: today, endDate: today },
       }),
     ];
 
@@ -403,18 +406,16 @@ async function refreshActivity() {
       activity.cashOut = data.cashOut?.total || 0;
     }
 
-    // BRILink fee (today)
-    if (results.length > 1 && results[1].status === 'fulfilled') {
-      const kpi = results[1].value.data;
-      activity.brilinkFee = kpi.currentFee || kpi.fee || 0;
+    // Retail sales (omzet hari ini)
+    if (results[1].status === 'fulfilled') {
+      const stats = results[1].value.data;
+      activity.sales = stats.omzet || stats.totalOmzet || stats.totalSales || 0;
     }
 
-    // Retail sales = total cash in hand from shift transactions (excluding starting cash)
-    if (shiftStore.currentShift) {
-      const defaultCb = shiftStore.currentShift.cashBoxes.find(cb => cb.category?.isDefault);
-      if (defaultCb) {
-        activity.sales = defaultCb.expectedCash || 0;
-      }
+    // BRILink fee (today)
+    if (results.length > 2 && results[2].status === 'fulfilled') {
+      const kpi = results[2].value.data;
+      activity.brilinkFee = kpi.currentFee || kpi.fee || 0;
     }
   } catch { /* silent */ }
 }
