@@ -174,6 +174,7 @@
           <h3 class="text-base font-bold text-slate-800">Tutup Shift</h3>
           <template v-if="settingsStore.settings.shiftPhysicalCountRequired">
             <p class="text-xs text-slate-600">Hitung uang fisik di laci kas:</p>
+            <!-- Kas Retail -->
             <div>
               <label class="text-xs font-semibold text-slate-600 mb-1 block">Kas Retail (Rp)</label>
               <input v-model.number="closeForm.actualRetail" type="number" placeholder="0" class="w-full h-10 px-3 text-lg font-mono border border-slate-200 rounded-lg text-center focus:border-blue-500 outline-none" />
@@ -182,6 +183,16 @@
               <div class="flex justify-between"><span class="text-slate-500">Expected</span><span class="font-mono">{{ formatRupiah(realtimeBalance.retail) }}</span></div>
               <div class="flex justify-between"><span class="text-slate-500">Actual</span><span class="font-mono">{{ formatRupiah(closeForm.actualRetail || 0) }}</span></div>
               <div class="flex justify-between font-semibold" :class="variance >= 0 ? 'text-emerald-600' : 'text-red-600'"><span>Selisih</span><span class="font-mono">{{ formatRupiah(variance) }}</span></div>
+            </div>
+            <!-- Kas BRILink -->
+            <div v-if="settingsStore.isBrilinkEnabled">
+              <label class="text-xs font-semibold text-slate-600 mb-1 block">Kas BRILink Tunai (Rp)</label>
+              <input v-model.number="closeForm.actualBrilink" type="number" placeholder="0" class="w-full h-10 px-3 text-lg font-mono border border-slate-200 rounded-lg text-center focus:border-blue-500 outline-none" />
+            </div>
+            <div v-if="settingsStore.isBrilinkEnabled" class="bg-slate-50 rounded-lg p-3 space-y-1 text-xs">
+              <div class="flex justify-between"><span class="text-slate-500">Expected</span><span class="font-mono">{{ formatRupiah(realtimeBalance.brilink) }}</span></div>
+              <div class="flex justify-between"><span class="text-slate-500">Actual</span><span class="font-mono">{{ formatRupiah(closeForm.actualBrilink || 0) }}</span></div>
+              <div class="flex justify-between font-semibold" :class="varianceBrilink >= 0 ? 'text-emerald-600' : 'text-red-600'"><span>Selisih</span><span class="font-mono">{{ formatRupiah(varianceBrilink) }}</span></div>
             </div>
           </template>
           <div v-else class="bg-slate-50 rounded-lg p-3 text-xs flex justify-between">
@@ -210,6 +221,7 @@ import { useShiftStore } from '@/shared/stores/shift.store';
 import { useSettingsStore } from '@/shared/stores/settings.store';
 import { useAuthStore } from '@/shared/stores/auth.store';
 import cashBoxCategoryService from '@/shared/services/cashbox-category.service';
+import brilinkCashboxService from '@/shared/services/brilink-cashbox.service';
 import api from '@/shared/services/api';
 
 const shiftStore = useShiftStore();
@@ -256,13 +268,14 @@ const activity = reactive({ sales: 0, brilinkFee: 0, cashIn: 0, cashOut: 0 });
 const correction = reactive({ retail: 0, notes: '' });
 const openForm = reactive({ startingCash: 0 });
 const cashForm = reactive({ categoryId: '', amount: 0, notes: '' });
-const closeForm = reactive({ actualRetail: 0, notes: '' });
+const closeForm = reactive({ actualRetail: 0, actualBrilink: 0, notes: '' });
 
 const filteredCategories = computed(() =>
   cashCategories.value.filter(c => c.type === showCashModal.value && c.isActive)
 );
 
 const variance = computed(() => (closeForm.actualRetail || 0) - realtimeBalance.retail);
+const varianceBrilink = computed(() => (closeForm.actualBrilink || 0) - realtimeBalance.brilink);
 
 function formatRupiah(n: number): string { return 'Rp ' + n.toLocaleString('id-ID'); }
 
@@ -329,11 +342,17 @@ async function handleCloseShift() {
   const actualCash = settingsStore.settings.shiftPhysicalCountRequired
     ? closeForm.actualRetail || 0
     : realtimeBalance.retail;
+  // Build notes including BRILink info
+  let notes = closeForm.notes || '';
+  if (settingsStore.isBrilinkEnabled && settingsStore.settings.shiftPhysicalCountRequired) {
+    const brilinkInfo = `[BRILink] Expected: ${realtimeBalance.brilink}, Actual: ${closeForm.actualBrilink || 0}, Selisih: ${(closeForm.actualBrilink || 0) - realtimeBalance.brilink}`;
+    notes = notes ? `${notes} | ${brilinkInfo}` : brilinkInfo;
+  }
   try {
     await shiftStore.closeShift(shiftStore.currentShift.id, {
       // actualQRIS sengaja tidak dikirim → backend rekonsiliasi otomatis ke expected.
       actualByCategory: [{ categoryId: closeCategoryId.value, actualCash }],
-      notes: closeForm.notes || undefined,
+      notes: notes || undefined,
     });
     showCloseShift.value = false;
     showClosedSummary.value = true;
@@ -380,6 +399,16 @@ onMounted(async () => {
       await Promise.all([refreshActivity(), fetchCategories()]);
       // Calculate realtime balance (simplified)
       realtimeBalance.retail = shiftStore.totalCashInHand;
+      // Load BRILink cash box balance
+      if (settingsStore.isBrilinkEnabled) {
+        try {
+          const shopId = authStore.user?.shopId || '';
+          if (shopId) {
+            const cb = await brilinkCashboxService.getCashBox(shopId);
+            realtimeBalance.brilink = cb.balance;
+          }
+        } catch { /* BRILink cashbox may not exist yet */ }
+      }
     }
   } catch { /* silent */ }
   finally { loading.value = false; }
