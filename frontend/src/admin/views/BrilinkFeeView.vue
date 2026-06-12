@@ -323,7 +323,7 @@ function openFeeModal(fee: BrilinkFeeDto | null) {
     feeForm.label = fee.label;
     feeForm.minAmount = fee.minAmount;
     feeForm.maxAmount = fee.maxAmount;
-    feeForm.systemFee = (fee as any).systemFee || 0;
+    feeForm.systemFee = fee.systemFee || 0;
     feeForm.feeType = fee.feeType;
     feeForm.feeAmount = fee.feeAmount;
     feeForm.feePercent = fee.feePercent;
@@ -351,12 +351,12 @@ async function handleSaveFee() {
     const payload = {
       category: feeForm.category as BrilinkCategory,
       label: feeForm.label,
-      minAmount: feeForm.minAmount,
-      maxAmount: feeForm.maxAmount,
-      systemFee: feeForm.systemFee || 0,
+      minAmount: Math.round(Number(feeForm.minAmount) || 0),
+      maxAmount: Math.round(Number(feeForm.maxAmount) || 0),
+      systemFee: Math.round(Number(feeForm.systemFee) || 0),
       feeType: feeForm.feeType,
-      feeAmount: feeForm.feeType === 'FLAT' ? feeForm.feeAmount : 0,
-      feePercent: feeForm.feeType === 'PERCENT' ? feeForm.feePercent : 0,
+      feeAmount: feeForm.feeType === 'FLAT' ? Math.round(Number(feeForm.feeAmount) || 0) : 0,
+      feePercent: feeForm.feeType === 'PERCENT' ? Number(feeForm.feePercent) || 0 : 0,
       isActive: feeForm.isActive,
     };
 

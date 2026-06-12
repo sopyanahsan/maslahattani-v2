@@ -186,9 +186,11 @@ export interface CreateBrilinkFeePayload {
   label: string;
   minAmount: number;
   maxAmount: number;
+  systemFee?: number;
   feeType: 'FLAT' | 'PERCENT';
   feeAmount: number;
   feePercent: number;
+  isActive?: boolean;
 }
 
 export interface UpdateBrilinkFeePayload {
@@ -196,6 +198,7 @@ export interface UpdateBrilinkFeePayload {
   label?: string;
   minAmount?: number;
   maxAmount?: number;
+  systemFee?: number;
   feeType?: 'FLAT' | 'PERCENT';
   feeAmount?: number;
   feePercent?: number;
