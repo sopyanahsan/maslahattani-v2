@@ -67,10 +67,10 @@ export interface BrilinkReceiptData {
   destination?: string; // no rek / no hp tujuan (kosong untuk Tarik Tunai)
   bankName?: string; // nama bank tujuan (untuk transfer)
   amount: number; // nominal
-  systemFee?: number; // biaya sistem (EDC)
-  adminFee?: number; // biaya admin (profit agen)
-  fee: number; // total fee
-  total: number; // uang yang diterima dari nasabah
+  amountLabel?: string; // label kustom (default: 'Nominal', Transfer: 'Jumlah Trf')
+  adminFee?: number; // biaya admin (charge nasabah)
+  fee: number; // total fee (untuk backward compat)
+  total: number; // total yang dibayar/diterima nasabah
   status: string; // Sukses, Void, Pending
 }
 
@@ -281,8 +281,7 @@ class ThermalPrintService {
     bytes.push(...this.separator());
 
     // Financials
-    bytes.push(...this.lineRight('Nominal', this.fmtRp(data.amount)));
-    if (data.systemFee && data.systemFee > 0) bytes.push(...this.lineRight('Biaya Sistem', this.fmtRp(data.systemFee)));
+    bytes.push(...this.lineRight(data.amountLabel || 'Nominal', this.fmtRp(data.amount)));
     if (data.adminFee && data.adminFee > 0) bytes.push(...this.lineRight('Biaya Admin', this.fmtRp(data.adminFee)));
     bytes.push(...COMMANDS.BOLD_ON);
     bytes.push(...this.lineRight('TOTAL', this.fmtRp(data.total)));

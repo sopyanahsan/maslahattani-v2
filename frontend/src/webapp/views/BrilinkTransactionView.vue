@@ -897,9 +897,9 @@ function handlePrint() {
         destination: selectedCategory.value === 'TARIK_TUNAI' ? undefined : form.destination,
         bankName: selectedBankName.value || undefined,
         amount: form.amount,
-        systemFee: calculatedSystemFee.value || undefined,
+        amountLabel: selectedCategory.value === 'TARIK_TUNAI' ? 'Nominal' : 'Jumlah Trf',
         adminFee: calculatedAdminFee.value || undefined,
-        fee: calculatedFee.value,
+        fee: calculatedAdminFee.value,
         total: totalReceived.value,
         status: 'Sukses',
       });
