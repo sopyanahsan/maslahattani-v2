@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "BrilinkTransaction" ADD COLUMN "isCustomerCard" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "brilink_transactions" ADD COLUMN "isCustomerCard" BOOLEAN NOT NULL DEFAULT false;
