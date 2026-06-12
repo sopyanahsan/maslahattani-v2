@@ -1180,6 +1180,7 @@ export class BrilinkService {
       label: fee.label,
       minAmount: fee.minAmount,
       maxAmount: fee.maxAmount,
+      systemFee: fee.systemFee,
       feeType: fee.feeType,
       feeAmount: fee.feeAmount,
       feePercent: fee.feePercent,
