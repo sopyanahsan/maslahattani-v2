@@ -36,6 +36,11 @@ export class BrilinkService {
    * - DALAM: fee masuk rekening (nasabah tarik nominal+fee dari rek)
    * - LUAR: fee dibayar cash terpisah (saldo tetap, fee masuk kas)
    * - POTONG: fee dipotong dari tunai (nasabah terima nominal-fee)
+   *
+   * When isCustomerCard = true (sumber dana = Kartu Customer):
+   * - accountImpact = 0 (tidak ada dana keluar dari rekening agen)
+   * - cashImpact = +adminFee saja (profit masuk kas tunai)
+   * - Berlaku untuk semua kategori non-TARIK_TUNAI
    */
   private calculateImpact(
     category: BrilinkCategoryEnum,
@@ -43,6 +48,7 @@ export class BrilinkService {
     fee: number,
     feeMethod?: string,
     systemFee: number = 0,
+    isCustomerCard: boolean = false,
   ) {
     if (category === BrilinkCategoryEnum.TARIK_TUNAI) {
       switch (feeMethod) {
@@ -85,7 +91,18 @@ export class BrilinkService {
           };
       }
     } else {
-      // Transfer, Topup, PLN — nasabah bayar tunai (nominal + biaya admin)
+      // Transfer, Topup, PLN — DEBIT flow
+      if (isCustomerCard) {
+        // Kartu Customer: nasabah pakai kartu sendiri
+        // accountImpact = 0 (tidak ada dana keluar dari rekening agen)
+        // cashImpact = +fee saja (profit admin masuk kas tunai)
+        return {
+          flowDirection: 'DEBIT',
+          accountImpact: 0,
+          cashImpact: +fee,
+        };
+      }
+      // Normal: nasabah bayar tunai (nominal + biaya admin)
       // Kas masuk = nominal + biaya admin (yang dibayar nasabah)
       // Biaya sistem dipotong dari rekening saat transfer (bukan dari kas)
       return {
@@ -258,7 +275,7 @@ export class BrilinkService {
     const refNumber = this.generateRefNumber();
 
     // 2. Calculate impact
-    const impact = this.calculateImpact(dto.category, dto.amount, fee, dto.feeMethod, systemFee);
+    const impact = this.calculateImpact(dto.category, dto.amount, fee, dto.feeMethod, systemFee, dto.isCustomerCard ?? false);
 
     // 3. Resolve account: use provided accountId, else fall back to
     // default active account (preserves existing kasir flow that doesn't
@@ -322,29 +339,32 @@ export class BrilinkService {
 
     // 6. Execute all in a single transaction
     const result = await this.prisma.$transaction(async (tx) => {
-      // 5a. Update account balance
+      // 5a. Update account balance (skip when isCustomerCard — no impact on account)
       const accountBalanceBefore = account.balance;
       const accountBalanceAfter = accountBalanceBefore + impact.accountImpact;
 
-      const updatedAccount = await tx.brilinkAccount.update({
-        where: { id: resolvedAccountId },
-        data: { balance: accountBalanceAfter },
-      });
+      let accountMutation: any = null;
+      if (impact.accountImpact !== 0) {
+        await tx.brilinkAccount.update({
+          where: { id: resolvedAccountId },
+          data: { balance: accountBalanceAfter },
+        });
 
-      // 5b. Create account mutation
-      const accountMutation = await tx.brilinkMutation.create({
-        data: {
-          accountId: resolvedAccountId,
-          type:
-            impact.flowDirection === 'DEBIT' ? 'TRX_DEBIT' : 'TRX_CREDIT',
-          amount: dto.amount,
-          balanceBefore: accountBalanceBefore,
-          balanceAfter: accountBalanceAfter,
-          reference: refNumber,
-          description: `${dto.category} - ${dto.customerName} (${dto.destination})`,
-          createdById: cashierId,
-        },
-      });
+        // 5b. Create account mutation
+        accountMutation = await tx.brilinkMutation.create({
+          data: {
+            accountId: resolvedAccountId,
+            type:
+              impact.flowDirection === 'DEBIT' ? 'TRX_DEBIT' : 'TRX_CREDIT',
+            amount: dto.amount,
+            balanceBefore: accountBalanceBefore,
+            balanceAfter: accountBalanceAfter,
+            reference: refNumber,
+            description: `${dto.category} - ${dto.customerName} (${dto.destination})`,
+            createdById: cashierId,
+          },
+        });
+      }
 
       // 5c. Update cash box balance
       const cashBalanceBefore = cashBox.balance;
@@ -390,6 +410,7 @@ export class BrilinkService {
           total,
           status: 'SUCCESS',
           feeMethod: dto.feeMethod || null,
+          isCustomerCard: dto.isCustomerCard ?? false,
           flowDirection: impact.flowDirection,
           accountImpact: impact.accountImpact,
           cashImpact: impact.cashImpact,

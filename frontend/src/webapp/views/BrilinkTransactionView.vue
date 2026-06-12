@@ -355,6 +355,7 @@
               <span class="text-slate-500 dark:text-[#869392]">Biaya Admin (profit)</span>
               <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedAdminFee) }}</span>
             </div>
+            <template v-if="!isCustomerCard">
             <div class="flex justify-between text-xs">
               <span class="text-slate-500 dark:text-[#869392]">Saldo Rek Sebelum</span>
               <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(selectedAccount?.balance ?? 0) }}</span>
@@ -368,6 +369,11 @@
             <div class="flex justify-between text-xs">
               <span class="text-slate-500 dark:text-[#869392]">Saldo Rek Setelah</span>
               <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? (selectedAccount?.balance ?? 0) + debitAmount : (selectedAccount?.balance ?? 0) - debitAmount) }}</span>
+            </div>
+            </template>
+            <div v-if="isCustomerCard" class="flex justify-between text-xs">
+              <span class="text-slate-500 dark:text-[#869392]">Dampak Rekening</span>
+              <span class="font-mono font-semibold text-slate-500 dark:text-[#869392]">Rp 0 (Kartu Customer)</span>
             </div>
           </div>
 
@@ -706,6 +712,10 @@ const totalReceived = computed(() => {
     if (form.feeMethod === 'POTONG') return form.amount - calculatedFee.value;
     return form.amount;
   }
+  // Kartu Customer: agen hanya terima admin fee (profit) secara tunai
+  if (isCustomerCard.value) {
+    return calculatedAdminFee.value;
+  }
   // Transfer/Topup: nasabah bayar = nominal + biaya admin (biaya sistem bukan charge nasabah)
   return form.amount + calculatedAdminFee.value;
 });
@@ -717,6 +727,10 @@ const debitAmount = computed(() => {
     if (form.feeMethod === 'LUAR') return form.amount; // nasabah potong nominal saja
     if (form.feeMethod === 'POTONG') return form.amount; // nasabah potong nominal saja (fee termasuk di dalamnya)
     return form.amount;
+  }
+  // Kartu Customer: tidak ada dana keluar dari rekening agen
+  if (isCustomerCard.value) {
+    return 0;
   }
   // Transfer: selalu debit nominal saja dari rekening (fee dibayar nasabah tunai)
   return form.amount;
@@ -732,6 +746,10 @@ const cashImpact = computed(() => {
     if (form.feeMethod === 'LUAR') return -(form.amount - fee); // keluar nominal, masuk fee → net -(nominal-fee)
     if (form.feeMethod === 'POTONG') return -(form.amount - fee); // keluar = nominal-fee (fee di rek)
     return -(form.amount - fee);
+  }
+  // Kartu Customer: hanya profit admin masuk kas tunai
+  if (isCustomerCard.value) {
+    return calculatedAdminFee.value;
   }
   // Transfer/Topup: kas masuk = nominal + biaya admin (yang dibayar nasabah)
   return form.amount + calculatedAdminFee.value;
@@ -851,6 +869,7 @@ async function handleSubmit() {
       destination: form.destination || (selectedCategory.value === 'TARIK_TUNAI' ? 'TUNAI' : ''),
       amount: form.amount,
       accountId: selectedAccountId.value || undefined,
+      isCustomerCard: isCustomerCard.value || undefined,
       idempotencyKey: crypto.randomUUID(),
       clientCreatedAt: new Date().toISOString(),
     });

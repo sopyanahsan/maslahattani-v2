@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEnum,
   IsInt,
   IsNotEmpty,
@@ -55,6 +56,12 @@ export class CreateBrilinkTransactionDto {
   @IsString()
   @IsOptional()
   feeMethod?: string;
+
+  @ApiPropertyOptional({ description: 'True jika sumber dana = Kartu Customer (nasabah pakai kartu sendiri)' })
+  @IsBoolean()
+  @IsOptional()
+  @Type(() => Boolean)
+  isCustomerCard?: boolean;
 
   // === Offline support fields ===
 

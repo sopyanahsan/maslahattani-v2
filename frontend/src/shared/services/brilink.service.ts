@@ -153,6 +153,7 @@ export interface CreateBrilinkTransactionPayload {
   destination: string;
   amount: number;
   accountId: string;
+  isCustomerCard?: boolean;
   idempotencyKey?: string;
   clientCreatedAt?: string;
 }

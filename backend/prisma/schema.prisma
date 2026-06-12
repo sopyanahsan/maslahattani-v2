@@ -901,6 +901,10 @@ model BrilinkTransaction {
   // POTONG = fee deducted from cash given (nasabah terima nominal-fee)
   feeMethod       String?                  // 'DALAM' | 'LUAR' | 'POTONG' (null for non-tarik)
 
+  // Kartu Customer: sumber dana = kartu nasabah sendiri
+  // Jika true: accountImpact=0, cashImpact=+adminFee saja
+  isCustomerCard  Boolean                  @default(false)
+
   // Flow & Impact fields
   flowDirection   String?                  // 'DEBIT' | 'CREDIT' (auto-derived from category)
   accountImpact   Int                      @default(0) // signed: negative for debit, positive for credit
