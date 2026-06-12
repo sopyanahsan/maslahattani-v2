@@ -118,11 +118,18 @@
         <!-- Tren Penjualan Chart -->
         <div class="card-section bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
           <h3 class="text-sm font-bold text-slate-950 dark:text-white mb-4">Tren Penjualan</h3>
-          <div ref="retailChartScroll" class="overflow-x-auto hide-scrollbar -mx-1 px-1 pb-1">
-            <div class="flex items-end gap-1 h-40 relative chart-bars" :style="{ minWidth: retailChart.length > 10 ? (retailChart.length * 28) + 'px' : 'auto' }">
-              <div v-for="(day, i) in retailChart" :key="i" class="flex-1 flex flex-col items-center justify-end h-full relative group" :style="{ minWidth: retailChart.length > 10 ? '24px' : 'auto' }">
-                <div class="chart-bar w-full rounded-t-sm transition-all duration-300 group-hover:brightness-110 cursor-pointer" :class="day.value > 0 ? 'bg-gradient-to-t from-blue-600 to-blue-400' : 'bg-slate-200 dark:bg-slate-700'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px', animationDelay: (i * 50) + 'ms' }" :title="day.dateLabel + ' — ' + formatRupiah(day.value)"></div>
-                <span class="text-[7px] text-slate-400 dark:text-slate-500 mt-1.5 font-mono whitespace-nowrap">{{ day.shortLabel }}</span>
+          <div class="relative pt-12">
+            <div ref="retailChartScroll" class="overflow-x-auto hide-scrollbar pb-1">
+              <div class="flex items-end gap-1 h-36 relative chart-bars" :style="{ minWidth: retailChart.length > 10 ? (retailChart.length * 28) + 'px' : 'auto' }">
+                <div v-for="(day, i) in retailChart" :key="i" class="chart-col flex-1 flex flex-col items-center justify-end h-full relative group" :style="{ minWidth: retailChart.length > 10 ? '24px' : 'auto' }">
+                  <!-- Custom Tooltip -->
+                  <div class="chart-tip">
+                    <span class="font-semibold">{{ day.dateLabel }}</span>
+                    <span class="text-blue-300">Omzet: {{ formatRupiah(day.value) }}</span>
+                  </div>
+                  <div class="chart-bar w-full rounded-t-sm transition-all duration-300 group-hover:brightness-125 cursor-pointer" :class="day.value > 0 ? 'bg-gradient-to-t from-blue-600 to-blue-400' : 'bg-slate-200 dark:bg-slate-700'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px', animationDelay: (i * 50) + 'ms' }"></div>
+                  <span class="text-[7px] text-slate-400 dark:text-slate-500 mt-1.5 font-mono whitespace-nowrap">{{ day.shortLabel }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -218,11 +225,18 @@
         <!-- Tren Volume BRILink Chart -->
         <div class="card-section bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 shadow-sm">
           <h3 class="text-sm font-bold text-slate-950 dark:text-white mb-4">Tren Volume BRILink</h3>
-          <div ref="brilinkChartScroll" class="overflow-x-auto hide-scrollbar -mx-1 px-1 pb-1">
-            <div class="flex items-end gap-1 h-40 relative chart-bars" :style="{ minWidth: brilinkChart.length > 10 ? (brilinkChart.length * 28) + 'px' : 'auto' }">
-              <div v-for="(day, i) in brilinkChart" :key="i" class="flex-1 flex flex-col items-center justify-end h-full relative group" :style="{ minWidth: brilinkChart.length > 10 ? '24px' : 'auto' }">
-                <div class="chart-bar w-full rounded-t-sm transition-all duration-300 group-hover:brightness-110 cursor-pointer" :class="day.value > 0 ? 'bg-gradient-to-t from-emerald-600 to-emerald-400' : 'bg-slate-200 dark:bg-slate-700'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px', animationDelay: (i * 50) + 'ms' }" :title="day.dateLabel + ' — ' + formatRupiah(day.value)"></div>
-                <span class="text-[7px] text-slate-400 dark:text-slate-500 mt-1.5 font-mono whitespace-nowrap">{{ day.shortLabel }}</span>
+          <div class="relative pt-12">
+            <div ref="brilinkChartScroll" class="overflow-x-auto hide-scrollbar pb-1">
+              <div class="flex items-end gap-1 h-36 relative chart-bars" :style="{ minWidth: brilinkChart.length > 10 ? (brilinkChart.length * 28) + 'px' : 'auto' }">
+                <div v-for="(day, i) in brilinkChart" :key="i" class="chart-col flex-1 flex flex-col items-center justify-end h-full relative group" :style="{ minWidth: brilinkChart.length > 10 ? '24px' : 'auto' }">
+                  <!-- Custom Tooltip -->
+                  <div class="chart-tip">
+                    <span class="font-semibold">{{ day.dateLabel }}</span>
+                    <span class="text-emerald-300">Omzet: {{ formatRupiah(day.value) }}</span>
+                  </div>
+                  <div class="chart-bar w-full rounded-t-sm transition-all duration-300 group-hover:brightness-125 cursor-pointer" :class="day.value > 0 ? 'bg-gradient-to-t from-emerald-600 to-emerald-400' : 'bg-slate-200 dark:bg-slate-700'" :style="{ height: day.heightPercent + '%', minHeight: day.value > 0 ? '8px' : '4px', animationDelay: (i * 50) + 'ms' }"></div>
+                  <span class="text-[7px] text-slate-400 dark:text-slate-500 mt-1.5 font-mono whitespace-nowrap">{{ day.shortLabel }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -498,6 +512,43 @@ onMounted(fetchAll);
 @keyframes slideIn {
   from { opacity: 0; transform: translateY(16px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Chart tooltip (custom CSS, no native title) === */
+.chart-col .chart-tip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background: #0f172a;
+  border-radius: 8px;
+  padding: 6px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 10px;
+  line-height: 1.3;
+  white-space: nowrap;
+  color: white;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 50;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  margin-bottom: 6px;
+}
+.chart-col .chart-tip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: #0f172a;
+}
+.chart-col:hover .chart-tip {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
 }
 
 /* === Chart bar grow animation === */
