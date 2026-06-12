@@ -354,24 +354,29 @@ export class TripayService {
   /**
    * Cek Tagihan Pascabayar
    * POST /v2/transaksi/cek-tagihan
-   * Params: code, phone, api_trxid, pin
+   * Params: product, phone, no_pelanggan, api_trxid, pin
    */
-  async inquiry(shopId: string, productCode: string, customerId: string) {
+  async inquiry(shopId: string, productCode: string, customerId: string, phone?: string) {
     const config = await this.getFullConfig(shopId);
     if (!config || !config.isActive) {
       throw new BadRequestException('Integrasi Tripay belum diaktifkan.');
+    }
+
+    if (!config.pin) {
+      throw new BadRequestException('PIN transaksi Tripay belum diatur.');
     }
 
     try {
       const baseUrl = TRIPAY_BASE[config.mode as keyof typeof TRIPAY_BASE];
       const apiTrxId = this.generateRefId(shopId);
 
-      // Tripay uses form-urlencoded (not JSON)
+      // Tripay uses form-urlencoded
       const formData = new URLSearchParams();
-      formData.append('code', productCode);
-      formData.append('phone', customerId);
+      formData.append('product', productCode);
+      formData.append('phone', phone || customerId);
+      formData.append('no_pelanggan', customerId);
       formData.append('api_trxid', apiTrxId);
-      formData.append('pin', config.pin || '');
+      formData.append('pin', config.pin);
 
       const response = await fetch(`${baseUrl}/transaksi/cek-tagihan`, {
         method: 'POST',
@@ -386,15 +391,19 @@ export class TripayService {
 
       if (!result.success) {
         throw new BadRequestException(
-          result.message || 'Gagal melakukan inquiry. Periksa nomor pelanggan.',
+          result.message || 'Gagal cek tagihan. Periksa nomor pelanggan.',
         );
       }
 
-      return result.data;
+      // Return data with order_id (tagihan_id) for bayar tagihan step
+      return {
+        ...result.data,
+        order_id: result.data?.tagihan_id || result.data?.id,
+      };
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       this.logger.error(`Tripay inquiry error: ${error.message}`);
-      throw new InternalServerErrorException('Gagal melakukan inquiry ke Tripay.');
+      throw new InternalServerErrorException('Gagal cek tagihan ke Tripay.');
     }
   }
 
@@ -641,46 +650,61 @@ export class TripayService {
   // CALLBACK / WEBHOOK
   // ============================================
 
-  async handleCallback(payload: any, signatureHeader: string) {
-    const refId = payload.merchant_ref;
-    if (!refId) {
-      throw new BadRequestException('Invalid callback: missing merchant_ref');
+  /**
+   * Handle callback from Tripay
+   * Tripay sends POST with these fields:
+   * - trxid, api_trxid, via, code, produk, target, mtrpln, note, token (SN)
+   * - harga, saldo_before_trx, saldo_after_trx, created_at, updated_at
+   * - status: 0=Proses, 1=Sukses, 2=Gagal, 3=Refund
+   * Pascabayar tambah: id, nama, periode, jumlah_tagihan, admin, jumlah_bayar
+   *
+   * Expected response: { "success": true }
+   */
+  async handleCallback(payload: any, _signatureHeader?: string) {
+    const apiTrxId = payload.api_trxid;
+    const tripayTrxId = payload.trxid;
+
+    if (!apiTrxId && !tripayTrxId) {
+      throw new BadRequestException('Invalid callback: missing trxid or api_trxid');
     }
 
-    const trx = await this.prisma.ppobTransaction.findFirst({
-      where: { refId },
-    });
+    // Find transaction by our refId (api_trxid) or tripayRef (trxid)
+    let trx = null;
+    if (apiTrxId) {
+      trx = await this.prisma.ppobTransaction.findFirst({
+        where: { refId: apiTrxId },
+      });
+    }
+    if (!trx && tripayTrxId) {
+      trx = await this.prisma.ppobTransaction.findFirst({
+        where: { tripayRef: String(tripayTrxId) },
+      });
+    }
 
     if (!trx) {
-      this.logger.warn(`Callback for unknown ref: ${refId}`);
-      throw new NotFoundException('Transaction not found for callback.');
+      this.logger.warn(`Callback for unknown trx: api_trxid=${apiTrxId}, trxid=${tripayTrxId}`);
+      // Return success anyway to acknowledge — Tripay won't retry
+      return { success: true };
     }
 
-    const config = await this.getFullConfig(trx.shopId);
-    if (!config) {
-      throw new BadRequestException('Shop config not found for callback.');
-    }
+    // Map status: 0=Proses, 1=Sukses, 2=Gagal, 3=Refund
+    const newStatus = this.mapTripayStatusNumeric(payload.status);
 
-    // Verify HMAC signature
-    const expectedSignature = crypto
-      .createHmac('sha256', config.privateKey)
-      .update(JSON.stringify(payload))
-      .digest('hex');
-
-    if (signatureHeader !== expectedSignature) {
-      throw new BadRequestException('Invalid callback signature.');
-    }
-
-    const newStatus = this.mapTripayStatus(payload.status);
+    // Update our transaction
     await this.prisma.ppobTransaction.update({
       where: { id: trx.id },
       data: {
         status: newStatus,
-        tripayStatus: payload.status,
-        serialNumber: payload.sn || payload.serial_number || null,
+        tripayStatus: String(payload.status),
+        serialNumber: payload.token || null, // SN / token PLN
+        rawResponse: JSON.stringify(payload),
         updatedAt: new Date(),
       },
     });
+
+    this.logger.log(
+      `Callback received: api_trxid=${apiTrxId}, status=${payload.status} → ${newStatus}`,
+    );
 
     return { success: true };
   }

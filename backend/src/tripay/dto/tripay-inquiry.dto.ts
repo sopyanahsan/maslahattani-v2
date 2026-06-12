@@ -2,16 +2,22 @@ import { IsString, IsOptional } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 /**
- * Inquiry / cek tagihan (postpaid) atau cek harga (prepaid).
+ * Cek Tagihan Pascabayar.
+ * Tripay params: product, phone, no_pelanggan, api_trxid, pin
  */
 export class TripayInquiryDto {
-  @ApiProperty({ description: 'Kode produk Tripay, misal: PLNPRE, TSEL5, dst.' })
+  @ApiProperty({ description: 'Kode produk pascabayar (PLNNONH, PDAMKOTA, dll)' })
   @IsString()
   productCode: string;
 
-  @ApiProperty({ description: 'Nomor pelanggan / tujuan (ID Pel, No HP, dll)' })
+  @ApiProperty({ description: 'Nomor pelanggan / no tagihan' })
   @IsString()
   customerId: string;
+
+  @ApiPropertyOptional({ description: 'No HP pelanggan (opsional, default = customerId)' })
+  @IsOptional()
+  @IsString()
+  phone?: string;
 
   @ApiPropertyOptional({ description: 'Shop ID (auto dari token jika kasir)' })
   @IsOptional()

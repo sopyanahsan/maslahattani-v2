@@ -159,10 +159,10 @@ export class TripayController {
   @Post('inquiry')
   @UseGuards(JwtAuthGuard, ShopScopeGuard)
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Inquiry / cek tagihan (postpaid) atau cek harga (prepaid)' })
+  @ApiOperation({ summary: 'Cek tagihan pascabayar (inquiry)' })
   async inquiry(@Body() dto: TripayInquiryDto, @Request() req: any) {
     const shopId = dto.shopId || req.user.shopId;
-    return this.tripayService.inquiry(shopId, dto.productCode, dto.customerId);
+    return this.tripayService.inquiry(shopId, dto.productCode, dto.customerId, dto.phone);
   }
 
   // ============================================
