@@ -229,18 +229,7 @@
           </div>
         </div>
 
-        <!-- Nomor Referensi -->
-        <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
-            No. Referensi Nasabah <span class="text-slate-400 dark:text-[#869392] font-normal">(opsional)</span>
-          </label>
-          <input
-            v-model="form.reference"
-            type="text"
-            placeholder="Nomor referensi"
-            class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
-          />
-        </div>
+
 
         <!-- Catatan -->
         <div>
@@ -346,10 +335,6 @@
           <div v-if="selectedCategory === 'TARIK_TUNAI'" class="flex justify-between text-xs">
             <span class="text-slate-500 dark:text-[#869392]">Metode Admin</span>
             <span class="font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ feeMethodLabel }}</span>
-          </div>
-          <div v-if="form.reference" class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">No. Referensi</span>
-            <span class="font-mono text-slate-800 dark:text-[#e3e2e2]">{{ form.reference }}</span>
           </div>
           <div v-if="form.notes" class="flex justify-between text-xs">
             <span class="text-slate-500 dark:text-[#869392]">Catatan</span>
