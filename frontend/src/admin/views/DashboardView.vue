@@ -4,7 +4,7 @@
     <!-- STICKY TOP BAR                                -->
     <!-- ============================================ -->
     <div
-      class="sticky top-0 lg:top-16 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3.5 bg-white/95/95 backdrop-blur-sm border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm"
+      class="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3.5 bg-white border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
     >
       <!-- Period selector -->
       <div
