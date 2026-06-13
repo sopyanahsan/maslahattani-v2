@@ -1,14 +1,19 @@
 <template>
   <div class="space-y-5">
-    <div></div>
+    <!-- Header -->
+    <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-pink-600 to-rose-500 px-6 py-5 text-white shadow-lg">
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+      <h1 class="relative text-lg font-bold">Cetak Label Barcode</h1>
+      <p class="relative text-xs text-pink-100 mt-0.5">Pilih produk dan cetak label barcode untuk rak toko.</p>
+    </div>
 
     <!-- Controls -->
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap items-start sm:items-center">
-      <select v-model="filterCategory" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none" @change="fetchProducts">
+      <select v-model="filterCategory" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" @change="fetchProducts">
         <option value="">Semua Kategori</option>
         <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
       </select>
-      <select v-model="paperSize" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none">
+      <select v-model="paperSize" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none">
         <option value="105">Label No.105 (25×38mm) — 55/lembar</option>
         <option value="109">Label No.109 (13×38mm) — 105/lembar</option>
         <option value="108">Label No.108 (19×38mm) — 70/lembar</option>
@@ -16,11 +21,11 @@
         <option value="a4">A4 Bebas (70×42mm) — 21/lembar</option>
       </select>
       <label class="flex items-center gap-1.5 cursor-pointer">
-        <input v-model="showPrice" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-300 rounded" />
-        <span class="text-xs text-slate-700 dark:text-slate-300">Tampilkan Harga</span>
+        <input v-model="showPrice" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-200 rounded" />
+        <span class="text-xs text-slate-700">Tampilkan Harga</span>
       </label>
       <div class="flex-1"></div>
-      <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 flex items-center gap-1.5" @click="selectAll">
+      <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1.5" @click="selectAll">
         Pilih Semua
       </button>
       <button type="button" :disabled="selectedIds.length === 0" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5" @click="handlePrint">
@@ -33,29 +38,29 @@
       <span class="text-sm text-slate-400">Memuat produk...</span>
     </div>
 
-    <div v-else-if="products.length === 0" class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center">
-      <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada produk</p>
+    <div v-else-if="products.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+      <p class="text-sm font-semibold text-slate-700">Belum ada produk</p>
     </div>
 
-    <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
+    <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
-          <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+          <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th class="px-3 py-2.5 text-center w-10"><input type="checkbox" :checked="allSelected" class="w-4 h-4 text-blue-600 border-slate-300 rounded" @change="toggleAll" /></th>
-              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Produk</th>
-              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">SKU / Barcode</th>
-              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Kategori</th>
-              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Harga</th>
+              <th class="px-3 py-2.5 text-center w-10"><input type="checkbox" :checked="allSelected" class="w-4 h-4 text-blue-600 border-slate-200 rounded" @change="toggleAll" /></th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">Produk</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">SKU / Barcode</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">Kategori</th>
+              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase">Harga</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-            <tr v-for="p in products" :key="p.id" class="hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer" @click="toggleSelect(p.id)">
-              <td class="px-3 py-2.5 text-center"><input type="checkbox" :checked="selectedIds.includes(p.id)" class="w-4 h-4 text-blue-600 border-slate-300 rounded pointer-events-none" /></td>
-              <td class="px-3 py-2.5 text-sm font-medium text-slate-900 dark:text-slate-100">{{ p.name }}</td>
-              <td class="px-3 py-2.5"><code class="text-[10px] font-mono text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded">{{ p.barcode || p.sku }}</code></td>
-              <td class="px-3 py-2.5 text-xs text-slate-500 dark:text-slate-400">{{ p.category?.name || '—' }}</td>
-              <td class="px-3 py-2.5 text-right text-xs font-mono text-slate-700 dark:text-slate-300">{{ formatRupiah(p.price) }}</td>
+          <tbody class="divide-y divide-slate-100">
+            <tr v-for="p in products" :key="p.id" class="hover:bg-slate-50/50 cursor-pointer" @click="toggleSelect(p.id)">
+              <td class="px-3 py-2.5 text-center"><input type="checkbox" :checked="selectedIds.includes(p.id)" class="w-4 h-4 text-blue-600 border-slate-200 rounded pointer-events-none" /></td>
+              <td class="px-3 py-2.5 text-sm font-medium text-slate-900">{{ p.name }}</td>
+              <td class="px-3 py-2.5"><code class="text-[10px] font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">{{ p.barcode || p.sku }}</code></td>
+              <td class="px-3 py-2.5 text-xs text-slate-500">{{ p.category?.name || '—' }}</td>
+              <td class="px-3 py-2.5 text-right text-xs font-mono text-slate-700">{{ formatRupiah(p.price) }}</td>
             </tr>
           </tbody>
         </table>
@@ -245,5 +250,37 @@ onMounted(() => { fetchProducts(); fetchCategories(); });
   .paper-a4 .label-sku { font-size: 7pt; }
   .paper-a4 .label-name { font-size: 8pt; }
   .paper-a4 .label-price { font-size: 9pt; }
+}
+</style>
+
+
+<style scoped>
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.space-y-5 > * {
+  animation: fadeSlideUp 0.4s ease-out both;
+}
+.space-y-5 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-5 > *:nth-child(2) { animation-delay: 80ms; }
+.space-y-5 > *:nth-child(3) { animation-delay: 160ms; }
+.space-y-5 > *:nth-child(4) { animation-delay: 240ms; }
+
+/* gradient header shimmer */
+@keyframes headerShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+div[class*="bg-gradient-to-r"][class*="from-pink"] {
+  background-size: 200% 200%;
+  animation: headerShimmer 6s ease infinite;
+}
+
+/* product card select glow */
+div[class*="border-blue-500"] {
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  transition: box-shadow 0.2s ease;
 }
 </style>

@@ -1,14 +1,15 @@
 <template>
   <div class="space-y-5">
-    <div>
-      <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Integrasi API</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+    <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-5 text-white shadow-lg">
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/5" />
+      <h1 class="relative text-lg font-bold">Integrasi API</h1>
+      <p class="relative text-xs text-slate-300 mt-0.5">
         Kelola koneksi API pihak ketiga — Tripay PPOB, dan integrasi lainnya.
       </p>
     </div>
 
     <!-- Tab switcher -->
-    <div class="border-b border-slate-200 dark:border-slate-800 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+    <div class="border-b border-slate-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
       <nav class="flex gap-1 overflow-x-auto">
         <button
           v-for="tab in tabs"
@@ -17,8 +18,8 @@
           :class="[
             'px-3 py-2 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1.5 shrink-0',
             activeTab === tab.value
-              ? 'border-blue-600 text-blue-700 dark:text-blue-400'
-              : 'border-transparent text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100',
+              ? 'border-blue-600 text-blue-700'
+              : 'border-transparent text-slate-600 hover:text-slate-900',
           ]"
           @click="activeTab = tab.value"
         >
@@ -31,44 +32,44 @@
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
       <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-      <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat konfigurasi...</span>
+      <span class="ml-2 text-sm text-slate-500">Memuat konfigurasi...</span>
     </div>
 
     <template v-else>
       <!-- TAB: TRIPAY PPOB -->
       <section v-if="activeTab === 'tripay'" class="space-y-4">
         <!-- Status Card -->
-        <div :class="['rounded-xl border p-4 flex items-center gap-4', config.isActive ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800' : 'bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-800']">
-          <div :class="['w-10 h-10 rounded-full flex items-center justify-center', config.isActive ? 'bg-emerald-100 dark:bg-emerald-900/40' : 'bg-slate-100 dark:bg-slate-800']">
-            <PlugIcon :class="['w-5 h-5', config.isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400']" />
+        <div :class="['rounded-lg border p-4 flex items-center gap-4', config.isActive ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200']">
+          <div :class="['w-10 h-10 rounded-full flex items-center justify-center', config.isActive ? 'bg-emerald-100' : 'bg-slate-100']">
+            <PlugIcon :class="['w-5 h-5', config.isActive ? 'text-emerald-600' : 'text-slate-400']" />
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-bold" :class="config.isActive ? 'text-emerald-800 dark:text-emerald-200' : 'text-slate-700 dark:text-slate-300'">
+            <p class="text-sm font-bold" :class="config.isActive ? 'text-emerald-800' : 'text-slate-700'">
               {{ config.isActive ? 'Tripay Aktif' : 'Tripay Belum Aktif' }}
             </p>
-            <p class="text-xs text-slate-500 dark:text-slate-400">
+            <p class="text-xs text-slate-500">
               {{ config.isActive ? `Mode: ${config.mode} — Merchant: ${config.merchantCode}` : 'Masukkan kredensial API untuk mengaktifkan PPOB.' }}
             </p>
-            <p v-if="config.lastVerifiedAt" class="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+            <p v-if="config.lastVerifiedAt" class="text-[10px] text-slate-400 mt-0.5">
               Terakhir diverifikasi: {{ formatDate(config.lastVerifiedAt) }}
             </p>
           </div>
-          <span :class="['px-2 py-1 text-[10px] font-bold uppercase rounded-full', config.isActive ? 'bg-emerald-200 dark:bg-emerald-800 text-emerald-800 dark:text-emerald-200' : 'bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400']">
+          <span :class="['px-2 py-1 text-[10px] font-bold uppercase rounded-full', config.isActive ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600']">
             {{ config.isActive ? 'AKTIF' : 'NONAKTIF' }}
           </span>
         </div>
 
         <!-- Saldo Deposit Card -->
-        <div v-if="config.isActive" class="rounded-xl border border-blue-200 dark:border-blue-800 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-4">
+        <div v-if="config.isActive" class="rounded-lg border border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 p-4">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
-              <div class="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center">
-                <WalletIcon class="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                <WalletIcon class="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 uppercase tracking-wider">Saldo Deposit Tripay</p>
-                <div v-if="saldoLoading" class="h-6 w-28 rounded bg-blue-200/50 dark:bg-blue-800/50 animate-pulse mt-0.5" />
-                <p v-else class="text-xl font-bold text-blue-900 dark:text-blue-100 font-mono leading-tight">
+                <p class="text-[10px] font-semibold text-blue-600 uppercase tracking-wider">Saldo Deposit Tripay</p>
+                <div v-if="saldoLoading" class="h-6 w-28 rounded bg-blue-200/50 animate-pulse mt-0.5" />
+                <p v-else class="text-xl font-bold text-blue-900 font-mono leading-tight">
                   {{ saldo !== null ? formatRupiahFull(saldo) : '—' }}
                 </p>
               </div>
@@ -76,51 +77,51 @@
             <button
               type="button"
               :disabled="saldoLoading"
-              class="p-2 rounded-lg bg-blue-100 dark:bg-blue-900/40 hover:bg-blue-200 dark:hover:bg-blue-800/50 text-blue-600 dark:text-blue-400 transition-colors disabled:opacity-50"
+              class="p-2 rounded-lg bg-blue-100 hover:bg-blue-200:bg-blue-800/50 text-blue-600 transition-colors disabled:opacity-50"
               title="Refresh saldo"
               @click="loadSaldo"
             >
               <RefreshCwIcon :class="['w-4 h-4', saldoLoading && 'animate-spin']" />
             </button>
           </div>
-          <p v-if="saldoError" class="text-[10px] text-red-600 dark:text-red-400 mt-2">{{ saldoError }}</p>
-          <p v-else-if="saldo !== null && saldo < 50000" class="text-[10px] text-amber-600 dark:text-amber-400 font-semibold mt-2 flex items-center gap-1">
+          <p v-if="saldoError" class="text-[10px] text-red-600 mt-2">{{ saldoError }}</p>
+          <p v-else-if="saldo !== null && saldo < 50000" class="text-[10px] text-amber-600 font-semibold mt-2 flex items-center gap-1">
             <AlertTriangleIcon class="w-3 h-3" /> Saldo rendah! Segera top-up deposit Tripay.
           </p>
         </div>
 
         <!-- Config Form -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-          <div class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-              <KeyIcon class="w-4 h-4 text-blue-600 dark:text-blue-400" /> Kredensial Tripay API
+        <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+              <KeyIcon class="w-4 h-4 text-blue-600" /> Kredensial Tripay API
             </h3>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-              Dapatkan dari <a href="https://tripay.co.id" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">tripay.co.id</a> → Menu Developer.
+            <p class="text-[11px] text-slate-500 mt-0.5">
+              Dapatkan dari <a href="https://tripay.co.id" target="_blank" class="text-blue-600 hover:underline">tripay.co.id</a> → Menu Developer.
             </p>
           </div>
 
           <form class="p-5 space-y-4" @submit.prevent="handleSaveConfig">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="sm:col-span-2">
-                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">API Key</label>
-                <input v-model="form.apiKey" type="password" placeholder="DEV-xxxxxxxx" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+                <label class="block text-xs font-semibold text-slate-700 mb-1">API Key</label>
+                <input v-model="form.apiKey" type="password" placeholder="DEV-xxxxxxxx" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               </div>
               <div class="sm:col-span-2">
-                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Private Key</label>
-                <input v-model="form.privateKey" type="password" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Private Key</label>
+                <input v-model="form.privateKey" type="password" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Merchant Code</label>
-                <input v-model="form.merchantCode" type="text" placeholder="T12345" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Merchant Code</label>
+                <input v-model="form.merchantCode" type="text" placeholder="T12345" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">PIN Transaksi</label>
-                <input v-model="form.pin" type="password" placeholder="4 digit" maxlength="4" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
+                <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Transaksi</label>
+                <input v-model="form.pin" type="password" placeholder="4 digit" maxlength="4" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Mode</label>
-                <select v-model="form.mode" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none">
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Mode</label>
+                <select v-model="form.mode" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
                   <option value="sandbox">Sandbox (Testing)</option>
                   <option value="production">Production (Live)</option>
                 </select>
@@ -131,13 +132,13 @@
             <div class="flex items-center gap-3 pt-2">
               <label class="relative inline-flex items-center cursor-pointer">
                 <input v-model="form.isActive" type="checkbox" class="sr-only peer" />
-                <div class="w-9 h-5 bg-slate-200 dark:bg-slate-700 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+                <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
               </label>
-              <span class="text-xs font-medium text-slate-700 dark:text-slate-300">Aktifkan Integrasi Tripay</span>
+              <span class="text-xs font-medium text-slate-700">Aktifkan Integrasi Tripay</span>
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center gap-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+            <div class="flex items-center gap-3 pt-3 border-t border-slate-200">
               <button type="submit" :disabled="saving" class="inline-flex items-center gap-2 px-4 h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50">
                 <Loader2Icon v-if="saving" class="w-3.5 h-3.5 animate-spin" />
                 <SaveIcon v-else class="w-3.5 h-3.5" />
@@ -155,19 +156,19 @@
         </div>
 
         <!-- PPOB Categories Info -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
-          <div class="px-5 py-3 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+        <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
               <ZapIcon class="w-4 h-4 text-amber-500" /> Layanan PPOB Tersedia
             </h3>
-            <p class="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Setelah Tripay aktif, kasir bisa akses layanan ini dari menu PPOB di webapp.</p>
+            <p class="text-[11px] text-slate-500 mt-0.5">Setelah Tripay aktif, kasir bisa akses layanan ini dari menu PPOB di webapp.</p>
           </div>
           <div class="p-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            <div v-for="cat in ppobCategories" :key="cat.code" class="flex flex-col items-center gap-2 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700">
-              <div class="w-9 h-9 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                <component :is="getCategoryIcon(cat.icon)" class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
+            <div v-for="cat in ppobCategories" :key="cat.code" class="flex flex-col items-center gap-2 p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center">
+                <component :is="getCategoryIcon(cat.icon)" class="w-4 h-4 text-indigo-600" />
               </div>
-              <p class="text-[10px] font-semibold text-slate-700 dark:text-slate-300 text-center leading-tight">{{ cat.label }}</p>
+              <p class="text-[10px] font-semibold text-slate-700 text-center leading-tight">{{ cat.label }}</p>
             </div>
           </div>
         </div>
@@ -175,21 +176,21 @@
 
       <!-- TAB: WEBHOOK -->
       <section v-if="activeTab === 'webhook'" class="space-y-4">
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center">
-          <div class="w-14 h-14 mx-auto rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
-            <WebhookIcon class="w-7 h-7 text-slate-400 dark:text-slate-500" />
+        <div class="bg-white border border-slate-200 rounded-lg p-6 text-center">
+          <div class="w-14 h-14 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-3">
+            <WebhookIcon class="w-7 h-7 text-slate-400" />
           </div>
-          <h3 class="text-sm font-bold text-slate-700 dark:text-slate-300">Webhook & Callback</h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-md mx-auto">
+          <h3 class="text-sm font-bold text-slate-700">Webhook & Callback</h3>
+          <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">
             URL callback Tripay untuk update status transaksi otomatis. Set di panel Tripay:
           </p>
-          <div class="mt-3 inline-flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
-            <code class="text-[11px] font-mono text-slate-800 dark:text-slate-200">{{ callbackUrl }}</code>
+          <div class="mt-3 inline-flex items-center gap-2 px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg">
+            <code class="text-[11px] font-mono text-slate-800">{{ callbackUrl }}</code>
             <button type="button" class="p-1 text-slate-400 hover:text-blue-600 transition-colors" @click="copyCallback">
               <CopyIcon class="w-3.5 h-3.5" />
             </button>
           </div>
-          <p v-if="copied" class="text-[10px] text-emerald-600 dark:text-emerald-400 mt-1 font-medium">Tersalin!</p>
+          <p v-if="copied" class="text-[10px] text-emerald-600 mt-1 font-medium">Tersalin!</p>
         </div>
       </section>
     </template>
@@ -244,8 +245,8 @@ const feedback = ref('');
 const feedbackType = ref<'success' | 'error'>('success');
 const feedbackClass = computed(() =>
   feedbackType.value === 'success'
-    ? 'bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800'
-    : 'bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800',
+    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+    : 'bg-red-50 text-red-700 border border-red-200',
 );
 
 const config = ref<TripayConfig>({ apiKey: '', privateKey: '', merchantCode: '', mode: 'sandbox', isActive: false, lastVerifiedAt: null });
@@ -352,3 +353,63 @@ onMounted(() => {
   });
 });
 </script>
+
+
+<style scoped>
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.space-y-5 > * {
+  animation: fadeSlideUp 0.4s ease-out both;
+}
+.space-y-5 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-5 > *:nth-child(2) { animation-delay: 80ms; }
+.space-y-5 > *:nth-child(3) { animation-delay: 160ms; }
+.space-y-5 > *:nth-child(4) { animation-delay: 240ms; }
+
+/* gradient header shimmer */
+@keyframes headerShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+div[class*="bg-gradient-to-r"][class*="from-slate-800"] {
+  background-size: 200% 200%;
+  animation: headerShimmer 8s ease infinite;
+}
+
+/* status card glow */
+@keyframes statusGlow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+  50% { box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1); }
+}
+div[class*="bg-emerald-50"][class*="border-emerald"] {
+  animation: statusGlow 3s ease-in-out infinite;
+}
+
+/* form input focus transition */
+input, select, textarea {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* tab underline slide */
+button[class*="border-blue-600"] {
+  position: relative;
+}
+button[class*="border-blue-600"]::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: #2563EB;
+  border-radius: 2px;
+  animation: tabSlide 0.3s ease-out;
+}
+@keyframes tabSlide {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+</style>
