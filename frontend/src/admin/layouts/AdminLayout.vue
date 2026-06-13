@@ -185,17 +185,17 @@
           Logout
         </button>
 
-        <!-- User info -->
-        <div class="mt-2 pt-3 border-t border-[#3d4948] flex items-center gap-2 px-2">
-          <div
-            class="w-8 h-8 rounded-full bg-[#03a29c]/20 border border-[#5fd9d2]/30 flex items-center justify-center text-xs font-semibold text-[#5fd9d2]"
+        <!-- Upgrade Lisensi button -->
+        <div class="mt-2 pt-3 border-t border-[#3d4948] px-2">
+          <RouterLink
+            to="/admin/upgrade"
+            class="w-full flex items-center justify-center gap-2 h-10 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold shadow-sm hover:shadow-md hover:brightness-110 transition-all"
           >
-            {{ userInitials }}
-          </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-xs font-medium text-[#e3e2e2] truncate">{{ displayName }}</p>
-            <p class="text-[11px] text-[#bcc9c7] truncate">{{ displayUsername || roleLabel }}</p>
-          </div>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            Upgrade Lisensi
+          </RouterLink>
         </div>
       </div>
     </aside>

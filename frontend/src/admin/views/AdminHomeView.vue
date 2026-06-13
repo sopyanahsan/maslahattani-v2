@@ -1,30 +1,30 @@
 <template>
-  <div class="space-y-6 font-hanken">
+  <div class="space-y-6 font-sans">
     <!-- Greeting -->
     <div>
-      <h1 class="text-2xl font-bold text-slate-900 dark:text-[#e3e2e2] tracking-tight">
+      <h1 class="text-2xl font-bold text-slate-950 tracking-tight">
         {{ greeting }}, {{ displayName }}
       </h1>
-      <p class="text-sm text-slate-500 dark:text-[#bcc9c7] mt-1">{{ todayLabel }}</p>
+      <p class="text-sm text-slate-500 mt-1">{{ todayLabel }}</p>
     </div>
 
     <!-- KPI mini cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 hover:border-slate-300 dark:hover:border-[#5fd9d2]/30 transition-colors">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-[#bcc9c7]">Omzet Retail</p>
-        <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mt-1 font-mono">{{ formatRupiah(retailStore.overview?.kpi.revenue.value ?? 0) }}</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Omzet Retail</p>
+        <p class="text-lg font-bold text-slate-950 mt-1 font-mono">{{ formatRupiah(retailStore.overview?.kpi.revenue.value ?? 0) }}</p>
       </div>
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 hover:border-slate-300 dark:hover:border-[#5fd9d2]/30 transition-colors">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-[#bcc9c7]">Transaksi Retail</p>
-        <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mt-1 font-mono">{{ retailStore.overview?.kpi.transactions.value ?? 0 }}</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Transaksi Retail</p>
+        <p class="text-lg font-bold text-slate-950 mt-1 font-mono">{{ retailStore.overview?.kpi.transactions.value ?? 0 }}</p>
       </div>
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 hover:border-slate-300 dark:hover:border-[#5fd9d2]/30 transition-colors">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-[#03a29c] dark:text-[#5fd9d2]">Fee BRILink</p>
-        <p class="text-lg font-bold text-[#03a29c] dark:text-[#5fd9d2] mt-1 font-mono">{{ formatRupiah(brilinkStore.overview?.kpi.feeEarnings.value ?? 0) }}</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-blue-600">Fee BRILink</p>
+        <p class="text-lg font-bold text-blue-600 mt-1 font-mono">{{ formatRupiah(brilinkStore.overview?.kpi.feeEarnings.value ?? 0) }}</p>
       </div>
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 hover:border-slate-300 dark:hover:border-[#5fd9d2]/30 transition-colors">
-        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-[#bcc9c7]">Trx BRILink</p>
-        <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mt-1 font-mono">{{ brilinkStore.overview?.kpi.transactions.value ?? 0 }}</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Trx BRILink</p>
+        <p class="text-lg font-bold text-slate-950 mt-1 font-mono">{{ brilinkStore.overview?.kpi.transactions.value ?? 0 }}</p>
       </div>
     </div>
 
@@ -32,7 +32,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <RouterLink
         to="/admin/dashboard"
-        class="group relative overflow-hidden bg-gradient-to-br from-blue-600 to-blue-700 dark:from-[#03a29c] dark:to-[#00756f] rounded-2xl p-6 text-white transition-all hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-[#5fd9d2]/10 hover:-translate-y-0.5"
+        class="group relative overflow-hidden bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-6 text-white transition-all hover:shadow-xl hover:shadow-blue-500/20 hover:-translate-y-0.5"
       >
         <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
         <div class="relative flex items-start justify-between">
@@ -49,7 +49,7 @@
 
       <RouterLink
         to="/admin/brilink"
-        class="group relative overflow-hidden bg-gradient-to-br from-indigo-600 to-purple-700 dark:from-indigo-700 dark:to-purple-900 rounded-2xl p-6 text-white transition-all hover:shadow-xl hover:shadow-indigo-500/20 hover:-translate-y-0.5"
+        class="group relative overflow-hidden bg-gradient-to-br from-indigo-600 to-purple-700 rounded-lg p-6 text-white transition-all hover:shadow-xl hover:shadow-indigo-500/20 hover:-translate-y-0.5"
       >
         <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
         <div class="relative flex items-start justify-between">
@@ -225,3 +225,19 @@ onBeforeUnmount(() => {
   brilinkStore.teardown();
 });
 </script>
+
+
+<style scoped>
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.space-y-6 > * { animation: fadeSlideUp 0.45s ease-out both; }
+.space-y-6 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-6 > *:nth-child(2) { animation-delay: 100ms; }
+.space-y-6 > *:nth-child(3) { animation-delay: 200ms; }
+.space-y-6 > *:nth-child(4) { animation-delay: 300ms; }
+@keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+.grid > div[class*="rounded-lg"] { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.grid > div:nth-child(1) { animation-delay: 100ms; }
+.grid > div:nth-child(2) { animation-delay: 180ms; }
+.grid > div:nth-child(3) { animation-delay: 260ms; }
+.grid > div:nth-child(4) { animation-delay: 340ms; }
+</style>
