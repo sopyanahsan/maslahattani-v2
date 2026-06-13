@@ -2,14 +2,14 @@
   <div class="space-y-5">
     <!-- Action bar (no h1 — title already in topbar) -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
+      <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-[#869392] font-medium tabular-nums">
         <span v-if="meta">{{ meta.total }} produk</span>
       </div>
       <div class="flex items-center gap-2">
         <button
           type="button"
-          class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
-                 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5 shrink-0"
+          class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
+                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5 shrink-0"
           @click="showBulkModal = true"
         >
           <UploadIcon class="w-3.5 h-3.5" />
@@ -17,8 +17,8 @@
         </button>
         <button
           type="button"
-          class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg
-                 hover:bg-blue-700 transition-colors flex items-center gap-1.5 shrink-0"
+          class="h-9 px-4 bg-[#03a29c] text-white text-xs font-semibold rounded-lg
+                 hover:bg-[#028a85] transition-colors flex items-center gap-1.5 shrink-0"
           @click="openCreateModal"
         >
           <PlusIcon class="w-4 h-4" />
@@ -30,21 +30,21 @@
     <!-- Search, Category filter, Sort -->
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
       <div class="relative flex-1 min-w-[200px]">
-        <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-[#869392]" />
         <input
           v-model="searchQuery"
           type="text"
           placeholder="Cari nama atau SKU produk..."
-          class="w-full h-9 pl-9 pr-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
-                 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+          class="w-full h-9 pl-9 pr-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
+                 focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none transition-colors placeholder:text-slate-400 dark:placeholder:text-[#869392]"
           @input="debouncedSearch"
         />
       </div>
       <!-- Category filter -->
       <select
         v-model="filterCategory"
-        class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
-               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800"
+        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
+               focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none bg-white dark:bg-[#1e2020] transition-colors"
         @change="resetAndFetch"
       >
         <option value="">Semua Kategori</option>
@@ -55,8 +55,8 @@
       <!-- Sort -->
       <select
         v-model="sortMode"
-        class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
-               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800"
+        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
+               focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none bg-white dark:bg-[#1e2020] transition-colors"
         @change="resetAndFetch"
       >
         <option value="name-asc">A-Z (Nama)</option>
@@ -70,57 +70,57 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-      <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat produk...</span>
+      <Loader2Icon class="w-5 h-5 animate-spin text-[#03a29c]" />
+      <span class="ml-2 text-sm text-slate-500 dark:text-[#bcc9c7]">Memuat produk...</span>
     </div>
 
     <!-- Error -->
     <div
       v-else-if="error"
-      class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-2"
+      class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-5 flex items-start gap-3 shadow-sm"
     >
-      <AlertCircleIcon class="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+      <AlertCircleIcon class="w-5 h-5 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
       <div>
-        <p class="text-sm text-red-800">{{ error }}</p>
-        <button class="text-xs text-red-600 underline mt-1" @click="fetchProducts">Coba lagi</button>
+        <p class="text-sm font-bold text-red-800 dark:text-red-200">{{ error }}</p>
+        <button class="text-xs text-red-600 dark:text-red-400 underline underline-offset-2 mt-1" @click="fetchProducts">Coba lagi</button>
       </div>
     </div>
 
     <!-- Empty state -->
     <div
       v-else-if="products.length === 0"
-      class="bg-white border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center"
+      class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-300 dark:border-[#3d4948] rounded-xl p-12 text-center shadow-sm"
     >
-      <PackageIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
-      <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada produk</p>
-      <p class="text-xs text-slate-500 mt-1">
+      <PackageIcon class="w-12 h-12 text-slate-300 dark:text-[#3d4948] mx-auto mb-3" />
+      <p class="text-sm font-bold text-slate-700 dark:text-[#e3e2e2]">Belum ada produk</p>
+      <p class="text-xs text-slate-500 dark:text-[#bcc9c7] mt-1.5">
         {{ searchQuery ? 'Tidak ditemukan produk dengan kata kunci tersebut.' : 'Tambah produk pertama untuk mulai berjualan.' }}
       </p>
     </div>
 
     <!-- Product Table -->
-    <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
+    <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[700px]">
-          <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+          <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
             <tr>
-              <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide w-12">Img</th>
-              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">SKU</th>
-              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">Nama Barang</th>
-              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">Kategori</th>
-              <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Stok</th>
-              <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Satuan</th>
-              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Harga Jual</th>
-              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Harga Beli</th>
-              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Margin</th>
-              <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Aksi</th>
+              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide w-12">Img</th>
+              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">SKU</th>
+              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Nama Barang</th>
+              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Kategori</th>
+              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Stok</th>
+              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Satuan</th>
+              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Harga Jual</th>
+              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Harga Beli</th>
+              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Margin</th>
+              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Aksi</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody class="divide-y divide-slate-100 dark:divide-[#3d4948]">
             <tr
               v-for="product in products"
               :key="product.id"
-              class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
             >
               <td class="px-3 py-2.5 text-center">
                 <div class="w-8 h-8 rounded-md bg-slate-100 border border-slate-200 overflow-hidden mx-auto flex items-center justify-center">
@@ -137,7 +137,7 @@
                 </div>
               </td>
               <td class="px-3 py-2.5">
-                <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ product.name }}</p>
+                <p class="text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">{{ product.name }}</p>
               </td>
               <td class="px-3 py-2.5">
                 <span v-if="getCategoryName(product.categoryId)" class="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">{{ getCategoryName(product.categoryId) }}</span>
@@ -146,37 +146,37 @@
               <td class="px-3 py-2.5 text-center">
                 <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold', getTotalStock(product) === 0 ? 'bg-red-100 text-red-700' : getTotalStock(product) <= 5 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700']">{{ getTotalStock(product) }}</span>
               </td>
-              <td class="px-3 py-2.5 text-center text-xs text-slate-500 dark:text-slate-400">{{ product.unit || 'pcs' }}</td>
-              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(product.price) }}</td>
-              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-600 dark:text-slate-400">{{ formatRupiah(product.cost) }}</td>
+              <td class="px-3 py-2.5 text-center text-xs text-slate-500 dark:text-[#bcc9c7]">{{ product.unit || 'pcs' }}</td>
+              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-900 dark:text-[#e3e2e2] tabular-nums">{{ formatRupiah(product.price) }}</td>
+              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-600 dark:text-[#bcc9c7] tabular-nums">{{ formatRupiah(product.cost) }}</td>
               <td class="px-3 py-2.5 text-right">
                 <span :class="['text-xs font-mono font-semibold', getMargin(product) > 0 ? 'text-emerald-600' : 'text-red-600']">{{ getMarginPercent(product) }}%</span>
               </td>
               <td class="px-4 py-3 text-center">
-                <div class="flex items-center justify-center gap-1">
+                <div class="flex items-center justify-center gap-1.5">
                   <button
-                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center
-                           hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center
+                           hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:border-blue-200 dark:hover:border-blue-800 transition-colors"
                     title="Riwayat Stok"
                     @click="openStockHistory(product)"
                   >
-                    <HistoryIcon class="w-3.5 h-3.5 text-blue-500" />
+                    <HistoryIcon class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
                   </button>
                   <button
-                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center
-                           hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center
+                           hover:bg-slate-100 dark:hover:bg-[#292a2a] transition-colors"
                     title="Edit"
                     @click="openEditModal(product)"
                   >
-                    <PencilIcon class="w-3.5 h-3.5 text-slate-600" />
+                    <PencilIcon class="w-3.5 h-3.5 text-slate-600 dark:text-[#bcc9c7]" />
                   </button>
                   <button
-                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center
-                           hover:bg-red-50 hover:border-red-200 transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center
+                           hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-200 dark:hover:border-red-800 transition-colors"
                     title="Hapus"
                     @click="confirmDelete(product)"
                   >
-                    <Trash2Icon class="w-3.5 h-3.5 text-red-500" />
+                    <Trash2Icon class="w-3.5 h-3.5 text-red-500 dark:text-red-400" />
                   </button>
                 </div>
               </td>
@@ -188,24 +188,24 @@
       <!-- Pagination -->
       <div
         v-if="meta && meta.totalPages > 1"
-        class="px-4 py-3 border-t border-slate-200 flex items-center justify-between"
+        class="px-4 py-3 border-t border-slate-200 dark:border-[#3d4948] flex items-center justify-between"
       >
-        <p class="text-xs text-slate-500 dark:text-slate-400">
+        <p class="text-xs text-slate-500 dark:text-[#869392] tabular-nums">
           Halaman {{ meta.page }} dari {{ meta.totalPages }}
         </p>
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1.5">
           <button
             :disabled="meta.page <= 1"
-            class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md
-                   hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+            class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md
+                   hover:bg-slate-50 dark:hover:bg-[#292a2a] disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 dark:text-[#bcc9c7] transition-colors"
             @click="goPage(meta!.page - 1)"
           >
             Prev
           </button>
           <button
             :disabled="meta.page >= meta.totalPages"
-            class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md
-                   hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+            class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md
+                   hover:bg-slate-50 dark:hover:bg-[#292a2a] disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 dark:text-[#bcc9c7] transition-colors"
             @click="goPage(meta!.page + 1)"
           >
             Next

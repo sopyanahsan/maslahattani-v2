@@ -4,30 +4,30 @@
     <div></div>
 
     <!-- Stats cards (6 KPI) -->
-    <div v-if="stats" class="grid grid-cols-3 lg:grid-cols-6 gap-3">
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
-        <p class="text-[10px] text-slate-500 dark:text-slate-400">Omzet</p>
-        <p class="text-base font-bold font-mono text-slate-950 dark:text-slate-100 mt-0.5">{{ formatRupiah(stats.omzet) }}</p>
+    <div v-if="stats" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[10px] text-slate-500 dark:text-[#bcc9c7] font-medium uppercase tracking-wide">Omzet</p>
+        <p class="text-base sm:text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] mt-1 tabular-nums">{{ formatRupiah(stats.omzet) }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
-        <p class="text-[10px] text-slate-500 dark:text-slate-400">Laba Kotor</p>
-        <p class="text-base font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-0.5">{{ formatRupiah(stats.profit) }}</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[10px] text-slate-500 dark:text-[#bcc9c7] font-medium uppercase tracking-wide">Laba Kotor</p>
+        <p class="text-base sm:text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1 tabular-nums">{{ formatRupiah(stats.profit) }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
-        <p class="text-[10px] text-slate-500 dark:text-slate-400">Transaksi</p>
-        <p class="text-base font-bold font-mono text-slate-950 dark:text-slate-100 mt-0.5">{{ stats.totalTransaksi }}</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[10px] text-slate-500 dark:text-[#bcc9c7] font-medium uppercase tracking-wide">Transaksi</p>
+        <p class="text-base sm:text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] mt-1 tabular-nums">{{ stats.totalTransaksi }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
-        <p class="text-[10px] text-slate-500 dark:text-slate-400">AOV</p>
-        <p class="text-base font-bold font-mono text-blue-600 dark:text-blue-400 mt-0.5">{{ formatRupiah(stats.totalTransaksi > 0 ? Math.round(stats.omzet / stats.totalTransaksi) : 0) }}</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[10px] text-slate-500 dark:text-[#bcc9c7] font-medium uppercase tracking-wide">AOV</p>
+        <p class="text-base sm:text-lg font-bold font-mono text-blue-600 dark:text-blue-400 mt-1 tabular-nums">{{ formatRupiah(stats.totalTransaksi > 0 ? Math.round(stats.omzet / stats.totalTransaksi) : 0) }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
-        <p class="text-[10px] text-slate-500 dark:text-slate-400">Diskon</p>
-        <p class="text-base font-bold font-mono text-amber-600 dark:text-amber-400 mt-0.5">{{ formatRupiah(stats.totalDiskon ?? 0) }}</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[10px] text-slate-500 dark:text-[#bcc9c7] font-medium uppercase tracking-wide">Diskon</p>
+        <p class="text-base sm:text-lg font-bold font-mono text-amber-600 dark:text-amber-400 mt-1 tabular-nums">{{ formatRupiah(stats.totalDiskon ?? 0) }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
-        <p class="text-[10px] text-slate-500 dark:text-slate-400">Void</p>
-        <p class="text-base font-bold font-mono text-red-600 dark:text-red-400 mt-0.5">{{ stats.totalVoid }}</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[10px] text-slate-500 dark:text-[#bcc9c7] font-medium uppercase tracking-wide">Void</p>
+        <p class="text-base sm:text-lg font-bold font-mono text-red-600 dark:text-red-400 mt-1 tabular-nums">{{ stats.totalVoid }}</p>
       </div>
     </div>
 
@@ -35,13 +35,13 @@
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
       <!-- Search -->
       <div class="relative">
-        <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+        <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-[#869392]" />
         <input
           v-model="filterSearch"
           type="text"
           placeholder="Cari no. transaksi / nama pembeli..."
-          class="h-9 pl-9 pr-3 w-52 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
-                 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+          class="h-9 pl-9 pr-3 w-52 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
+                 focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none transition-colors placeholder:text-slate-400 dark:placeholder:text-[#869392]"
           @input="debouncedFetch"
         />
       </div>
@@ -50,8 +50,8 @@
       <!-- Status filter -->
       <select
         v-model="filterStatus"
-        class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
-               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
+               focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none transition-colors"
         @change="resetAndFetch"
       >
         <option value="">Semua Status</option>
@@ -63,8 +63,8 @@
       <!-- Payment method filter -->
       <select
         v-model="filterPaymentMethod"
-        class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
-               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
+               focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none transition-colors"
         @change="resetAndFetch"
       >
         <option value="">Semua Metode</option>
@@ -78,20 +78,20 @@
       <input
         v-model="filterStartDate"
         type="date"
-        class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
-               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
+               focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none transition-colors"
         @change="resetAndFetch"
       />
       <input
         v-model="filterEndDate"
         type="date"
-        class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg
-               focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
+               focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none transition-colors"
         @change="resetAndFetch"
       />
 
       <div class="flex-1"></div>
-      <span v-if="meta" class="text-xs text-slate-500 dark:text-slate-400 self-center">
+      <span v-if="meta" class="text-xs text-slate-500 dark:text-[#869392] self-center font-medium tabular-nums">
         {{ meta.total }} transaksi
       </span>
     </div>
@@ -99,69 +99,72 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-      <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat transaksi...</span>
+      <Loader2Icon class="w-5 h-5 animate-spin text-[#03a29c]" />
+      <span class="ml-2 text-sm text-slate-500 dark:text-[#bcc9c7]">Memuat transaksi...</span>
     </div>
 
     <!-- Error -->
     <div
       v-else-if="error"
-      class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-4 flex items-start gap-2"
+      class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-5 flex items-start gap-3 shadow-sm"
     >
-      <AlertCircleIcon class="w-4 h-4 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
-      <p class="text-sm text-red-800 dark:text-red-200">{{ error }}</p>
+      <AlertCircleIcon class="w-5 h-5 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
+      <div>
+        <p class="text-sm font-bold text-red-800 dark:text-red-200">Gagal memuat data</p>
+        <p class="text-[11px] text-red-700 dark:text-red-300 mt-0.5">{{ error }}</p>
+      </div>
     </div>
 
     <!-- Empty state -->
     <div
       v-else-if="transactions.length === 0"
-      class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center"
+      class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-300 dark:border-[#3d4948] rounded-xl p-12 text-center shadow-sm"
     >
-      <ReceiptIcon class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-      <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada transaksi</p>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Transaksi dari POS kasir akan muncul di sini.</p>
+      <ReceiptIcon class="w-12 h-12 text-slate-300 dark:text-[#3d4948] mx-auto mb-3" />
+      <p class="text-sm font-bold text-slate-700 dark:text-[#e3e2e2]">Belum ada transaksi</p>
+      <p class="text-xs text-slate-500 dark:text-[#bcc9c7] mt-1.5 max-w-[260px] mx-auto">Transaksi dari POS kasir akan muncul di sini.</p>
     </div>
 
 
     <!-- Transaction table -->
-    <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
+    <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[750px]">
-          <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+          <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
             <tr>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">No. Transaksi</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Pembeli</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Kasir</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Waktu</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Item</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Metode</th>
-              <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Total</th>
-              <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Profit</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Status</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Aksi</th>
+              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">No. Transaksi</th>
+              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Pembeli</th>
+              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Kasir</th>
+              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Waktu</th>
+              <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Item</th>
+              <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Metode</th>
+              <th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Total</th>
+              <th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Profit</th>
+              <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Status</th>
+              <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Aksi</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+          <tbody class="divide-y divide-slate-100 dark:divide-[#3d4948]">
             <tr
               v-for="trx in transactions"
               :key="trx.id"
-              class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+              class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
             >
               <td class="px-4 py-3">
-                <code class="text-xs font-mono text-slate-900 dark:text-slate-100">{{ trx.transactionNumber }}</code>
+                <code class="text-xs font-mono text-slate-900 dark:text-[#e3e2e2]">{{ trx.transactionNumber }}</code>
               </td>
               <td class="px-4 py-3">
-                <span v-if="trx.customerName" class="text-xs font-medium text-slate-800 dark:text-slate-200">{{ trx.customerName }}</span>
-                <span v-else class="text-[10px] text-slate-400 italic">Umum</span>
+                <span v-if="trx.customerName" class="text-xs font-medium text-slate-800 dark:text-[#e3e2e2]">{{ trx.customerName }}</span>
+                <span v-else class="text-[10px] text-slate-400 dark:text-[#869392] italic">Umum</span>
               </td>
-              <td class="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
+              <td class="px-4 py-3 text-sm text-slate-700 dark:text-[#bcc9c7]">
                 {{ trx.user?.username ?? trx.user?.email ?? '—' }}
               </td>
-              <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400 font-mono">
+              <td class="px-4 py-3 text-xs text-slate-600 dark:text-[#bcc9c7] font-mono tabular-nums">
                 {{ formatDateTime(trx.createdAt) }}
               </td>
               <td class="px-4 py-3 text-center">
-                <span class="text-xs font-semibold text-slate-600 dark:text-slate-400">{{ trx.items?.length ?? 0 }}</span>
+                <span class="text-xs font-semibold text-slate-600 dark:text-[#bcc9c7]">{{ trx.items?.length ?? 0 }}</span>
               </td>
               <td class="px-4 py-3 text-center">
                 <span
@@ -170,10 +173,10 @@
                   :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', methodBadge(p.method)]"
                 >{{ p.method }}</span>
               </td>
-              <td class="px-4 py-3 text-right text-sm font-mono font-semibold text-slate-900 dark:text-slate-100">
+              <td class="px-4 py-3 text-right text-sm font-mono font-semibold text-slate-900 dark:text-[#e3e2e2] tabular-nums">
                 {{ formatRupiah(trx.totalPrice) }}
               </td>
-              <td class="px-4 py-3 text-right text-xs font-mono font-semibold text-emerald-600 dark:text-emerald-400">
+              <td class="px-4 py-3 text-right text-xs font-mono font-semibold text-emerald-600 dark:text-emerald-400 tabular-nums">
                 {{ formatRupiah(trx.totalPrice - (trx.totalCost || 0)) }}
               </td>
               <td class="px-4 py-3 text-center">
@@ -182,16 +185,16 @@
                 </span>
               </td>
               <td class="px-4 py-3 text-center">
-                <div class="flex items-center justify-center gap-1">
+                <div class="flex items-center justify-center gap-1.5">
                   <button
-                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#292a2a] transition-colors"
                     title="Detail"
                     @click="openDetail(trx)"
                   >
-                    <EyeIcon class="w-3.5 h-3.5 text-slate-600 dark:text-slate-400" />
+                    <EyeIcon class="w-3.5 h-3.5 text-slate-600 dark:text-[#bcc9c7]" />
                   </button>
                   <button
-                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:border-blue-200 dark:hover:border-blue-800 transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:border-blue-200 dark:hover:border-blue-800 transition-colors"
                     title="Cetak Ulang Struk"
                     @click="handlePrintReceipt(trx)"
                   >
@@ -199,7 +202,7 @@
                   </button>
                   <button
                     v-if="trx.status === 'COMPLETED'"
-                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-200 dark:hover:border-red-800 transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-200 dark:hover:border-red-800 transition-colors"
                     title="Void"
                     @click="openVoidModal(trx)"
                   >
@@ -216,20 +219,20 @@
       <!-- Pagination -->
       <div
         v-if="meta && meta.totalPages > 1"
-        class="px-4 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between"
+        class="px-4 py-3 border-t border-slate-200 dark:border-[#3d4948] flex items-center justify-between"
       >
-        <p class="text-xs text-slate-500 dark:text-slate-400">
+        <p class="text-xs text-slate-500 dark:text-[#869392] tabular-nums">
           Halaman {{ meta.page }} dari {{ meta.totalPages }}
         </p>
-        <div class="flex items-center gap-1">
+        <div class="flex items-center gap-1.5">
           <button
             :disabled="meta.page <= 1"
-            class="h-7 px-2.5 text-xs font-medium border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 dark:text-slate-300"
+            class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md hover:bg-slate-50 dark:hover:bg-[#292a2a] disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 dark:text-[#bcc9c7] transition-colors"
             @click="goPage(meta!.page - 1)"
           >Prev</button>
           <button
             :disabled="meta.page >= meta.totalPages"
-            class="h-7 px-2.5 text-xs font-medium border border-slate-200 dark:border-slate-700 rounded-md hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 dark:text-slate-300"
+            class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md hover:bg-slate-50 dark:hover:bg-[#292a2a] disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 dark:text-[#bcc9c7] transition-colors"
             @click="goPage(meta!.page + 1)"
           >Next</button>
         </div>
