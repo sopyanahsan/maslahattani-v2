@@ -39,9 +39,9 @@ export const useAuthStore = defineStore('auth', () => {
   // ============================================
   const isAuthenticated = computed(() => !!token.value);
   const isAdmin = computed(
-    () => user.value?.role === 'ADMIN' || user.value?.role === 'SUPER_ADMIN',
+    () => user.value?.role === 'DEVELOPER' || user.value?.role === 'ADMIN' || user.value?.role === 'SUPER_ADMIN',
   );
-  const isSuperAdmin = computed(() => user.value?.role === 'SUPER_ADMIN');
+  const isSuperAdmin = computed(() => user.value?.role === 'SUPER_ADMIN' || user.value?.role === 'DEVELOPER');
   const isKasir = computed(
     () =>
       user.value?.role === 'KASIR' ||

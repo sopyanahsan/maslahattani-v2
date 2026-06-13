@@ -35,7 +35,7 @@ const routes: RouteRecordRaw[] = [
     path: '/owner',
     name: 'owner-dashboard',
     component: () => import('@/owner/OwnerDashboard.vue'),
-    meta: { title: 'Posify Owner Dashboard', requiresAuth: true, roles: ['DEVELOPER'], platformOwnerOnly: true },
+    meta: { title: 'Posify Owner Dashboard', requiresAuth: true, platformOwnerOnly: true },
   },
 
   // === Admin Auth (Guest Only) ===
@@ -504,13 +504,17 @@ router.beforeEach(async (to, _from, next) => {
   // Role-based access control
   if (requiresAuth && allowedRoles && authStore.user) {
     if (!allowedRoles.includes(authStore.user.role)) {
-      // Kasir trying to access admin panel → redirect to webapp
-      if (authStore.user.role === 'KASIR' || authStore.user.role === 'CASHIER_SUPERVISOR') {
+      // DEVELOPER can access everything (platform owner)
+      if (authStore.user.role === 'DEVELOPER') {
+        // Allow — developer bypasses role restrictions
+      } else if (authStore.user.role === 'KASIR' || authStore.user.role === 'CASHIER_SUPERVISOR') {
+        // Kasir trying to access admin panel → redirect to webapp
         return next({ path: '/kasir/login' });
+      } else {
+        // Other role mismatch
+        authStore.clearAuth();
+        return next({ name: 'admin-login' });
       }
-      // Other role mismatch
-      authStore.clearAuth();
-      return next({ name: 'admin-login' });
     }
   }
 
