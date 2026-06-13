@@ -190,10 +190,8 @@ const handleGoogleLogin = async () => {
     // Fetch user profile
     await authStore.fetchUser();
 
-    // Redirect: platform owner → /owner, new user → onboarding, existing → dashboard
-    if (data.isPlatformOwner) {
-      window.location.href = '/owner';
-    } else if (data.needsOnboarding) {
+    // Redirect: all users → admin dashboard (owner accessed via sidebar badge)
+    if (data.needsOnboarding) {
       window.location.href = '/admin/get-started';
     } else {
       const redirect = router.currentRoute.value.query.redirect as string;
