@@ -2,14 +2,14 @@
   <div class="space-y-5">
     <!-- Action bar (no h1 — title already in topbar) -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div class="flex items-center gap-2 text-xs text-slate-500 dark:text-[#869392] font-medium tabular-nums">
+      <div class="flex items-center gap-2 text-xs text-slate-500 font-medium tabular-nums">
         <span v-if="meta">{{ meta.total }} produk</span>
       </div>
       <div class="flex items-center gap-2">
         <button
           type="button"
-          class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
-                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5 shrink-0"
+          class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg
+                 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shrink-0"
           @click="showBulkModal = true"
         >
           <UploadIcon class="w-3.5 h-3.5" />
@@ -17,8 +17,8 @@
         </button>
         <button
           type="button"
-          class="h-9 px-4 bg-[#03a29c] text-white text-xs font-semibold rounded-lg
-                 hover:bg-[#028a85] transition-colors flex items-center gap-1.5 shrink-0"
+          class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg
+                 hover:bg-blue-700 transition-colors flex items-center gap-1.5 shrink-0"
           @click="openCreateModal"
         >
           <PlusIcon class="w-4 h-4" />
@@ -30,21 +30,21 @@
     <!-- Search, Category filter, Sort -->
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
       <div class="relative flex-1 min-w-[200px]">
-        <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-[#869392]" />
+        <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input
           v-model="searchQuery"
           type="text"
           placeholder="Cari nama atau SKU produk..."
-          class="w-full h-9 pl-9 pr-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
-                 focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none transition-colors placeholder:text-slate-400 dark:placeholder:text-[#869392]"
+          class="w-full h-9 pl-9 pr-3 text-sm border border-slate-200 rounded-lg
+                 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-colors placeholder:text-slate-400"
           @input="debouncedSearch"
         />
       </div>
       <!-- Category filter -->
       <select
         v-model="filterCategory"
-        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
-               focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none bg-white dark:bg-[#1e2020] transition-colors"
+        class="h-9 px-3 text-sm border border-slate-200 rounded-lg
+               focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none bg-white transition-colors"
         @change="resetAndFetch"
       >
         <option value="">Semua Kategori</option>
@@ -55,8 +55,8 @@
       <!-- Sort -->
       <select
         v-model="sortMode"
-        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg
-               focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none bg-white dark:bg-[#1e2020] transition-colors"
+        class="h-9 px-3 text-sm border border-slate-200 rounded-lg
+               focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none bg-white transition-colors"
         @change="resetAndFetch"
       >
         <option value="name-asc">A-Z (Nama)</option>
@@ -70,57 +70,57 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-[#03a29c]" />
-      <span class="ml-2 text-sm text-slate-500 dark:text-[#bcc9c7]">Memuat produk...</span>
+      <Loader2Icon class="w-5 h-5 animate-spin text-blue-600" />
+      <span class="ml-2 text-sm text-slate-500">Memuat produk...</span>
     </div>
 
     <!-- Error -->
     <div
       v-else-if="error"
-      class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-5 flex items-start gap-3 shadow-sm"
+      class="bg-red-50 border border-red-200 rounded-lg p-5 flex items-start gap-3 shadow-sm"
     >
-      <AlertCircleIcon class="w-5 h-5 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
+      <AlertCircleIcon class="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
       <div>
-        <p class="text-sm font-bold text-red-800 dark:text-red-200">{{ error }}</p>
-        <button class="text-xs text-red-600 dark:text-red-400 underline underline-offset-2 mt-1" @click="fetchProducts">Coba lagi</button>
+        <p class="text-sm font-bold text-red-800">{{ error }}</p>
+        <button class="text-xs text-red-600 underline underline-offset-2 mt-1" @click="fetchProducts">Coba lagi</button>
       </div>
     </div>
 
     <!-- Empty state -->
     <div
       v-else-if="products.length === 0"
-      class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-300 dark:border-[#3d4948] rounded-xl p-12 text-center shadow-sm"
+      class="bg-white border border-dashed border-slate-200 rounded-lg p-12 text-center shadow-sm"
     >
-      <PackageIcon class="w-12 h-12 text-slate-300 dark:text-[#3d4948] mx-auto mb-3" />
-      <p class="text-sm font-bold text-slate-700 dark:text-[#e3e2e2]">Belum ada produk</p>
-      <p class="text-xs text-slate-500 dark:text-[#bcc9c7] mt-1.5">
+      <PackageIcon class="w-12 h-12 text-slate-300 mx-auto mb-3" />
+      <p class="text-sm font-bold text-slate-700">Belum ada produk</p>
+      <p class="text-xs text-slate-500 mt-1.5">
         {{ searchQuery ? 'Tidak ditemukan produk dengan kata kunci tersebut.' : 'Tambah produk pertama untuk mulai berjualan.' }}
       </p>
     </div>
 
     <!-- Product Table -->
-    <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl shadow-sm overflow-hidden">
+    <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[700px]">
-          <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
+          <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide w-12">Img</th>
-              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">SKU</th>
-              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Nama Barang</th>
-              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Kategori</th>
-              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Stok</th>
-              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Satuan</th>
-              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Harga Jual</th>
-              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Harga Beli</th>
-              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Margin</th>
-              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Aksi</th>
+              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase tracking-wide w-12">Img</th>
+              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wide">SKU</th>
+              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wide">Nama Barang</th>
+              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wide">Kategori</th>
+              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase tracking-wide">Stok</th>
+              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase tracking-wide">Satuan</th>
+              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 uppercase tracking-wide">Harga Jual</th>
+              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 uppercase tracking-wide">Harga Beli</th>
+              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 uppercase tracking-wide">Margin</th>
+              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase tracking-wide">Aksi</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-[#3d4948]">
+          <tbody class="divide-y divide-slate-100">
             <tr
               v-for="product in products"
               :key="product.id"
-              class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
+              class="hover:bg-slate-50 transition-colors"
             >
               <td class="px-3 py-2.5 text-center">
                 <div class="w-8 h-8 rounded-md bg-slate-100 border border-slate-200 overflow-hidden mx-auto flex items-center justify-center">
@@ -137,7 +137,7 @@
                 </div>
               </td>
               <td class="px-3 py-2.5">
-                <p class="text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">{{ product.name }}</p>
+                <p class="text-sm font-medium text-slate-900">{{ product.name }}</p>
               </td>
               <td class="px-3 py-2.5">
                 <span v-if="getCategoryName(product.categoryId)" class="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">{{ getCategoryName(product.categoryId) }}</span>
@@ -146,37 +146,37 @@
               <td class="px-3 py-2.5 text-center">
                 <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold', getTotalStock(product) === 0 ? 'bg-red-100 text-red-700' : getTotalStock(product) <= 5 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700']">{{ getTotalStock(product) }}</span>
               </td>
-              <td class="px-3 py-2.5 text-center text-xs text-slate-500 dark:text-[#bcc9c7]">{{ product.unit || 'pcs' }}</td>
-              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-900 dark:text-[#e3e2e2] tabular-nums">{{ formatRupiah(product.price) }}</td>
-              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-600 dark:text-[#bcc9c7] tabular-nums">{{ formatRupiah(product.cost) }}</td>
+              <td class="px-3 py-2.5 text-center text-xs text-slate-500">{{ product.unit || 'pcs' }}</td>
+              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-900 tabular-nums">{{ formatRupiah(product.price) }}</td>
+              <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-600 tabular-nums">{{ formatRupiah(product.cost) }}</td>
               <td class="px-3 py-2.5 text-right">
                 <span :class="['text-xs font-mono font-semibold', getMargin(product) > 0 ? 'text-emerald-600' : 'text-red-600']">{{ getMarginPercent(product) }}%</span>
               </td>
               <td class="px-4 py-3 text-center">
                 <div class="flex items-center justify-center gap-1.5">
                   <button
-                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center
-                           hover:bg-blue-50 dark:hover:bg-blue-950/30 hover:border-blue-200 dark:hover:border-blue-800 transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center
+                           hover:bg-blue-50 hover:border-blue-200 transition-colors"
                     title="Riwayat Stok"
                     @click="openStockHistory(product)"
                   >
-                    <HistoryIcon class="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
+                    <HistoryIcon class="w-3.5 h-3.5 text-blue-500" />
                   </button>
                   <button
-                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center
-                           hover:bg-slate-100 dark:hover:bg-[#292a2a] transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center
+                           hover:bg-slate-100 transition-colors"
                     title="Edit"
                     @click="openEditModal(product)"
                   >
-                    <PencilIcon class="w-3.5 h-3.5 text-slate-600 dark:text-[#bcc9c7]" />
+                    <PencilIcon class="w-3.5 h-3.5 text-slate-600" />
                   </button>
                   <button
-                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center
-                           hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-200 dark:hover:border-red-800 transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center
+                           hover:bg-red-50 hover:border-red-200 transition-colors"
                     title="Hapus"
                     @click="confirmDelete(product)"
                   >
-                    <Trash2Icon class="w-3.5 h-3.5 text-red-500 dark:text-red-400" />
+                    <Trash2Icon class="w-3.5 h-3.5 text-red-500" />
                   </button>
                 </div>
               </td>
@@ -188,24 +188,24 @@
       <!-- Pagination -->
       <div
         v-if="meta && meta.totalPages > 1"
-        class="px-4 py-3 border-t border-slate-200 dark:border-[#3d4948] flex items-center justify-between"
+        class="px-4 py-3 border-t border-slate-200 flex items-center justify-between"
       >
-        <p class="text-xs text-slate-500 dark:text-[#869392] tabular-nums">
+        <p class="text-xs text-slate-500 tabular-nums">
           Halaman {{ meta.page }} dari {{ meta.totalPages }}
         </p>
         <div class="flex items-center gap-1.5">
           <button
             :disabled="meta.page <= 1"
-            class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md
-                   hover:bg-slate-50 dark:hover:bg-[#292a2a] disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 dark:text-[#bcc9c7] transition-colors"
+            class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded-md
+                   hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 transition-colors"
             @click="goPage(meta!.page - 1)"
           >
             Prev
           </button>
           <button
             :disabled="meta.page >= meta.totalPages"
-            class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md
-                   hover:bg-slate-50 dark:hover:bg-[#292a2a] disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 dark:text-[#bcc9c7] transition-colors"
+            class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded-md
+                   hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 transition-colors"
             @click="goPage(meta!.page + 1)"
           >
             Next
@@ -227,21 +227,21 @@
 
         <!-- Modal -->
         <form
-          class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto"
+          class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto"
           @submit.prevent="handleSubmitForm"
         >
-          <h2 class="text-base font-bold text-slate-950 dark:text-slate-100">
+          <h2 class="text-base font-bold text-slate-950">
             {{ editingProduct ? 'Edit Produk' : 'Tambah Produk Baru' }}
           </h2>
 
           <!-- 1. Gambar Produk -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
               Gambar Produk
             </label>
             <div class="flex items-start gap-3">
               <div
-                class="w-20 h-20 rounded-lg border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 overflow-hidden
+                class="w-20 h-20 rounded-lg border border-slate-200 bg-slate-50 overflow-hidden
                        flex items-center justify-center shrink-0"
               >
                 <img
@@ -254,7 +254,7 @@
               </div>
               <div class="flex-1 space-y-1.5">
                 <label
-                  class="block h-9 px-3 border border-dashed border-slate-300 dark:border-slate-600 rounded-md
+                  class="block h-9 px-3 border border-dashed border-slate-200 rounded-md
                          text-xs text-slate-600 font-medium cursor-pointer
                          hover:border-blue-400 hover:bg-blue-50/50 transition-colors
                          flex items-center justify-center gap-1.5"
@@ -290,7 +290,7 @@
                   :value="form.imageUrl"
                   type="text"
                   readonly
-                  class="flex-1 h-7 px-2 text-[10px] font-mono text-slate-500 bg-slate-50 dark:bg-slate-800/50 border border-slate-200 rounded select-all outline-none"
+                  class="flex-1 h-7 px-2 text-[10px] font-mono text-slate-500 bg-slate-50 border border-slate-200 rounded select-all outline-none"
                   @focus="($event.target as HTMLInputElement).select()"
                 />
                 <button
@@ -306,7 +306,7 @@
 
           <!-- 2. SKU (auto-generated from nama + kategori) -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
               SKU <span class="text-red-500">*</span>
             </label>
             <div class="flex items-center gap-2">
@@ -317,8 +317,8 @@
                 :disabled="!!editingProduct"
                 placeholder="Otomatis dari nama & kategori"
                 :class="[
-                  'flex-1 h-9 px-3 text-sm font-mono border rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none',
-                  editingProduct ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700' : 'border-slate-300',
+                  'flex-1 h-9 px-3 text-sm font-mono border rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none',
+                  editingProduct ? 'bg-slate-100 text-slate-500 border-slate-200 cursor-not-allowed' : 'border-slate-200',
                 ]"
               />
               <button
@@ -338,7 +338,7 @@
 
           <!-- 3. Nama Produk -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
               Nama Produk <span class="text-red-500">*</span>
             </label>
             <input
@@ -346,15 +346,15 @@
               type="text"
               required
               placeholder="Beras 5kg Premium"
-              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                     focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md
+                     focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
               @blur="autoGenerateSku"
             />
           </div>
 
           <!-- 3b. Barcode (optional, scannable) -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
               Barcode <span class="text-[10px] font-normal text-slate-400">(optional, scan / ketik)</span>
             </label>
             <div class="relative">
@@ -363,8 +363,8 @@
                 v-model="form.barcode"
                 type="text"
                 placeholder="8991042001234 (scan barcode pabrik)"
-                class="w-full h-9 pl-9 pr-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                class="w-full h-9 pl-9 pr-3 text-sm font-mono border border-slate-200 rounded-md
+                       focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
               />
             </div>
             <p class="text-[10px] text-slate-400 mt-0.5">
@@ -374,14 +374,14 @@
 
           <!-- 4. Kategori (dropdown + inline add/delete) -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
               Kategori
             </label>
             <div class="flex items-center gap-2">
               <select
                 v-model="form.categoryId"
-                class="flex-1 h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none bg-white dark:bg-slate-800"
+                class="flex-1 h-9 px-3 text-sm border border-slate-200 rounded-md
+                       focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none bg-white"
               >
                 <option value="">— Tanpa Kategori —</option>
                 <option v-for="cat in categoryList" :key="cat.id" :value="cat.id">
@@ -415,8 +415,8 @@
                   v-model="newCategoryName"
                   type="text"
                   placeholder="Nama kategori baru"
-                  class="flex-1 h-8 px-2.5 text-xs border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                         focus:border-blue-500 outline-none"
+                  class="flex-1 h-8 px-2.5 text-xs border border-slate-200 rounded-md
+                         focus:border-blue-600 outline-none"
                   @keydown.enter.prevent="handleAddCategory"
                 />
                 <button
@@ -437,7 +437,7 @@
 
           <!-- 5. Stok Awal / Unit -->
           <div v-if="!editingProduct">
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
               Stok Awal
             </label>
             <div class="flex items-center gap-2">
@@ -446,15 +446,15 @@
                 type="number"
                 min="0"
                 placeholder="0"
-                class="flex-1 h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                class="flex-1 h-9 px-3 text-sm font-mono border border-slate-200 rounded-md
+                       focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
               />
               <input
                 v-model="form.unit"
                 type="text"
                 placeholder="pcs"
-                class="w-20 h-9 px-2.5 text-sm text-center border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                class="w-20 h-9 px-2.5 text-sm text-center border border-slate-200 rounded-md
+                       focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
               />
             </div>
             <p class="text-[10px] text-slate-400 mt-0.5">Jumlah barang & satuan (pcs, kg, liter, dll)</p>
@@ -463,7 +463,7 @@
           <!-- 6. Harga Jual & Modal -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label class="block text-xs font-semibold text-slate-700 mb-1">
                 Harga Jual (Rp) <span class="text-red-500">*</span>
               </label>
               <input
@@ -472,12 +472,12 @@
                 min="0"
                 required
                 placeholder="0"
-                class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md
+                       focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
               />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label class="block text-xs font-semibold text-slate-700 mb-1">
                 Modal (Rp) <span class="text-red-500">*</span>
               </label>
               <input
@@ -486,23 +486,23 @@
                 min="0"
                 required
                 placeholder="0"
-                class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md
+                       focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
               />
             </div>
           </div>
 
           <!-- 7. Deskripsi -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
               Deskripsi
             </label>
             <textarea
               v-model="form.description"
               rows="2"
               placeholder="Keterangan produk (opsional)"
-              class="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                     focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
+              class="w-full px-3 py-2 text-sm border border-slate-200 rounded-md
+                     focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none resize-none"
             ></textarea>
           </div>
 
@@ -518,7 +518,7 @@
           <div class="flex items-center justify-end gap-2 pt-2">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 dark:bg-slate-800 rounded-md
+              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md
                      hover:bg-slate-200 transition-colors"
               @click="closeModal"
             >
@@ -547,13 +547,13 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
         <div class="absolute inset-0 bg-black/50" @click="showDeleteModal = false"></div>
-        <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4">
           <div class="flex items-start gap-3">
             <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
               <Trash2Icon class="w-5 h-5 text-red-600" />
             </div>
             <div>
-              <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Hapus Produk?</h3>
+              <h3 class="text-sm font-bold text-slate-900">Hapus Produk?</h3>
               <p class="text-xs text-slate-600 mt-1">
                 Produk <strong>{{ deletingProduct?.name }}</strong> akan dihapus (soft delete).
                 Data historis tetap tersimpan.
@@ -569,7 +569,7 @@
           <div class="flex items-center justify-end gap-2">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 dark:bg-slate-800 rounded-md
+              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md
                      hover:bg-slate-200 transition-colors"
               @click="showDeleteModal = false"
             >
@@ -596,9 +596,9 @@
     <Teleport to="body">
       <div v-if="showStockHistoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50" @click="showStockHistoryModal = false"></div>
-        <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Riwayat Stok — {{ stockHistoryProduct?.name }}</h3>
+            <h3 class="text-sm font-bold text-slate-900">Riwayat Stok — {{ stockHistoryProduct?.name }}</h3>
             <button type="button" class="text-slate-400 hover:text-slate-600" @click="showStockHistoryModal = false">✕</button>
           </div>
 
@@ -606,18 +606,18 @@
             <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
           </div>
           <div v-else-if="stockHistoryData.length === 0" class="text-center py-8">
-            <p class="text-xs text-slate-500 dark:text-slate-400">Belum ada riwayat stok.</p>
+            <p class="text-xs text-slate-500">Belum ada riwayat stok.</p>
           </div>
           <div v-else class="space-y-2">
             <div v-for="h in stockHistoryData" :key="h.id"
-              class="flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-800">
+              class="flex items-center gap-3 p-3 rounded-lg border border-slate-200">
               <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0',
                 h.quantityChange > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700']">
                 {{ h.quantityChange > 0 ? '↑' : '↓' }}
               </div>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="text-xs font-semibold text-slate-800 dark:text-slate-200">{{ sourceLabel(h.source) }}</span>
+                  <span class="text-xs font-semibold text-slate-800">{{ sourceLabel(h.source) }}</span>
                   <span v-if="h.paymentMethod" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-blue-50 text-blue-700">{{ paymentLabel(h.paymentMethod) }}</span>
                 </div>
                 <p class="text-[10px] text-slate-500 mt-0.5">{{ formatDateTime(h.createdAt) }}<span v-if="h.notes"> · {{ h.notes }}</span></p>
@@ -640,9 +640,9 @@
     <Teleport to="body">
       <div v-if="showBulkModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50" @click="closeBulkModal"></div>
-        <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4">
-          <h2 class="text-base font-bold text-slate-950 dark:text-slate-100">Upload Massal Produk (Excel)</h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
+          <h2 class="text-base font-bold text-slate-950">Upload Massal Produk (Excel)</h2>
+          <p class="text-xs text-slate-500">
             Upload file <strong>.xlsx</strong> atau <strong>.csv</strong> untuk menambah banyak produk sekaligus. Maksimal 500 produk per upload.
           </p>
 
@@ -668,13 +668,13 @@
           <!-- File Input -->
           <div>
             <label
-              class="block w-full border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg p-6 text-center cursor-pointer
+              class="block w-full border-2 border-dashed border-slate-200 rounded-lg p-6 text-center cursor-pointer
                      hover:border-blue-400 hover:bg-blue-50/30 transition-colors"
               :class="bulkFile ? 'border-emerald-400 bg-emerald-50/30' : ''"
             >
               <UploadIcon class="w-6 h-6 mx-auto mb-2" :class="bulkFile ? 'text-emerald-500' : 'text-slate-400'" />
               <p v-if="bulkFile" class="text-xs font-semibold text-emerald-700">{{ bulkFile.name }}</p>
-              <p v-else class="text-xs text-slate-500 dark:text-slate-400">Klik atau drag file Excel (.xlsx, .csv) ke sini</p>
+              <p v-else class="text-xs text-slate-500">Klik atau drag file Excel (.xlsx, .csv) ke sini</p>
               <input
                 type="file"
                 accept=".xlsx,.xls,.csv"
@@ -702,7 +702,7 @@
 
           <!-- Actions -->
           <div class="flex items-center justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 dark:bg-slate-800 rounded-md hover:bg-slate-200 transition-colors" @click="closeBulkModal">
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200 transition-colors" @click="closeBulkModal">
               {{ bulkResult ? 'Tutup' : 'Batal' }}
             </button>
             <button
@@ -1364,3 +1364,23 @@ watch(() => form.categoryId, () => {
   generateSku();
 });
 </script>
+
+<style scoped>
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.space-y-5 > *, .space-y-6 > * { animation: fadeSlideUp 0.4s ease-out both; }
+.space-y-5 > *:nth-child(1), .space-y-6 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-5 > *:nth-child(2), .space-y-6 > *:nth-child(2) { animation-delay: 70ms; }
+.space-y-5 > *:nth-child(3), .space-y-6 > *:nth-child(3) { animation-delay: 140ms; }
+.space-y-5 > *:nth-child(4), .space-y-6 > *:nth-child(4) { animation-delay: 210ms; }
+.space-y-5 > *:nth-child(5), .space-y-6 > *:nth-child(5) { animation-delay: 280ms; }
+@keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+.grid > div[class*="rounded-lg"] { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.grid > div:nth-child(1) { animation-delay: 100ms; }
+.grid > div:nth-child(2) { animation-delay: 180ms; }
+.grid > div:nth-child(3) { animation-delay: 260ms; }
+.grid > div:nth-child(4) { animation-delay: 340ms; }
+table tbody tr { transition: all 0.15s ease; }
+table tbody tr:hover { box-shadow: inset 3px 0 0 #2563EB; }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+div[class*="rounded-lg"][class*="shadow-xl"] { animation: scaleIn 0.25s ease-out; }
+</style>

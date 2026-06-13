@@ -4,11 +4,11 @@
     <!-- STICKY TOP BAR                                -->
     <!-- ============================================ -->
     <div
-      class="sticky top-0 lg:top-16 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3.5 bg-white/95 dark:bg-[#121414]/95 backdrop-blur-sm border-b border-slate-200 dark:border-[#3d4948] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm"
+      class="sticky top-0 lg:top-16 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3.5 bg-white/95/95 backdrop-blur-sm border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm"
     >
       <!-- Period selector -->
       <div
-        class="inline-flex items-center gap-0.5 bg-slate-100 dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-1 self-start"
+        class="inline-flex items-center gap-0.5 bg-slate-100 border border-slate-200 rounded-lg p-1 self-start"
       >
         <button
           v-for="p in periods"
@@ -17,8 +17,8 @@
           :class="[
             'px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all',
             store.period === p.value
-              ? 'bg-[#03a29c] text-white shadow-sm'
-              : 'text-slate-600 dark:text-[#bcc9c7] hover:text-slate-900 dark:hover:text-[#e3e2e2] hover:bg-white dark:hover:bg-[#292a2a]',
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-white',
           ]"
           @click="setPeriod(p.value)"
         >
@@ -28,7 +28,7 @@
 
       <!-- Last updated indicator -->
       <div class="flex items-center gap-2 flex-wrap">
-        <span class="text-[11px] text-slate-500 dark:text-[#869392] font-medium">
+        <span class="text-[11px] text-slate-500 font-medium">
           {{ lastUpdatedLabel }}
         </span>
       </div>
@@ -39,15 +39,15 @@
     <!-- ============================================ -->
     <div
       v-if="!shopId"
-      class="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 p-8 text-center shadow-sm"
+      class="rounded-lg border border-amber-200 bg-amber-50 p-8 text-center shadow-sm"
     >
-      <div class="w-12 h-12 mx-auto mb-3 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
-        <component :is="AlertTriangleIcon" class="w-6 h-6 text-amber-600 dark:text-amber-400" />
+      <div class="w-12 h-12 mx-auto mb-3 bg-amber-100 rounded-full flex items-center justify-center">
+        <component :is="AlertTriangleIcon" class="w-6 h-6 text-amber-600" />
       </div>
-      <p class="text-sm font-bold text-amber-800 dark:text-amber-200">
+      <p class="text-sm font-bold text-amber-800">
         Silakan pilih cabang terlebih dahulu
       </p>
-      <p class="text-xs text-amber-700 dark:text-amber-300 mt-1.5 leading-relaxed">
+      <p class="text-xs text-amber-700 mt-1.5 leading-relaxed">
         Dashboard butuh konteks cabang aktif untuk memuat data.
       </p>
     </div>
@@ -164,7 +164,7 @@
               <li
                 v-for="d in store.alerts.overdueDebts.topItems.slice(0, 3)"
                 :key="d.id"
-                class="flex items-center justify-between text-red-700 dark:text-red-300"
+                class="flex items-center justify-between text-red-700"
               >
                 <span class="truncate">{{ d.customerName }}</span>
                 <span class="font-mono shrink-0 ml-2">
@@ -194,7 +194,7 @@
               <li
                 v-for="p in store.alerts.lowStock.topItems.slice(0, 3)"
                 :key="p.productId"
-                class="flex items-center justify-between text-yellow-800 dark:text-yellow-300"
+                class="flex items-center justify-between text-yellow-800"
               >
                 <span class="truncate">{{ p.name }}</span>
                 <span class="font-mono shrink-0 ml-2">{{ p.quantity }} / {{ p.threshold }}</span>
@@ -222,7 +222,7 @@
               <li
                 v-for="s in store.alerts.longRunningShifts.shifts.slice(0, 3)"
                 :key="s.id"
-                class="flex items-center justify-between text-orange-800 dark:text-orange-300"
+                class="flex items-center justify-between text-orange-800"
               >
                 <span class="truncate">{{ s.cashier }}</span>
                 <span class="font-mono shrink-0 ml-2">{{ s.hours }} jam</span>
@@ -367,21 +367,21 @@ const SectionWrapper: FunctionalComponent<
       'div',
       {
         class:
-          'rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 p-5 flex items-start gap-3 shadow-sm',
+          'rounded-lg border border-red-200 bg-red-50 p-5 flex items-start gap-3 shadow-sm',
       },
       [
         h(AlertTriangleIcon, {
-          class: 'w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5',
+          class: 'w-5 h-5 text-red-600 shrink-0 mt-0.5',
         }),
         h('div', { class: 'flex-1 min-w-0' }, [
           h(
             'p',
-            { class: 'text-sm font-bold text-red-800 dark:text-red-200' },
+            { class: 'text-sm font-bold text-red-800' },
             'Section gagal dimuat',
           ),
           h(
             'p',
-            { class: 'text-[11px] text-red-700 dark:text-red-300 mt-1 break-words leading-relaxed' },
+            { class: 'text-[11px] text-red-700 mt-1 break-words leading-relaxed' },
             props.error,
           ),
           h(
@@ -389,7 +389,7 @@ const SectionWrapper: FunctionalComponent<
             {
               type: 'button',
               class:
-                'mt-2.5 text-[11px] font-semibold text-red-700 dark:text-red-300 hover:underline underline-offset-2',
+                'mt-2.5 text-[11px] font-semibold text-red-700 hover:underline underline-offset-2',
               onClick: () => emit('retry'),
             },
             'Coba lagi →',
@@ -433,14 +433,14 @@ const ComparisonRow: FunctionalComponent<{
   const widthPrevious = `${Math.min(100, Math.max(2, (props.previous / max) * 100))}%`;
 
   if (props.loading) {
-    return h('div', { class: 'h-12 bg-slate-100 dark:bg-slate-800 rounded animate-pulse' });
+    return h('div', { class: 'h-12 bg-slate-100 rounded animate-pulse' });
   }
 
   return h('div', { class: 'space-y-1' }, [
     h('div', { class: 'flex items-center justify-between' }, [
       h(
         'span',
-        { class: 'text-xs font-semibold text-slate-700 dark:text-slate-300' },
+        { class: 'text-xs font-semibold text-slate-700' },
         props.label,
       ),
       h(
@@ -449,8 +449,8 @@ const ComparisonRow: FunctionalComponent<{
           class: [
             'text-xs font-bold',
             positive
-              ? 'text-emerald-600 dark:text-emerald-400'
-              : 'text-red-600 dark:text-red-400',
+              ? 'text-emerald-600'
+              : 'text-red-600',
           ],
         },
         pct,
@@ -461,7 +461,7 @@ const ComparisonRow: FunctionalComponent<{
         'div',
         {
           class:
-            'h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex items-center',
+            'h-2 bg-slate-100 rounded-full overflow-hidden flex items-center',
         },
         [
           h('div', {
@@ -474,11 +474,11 @@ const ComparisonRow: FunctionalComponent<{
         'div',
         {
           class:
-            'h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden flex items-center',
+            'h-2 bg-slate-100 rounded-full overflow-hidden flex items-center',
         },
         [
           h('div', {
-            class: 'h-full rounded-full bg-slate-300 dark:bg-slate-600',
+            class: 'h-full rounded-full bg-slate-300',
             style: { width: widthPrevious },
           }),
         ],
@@ -488,7 +488,7 @@ const ComparisonRow: FunctionalComponent<{
       'div',
       {
         class:
-          'flex justify-between text-[10px] text-slate-500 dark:text-slate-400 font-mono',
+          'flex justify-between text-[10px] text-slate-500 font-mono',
       },
       [h('span', null, `Sekarang: ${fmt(props.current)}`), h('span', null, `Sebelumnya: ${fmt(props.previous)}`)],
     ),
@@ -504,3 +504,23 @@ ComparisonRow.props = [
   'loading',
 ];
 </script>
+
+<style scoped>
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.space-y-5 > *, .space-y-6 > * { animation: fadeSlideUp 0.4s ease-out both; }
+.space-y-5 > *:nth-child(1), .space-y-6 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-5 > *:nth-child(2), .space-y-6 > *:nth-child(2) { animation-delay: 70ms; }
+.space-y-5 > *:nth-child(3), .space-y-6 > *:nth-child(3) { animation-delay: 140ms; }
+.space-y-5 > *:nth-child(4), .space-y-6 > *:nth-child(4) { animation-delay: 210ms; }
+.space-y-5 > *:nth-child(5), .space-y-6 > *:nth-child(5) { animation-delay: 280ms; }
+@keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+.grid > div[class*="rounded-lg"] { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.grid > div:nth-child(1) { animation-delay: 100ms; }
+.grid > div:nth-child(2) { animation-delay: 180ms; }
+.grid > div:nth-child(3) { animation-delay: 260ms; }
+.grid > div:nth-child(4) { animation-delay: 340ms; }
+table tbody tr { transition: all 0.15s ease; }
+table tbody tr:hover { box-shadow: inset 3px 0 0 #2563EB; }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+div[class*="rounded-lg"][class*="shadow-xl"] { animation: scaleIn 0.25s ease-out; }
+</style>

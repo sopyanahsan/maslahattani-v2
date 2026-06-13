@@ -5,8 +5,8 @@
       <div></div>
       <button
         type="button"
-        class="h-9 px-4 bg-[#03a29c] text-white text-xs font-semibold rounded-lg
-               hover:bg-[#028a85] transition-colors flex items-center gap-1.5 shrink-0"
+        class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg
+               hover:bg-blue-700 transition-colors flex items-center gap-1.5 shrink-0"
         @click="openCreateModal"
       >
         <PlusIcon class="w-4 h-4" />
@@ -17,38 +17,38 @@
 
     <!-- Summary cards (5 KPI) -->
     <div v-if="summary" class="grid grid-cols-2 lg:grid-cols-5 gap-3">
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 shadow-sm">
-        <p class="text-[10px] text-slate-500 dark:text-[#869392]">Piutang Aktif</p>
-        <p class="text-base font-bold font-mono tabular-nums text-slate-950 dark:text-[#e3e2e2] mt-0.5">{{ formatRupiah(summary.totalOutstanding) }}</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+        <p class="text-[10px] text-slate-500">Piutang Aktif</p>
+        <p class="text-base font-bold font-mono tabular-nums text-slate-950 mt-0.5">{{ formatRupiah(summary.totalOutstanding) }}</p>
       </div>
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 shadow-sm">
-        <p class="text-[10px] text-slate-500 dark:text-[#869392]">Sudah Dibayar</p>
-        <p class="text-base font-bold font-mono tabular-nums text-emerald-600 dark:text-emerald-400 mt-0.5">{{ formatRupiah(summary.totalPaid ?? 0) }}</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+        <p class="text-[10px] text-slate-500">Sudah Dibayar</p>
+        <p class="text-base font-bold font-mono tabular-nums text-emerald-600 mt-0.5">{{ formatRupiah(summary.totalPaid ?? 0) }}</p>
       </div>
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 shadow-sm">
-        <p class="text-[10px] text-slate-500 dark:text-[#869392]">Pelanggan</p>
-        <p class="text-base font-bold font-mono tabular-nums text-slate-950 dark:text-[#e3e2e2] mt-0.5">{{ summary.totalDebtors }}</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+        <p class="text-[10px] text-slate-500">Pelanggan</p>
+        <p class="text-base font-bold font-mono tabular-nums text-slate-950 mt-0.5">{{ summary.totalDebtors }}</p>
       </div>
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 shadow-sm">
-        <p class="text-[10px] text-slate-500 dark:text-[#869392]">Overdue</p>
-        <p class="text-base font-bold font-mono tabular-nums text-red-600 dark:text-red-400 mt-0.5">{{ summary.overdue }}</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+        <p class="text-[10px] text-slate-500">Overdue</p>
+        <p class="text-base font-bold font-mono tabular-nums text-red-600 mt-0.5">{{ summary.overdue }}</p>
       </div>
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 shadow-sm">
-        <p class="text-[10px] text-slate-500 dark:text-[#869392]">Rata-rata Umur</p>
-        <p class="text-base font-bold font-mono tabular-nums text-amber-600 dark:text-amber-400 mt-0.5">{{ summary.avgAgeDays ?? 0 }} hari</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-3 shadow-sm">
+        <p class="text-[10px] text-slate-500">Rata-rata Umur</p>
+        <p class="text-base font-bold font-mono tabular-nums text-amber-600 mt-0.5">{{ summary.avgAgeDays ?? 0 }} hari</p>
       </div>
     </div>
 
     <!-- Filters -->
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
       <div class="relative flex-1 min-w-[200px]">
-        <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-[#869392]" />
+        <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
         <input v-model="searchCustomer" type="text" placeholder="Cari nama pelanggan..."
-          class="w-full h-9 pl-9 pr-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
+          class="w-full h-9 pl-9 pr-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
           @input="debouncedSearch" />
       </div>
       <select v-model="filterStatus"
-        class="h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
+        class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
         @change="resetAndFetch">
         <option value="">Semua Status</option>
         <option value="PENDING">Pending</option>
@@ -57,7 +57,7 @@
         <option value="OVERDUE">Overdue</option>
       </select>
       <select v-model="filterSort"
-        class="h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
+        class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
         @change="resetAndFetch">
         <option value="newest">Terbaru</option>
         <option value="due_date">Jatuh Tempo Terdekat</option>
@@ -68,85 +68,85 @@
 
     <!-- Loading / Error / Empty -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-[#03a29c]" />
-      <span class="ml-2 text-sm text-slate-500 dark:text-[#bcc9c7]">Memuat data hutang...</span>
+      <Loader2Icon class="w-5 h-5 animate-spin text-blue-600" />
+      <span class="ml-2 text-sm text-slate-500">Memuat data hutang...</span>
     </div>
-    <div v-else-if="error" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-4 shadow-sm flex items-start gap-2">
-      <AlertCircleIcon class="w-5 h-5 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 shadow-sm flex items-start gap-2">
+      <AlertCircleIcon class="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
       <div>
-        <p class="text-sm font-bold text-red-800 dark:text-red-200">Error</p>
-        <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
+        <p class="text-sm font-bold text-red-800">Error</p>
+        <p class="text-sm text-red-700">{{ error }}</p>
       </div>
     </div>
-    <div v-else-if="debts.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-300 dark:border-[#3d4948] rounded-xl p-10 text-center">
-      <HandCoinsIcon class="w-12 h-12 text-slate-300 dark:text-[#3d4948] mx-auto mb-3" />
-      <p class="text-sm font-bold text-slate-700 dark:text-[#bcc9c7]">Belum ada data hutang</p>
-      <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">Catat hutang pelanggan pertama lewat tombol di atas.</p>
+    <div v-else-if="debts.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+      <HandCoinsIcon class="w-12 h-12 text-slate-300 mx-auto mb-3" />
+      <p class="text-sm font-bold text-slate-700">Belum ada data hutang</p>
+      <p class="text-xs text-slate-500 mt-1">Catat hutang pelanggan pertama lewat tombol di atas.</p>
     </div>
 
     <!-- Debt table -->
-    <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl shadow-sm overflow-hidden">
+    <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[750px]">
-          <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
+          <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">Pelanggan</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">Produk</th>
-              <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">Progress</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">Umur</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">Jatuh Tempo</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">Status</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">Aksi</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">Pelanggan</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">Produk</th>
+              <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Progress</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Umur</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Jatuh Tempo</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Status</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Aksi</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-[#3d4948]">
-            <tr v-for="debt in debts" :key="debt.id" class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors">
+          <tbody class="divide-y divide-slate-100">
+            <tr v-for="debt in debts" :key="debt.id" class="hover:bg-slate-50 transition-colors">
               <td class="px-4 py-3">
-                <p class="text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">{{ debt.customerName }}</p>
-                <p v-if="debt.customerPhone" class="text-[10px] text-slate-500 dark:text-[#869392]">{{ debt.customerPhone }}</p>
+                <p class="text-sm font-medium text-slate-900">{{ debt.customerName }}</p>
+                <p v-if="debt.customerPhone" class="text-[10px] text-slate-500">{{ debt.customerPhone }}</p>
               </td>
               <td class="px-4 py-3">
                 <template v-if="debt.transaction">
-                  <p class="text-xs text-slate-700 dark:text-[#bcc9c7]">Transaksi #{{ debt.transaction.transactionNumber }}</p>
-                  <p class="text-[10px] text-slate-500 dark:text-[#869392]">{{ debt.transaction.items?.length || 0 }} item</p>
+                  <p class="text-xs text-slate-700">Transaksi #{{ debt.transaction.transactionNumber }}</p>
+                  <p class="text-[10px] text-slate-500">{{ debt.transaction.items?.length || 0 }} item</p>
                 </template>
                 <template v-else-if="debt.manualItems && debt.manualItems.length > 0">
-                  <p class="text-xs text-slate-700 dark:text-[#bcc9c7]">{{ debt.manualItems.map(i => i.name).join(', ') }}</p>
-                  <p class="text-[10px] text-slate-500 dark:text-[#869392]">{{ debt.manualItems.length }} item</p>
+                  <p class="text-xs text-slate-700">{{ debt.manualItems.map(i => i.name).join(', ') }}</p>
+                  <p class="text-[10px] text-slate-500">{{ debt.manualItems.length }} item</p>
                 </template>
                 <template v-else-if="debt.product">
-                  <p class="text-xs text-slate-700 dark:text-[#bcc9c7]">{{ debt.product.name }}</p>
-                  <p class="text-[10px] text-slate-500 dark:text-[#869392]">{{ debt.quantity }} × {{ formatRupiah(debt.unitPrice) }}</p>
+                  <p class="text-xs text-slate-700">{{ debt.product.name }}</p>
+                  <p class="text-[10px] text-slate-500">{{ debt.quantity }} × {{ formatRupiah(debt.unitPrice) }}</p>
                 </template>
                 <template v-else>
-                  <p class="text-xs text-slate-400 dark:text-[#869392]">—</p>
+                  <p class="text-xs text-slate-400">—</p>
                 </template>
               </td>
               <td class="px-4 py-3">
                 <div class="w-full max-w-[120px] ml-auto">
                   <div class="flex items-center justify-between text-[10px] mb-1">
-                    <span class="font-mono tabular-nums text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(debt.paidAmount) }}</span>
-                    <span class="font-mono tabular-nums text-slate-900 dark:text-[#e3e2e2] font-bold">{{ formatRupiah(debt.totalAmount) }}</span>
+                    <span class="font-mono tabular-nums text-slate-600">{{ formatRupiah(debt.paidAmount) }}</span>
+                    <span class="font-mono tabular-nums text-slate-900 font-bold">{{ formatRupiah(debt.totalAmount) }}</span>
                   </div>
-                  <div class="h-1.5 rounded-full bg-slate-200 dark:bg-[#3d4948] overflow-hidden">
-                    <div class="h-full rounded-full bg-emerald-500 dark:bg-emerald-400 transition-all"
+                  <div class="h-1.5 rounded-full bg-slate-200 overflow-hidden">
+                    <div class="h-full rounded-full bg-emerald-500 transition-all"
                       :style="{ width: Math.min(100, (debt.paidAmount / debt.totalAmount) * 100) + '%' }" />
                   </div>
-                  <p class="text-[10px] font-mono tabular-nums mt-0.5 text-right" :class="debt.totalAmount - debt.paidAmount > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'">
+                  <p class="text-[10px] font-mono tabular-nums mt-0.5 text-right" :class="debt.totalAmount - debt.paidAmount > 0 ? 'text-red-600' : 'text-emerald-600'">
                     Sisa: {{ formatRupiah(debt.totalAmount - debt.paidAmount) }}
                   </p>
                 </div>
               </td>
               <td class="px-4 py-3 text-center">
-                <span class="text-xs font-mono tabular-nums" :class="getAgeDays(debt.createdAt) > 30 ? 'text-red-600 dark:text-red-400 font-bold' : 'text-slate-600 dark:text-[#bcc9c7]'">
+                <span class="text-xs font-mono tabular-nums" :class="getAgeDays(debt.createdAt) > 30 ? 'text-red-600 font-bold' : 'text-slate-600'">
                   {{ getAgeDays(debt.createdAt) }}h
                 </span>
               </td>
               <td class="px-4 py-3 text-center">
-                <span v-if="debt.dueDate" :class="['text-xs font-mono tabular-nums', isOverdue(debt.dueDate) ? 'text-red-600 dark:text-red-400 font-bold' : 'text-slate-600 dark:text-[#bcc9c7]']">
+                <span v-if="debt.dueDate" :class="['text-xs font-mono tabular-nums', isOverdue(debt.dueDate) ? 'text-red-600 font-bold' : 'text-slate-600']">
                   {{ formatDate(debt.dueDate) }}
                 </span>
-                <span v-else class="text-xs text-slate-400 dark:text-[#869392]">—</span>
+                <span v-else class="text-xs text-slate-400">—</span>
               </td>
               <td class="px-4 py-3 text-center">
                 <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase', debtStatusBadge(debt.status)]">
@@ -155,28 +155,28 @@
               </td>
               <td class="px-4 py-3 text-center">
                 <div class="flex items-center justify-center gap-1">
-                  <button class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#292a2a]" title="Detail" @click="openDetailModal(debt)">
-                    <EyeIcon class="w-3.5 h-3.5 text-slate-600 dark:text-[#bcc9c7]" />
+                  <button class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center hover:bg-slate-100" title="Detail" @click="openDetailModal(debt)">
+                    <EyeIcon class="w-3.5 h-3.5 text-slate-600" />
                   </button>
                   <button
                     v-if="debt.status !== 'PAID' && debt.status !== 'CANCELLED'"
-                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center hover:bg-slate-100 dark:hover:bg-[#292a2a]"
+                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center hover:bg-slate-100"
                     title="Edit (jatuh tempo, catatan)"
                     @click="openEditModal(debt)"
                   >
-                    <PencilIcon class="w-3.5 h-3.5 text-slate-600 dark:text-[#bcc9c7]" />
+                    <PencilIcon class="w-3.5 h-3.5 text-slate-600" />
                   </button>
                   <a
                     v-if="debt.customerPhone && debt.status !== 'PAID'"
                     :href="getWaReminderLink(debt)"
                     target="_blank"
-                    class="w-7 h-7 rounded-md border border-emerald-200 dark:border-emerald-800 flex items-center justify-center hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                    class="w-7 h-7 rounded-md border border-emerald-200 flex items-center justify-center hover:bg-emerald-50"
                     title="WA Reminder"
                   >
-                    <MessageCircleIcon class="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                    <MessageCircleIcon class="w-3.5 h-3.5 text-emerald-600" />
                   </a>
                   <button v-if="debt.status !== 'PAID' && debt.status !== 'CANCELLED'"
-                    class="h-7 px-2 text-[10px] font-semibold bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 rounded-md hover:bg-emerald-100 dark:hover:bg-emerald-900/40"
+                    class="h-7 px-2 text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md hover:bg-emerald-100"
                     @click="openPayModal(debt)">Bayar</button>
                 </div>
               </td>
@@ -185,11 +185,11 @@
         </table>
       </div>
       <!-- Pagination -->
-      <div v-if="meta && meta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 dark:border-[#3d4948] flex items-center justify-between">
-        <p class="text-xs text-slate-500 dark:text-[#bcc9c7]">Halaman {{ meta.page }} dari {{ meta.totalPages }}</p>
+      <div v-if="meta && meta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 flex items-center justify-between">
+        <p class="text-xs text-slate-500">Halaman {{ meta.page }} dari {{ meta.totalPages }}</p>
         <div class="flex items-center gap-1">
-          <button :disabled="meta.page <= 1" class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md hover:bg-slate-50 dark:hover:bg-[#292a2a] disabled:opacity-40 text-slate-700 dark:text-[#bcc9c7]" @click="goPage(meta!.page - 1)">Prev</button>
-          <button :disabled="meta.page >= meta.totalPages" class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md hover:bg-slate-50 dark:hover:bg-[#292a2a] disabled:opacity-40 text-slate-700 dark:text-[#bcc9c7]" @click="goPage(meta!.page + 1)">Next</button>
+          <button :disabled="meta.page <= 1" class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-40 text-slate-700" @click="goPage(meta!.page - 1)">Prev</button>
+          <button :disabled="meta.page >= meta.totalPages" class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-40 text-slate-700" @click="goPage(meta!.page + 1)">Next</button>
         </div>
       </div>
     </div>
@@ -199,42 +199,42 @@
     <Teleport to="body">
       <div v-if="showDetailModal && detailDebt" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showDetailModal = false"></div>
-        <div class="relative bg-white dark:bg-[#1e2020] rounded-xl shadow-xl w-full max-w-md p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4 max-h-[85vh] overflow-y-auto">
           <div class="flex items-start justify-between">
-            <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">Detail Hutang</h3>
+            <h3 class="text-sm font-bold text-slate-900">Detail Hutang</h3>
             <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase', debtStatusBadge(detailDebt.status)]">{{ debtStatusLabel(detailDebt.status) }}</span>
           </div>
           <div class="grid grid-cols-2 gap-3 text-xs">
-            <div><p class="text-slate-500 dark:text-[#869392]">Pelanggan</p><p class="font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ detailDebt.customerName }}</p></div>
-            <div><p class="text-slate-500 dark:text-[#869392]">Item</p><p class="font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ getDebtItemLabel(detailDebt) }}</p></div>
-            <div><p class="text-slate-500 dark:text-[#869392]">Total</p><p class="font-semibold text-slate-900 dark:text-[#e3e2e2] font-mono tabular-nums">{{ formatRupiah(detailDebt.totalAmount) }}</p></div>
-            <div><p class="text-slate-500 dark:text-[#869392]">Sisa</p><p class="font-semibold font-mono tabular-nums" :class="detailDebt.totalAmount - detailDebt.paidAmount > 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400'">{{ formatRupiah(detailDebt.totalAmount - detailDebt.paidAmount) }}</p></div>
+            <div><p class="text-slate-500">Pelanggan</p><p class="font-semibold text-slate-900">{{ detailDebt.customerName }}</p></div>
+            <div><p class="text-slate-500">Item</p><p class="font-semibold text-slate-900">{{ getDebtItemLabel(detailDebt) }}</p></div>
+            <div><p class="text-slate-500">Total</p><p class="font-semibold text-slate-900 font-mono tabular-nums">{{ formatRupiah(detailDebt.totalAmount) }}</p></div>
+            <div><p class="text-slate-500">Sisa</p><p class="font-semibold font-mono tabular-nums" :class="detailDebt.totalAmount - detailDebt.paidAmount > 0 ? 'text-red-600' : 'text-emerald-600'">{{ formatRupiah(detailDebt.totalAmount - detailDebt.paidAmount) }}</p></div>
           </div>
           <!-- Progress -->
           <div>
-            <div class="h-2 rounded-full bg-slate-200 dark:bg-[#3d4948] overflow-hidden">
+            <div class="h-2 rounded-full bg-slate-200 overflow-hidden">
               <div class="h-full rounded-full bg-emerald-500" :style="{ width: Math.min(100, (detailDebt.paidAmount / detailDebt.totalAmount) * 100) + '%' }" />
             </div>
-            <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-1">{{ Math.round((detailDebt.paidAmount / detailDebt.totalAmount) * 100) }}% terbayar</p>
+            <p class="text-[10px] text-slate-500 mt-1">{{ Math.round((detailDebt.paidAmount / detailDebt.totalAmount) * 100) }}% terbayar</p>
           </div>
           <!-- Payment history -->
           <div>
-            <p class="text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide mb-2">Riwayat Cicilan ({{ detailDebt.debtPayments?.length || 0 }})</p>
+            <p class="text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2">Riwayat Cicilan ({{ detailDebt.debtPayments?.length || 0 }})</p>
             <div v-if="!detailDebt.debtPayments?.length" class="text-center py-4">
-              <p class="text-xs text-slate-400 dark:text-[#869392]">Belum ada pembayaran.</p>
+              <p class="text-xs text-slate-400">Belum ada pembayaran.</p>
             </div>
             <div v-else class="space-y-2">
-              <div v-for="(p, idx) in detailDebt.debtPayments" :key="p.id" class="flex items-center gap-3 p-2.5 rounded-lg border border-slate-100 dark:border-[#3d4948]">
-                <div class="w-6 h-6 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center text-[10px] font-bold text-emerald-700 dark:text-emerald-400 shrink-0">{{ idx + 1 }}</div>
+              <div v-for="(p, idx) in detailDebt.debtPayments" :key="p.id" class="flex items-center gap-3 p-2.5 rounded-lg border border-slate-200">
+                <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-[10px] font-bold text-emerald-700 shrink-0">{{ idx + 1 }}</div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-xs font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ formatRupiah(p.amount) }} <span class="text-[10px] font-normal text-slate-500 dark:text-[#869392]">via {{ p.method }}</span></p>
-                  <p class="text-[10px] text-slate-500 dark:text-[#869392]">{{ formatDateTime(p.createdAt) }}<span v-if="p.notes"> · {{ p.notes }}</span></p>
+                  <p class="text-xs font-semibold text-slate-800">{{ formatRupiah(p.amount) }} <span class="text-[10px] font-normal text-slate-500">via {{ p.method }}</span></p>
+                  <p class="text-[10px] text-slate-500">{{ formatDateTime(p.createdAt) }}<span v-if="p.notes"> · {{ p.notes }}</span></p>
                 </div>
               </div>
             </div>
           </div>
           <div class="flex justify-end pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 dark:bg-[#292a2a] rounded-md hover:bg-slate-200 dark:hover:bg-[#3d4948]" @click="showDetailModal = false">Tutup</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showDetailModal = false">Tutup</button>
           </div>
         </div>
       </div>
@@ -245,44 +245,44 @@
     <Teleport to="body">
       <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showCreateModal = false"></div>
-        <form class="relative bg-white dark:bg-[#1e2020] rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[85vh] overflow-y-auto" @submit.prevent="handleCreate">
-          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2]">Catat Hutang Baru</h2>
+        <form class="relative bg-white rounded-lg shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[85vh] overflow-y-auto" @submit.prevent="handleCreate">
+          <h2 class="text-base font-bold text-slate-950">Catat Hutang Baru</h2>
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Nama Pelanggan <span class="text-red-500">*</span></label><input v-model="createForm.customerName" type="text" required placeholder="Pak Ahmad" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none" /></div>
-            <div><label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">No. HP</label><input v-model="createForm.customerPhone" type="text" placeholder="08123456789" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none" /></div>
+            <div><label class="block text-xs font-semibold text-slate-700 mb-1">Nama Pelanggan <span class="text-red-500">*</span></label><input v-model="createForm.customerName" type="text" required placeholder="Pak Ahmad" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" /></div>
+            <div><label class="block text-xs font-semibold text-slate-700 mb-1">No. HP</label><input v-model="createForm.customerPhone" type="text" placeholder="08123456789" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" /></div>
           </div>
 
           <!-- Manual Items -->
           <div>
             <div class="flex items-center justify-between mb-2">
-              <label class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]">Item Hutang <span class="text-red-500">*</span></label>
-              <button type="button" class="text-[10px] font-semibold text-[#03a29c] hover:underline" @click="addItem">+ Tambah Item</button>
+              <label class="text-xs font-semibold text-slate-700">Item Hutang <span class="text-red-500">*</span></label>
+              <button type="button" class="text-[10px] font-semibold text-blue-600 hover:underline" @click="addItem">+ Tambah Item</button>
             </div>
             <div class="space-y-2">
               <div v-for="(item, idx) in createForm.items" :key="idx" class="flex items-center gap-2">
-                <input v-model="item.name" type="text" required placeholder="Nama barang" class="flex-1 h-8 px-2 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] outline-none" />
-                <input v-model.number="item.qty" type="number" min="1" required placeholder="Qty" class="w-16 h-8 px-2 text-sm font-mono border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] outline-none text-center" />
-                <input v-model.number="item.price" type="number" min="0" required placeholder="Harga" class="w-24 h-8 px-2 text-sm font-mono border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] outline-none" />
-                <button v-if="createForm.items.length > 1" type="button" class="w-7 h-7 rounded-md border border-red-200 dark:border-red-800 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-950/30 shrink-0" @click="removeItem(idx)">
+                <input v-model="item.name" type="text" required placeholder="Nama barang" class="flex-1 h-8 px-2 text-sm border border-slate-200 rounded-md focus:border-blue-600 outline-none" />
+                <input v-model.number="item.qty" type="number" min="1" required placeholder="Qty" class="w-16 h-8 px-2 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 outline-none text-center" />
+                <input v-model.number="item.price" type="number" min="0" required placeholder="Harga" class="w-24 h-8 px-2 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 outline-none" />
+                <button v-if="createForm.items.length > 1" type="button" class="w-7 h-7 rounded-md border border-red-200 flex items-center justify-center hover:bg-red-50 shrink-0" @click="removeItem(idx)">
                   <span class="text-red-500 text-xs font-bold">×</span>
                 </button>
               </div>
             </div>
             <div class="mt-2 flex items-center justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">Total:</span>
-              <span class="font-bold font-mono tabular-nums text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(computedTotal) }}</span>
+              <span class="text-slate-500">Total:</span>
+              <span class="font-bold font-mono tabular-nums text-slate-900">{{ formatRupiah(computedTotal) }}</span>
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
-            <div><label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">DP (Rp)</label><input v-model.number="createForm.downPayment" type="number" min="0" placeholder="0" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none" /></div>
-            <div><label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Jatuh Tempo</label><input v-model="createForm.dueDate" type="date" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none" /></div>
+            <div><label class="block text-xs font-semibold text-slate-700 mb-1">DP (Rp)</label><input v-model.number="createForm.downPayment" type="number" min="0" placeholder="0" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" /></div>
+            <div><label class="block text-xs font-semibold text-slate-700 mb-1">Jatuh Tempo</label><input v-model="createForm.dueDate" type="date" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" /></div>
           </div>
-          <div><label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Catatan</label><input v-model="createForm.notes" type="text" placeholder="Bayar akhir bulan" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none" /></div>
-          <div v-if="createError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ createError }}</div>
+          <div><label class="block text-xs font-semibold text-slate-700 mb-1">Catatan</label><input v-model="createForm.notes" type="text" placeholder="Bayar akhir bulan" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" /></div>
+          <div v-if="createError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ createError }}</div>
           <div class="flex items-center justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 dark:bg-[#292a2a] rounded-md hover:bg-slate-200 dark:hover:bg-[#3d4948]" @click="showCreateModal = false">Batal</button>
-            <button type="submit" :disabled="creating" class="h-9 px-4 text-xs font-semibold text-white bg-[#03a29c] rounded-md hover:bg-[#028a85] disabled:opacity-50 flex items-center gap-1.5"><Loader2Icon v-if="creating" class="w-3.5 h-3.5 animate-spin" />Simpan</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showCreateModal = false">Batal</button>
+            <button type="submit" :disabled="creating" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5"><Loader2Icon v-if="creating" class="w-3.5 h-3.5 animate-spin" />Simpan</button>
           </div>
         </form>
       </div>
@@ -292,19 +292,19 @@
     <Teleport to="body">
       <div v-if="showPayModal && payingDebt" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showPayModal = false"></div>
-        <form class="relative bg-white dark:bg-[#1e2020] rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handlePay">
-          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2]">Bayar Hutang</h2>
-          <div class="bg-slate-50 dark:bg-[#292a2a] rounded-md px-3 py-2 space-y-1">
-            <p class="text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ payingDebt.customerName }}</p>
-            <p class="text-[11px] text-slate-500 dark:text-[#869392]">{{ getDebtItemLabel(payingDebt) }}</p>
-            <p class="text-xs font-mono tabular-nums text-red-600 dark:text-red-400">Sisa: {{ formatRupiah(payingDebt.totalAmount - payingDebt.paidAmount) }}</p>
+        <form class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handlePay">
+          <h2 class="text-base font-bold text-slate-950">Bayar Hutang</h2>
+          <div class="bg-slate-50 rounded-md px-3 py-2 space-y-1">
+            <p class="text-xs font-medium text-slate-900">{{ payingDebt.customerName }}</p>
+            <p class="text-[11px] text-slate-500">{{ getDebtItemLabel(payingDebt) }}</p>
+            <p class="text-xs font-mono tabular-nums text-red-600">Sisa: {{ formatRupiah(payingDebt.totalAmount - payingDebt.paidAmount) }}</p>
           </div>
-          <div><label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Jumlah Bayar (Rp) <span class="text-red-500">*</span></label><input v-model.number="payForm.amount" type="number" min="1" :max="payingDebt.totalAmount - payingDebt.paidAmount" required class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none" /></div>
-          <div><label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Metode <span class="text-red-500">*</span></label><select v-model="payForm.method" required class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"><option value="CASH">Cash</option><option value="QRIS">QRIS</option><option value="TRANSFER">Transfer</option></select></div>
-          <div><label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Catatan</label><input v-model="payForm.notes" type="text" placeholder="Cicilan ke-2" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none" /></div>
-          <div v-if="payError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ payError }}</div>
+          <div><label class="block text-xs font-semibold text-slate-700 mb-1">Jumlah Bayar (Rp) <span class="text-red-500">*</span></label><input v-model.number="payForm.amount" type="number" min="1" :max="payingDebt.totalAmount - payingDebt.paidAmount" required class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" /></div>
+          <div><label class="block text-xs font-semibold text-slate-700 mb-1">Metode <span class="text-red-500">*</span></label><select v-model="payForm.method" required class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"><option value="CASH">Cash</option><option value="QRIS">QRIS</option><option value="TRANSFER">Transfer</option></select></div>
+          <div><label class="block text-xs font-semibold text-slate-700 mb-1">Catatan</label><input v-model="payForm.notes" type="text" placeholder="Cicilan ke-2" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" /></div>
+          <div v-if="payError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ payError }}</div>
           <div class="flex items-center justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 dark:bg-[#292a2a] rounded-md hover:bg-slate-200 dark:hover:bg-[#3d4948]" @click="showPayModal = false">Batal</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showPayModal = false">Batal</button>
             <button type="submit" :disabled="paying" class="h-9 px-4 text-xs font-semibold text-white bg-emerald-600 rounded-md hover:bg-emerald-700 disabled:opacity-50 flex items-center gap-1.5"><Loader2Icon v-if="paying" class="w-3.5 h-3.5 animate-spin" />Bayar</button>
           </div>
         </form>
@@ -314,32 +314,32 @@
     <Teleport to="body">
       <div v-if="showEditModal && editingDebt" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showEditModal = false"></div>
-        <form class="relative bg-white dark:bg-[#1e2020] rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleEdit">
-          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2]">Edit Hutang</h2>
-          <div class="bg-slate-50 dark:bg-[#292a2a] rounded-md px-3 py-2">
-            <p class="text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ editingDebt.customerName }}</p>
-            <p class="text-[10px] text-slate-500 dark:text-[#869392]">Sisa: {{ formatRupiah(editingDebt.totalAmount - editingDebt.paidAmount) }}</p>
+        <form class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleEdit">
+          <h2 class="text-base font-bold text-slate-950">Edit Hutang</h2>
+          <div class="bg-slate-50 rounded-md px-3 py-2">
+            <p class="text-xs font-medium text-slate-900">{{ editingDebt.customerName }}</p>
+            <p class="text-[10px] text-slate-500">Sisa: {{ formatRupiah(editingDebt.totalAmount - editingDebt.paidAmount) }}</p>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Jatuh Tempo</label>
-            <input v-model="editForm.dueDate" type="date" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none" />
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Jatuh Tempo</label>
+            <input v-model="editForm.dueDate" type="date" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Nama Pelanggan</label>
-            <input v-model="editForm.customerName" type="text" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none" />
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Pelanggan</label>
+            <input v-model="editForm.customerName" type="text" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">No. HP</label>
-            <input v-model="editForm.customerPhone" type="text" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none" />
+            <label class="block text-xs font-semibold text-slate-700 mb-1">No. HP</label>
+            <input v-model="editForm.customerPhone" type="text" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Catatan</label>
-            <input v-model="editForm.notes" type="text" placeholder="Bayar akhir bulan" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none" />
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan</label>
+            <input v-model="editForm.notes" type="text" placeholder="Bayar akhir bulan" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
-          <div v-if="editError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ editError }}</div>
+          <div v-if="editError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ editError }}</div>
           <div class="flex items-center justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 dark:bg-[#292a2a] rounded-md hover:bg-slate-200 dark:hover:bg-[#3d4948]" @click="showEditModal = false">Batal</button>
-            <button type="submit" :disabled="editing" class="h-9 px-4 text-xs font-semibold text-white bg-[#03a29c] rounded-md hover:bg-[#028a85] disabled:opacity-50 flex items-center gap-1.5">
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showEditModal = false">Batal</button>
+            <button type="submit" :disabled="editing" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
               <Loader2Icon v-if="editing" class="w-3.5 h-3.5 animate-spin" />
               Simpan
             </button>
@@ -413,12 +413,12 @@ function getWaReminderLink(debt: DebtDto): string {
 
 function debtStatusBadge(status: string): string {
   switch (status) {
-    case 'PENDING': return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300';
-    case 'PARTIALLY_PAID': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
-    case 'PAID': return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300';
-    case 'OVERDUE': return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
-    case 'CANCELLED': return 'bg-slate-100 dark:bg-[#292a2a] text-slate-600 dark:text-[#869392]';
-    default: return 'bg-slate-100 dark:bg-[#292a2a] text-slate-600 dark:text-[#869392]';
+    case 'PENDING': return 'bg-amber-100 text-amber-700';
+    case 'PARTIALLY_PAID': return 'bg-blue-100 text-blue-700';
+    case 'PAID': return 'bg-emerald-100 text-emerald-700';
+    case 'OVERDUE': return 'bg-red-100 text-red-700';
+    case 'CANCELLED': return 'bg-slate-100 text-slate-600';
+    default: return 'bg-slate-100 text-slate-600';
   }
 }
 function debtStatusLabel(status: string): string {
@@ -515,3 +515,23 @@ onMounted(fetchDebts);
 
 useAutoRefresh(fetchDebts);
 </script>
+
+<style scoped>
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.space-y-5 > *, .space-y-6 > * { animation: fadeSlideUp 0.4s ease-out both; }
+.space-y-5 > *:nth-child(1), .space-y-6 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-5 > *:nth-child(2), .space-y-6 > *:nth-child(2) { animation-delay: 70ms; }
+.space-y-5 > *:nth-child(3), .space-y-6 > *:nth-child(3) { animation-delay: 140ms; }
+.space-y-5 > *:nth-child(4), .space-y-6 > *:nth-child(4) { animation-delay: 210ms; }
+.space-y-5 > *:nth-child(5), .space-y-6 > *:nth-child(5) { animation-delay: 280ms; }
+@keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+.grid > div[class*="rounded-lg"] { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.grid > div:nth-child(1) { animation-delay: 100ms; }
+.grid > div:nth-child(2) { animation-delay: 180ms; }
+.grid > div:nth-child(3) { animation-delay: 260ms; }
+.grid > div:nth-child(4) { animation-delay: 340ms; }
+table tbody tr { transition: all 0.15s ease; }
+table tbody tr:hover { box-shadow: inset 3px 0 0 #2563EB; }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+div[class*="rounded-lg"][class*="shadow-xl"] { animation: scaleIn 0.25s ease-out; }
+</style>
