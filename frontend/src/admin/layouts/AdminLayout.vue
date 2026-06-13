@@ -1,8 +1,8 @@
 <template>
-  <div class="min-h-screen bg-slate-50 dark:bg-[#121414] transition-colors">
+  <div class="min-h-screen bg-slate-50 dark:bg-[#121414] transition-colors font-hanken">
     <!-- Mobile Topbar -->
     <header
-      class="lg:hidden sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 h-14 flex items-center justify-between"
+      class="lg:hidden sticky top-0 z-30 bg-white dark:bg-[#1a1c1c] border-b border-slate-200 dark:border-[#3d4948] px-4 h-14 flex items-center justify-between"
     >
       <div class="flex items-center gap-2">
         <button
@@ -204,7 +204,7 @@
     <main class="lg:ml-64 min-h-screen">
       <!-- Desktop + Tablet topbar -->
       <header
-        class="hidden md:flex sticky top-0 z-20 h-16 bg-white dark:bg-[#121414] border-b border-slate-200 dark:border-[#3d4948] px-4 lg:px-6 items-center justify-between transition-colors"
+        class="hidden md:flex sticky top-0 z-20 h-16 bg-white dark:bg-[#1a1c1c]/80 dark:backdrop-blur-md border-b border-slate-200 dark:border-[#3d4948] px-4 lg:px-6 items-center justify-between transition-colors"
       >
         <div>
           <h2 class="text-lg font-bold text-slate-950 dark:text-[#e3e2e2]">{{ pageTitle }}</h2>

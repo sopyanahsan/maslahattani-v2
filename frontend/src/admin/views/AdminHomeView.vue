@@ -1,30 +1,30 @@
 <template>
-  <div class="space-y-5">
+  <div class="space-y-6 font-hanken">
     <!-- Greeting -->
     <div>
-      <h1 class="text-2xl font-bold text-slate-950 dark:text-slate-100">
-        {{ greeting }}, {{ displayName }} 👋
+      <h1 class="text-2xl font-bold text-slate-900 dark:text-[#e3e2e2] tracking-tight">
+        {{ greeting }}, {{ displayName }}
       </h1>
-      <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">{{ todayLabel }}</p>
+      <p class="text-sm text-slate-500 dark:text-[#bcc9c7] mt-1">{{ todayLabel }}</p>
     </div>
 
-    <!-- KPI mini cards (Retail + BRILink) -->
+    <!-- KPI mini cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-        <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Omzet Retail</p>
-        <p class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">{{ formatRupiah(retailStore.overview?.kpi.revenue.value ?? 0) }}</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 hover:border-slate-300 dark:hover:border-[#5fd9d2]/30 transition-colors">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-[#bcc9c7]">Omzet Retail</p>
+        <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mt-1 font-mono">{{ formatRupiah(retailStore.overview?.kpi.revenue.value ?? 0) }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-        <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Transaksi Retail</p>
-        <p class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">{{ retailStore.overview?.kpi.transactions.value ?? 0 }}</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 hover:border-slate-300 dark:hover:border-[#5fd9d2]/30 transition-colors">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-[#bcc9c7]">Transaksi Retail</p>
+        <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mt-1 font-mono">{{ retailStore.overview?.kpi.transactions.value ?? 0 }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-        <p class="text-[10px] font-bold uppercase tracking-wide text-indigo-500 dark:text-indigo-400">Fee BRILink</p>
-        <p class="text-lg font-bold text-indigo-700 dark:text-indigo-300 mt-1">{{ formatRupiah(brilinkStore.overview?.kpi.feeEarnings.value ?? 0) }}</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 hover:border-slate-300 dark:hover:border-[#5fd9d2]/30 transition-colors">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-[#03a29c] dark:text-[#5fd9d2]">Fee BRILink</p>
+        <p class="text-lg font-bold text-[#03a29c] dark:text-[#5fd9d2] mt-1 font-mono">{{ formatRupiah(brilinkStore.overview?.kpi.feeEarnings.value ?? 0) }}</p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
-        <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">Trx BRILink</p>
-        <p class="text-lg font-bold text-slate-900 dark:text-slate-100 mt-1">{{ brilinkStore.overview?.kpi.transactions.value ?? 0 }}</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 hover:border-slate-300 dark:hover:border-[#5fd9d2]/30 transition-colors">
+        <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-[#bcc9c7]">Trx BRILink</p>
+        <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mt-1 font-mono">{{ brilinkStore.overview?.kpi.transactions.value ?? 0 }}</p>
       </div>
     </div>
 
@@ -32,33 +32,35 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <RouterLink
         to="/admin/dashboard"
-        class="group bg-gradient-to-br from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-2xl p-5 text-white transition-all hover:shadow-xl hover:-translate-y-0.5"
+        class="group relative overflow-hidden bg-gradient-to-br from-blue-600 to-blue-700 dark:from-[#03a29c] dark:to-[#00756f] rounded-2xl p-6 text-white transition-all hover:shadow-xl hover:shadow-blue-500/20 dark:hover:shadow-[#5fd9d2]/10 hover:-translate-y-0.5"
       >
-        <div class="flex items-start justify-between">
+        <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
+        <div class="relative flex items-start justify-between">
           <div>
-            <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">
+            <div class="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center mb-3 backdrop-blur-sm">
               <component :is="DashboardIcon" class="w-5 h-5" />
             </div>
-            <h2 class="text-lg font-bold mb-0.5">Dashboard Retail</h2>
-            <p class="text-xs text-blue-100">Grafik penjualan, alerts, kategori produk.</p>
+            <h2 class="text-lg font-bold mb-1 tracking-tight">Dashboard Retail</h2>
+            <p class="text-xs text-white/70">Grafik penjualan, alerts, kategori produk.</p>
           </div>
-          <component :is="ArrowRightIcon" class="w-5 h-5 opacity-50 group-hover:opacity-100 transition" />
+          <component :is="ArrowRightIcon" class="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
         </div>
       </RouterLink>
 
       <RouterLink
         to="/admin/brilink"
-        class="group bg-gradient-to-br from-indigo-600 to-purple-700 hover:from-indigo-700 hover:to-purple-800 rounded-2xl p-5 text-white transition-all hover:shadow-xl hover:-translate-y-0.5"
+        class="group relative overflow-hidden bg-gradient-to-br from-indigo-600 to-purple-700 dark:from-indigo-700 dark:to-purple-900 rounded-2xl p-6 text-white transition-all hover:shadow-xl hover:shadow-indigo-500/20 hover:-translate-y-0.5"
       >
-        <div class="flex items-start justify-between">
+        <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-white/10 pointer-events-none" />
+        <div class="relative flex items-start justify-between">
           <div>
-            <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center mb-3">
+            <div class="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center mb-3 backdrop-blur-sm">
               <component :is="LandmarkIcon" class="w-5 h-5" />
             </div>
-            <h2 class="text-lg font-bold mb-0.5">Dashboard BRILink</h2>
-            <p class="text-xs text-indigo-100">Transfer, tarik tunai, top-up, fee & mutasi.</p>
+            <h2 class="text-lg font-bold mb-1 tracking-tight">Dashboard BRILink</h2>
+            <p class="text-xs text-white/70">Transfer, tarik tunai, top-up, fee & mutasi.</p>
           </div>
-          <component :is="ArrowRightIcon" class="w-5 h-5 opacity-50 group-hover:opacity-100 transition" />
+          <component :is="ArrowRightIcon" class="w-5 h-5 opacity-50 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
         </div>
       </RouterLink>
     </div>
