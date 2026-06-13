@@ -1,13 +1,13 @@
 <template>
-  <div class="min-h-screen bg-slate-50 transition-colors font-sans">
+  <div class="min-h-screen bg-slate-50 dark:bg-[#121414] transition-colors font-hanken">
     <!-- Mobile Topbar -->
     <header
-      class="lg:hidden sticky top-0 z-30 bg-white border-b border-slate-200 px-4 h-14 flex items-center justify-between"
+      class="lg:hidden sticky top-0 z-30 bg-white dark:bg-[#1a1c1c] border-b border-slate-200 dark:border-[#3d4948] px-4 h-14 flex items-center justify-between"
     >
       <div class="flex items-center gap-2">
         <button
           type="button"
-          class="p-2 -ml-2 text-slate-700 hover:bg-slate-100 rounded-md"
+          class="p-2 -ml-2 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
           aria-label="Toggle menu"
           @click="sidebarOpen = !sidebarOpen"
         >
@@ -18,8 +18,8 @@
             <component :is="StoreIcon" class="w-4 h-4 text-white" />
           </div>
           <div class="min-w-0">
-            <h1 class="text-sm font-bold text-slate-950 leading-tight truncate">{{ currentShopName || 'Posify' }}</h1>
-            <p class="text-[9px] text-slate-400 leading-tight">{{ todayLabel }}</p>
+            <h1 class="text-sm font-bold text-slate-950 dark:text-slate-100 leading-tight truncate">{{ currentShopName || 'Posify' }}</h1>
+            <p class="text-[9px] text-slate-400 dark:text-slate-500 leading-tight">{{ todayLabel }}</p>
           </div>
         </div>
       </div>
@@ -27,7 +27,7 @@
         <!-- Theme toggle (mobile) -->
         <button
           type="button"
-          class="p-2 text-slate-600 hover:bg-slate-100 rounded-md"
+          class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
           :aria-label="`Switch to ${themeResolved === 'dark' ? 'light' : 'dark'} mode`"
           @click="toggleTheme"
         >
@@ -36,20 +36,20 @@
         <!-- Notification Bell (mobile) -->
         <button
           type="button"
-          class="relative p-2 text-slate-600 hover:bg-slate-100 rounded-md"
+          class="relative p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
           aria-label="Notifikasi"
           @click="notifOpen = !notifOpen"
         >
           <BellIcon class="w-4 h-4" />
           <span
             v-if="alertCount > 0"
-            class="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 border border-white"
+            class="absolute top-1 right-1 w-2 h-2 rounded-full bg-red-500 border border-white dark:border-slate-900"
           />
         </button>
 
         <button
           type="button"
-          class="p-2 text-slate-600 hover:bg-slate-100 rounded-md"
+          class="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-md"
           aria-label="Logout"
           @click="handleLogout"
         >
@@ -230,11 +230,11 @@
     <main class="lg:ml-64 min-h-screen">
       <!-- Desktop + Tablet topbar -->
       <header
-        class="hidden md:flex sticky top-0 z-20 h-16 bg-white border-b border-slate-200 px-4 lg:px-6 items-center justify-between"
+        class="hidden md:flex sticky top-0 z-20 h-16 bg-white dark:bg-[#1a1c1c]/80 dark:backdrop-blur-md border-b border-slate-200 dark:border-[#3d4948] px-4 lg:px-6 items-center justify-between transition-colors"
       >
         <div>
-          <h2 class="text-lg font-bold text-slate-950">{{ pageTitle }}</h2>
-          <p class="text-[11px] text-slate-400">
+          <h2 class="text-lg font-bold text-slate-950 dark:text-[#e3e2e2]">{{ pageTitle }}</h2>
+          <p class="text-[11px] text-slate-400 dark:text-[#bcc9c7]">
             {{ todayLabel }}
           </p>
         </div>
@@ -242,7 +242,7 @@
           <!-- Theme toggle (desktop) -->
           <button
             type="button"
-            class="h-9 w-9 flex items-center justify-center rounded-md bg-slate-50 border border-slate-200 text-slate-600 hover:bg-slate-100 transition-colors"
+            class="h-9 w-9 flex items-center justify-center rounded-md bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
             :aria-label="themeAriaLabel"
             :title="themeAriaLabel"
             @click="toggleTheme"
@@ -257,8 +257,8 @@
               :class="[
                 'relative h-9 w-9 flex items-center justify-center rounded-md border transition-colors',
                 notifOpen
-                  ? 'bg-blue-50 border-blue-200 text-blue-600'
-                  : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                  ? 'bg-blue-50 dark:bg-blue-950/40 border-blue-200 dark:border-blue-700 text-blue-600 dark:text-blue-400'
+                  : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
               ]"
               title="Notifikasi"
               @click="notifOpen = !notifOpen"
@@ -266,7 +266,7 @@
               <BellIcon class="w-4 h-4" :class="alertCount > 0 && !notifOpen ? 'animate-[wiggle_1s_ease-in-out]' : ''" />
               <span
                 v-if="alertCount > 0"
-                class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[9px] font-bold text-white bg-red-500 border-2 border-white leading-none shadow-sm"
+                class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full text-[9px] font-bold text-white bg-red-500 border-2 border-white dark:border-slate-900 leading-none shadow-sm"
               >
                 {{ alertCount > 99 ? '99+' : alertCount }}
               </span>
@@ -276,19 +276,19 @@
             <Transition name="dropdown">
               <div
                 v-if="notifOpen"
-                class="absolute right-0 top-full mt-2 w-[340px] bg-white border border-slate-200 rounded-2xl shadow-2xl z-40 overflow-hidden"
+                class="absolute right-0 top-full mt-2 w-[340px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl z-40 overflow-hidden"
               >
                 <!-- Header -->
-                <div class="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
+                <div class="px-4 py-3 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/60">
                   <div class="flex items-center gap-2">
-                    <BellIcon class="w-3.5 h-3.5 text-slate-500" />
-                    <p class="text-xs font-bold text-slate-900">Notifikasi</p>
-                    <span v-if="alertCount > 0" class="px-1.5 py-0.5 text-[9px] font-bold bg-red-100 text-red-600 rounded-full">{{ alertCount }}</span>
+                    <BellIcon class="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
+                    <p class="text-xs font-bold text-slate-900 dark:text-slate-100">Notifikasi</p>
+                    <span v-if="alertCount > 0" class="px-1.5 py-0.5 text-[9px] font-bold bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 rounded-full">{{ alertCount }}</span>
                   </div>
                   <button
                     v-if="alertCount > 0"
                     type="button"
-                    class="text-[10px] font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                    class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                     @click="markAllRead"
                   >
                     Tandai semua dibaca
@@ -298,51 +298,51 @@
                 <!-- Body -->
                 <div class="max-h-[320px] overflow-y-auto">
                   <div v-if="alertsLoading" class="py-10 flex flex-col items-center gap-2">
-                    <Loader2Icon class="w-5 h-5 animate-spin text-slate-300" />
-                    <p class="text-[11px] text-slate-400">Memuat notifikasi...</p>
+                    <Loader2Icon class="w-5 h-5 animate-spin text-slate-300 dark:text-slate-600" />
+                    <p class="text-[11px] text-slate-400 dark:text-slate-500">Memuat notifikasi...</p>
                   </div>
                   <div v-else-if="alertItems.length === 0" class="py-10 flex flex-col items-center gap-2">
-                    <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
-                      <BellIcon class="w-5 h-5 text-slate-300" />
+                    <div class="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                      <BellIcon class="w-5 h-5 text-slate-300 dark:text-slate-600" />
                     </div>
-                    <p class="text-xs font-semibold text-slate-500">Semua aman!</p>
-                    <p class="text-[10px] text-slate-400">Tidak ada alert aktif saat ini.</p>
+                    <p class="text-xs font-semibold text-slate-500 dark:text-slate-400">Semua aman!</p>
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500">Tidak ada alert aktif saat ini.</p>
                   </div>
-                  <div v-else class="divide-y divide-slate-50">
+                  <div v-else class="divide-y divide-slate-50 dark:divide-slate-800">
                     <button
                       v-for="alert in alertItems.slice(0, 15)"
                       :key="alert.id"
                       type="button"
-                      class="w-full px-4 py-3 hover:bg-blue-50/60 transition-colors text-left group"
+                      class="w-full px-4 py-3 hover:bg-blue-50/60 dark:hover:bg-blue-950/20 transition-colors text-left group"
                       @click="handleAlertClick(alert)"
                     >
                       <div class="flex items-start gap-3">
                         <!-- Severity dot with ring -->
-                        <div :class="['mt-1 w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-offset-1',
-                          alert.severity === 'critical' ? 'bg-red-500 ring-red-200' :
-                          alert.severity === 'warning'  ? 'bg-amber-500 ring-amber-200' :
-                                                          'bg-blue-400 ring-blue-200'
+                        <div :class="['mt-1 w-2.5 h-2.5 rounded-full shrink-0 ring-2 ring-offset-1 dark:ring-offset-slate-900',
+                          alert.severity === 'critical' ? 'bg-red-500 ring-red-200 dark:ring-red-900' :
+                          alert.severity === 'warning'  ? 'bg-amber-500 ring-amber-200 dark:ring-amber-900' :
+                                                          'bg-blue-400 ring-blue-200 dark:ring-blue-900'
                         ]" />
                         <div class="flex-1 min-w-0">
                           <div class="flex items-center gap-2 mb-0.5">
-                            <p class="text-[11px] font-semibold text-slate-800 truncate group-hover:text-blue-700 transition-colors">{{ alert.title }}</p>
+                            <p class="text-[11px] font-semibold text-slate-800 dark:text-slate-200 truncate group-hover:text-blue-700 dark:group-hover:text-blue-300 transition-colors">{{ alert.title }}</p>
                             <span :class="['shrink-0 text-[8px] font-bold uppercase px-1.5 py-0.5 rounded-md', alertTypeBadge(alert.type)]">{{ alertTypeShort(alert.type) }}</span>
                           </div>
-                          <p class="text-[10px] text-slate-500 truncate">{{ alert.shopName }}</p>
-                          <p class="text-[10px] text-slate-400 truncate">{{ alert.description }}</p>
+                          <p class="text-[10px] text-slate-500 dark:text-slate-400 truncate">{{ alert.shopName }}</p>
+                          <p class="text-[10px] text-slate-400 dark:text-slate-500 truncate">{{ alert.description }}</p>
                         </div>
-                        <ChevronRightIcon class="w-3 h-3 text-slate-300 shrink-0 mt-1 group-hover:text-blue-400 transition-colors" />
+                        <ChevronRightIcon class="w-3 h-3 text-slate-300 dark:text-slate-600 shrink-0 mt-1 group-hover:text-blue-400 transition-colors" />
                       </div>
                     </button>
                   </div>
                 </div>
 
                 <!-- Footer -->
-                <div class="px-4 py-2.5 border-t border-slate-100 bg-slate-50/80/40 flex items-center justify-between">
-                  <p class="text-[9px] text-slate-400">Diperbarui setiap 60 detik</p>
+                <div class="px-4 py-2.5 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-800/40 flex items-center justify-between">
+                  <p class="text-[9px] text-slate-400 dark:text-slate-500">Diperbarui setiap 60 detik</p>
                   <button
                     type="button"
-                    class="text-[10px] font-semibold text-slate-500 hover:text-slate-700 flex items-center gap-1 transition-colors"
+                    class="text-[10px] font-semibold text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 flex items-center gap-1 transition-colors"
                     @click="fetchAlerts"
                   >
                     <RefreshCwIcon class="w-2.5 h-2.5" /> Refresh
@@ -352,20 +352,20 @@
             </Transition>
           </div>
 
-          <span class="text-xs text-slate-500 hidden xl:inline">
+          <span class="text-xs text-slate-500 dark:text-slate-400 hidden xl:inline">
             {{ todayLabel }}
           </span>
           <!-- WebSocket indicator (md+ only, mobile uses banner dot) -->
-          <span v-if="wsConnected" class="hidden md:inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600" title="Real-time aktif">
+          <span v-if="wsConnected" class="hidden md:inline-flex items-center gap-1 text-[10px] font-medium text-emerald-600 dark:text-emerald-400" title="Real-time aktif">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
             Online
           </span>
-          <span v-else class="hidden md:inline-flex items-center gap-1 text-[10px] font-medium text-amber-500" title="Mode offline — data tersimpan lokal">
+          <span v-else class="hidden md:inline-flex items-center gap-1 text-[10px] font-medium text-amber-500 dark:text-amber-400" title="Mode offline — data tersimpan lokal">
             <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
             Offline
-            <span v-if="offlinePendingCount > 0" class="ml-0.5 px-1 py-0 text-[9px] font-bold bg-amber-100 text-amber-700 rounded-full">{{ offlinePendingCount }} pending</span>
+            <span v-if="offlinePendingCount > 0" class="ml-0.5 px-1 py-0 text-[9px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-full">{{ offlinePendingCount }} pending</span>
           </span>
-          <div class="h-8 w-px bg-slate-200"></div>
+          <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
           <RouterLink to="/admin/profil" class="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer" title="Profil Saya">
             <div
               class="w-9 h-9 rounded-full bg-blue-100 border-2 border-blue-200 flex items-center justify-center text-xs font-semibold text-blue-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
@@ -374,8 +374,8 @@
               <span v-else>{{ userInitials }}</span>
             </div>
             <div class="text-right hidden lg:block">
-              <p class="text-xs font-semibold text-slate-900">{{ displayName }}</p>
-              <p class="text-[11px] text-slate-500">{{ roleLabel }}</p>
+              <p class="text-xs font-semibold text-slate-900 dark:text-slate-100">{{ displayName }}</p>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ roleLabel }}</p>
             </div>
           </RouterLink>
         </div>
@@ -383,24 +383,26 @@
 
 
 
-      <!-- Branch Context Banner — simple inline -->
-      <div class="sticky top-16 z-10 bg-slate-50 border-b border-slate-200 px-4 lg:px-6 py-1.5 flex items-center justify-between">
-        <div class="flex items-center gap-2 min-w-0">
-          <div :class="['w-2 h-2 rounded-full shrink-0', wsConnected ? 'bg-emerald-500' : 'bg-amber-400']" :title="wsConnected ? 'Online' : 'Offline'"></div>
-          <p class="text-xs font-medium text-slate-700 truncate">{{ currentShopName || 'Belum dipilih' }}</p>
-          <span v-if="currentShopAddress" class="text-[10px] text-slate-400 truncate hidden sm:inline">· {{ currentShopAddress }}</span>
+      <!-- Branch Context Banner -->
+      <div class="sticky top-16 z-10 bg-gradient-to-r from-[#03a29c] via-[#03a29c] to-[#006a66] dark:from-[#003735] dark:via-[#003735] dark:to-[#00201e] px-4 lg:px-6 py-2 flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-3 min-w-0">
+          <div :class="['w-2 h-2 rounded-full shrink-0', wsConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400']" :title="wsConnected ? 'Online' : 'Offline'"></div>
+          <div class="min-w-0">
+            <p class="text-xs font-bold text-white truncate">{{ currentShopName || 'Belum dipilih' }}</p>
+            <p class="text-[10px] text-blue-200 dark:text-blue-300 truncate">{{ currentShopAddress }}</p>
+          </div>
         </div>
         <button
           v-if="canSwitchShop"
           type="button"
-          class="shrink-0 h-6 px-2.5 text-[10px] font-semibold text-blue-600 bg-blue-50 border border-blue-200 rounded-md hover:bg-blue-100 transition-colors"
+          class="shrink-0 h-7 px-3 text-[10px] font-semibold text-blue-100 bg-white/10 border border-white/20 rounded-md hover:bg-white/20 transition-colors"
           @click="openSwitchModal"
         >
           Ganti Cabang
         </button>
       </div>
 
-      <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto text-slate-900">
+      <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto text-slate-900 dark:text-[#e3e2e2]">
         <RouterView />
       </div>
     </main>
@@ -411,10 +413,10 @@
     <Teleport to="body">
       <div v-if="showBranchPickerModal" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50" @click="showBranchPickerModal = false"></div>
-        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
-          <div class="px-6 pt-5 pb-3 border-b border-slate-100">
-            <h3 class="text-base font-bold text-slate-900">Ganti Cabang Aktif</h3>
-            <p class="text-xs text-slate-500 mt-1">Pilih cabang yang ingin dikelola. Semua data akan mengikuti konteks cabang terpilih.</p>
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+          <div class="px-6 pt-5 pb-3 border-b border-slate-100 dark:border-slate-800">
+            <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Ganti Cabang Aktif</h3>
+            <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Pilih cabang yang ingin dikelola. Semua data akan mengikuti konteks cabang terpilih.</p>
           </div>
           <div class="max-h-80 overflow-y-auto p-3 space-y-2">
             <button
@@ -425,23 +427,23 @@
               :class="[
                 'w-full flex items-center gap-3 p-3 rounded-xl border transition-all text-left',
                 currentShopId === shop.id
-                  ? 'border-blue-300 bg-blue-50/30'
-                  : 'border-slate-200 hover:border-blue-200 hover:bg-slate-50',
+                  ? 'border-blue-300 dark:border-blue-700 bg-blue-50 dark:bg-blue-950/30'
+                  : 'border-slate-200 dark:border-slate-700 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-slate-50 dark:hover:bg-slate-800',
               ]"
               @click="handleSwitchShop(shop.id)"
             >
-              <div :class="['w-10 h-10 rounded-xl flex items-center justify-center shrink-0', currentShopId === shop.id ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500']">
+              <div :class="['w-10 h-10 rounded-xl flex items-center justify-center shrink-0', currentShopId === shop.id ? 'bg-blue-600 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400']">
                 <component :is="currentShopId === shop.id ? CheckIcon : StoreIcon" class="w-5 h-5" />
               </div>
               <div class="flex-1 min-w-0">
-                <p :class="['text-sm font-semibold truncate', currentShopId === shop.id ? 'text-blue-700' : 'text-slate-900']">{{ shop.name }}</p>
-                <p class="text-[11px] text-slate-500 truncate">{{ shop.address }}</p>
+                <p :class="['text-sm font-semibold truncate', currentShopId === shop.id ? 'text-blue-700 dark:text-blue-300' : 'text-slate-900 dark:text-slate-100']">{{ shop.name }}</p>
+                <p class="text-[11px] text-slate-500 dark:text-slate-400 truncate">{{ shop.address }}</p>
               </div>
-              <span v-if="currentShopId === shop.id" class="text-[9px] font-bold uppercase text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full shrink-0">Aktif</span>
+              <span v-if="currentShopId === shop.id" class="text-[9px] font-bold uppercase text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/50 px-2 py-0.5 rounded-full shrink-0">Aktif</span>
             </button>
           </div>
-          <div class="px-6 py-3 border-t border-slate-100 bg-slate-50/50">
-            <button type="button" class="w-full h-9 text-xs font-semibold text-slate-600 hover:text-slate-900" @click="showBranchPickerModal = false">Batal</button>
+          <div class="px-6 py-3 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
+            <button type="button" class="w-full h-9 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200" @click="showBranchPickerModal = false">Batal</button>
           </div>
         </div>
       </div>
@@ -453,27 +455,27 @@
     <Teleport to="body">
       <div v-if="showSwitchConfirmation" class="fixed inset-0 z-[60] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50" @click="cancelSwitchShop"></div>
-        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
           <div class="flex items-start gap-3">
-            <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+            <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
               <Building2Icon class="w-5 h-5 text-amber-600" />
             </div>
             <div class="min-w-0">
-              <h3 class="text-base font-bold text-slate-900">
+              <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">
                 Ganti Cabang Aktif?
               </h3>
-              <p class="text-xs text-slate-500 mt-1">
-                Anda akan beralih dari <strong class="text-slate-700">{{ currentShopName || '—' }}</strong> ke
-                <strong class="text-blue-700">{{ pendingSwitchShopName }}</strong>.
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+                Anda akan beralih dari <strong class="text-slate-700 dark:text-slate-200">{{ currentShopName || '—' }}</strong> ke
+                <strong class="text-blue-700 dark:text-blue-400">{{ pendingSwitchShopName }}</strong>.
               </p>
             </div>
           </div>
 
-          <div class="bg-amber-50 border border-amber-200 rounded-lg p-3 space-y-1.5">
-            <p class="text-[11px] font-bold text-amber-800 uppercase">
+          <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 space-y-1.5">
+            <p class="text-[11px] font-bold text-amber-800 dark:text-amber-300 uppercase">
               ⚠️ Yang akan berubah:
             </p>
-            <ul class="text-[11px] text-amber-700 space-y-0.5 ml-1">
+            <ul class="text-[11px] text-amber-700 dark:text-amber-300 space-y-0.5 ml-1">
               <li>• Data produk &amp; stok yang ditampilkan</li>
               <li>• Pengaturan sistem (toggle ON/OFF)</li>
               <li>• Transaksi, hutang, kas, dan laporan</li>
@@ -481,13 +483,13 @@
             </ul>
           </div>
 
-          <p v-if="switchError" class="text-xs text-red-600">{{ switchError }}</p>
+          <p v-if="switchError" class="text-xs text-red-600 dark:text-red-400">{{ switchError }}</p>
 
           <div class="flex justify-end gap-2 pt-1">
             <button
               type="button"
               :disabled="switchingShop"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-100 disabled:opacity-50"
+              class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50"
               @click="cancelSwitchShop"
             >
               Batal
@@ -511,14 +513,14 @@
       <Transition name="fade">
         <div
           v-if="showSwitchOverlay"
-          class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/95 backdrop-blur-sm"
+          class="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-white/95 dark:bg-slate-950/95 backdrop-blur-sm"
         >
           <div class="text-center space-y-4">
             <!-- Animated icon -->
             <div class="relative mx-auto w-16 h-16">
-              <div class="absolute inset-0 border-4 border-blue-100 rounded-full"></div>
+              <div class="absolute inset-0 border-4 border-blue-100 dark:border-blue-900 rounded-full"></div>
               <div class="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
-              <div class="absolute inset-3 bg-blue-50 rounded-full flex items-center justify-center">
+              <div class="absolute inset-3 bg-blue-50 dark:bg-blue-950 rounded-full flex items-center justify-center">
                 <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                 </svg>
@@ -526,8 +528,8 @@
             </div>
             <!-- Text -->
             <div>
-              <p class="text-lg font-bold text-slate-900">Pindah Cabang</p>
-              <p class="text-sm text-slate-500 mt-1">
+              <p class="text-lg font-bold text-slate-900 dark:text-slate-100">Pindah Cabang</p>
+              <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
                 Memuat data <strong class="text-blue-600">{{ switchOverlayShopName }}</strong>...
               </p>
             </div>
@@ -853,7 +855,7 @@ function alertDotColor(severity: string): string {
   return 'bg-blue-400';
 }
 function alertTypeBadge(type: string): string {
-  const m: Record<string, string> = { LOW_STOCK: 'bg-red-100 text-red-700', BRILINK_LOW: 'bg-amber-100 text-amber-700', NO_SHIFT: 'bg-blue-100 text-blue-700', DEBT_OVERDUE: 'bg-purple-100 text-purple-700' };
+  const m: Record<string, string> = { LOW_STOCK: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300', BRILINK_LOW: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300', NO_SHIFT: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300', DEBT_OVERDUE: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' };
   return m[type] || 'bg-slate-100 text-slate-600';
 }
 function alertTypeShort(type: string): string {
