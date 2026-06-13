@@ -23,7 +23,7 @@
         <p class="text-[11px] text-slate-500 dark:text-slate-400">Total Transaksi</p>
         <p class="text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] dark:text-slate-100">
           {{ kpi ? kpi.transactions.current : 0 }}
-          <span class="text-xs font-normal text-slate-400">/ {{ kpi?.transactions.target ?? 0 }}</span>
+          <span class="text-xs font-normal text-slate-400 dark:text-[#869392]">/ {{ kpi?.transactions.target ?? 0 }}</span>
         </p>
         <div class="mt-2 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
           <div class="h-full rounded-full bg-blue-500 transition-all duration-500" :style="{ width: (kpi?.transactions.percent ?? 0) + '%' }" />
@@ -96,7 +96,7 @@
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
       <!-- Search -->
       <div class="relative">
-        <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+        <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-[#869392]" />
         <input
           v-model="filterSearch"
           type="text"

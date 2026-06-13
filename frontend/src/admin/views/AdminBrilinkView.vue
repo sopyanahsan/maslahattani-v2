@@ -245,7 +245,7 @@
                     ? 'text-emerald-600 dark:text-emerald-400'
                     : item.change < 0
                       ? 'text-red-600 dark:text-red-400'
-                      : 'text-slate-400',
+                      : 'text-slate-400 dark:text-[#869392]',
                 ]"
               >
                 {{ item.change > 0 ? '▲' : item.change < 0 ? '▼' : '—' }}

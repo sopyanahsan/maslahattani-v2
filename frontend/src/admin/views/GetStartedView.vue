@@ -19,15 +19,15 @@
         <div class="mt-8 grid grid-cols-3 gap-3 text-center">
           <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
             <p class="text-lg font-bold text-[#00A19B]">1</p>
-            <p class="text-[10px] text-slate-500 mt-0.5">Data Toko</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">Data Toko</p>
           </div>
           <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
             <p class="text-lg font-bold text-[#00A19B]">2</p>
-            <p class="text-[10px] text-slate-500 mt-0.5">Fitur</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">Fitur</p>
           </div>
           <div class="p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
             <p class="text-lg font-bold text-[#00A19B]">3</p>
-            <p class="text-[10px] text-slate-500 mt-0.5">Selesai</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">Selesai</p>
           </div>
         </div>
         <button @click="step = 2" class="w-full h-11 bg-[#00A19B] text-white text-sm font-bold rounded-xl hover:opacity-90 mt-6 transition-colors">
@@ -71,35 +71,35 @@
             <span class="text-lg">🛒</span>
             <div>
               <p class="text-xs font-bold text-slate-800 dark:text-slate-200">POS Kasir</p>
-              <p class="text-[11px] text-slate-500 mt-0.5">Scan barcode, multi-metode bayar (Tunai, QRIS, Hutang). Bisa offline.</p>
+              <p class="text-[11px] text-slate-500 dark:text-[#869392] mt-0.5">Scan barcode, multi-metode bayar (Tunai, QRIS, Hutang). Bisa offline.</p>
             </div>
           </div>
           <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
             <span class="text-lg">🏦</span>
             <div>
               <p class="text-xs font-bold text-slate-800 dark:text-slate-200">BRILink</p>
-              <p class="text-[11px] text-slate-500 mt-0.5">Transfer, tarik tunai, top-up — otomatis hitung fee & saldo.</p>
+              <p class="text-[11px] text-slate-500 dark:text-[#869392] mt-0.5">Transfer, tarik tunai, top-up — otomatis hitung fee & saldo.</p>
             </div>
           </div>
           <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
             <span class="text-lg">📊</span>
             <div>
               <p class="text-xs font-bold text-slate-800 dark:text-slate-200">Laporan Otomatis</p>
-              <p class="text-[11px] text-slate-500 mt-0.5">Dashboard real-time, laba rugi, produk terlaris, export PDF/Excel.</p>
+              <p class="text-[11px] text-slate-500 dark:text-[#869392] mt-0.5">Dashboard real-time, laba rugi, produk terlaris, export PDF/Excel.</p>
             </div>
           </div>
           <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
             <span class="text-lg">📦</span>
             <div>
               <p class="text-xs font-bold text-slate-800 dark:text-slate-200">Stok & Inventaris</p>
-              <p class="text-[11px] text-slate-500 mt-0.5">Opname, supplier, transfer antar cabang, notifikasi stok habis.</p>
+              <p class="text-[11px] text-slate-500 dark:text-[#869392] mt-0.5">Opname, supplier, transfer antar cabang, notifikasi stok habis.</p>
             </div>
           </div>
           <div class="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-xl">
             <span class="text-lg">👥</span>
             <div>
               <p class="text-xs font-bold text-slate-800 dark:text-slate-200">Multi-User & Shift</p>
-              <p class="text-[11px] text-slate-500 mt-0.5">Admin, Kasir — atur permission, shift kasir, hitung variance.</p>
+              <p class="text-[11px] text-slate-500 dark:text-[#869392] mt-0.5">Admin, Kasir — atur permission, shift kasir, hitung variance.</p>
             </div>
           </div>
         </div>
@@ -124,7 +124,7 @@
         <p class="text-sm text-slate-500 dark:text-slate-400 mt-2">
           <strong>{{ shopForm.name }}</strong> berhasil di-setup. Selamat menggunakan Posify!
         </p>
-        <p class="text-xs text-slate-400 mt-4">Mengarahkan ke dashboard...</p>
+        <p class="text-xs text-slate-400 dark:text-[#869392] mt-4">Mengarahkan ke dashboard...</p>
       </div>
     </div>
   </div>

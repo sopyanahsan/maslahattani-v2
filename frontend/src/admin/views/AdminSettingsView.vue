@@ -2,7 +2,7 @@
   <div class="space-y-5">
     <div>
     <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-slate-700 to-slate-600 px-6 py-5 text-white shadow-lg">
-      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/5" />
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white dark:bg-[#1e2020]/5" />
       <h1 class="relative text-lg font-bold">Pengaturan</h1>
       <p class="relative text-xs text-slate-300 mt-0.5">Kelola konfigurasi toko, struk, dan preferensi sistem.</p>
     </div>
@@ -13,7 +13,7 @@
 
     <!-- Tab switcher -->
     <div
-      class="border-b border-slate-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8"
+      class="border-b border-slate-200 dark:border-[#3d4948] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8"
     >
       <nav class="flex gap-1 overflow-x-auto">
         <button
@@ -24,7 +24,7 @@
             'px-3 py-2 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1.5 shrink-0',
             activeTab === tab.value
               ? 'border-blue-600 text-blue-700'
-              : 'border-transparent text-slate-600 hover:text-slate-900',
+              : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-[#e3e2e2]',
           ]"
           @click="activeTab = tab.value"
         >
@@ -60,14 +60,14 @@
         <div
           class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]"
         >
-          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] flex items-center gap-2">
             <StoreIcon class="w-4 h-4 text-blue-600" /> Data Toko
           </h3>
         </div>
         <form class="p-5 space-y-4" @submit.prevent="handleSaveShop">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
                 Nama Toko
               </label>
               <input
@@ -77,7 +77,7 @@
               />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
                 No. Telepon
               </label>
               <input
@@ -88,13 +88,13 @@
             </div>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
               Alamat
             </label>
             <textarea
               v-model="shopForm.address"
               rows="2"
-              class="w-full text-sm border border-slate-200 rounded-md px-3 py-2 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none resize-none"
+              class="w-full text-sm border border-slate-200 dark:border-[#3d4948] rounded-md px-3 py-2 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none resize-none"
             />
           </div>
           <div
@@ -124,10 +124,10 @@
         class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden"
       >
         <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
-          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] flex items-center gap-2">
             Zona Waktu
           </h3>
-          <p class="text-[11px] text-slate-500 mt-0.5">Atur zona waktu sesuai lokasi cabang.</p>
+          <p class="text-[11px] text-slate-500 dark:text-[#869392] mt-0.5">Atur zona waktu sesuai lokasi cabang.</p>
         </div>
         <div class="p-5 space-y-4">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -139,12 +139,12 @@
                 'p-4 rounded-lg border-2 text-left transition-all',
                 currentTimezone === tz.value
                   ? 'border-[#00A19B] bg-[#00A19B]/5[#00A19B]/10'
-                  : 'border-slate-200 hover:border-slate-200'
+                  : 'border-slate-200 dark:border-[#3d4948] hover:border-slate-200 dark:border-[#3d4948]'
               ]"
               @click="handleChangeTimezone(tz.value)"
             >
               <p class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ tz.label }}</p>
-              <p class="text-[10px] text-slate-500 mt-0.5">{{ tz.offset }}</p>
+              <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">{{ tz.offset }}</p>
               <p v-if="currentTimezone === tz.value" class="text-[10px] font-semibold text-[#00A19B] mt-1">Aktif</p>
             </button>
           </div>
@@ -167,7 +167,7 @@
         <div
           class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]"
         >
-          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] flex items-center gap-2">
             <PrinterIcon class="w-4 h-4 text-amber-600" /> Pengaturan Struk
           </h3>
         </div>
@@ -177,9 +177,9 @@
               id="autoPrint"
               v-model="receiptForm.autoPrint"
               type="checkbox"
-              class="w-4 h-4 text-blue-600 border-slate-200 rounded focus:ring-blue-500"
+              class="w-4 h-4 text-blue-600 border-slate-200 dark:border-[#3d4948] rounded focus:ring-blue-500"
             />
-            <label for="autoPrint" class="text-xs font-semibold text-slate-700">
+            <label for="autoPrint" class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]">
               Auto-print setelah transaksi
             </label>
           </div>
@@ -188,14 +188,14 @@
               id="mergeReceipts"
               v-model="receiptForm.mergeReceipts"
               type="checkbox"
-              class="w-4 h-4 text-blue-600 border-slate-200 rounded focus:ring-blue-500"
+              class="w-4 h-4 text-blue-600 border-slate-200 dark:border-[#3d4948] rounded focus:ring-blue-500"
             />
-            <label for="mergeReceipts" class="text-xs font-semibold text-slate-700">
+            <label for="mergeReceipts" class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]">
               Gabungkan struk multi-item
             </label>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
               Pesan di Footer Struk
             </label>
             <input
@@ -208,14 +208,14 @@
 
           <!-- Logo Struk -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
               Logo Struk
             </label>
-            <p class="text-[10px] text-slate-500 mb-2">
+            <p class="text-[10px] text-slate-500 dark:text-[#869392] mb-2">
               Logo akan muncul di bagian atas struk. Format: PNG, JPG, SVG. Maks 2MB.
             </p>
             <div v-if="receiptForm.logoUrl" class="flex items-center gap-3 mb-2">
-              <div class="w-16 h-16 border border-slate-200 rounded-md overflow-hidden bg-white flex items-center justify-center p-1">
+              <div class="w-16 h-16 border border-slate-200 rounded-md overflow-hidden bg-white dark:bg-[#1e2020] flex items-center justify-center p-1">
                 <img :src="receiptForm.logoUrl" alt="Logo struk" class="max-w-full max-h-full object-contain" />
               </div>
               <button
@@ -228,7 +228,7 @@
               </button>
             </div>
             <label
-              class="inline-flex items-center gap-1.5 h-8 px-3 text-[11px] font-semibold text-slate-600 bg-slate-100 border border-slate-200 rounded-md hover:bg-slate-200 cursor-pointer transition-colors"
+              class="inline-flex items-center gap-1.5 h-8 px-3 text-[11px] font-semibold text-slate-600 dark:text-[#bcc9c7] bg-slate-100 border border-slate-200 rounded-md hover:bg-slate-200 cursor-pointer transition-colors"
             >
               <Loader2Icon v-if="uploadingLogo" class="w-3.5 h-3.5 animate-spin" />
               <ImagePlusIcon v-else class="w-3.5 h-3.5" />
@@ -252,7 +252,7 @@
           <div class="flex items-center justify-between">
             <button
               type="button"
-              class="h-9 px-3 text-xs font-semibold text-slate-600 bg-slate-100 border border-slate-200 rounded-md hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+              class="h-9 px-3 text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] bg-slate-100 border border-slate-200 rounded-md hover:bg-slate-200 transition-colors flex items-center gap-1.5"
               @click="showReceiptPreview = !showReceiptPreview"
             >
               <component :is="showReceiptPreview ? EyeOffIcon : EyeIcon" class="w-3.5 h-3.5" />
@@ -280,9 +280,9 @@
         >
           <div
             v-if="showReceiptPreview"
-            class="border-t border-slate-200 bg-slate-50/30 p-5 overflow-hidden"
+            class="border-t border-slate-200 bg-slate-50 dark:bg-[#1a1c1c]/30 p-5 overflow-hidden"
           >
-            <p class="text-[11px] text-slate-500 text-center mb-3">
+            <p class="text-[11px] text-slate-500 dark:text-[#869392] text-center mb-3">
               Preview menggunakan data toko & footer yang sedang diisi.
             </p>
             <ReceiptPreview
@@ -304,48 +304,48 @@
         <div
           class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]"
         >
-          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] flex items-center gap-2">
             <SettingsIcon class="w-4 h-4 text-blue-600" /> POS / Kasir
           </h3>
-          <p class="text-[11px] text-slate-500 mt-0.5">
+          <p class="text-[11px] text-slate-500 dark:text-[#869392] mt-0.5">
             Preferensi untuk aplikasi kasir (webapp).
           </p>
         </div>
         <div class="p-5 space-y-4">
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-xs font-semibold text-slate-700">Konfirmasi sebelum checkout</p>
-              <p class="text-[10px] text-slate-500 mt-0.5">Tampilkan dialog konfirmasi sebelum transaksi diproses.</p>
+              <p class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]">Konfirmasi sebelum checkout</p>
+              <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">Tampilkan dialog konfirmasi sebelum transaksi diproses.</p>
             </div>
             <button
               type="button"
               :class="['w-10 h-5 rounded-full relative transition-colors', posForm.confirmBeforeCheckout ? 'bg-emerald-500' : 'bg-slate-300']"
               @click="posForm.confirmBeforeCheckout = !posForm.confirmBeforeCheckout"
             >
-              <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform', posForm.confirmBeforeCheckout ? 'left-[22px]' : 'left-0.5']" />
+              <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white dark:bg-[#1e2020] shadow transition-transform', posForm.confirmBeforeCheckout ? 'left-[22px]' : 'left-0.5']" />
             </button>
           </div>
           <div class="flex items-center justify-between">
             <div>
-              <p class="text-xs font-semibold text-slate-700">Tampilkan barcode scanner</p>
-              <p class="text-[10px] text-slate-500 mt-0.5">Aktifkan input scan barcode di halaman POS.</p>
+              <p class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]">Tampilkan barcode scanner</p>
+              <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">Aktifkan input scan barcode di halaman POS.</p>
             </div>
             <button
               type="button"
               :class="['w-10 h-5 rounded-full relative transition-colors', posForm.showBarcodeScanner ? 'bg-emerald-500' : 'bg-slate-300']"
               @click="posForm.showBarcodeScanner = !posForm.showBarcodeScanner"
             >
-              <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform', posForm.showBarcodeScanner ? 'left-[22px]' : 'left-0.5']" />
+              <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white dark:bg-[#1e2020] shadow transition-transform', posForm.showBarcodeScanner ? 'left-[22px]' : 'left-0.5']" />
             </button>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Default metode bayar</label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Default metode bayar</label>
             <select v-model="posForm.defaultPaymentMethod" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none">
               <option value="CASH">Cash (Tunai)</option>
               <option value="QRIS">QRIS</option>
               <option value="TRANSFER">Transfer Bank</option>
             </select>
-            <p class="text-[10px] text-slate-500 mt-1">Metode bayar yang otomatis terpilih saat checkout.</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-1">Metode bayar yang otomatis terpilih saat checkout.</p>
           </div>
         </div>
       </section>
@@ -360,18 +360,18 @@
         <div
           class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]"
         >
-          <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] flex items-center gap-2">
             <BellIcon class="w-4 h-4 text-orange-600" />
             Notifikasi & Alert
           </h3>
-          <p class="text-[11px] text-slate-500 mt-1">
+          <p class="text-[11px] text-slate-500 dark:text-[#869392] mt-1">
             Konfigurasi threshold yang muncul di Dashboard Retail &amp; BRILink.
           </p>
         </div>
         <form class="p-5 space-y-4" @submit.prevent="handleSaveAlert">
           <div>
             <label
-              class="block text-xs font-semibold text-slate-700 mb-1"
+              class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1"
               for="lowStockThreshold"
             >
               Threshold Stok Menipis (unit)
@@ -383,7 +383,7 @@
               min="0"
               class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
             />
-            <p class="text-[10px] text-slate-500 mt-1">
+            <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-1">
               Produk dengan stok ≤ angka ini akan masuk alert "Stok Menipis".
               Default: 5 unit.
             </p>
@@ -391,7 +391,7 @@
 
           <div>
             <label
-              class="block text-xs font-semibold text-slate-700 mb-1"
+              class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1"
               for="shiftDurationWarningHours"
             >
               Threshold Shift Lama (jam)
@@ -403,7 +403,7 @@
               min="0"
               class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
             />
-            <p class="text-[10px] text-slate-500 mt-1">
+            <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-1">
               Shift OPEN yang sudah lebih dari sekian jam akan dianggap "lupa
               ditutup". Default: 8 jam.
             </p>
@@ -411,7 +411,7 @@
 
           <div>
             <label
-              class="block text-xs font-semibold text-slate-700 mb-1"
+              class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1"
               for="overdueDebtDaysBeforeNotice"
             >
               H- Notifikasi Hutang Jatuh Tempo (hari)
@@ -423,7 +423,7 @@
               min="0"
               class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
             />
-            <p class="text-[10px] text-slate-500 mt-1">
+            <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-1">
               0 = tampil saat tepat jatuh tempo. 3 = tampil 3 hari sebelumnya.
               Default: 0.
             </p>
@@ -431,7 +431,7 @@
 
           <div>
             <label
-              class="block text-xs font-semibold text-slate-700 mb-1"
+              class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1"
               for="brilinkFailedTransactionThreshold"
             >
               Threshold Transaksi BRILink Gagal (per hari)
@@ -443,7 +443,7 @@
               min="0"
               class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
             />
-            <p class="text-[10px] text-slate-500 mt-1">
+            <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-1">
               Jika jumlah transaksi BRILink gagal hari ini ≥ angka ini, akan muncul alert
               di Dashboard BRILink. Default: 5.
             </p>
@@ -465,7 +465,7 @@
           <div class="flex items-center justify-between">
             <button
               type="button"
-              class="text-[11px] font-semibold text-slate-500 hover:text-slate-700"
+              class="text-[11px] font-semibold text-slate-500 hover:text-slate-700 dark:text-[#bcc9c7]"
               @click="resetAlertToDefault"
             >
               Reset ke default
@@ -482,25 +482,25 @@
         </form>
 
         <!-- Notification Sound Settings -->
-        <div class="border-t border-slate-200 pt-5 mt-5">
-          <h4 class="text-sm font-bold text-slate-900 mb-3">Suara Notifikasi</h4>
+        <div class="border-t border-slate-200 dark:border-[#3d4948] pt-5 mt-5">
+          <h4 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] mb-3">Suara Notifikasi</h4>
           <div class="space-y-4">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-xs font-semibold text-slate-700">Aktifkan suara notifikasi</p>
-                <p class="text-[10px] text-slate-500 mt-0.5">Bunyi saat ada alert baru (stok rendah, hutang jatuh tempo, dll)</p>
+                <p class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]">Aktifkan suara notifikasi</p>
+                <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">Bunyi saat ada alert baru (stok rendah, hutang jatuh tempo, dll)</p>
               </div>
               <button
                 type="button"
                 :class="['w-10 h-5 rounded-full relative transition-colors', notifSoundEnabled ? 'bg-emerald-500' : 'bg-slate-300']"
                 @click="toggleNotifSound"
               >
-                <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform', notifSoundEnabled ? 'left-[22px]' : 'left-0.5']" />
+                <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white dark:bg-[#1e2020] shadow transition-transform', notifSoundEnabled ? 'left-[22px]' : 'left-0.5']" />
               </button>
             </div>
 
             <div v-if="notifSoundEnabled">
-              <label class="block text-xs font-semibold text-slate-700 mb-2">Pilih Tone</label>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-2">Pilih Tone</label>
               <div class="flex flex-wrap gap-2">
                 <button
                   v-for="tone in toneOptions"
@@ -509,13 +509,13 @@
                   :class="['h-8 px-3 text-xs font-semibold rounded-lg border transition-colors flex items-center gap-1.5',
                     notifSoundTone === tone.value
                       ? 'bg-blue-50 border-blue-300 text-blue-700'
-                      : 'bg-white border-slate-200 text-slate-600 hover:border-blue-200']"
+                      : 'bg-white border-slate-200 text-slate-600 dark:text-[#bcc9c7] hover:border-blue-200']"
                   @click="selectTone(tone.value)"
                 >
                   {{ tone.icon }} {{ tone.label }}
                 </button>
               </div>
-              <p class="text-[10px] text-slate-400 mt-2">Klik untuk preview & select.</p>
+              <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-2">Klik untuk preview & select.</p>
             </div>
           </div>
         </div>
@@ -530,10 +530,10 @@
         <!-- Keamanan Section -->
         <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
           <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
-            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] flex items-center gap-2">
               <SettingsIcon class="w-4 h-4 text-red-600" /> Keamanan
             </h3>
-            <p class="text-[11px] text-slate-500 mt-0.5">
+            <p class="text-[11px] text-slate-500 dark:text-[#869392] mt-0.5">
               Pengaturan autentikasi dan keamanan akun.
             </p>
           </div>
@@ -541,37 +541,37 @@
             <!-- 2FA for Super Admin -->
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-xs font-semibold text-slate-700">2FA wajib untuk Super Admin</p>
-                <p class="text-[10px] text-slate-500 mt-0.5">Kode OTP dikirim ke email setiap login Super Admin.</p>
+                <p class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]">2FA wajib untuk Super Admin</p>
+                <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">Kode OTP dikirim ke email setiap login Super Admin.</p>
               </div>
               <button
                 type="button"
                 :class="['w-10 h-5 rounded-full relative transition-colors', securityForm.otpSuperAdmin ? 'bg-emerald-500' : 'bg-slate-300']"
                 @click="securityForm.otpSuperAdmin = !securityForm.otpSuperAdmin"
               >
-                <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform', securityForm.otpSuperAdmin ? 'left-[22px]' : 'left-0.5']" />
+                <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white dark:bg-[#1e2020] shadow transition-transform', securityForm.otpSuperAdmin ? 'left-[22px]' : 'left-0.5']" />
               </button>
             </div>
 
             <!-- 2FA for Admin Cabang -->
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-xs font-semibold text-slate-700">2FA untuk Admin Cabang</p>
-                <p class="text-[10px] text-slate-500 mt-0.5">Opsional — admin cabang bisa aktifkan sendiri di Profil.</p>
+                <p class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]">2FA untuk Admin Cabang</p>
+                <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">Opsional — admin cabang bisa aktifkan sendiri di Profil.</p>
               </div>
               <button
                 type="button"
                 :class="['w-10 h-5 rounded-full relative transition-colors', securityForm.otpAdminCabang ? 'bg-emerald-500' : 'bg-slate-300']"
                 @click="securityForm.otpAdminCabang = !securityForm.otpAdminCabang"
               >
-                <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform', securityForm.otpAdminCabang ? 'left-[22px]' : 'left-0.5']" />
+                <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white dark:bg-[#1e2020] shadow transition-transform', securityForm.otpAdminCabang ? 'left-[22px]' : 'left-0.5']" />
               </button>
             </div>
 
-            <div class="border-t border-slate-200 pt-4 space-y-4">
+            <div class="border-t border-slate-200 dark:border-[#3d4948] pt-4 space-y-4">
               <!-- Max PIN attempts -->
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
                   Max percobaan PIN (sebelum lock)
                 </label>
                 <input
@@ -581,14 +581,14 @@
                   max="10"
                   class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none"
                 />
-                <p class="text-[10px] text-slate-500 mt-1">
+                <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-1">
                   Kasir yang salah PIN sebanyak ini akan di-lock sementara. Default: 5.
                 </p>
               </div>
 
               <!-- PIN lock duration -->
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">
+                <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
                   Durasi lock PIN (menit)
                 </label>
                 <input
@@ -598,25 +598,25 @@
                   max="60"
                   class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none"
                 />
-                <p class="text-[10px] text-slate-500 mt-1">
+                <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-1">
                   Berapa lama akun kasir di-lock setelah max percobaan. Default: 15 menit.
                 </p>
               </div>
             </div>
 
             <!-- Force password change for new accounts -->
-            <div class="border-t border-slate-200 pt-4">
+            <div class="border-t border-slate-200 dark:border-[#3d4948] pt-4">
               <div class="flex items-center justify-between">
                 <div>
-                  <p class="text-xs font-semibold text-slate-700">Wajib ganti password/PIN saat login pertama</p>
-                  <p class="text-[10px] text-slate-500 mt-0.5">Akun baru wajib mengubah kredensial sebelum bisa mengakses sistem.</p>
+                  <p class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]">Wajib ganti password/PIN saat login pertama</p>
+                  <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">Akun baru wajib mengubah kredensial sebelum bisa mengakses sistem.</p>
                 </div>
                 <button
                   type="button"
                   :class="['w-10 h-5 rounded-full relative transition-colors', securityForm.forceChangeOnFirstLogin ? 'bg-emerald-500' : 'bg-slate-300']"
                   @click="securityForm.forceChangeOnFirstLogin = !securityForm.forceChangeOnFirstLogin"
                 >
-                  <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform', securityForm.forceChangeOnFirstLogin ? 'left-[22px]' : 'left-0.5']" />
+                  <span :class="['absolute top-0.5 w-4 h-4 rounded-full bg-white dark:bg-[#1e2020] shadow transition-transform', securityForm.forceChangeOnFirstLogin ? 'left-[22px]' : 'left-0.5']" />
                 </button>
               </div>
             </div>

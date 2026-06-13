@@ -2,8 +2,8 @@
   <div class="space-y-5">
     <!-- Header -->
     <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 text-white shadow-lg">
-      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
-      <div class="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white/5" />
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white dark:bg-[#1e2020]/10" />
+      <div class="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white dark:bg-[#1e2020]/5" />
       <h1 class="relative text-lg font-bold">Transfer Stok</h1>
       <p class="relative text-xs text-blue-100 mt-0.5">Kirim dan terima stok antar cabang.</p>
     </div>
@@ -42,8 +42,8 @@
     </div>
 
     <!-- Transfer List -->
-    <div v-if="loading" class="text-center py-10 text-slate-500 text-sm">Memuat...</div>
-    <div v-else-if="transfers.length === 0" class="text-center py-10 text-slate-400 text-sm">Belum ada transfer stok.</div>
+    <div v-if="loading" class="text-center py-10 text-slate-500 dark:text-[#869392] text-sm">Memuat...</div>
+    <div v-else-if="transfers.length === 0" class="text-center py-10 text-slate-400 dark:text-[#869392] text-sm">Belum ada transfer stok.</div>
     <div v-else class="space-y-2">
       <!-- Incoming transfers needing action (badge) -->
       <div v-if="incomingPendingCount > 0" class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex items-center gap-2 mb-3">
@@ -62,8 +62,8 @@
         v-for="t in transfers"
         :key="t.id"
         :class="[
-          'bg-white border rounded-lg p-4 hover:border-slate-200 transition-colors cursor-pointer',
-          isIncoming(t) && t.status === 'IN_TRANSIT' ? 'border-blue-300 bg-blue-50/50' : 'border-slate-200'
+          'bg-white dark:bg-[#1e2020] border rounded-lg p-4 hover:border-slate-200 transition-colors cursor-pointer',
+          isIncoming(t) && t.status === 'IN_TRANSIT' ? 'border-blue-300 bg-blue-50/50' : 'border-slate-200 dark:border-[#3d4948]'
         ]"
         @click="openDetail(t)"
       >
@@ -93,7 +93,7 @@
             <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">
               {{ t.fromShopName }} &rarr; {{ t.toShopName }} &middot; {{ t.itemCount }} item
             </p>
-            <p class="text-[11px] text-slate-400 mt-0.5">
+            <p class="text-[11px] text-slate-400 dark:text-[#869392] mt-0.5">
               Diminta oleh {{ t.requestedByName }} &middot; {{ formatDate(t.requestedAt) }}
             </p>
           </div>
@@ -116,16 +116,16 @@
     <!-- ============================================ -->
     <teleport to="body">
       <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showCreateModal = false">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
-          <h2 class="text-base font-bold text-slate-900 mb-4">Buat Transfer Stok</h2>
+        <div class="bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
+          <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2] mb-4">Buat Transfer Stok</h2>
           <form @submit.prevent="handleCreateTransfer" class="space-y-4">
             <div class="grid grid-cols-2 gap-3">
               <div>
                 <label class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Dari Cabang</label>
-                <div class="mt-1 h-9 px-3 flex items-center text-sm bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-medium">
+                <div class="mt-1 h-9 px-3 flex items-center text-sm bg-slate-100 border border-slate-200 rounded-lg text-slate-700 dark:text-[#bcc9c7] font-medium">
                   {{ currentShopName || 'Cabang aktif' }}
                 </div>
-                <p class="text-[9px] text-slate-400 mt-0.5">Otomatis dari cabang aktif</p>
+                <p class="text-[9px] text-slate-400 dark:text-[#869392] mt-0.5">Otomatis dari cabang aktif</p>
               </div>
               <div>
                 <label class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Ke Cabang *</label>
@@ -138,18 +138,18 @@
             <div>
               <label class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Item Transfer</label>
               <div v-for="(item, idx) in createForm.items" :key="idx" class="flex gap-2 mt-2">
-                <select v-model="item.productId" required class="flex-1 h-8 px-2 text-xs border border-slate-200 rounded-lg outline-none">
+                <select v-model="item.productId" required class="flex-1 h-8 px-2 text-xs border border-slate-200 dark:border-[#3d4948] rounded-lg outline-none">
                   <option value="">Pilih produk</option>
                   <option v-for="p in products" :key="p.id" :value="p.id">{{ p.name }} ({{ p.sku }})</option>
                 </select>
-                <input v-model.number="item.quantity" type="number" min="1" placeholder="Qty" required class="w-20 h-8 px-2 text-xs border border-slate-200 rounded-lg outline-none" />
+                <input v-model.number="item.quantity" type="number" min="1" placeholder="Qty" required class="w-20 h-8 px-2 text-xs border border-slate-200 dark:border-[#3d4948] rounded-lg outline-none" />
                 <button type="button" @click="createForm.items.splice(idx, 1)" class="text-red-500 text-xs hover:text-red-700" :disabled="createForm.items.length <= 1">x</button>
               </div>
               <button type="button" @click="createForm.items.push({ productId: '', quantity: 1 })" class="mt-2 text-xs text-blue-600 hover:underline">+ Tambah item</button>
             </div>
-            <textarea v-model="createForm.notes" placeholder="Catatan (opsional)" rows="2" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none resize-none"></textarea>
+            <textarea v-model="createForm.notes" placeholder="Catatan (opsional)" rows="2" class="w-full px-3 py-2 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg outline-none resize-none"></textarea>
             <div class="flex justify-end gap-2 pt-2">
-              <button type="button" @click="showCreateModal = false" class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
+              <button type="button" @click="showCreateModal = false" class="h-9 px-4 text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
               <button type="submit" :disabled="creating" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700">
                 {{ creating ? 'Membuat...' : 'Buat Transfer' }}
               </button>
@@ -164,8 +164,8 @@
     <!-- ============================================ -->
     <teleport to="body">
       <div v-if="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showDetailModal = false">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+        <div class="bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#3d4948]">
             <div>
               <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ detail?.transferNumber }}</h2>
               <p class="text-xs text-slate-500 dark:text-[#869392]">{{ detail?.fromShop.name }} &rarr; {{ detail?.toShop.name }}</p>
@@ -174,39 +174,39 @@
               <span v-if="detail" :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', statusBadge(detail.status)]">
                 {{ statusLabel(detail.status) }}
               </span>
-              <button @click="showDetailModal = false" class="text-slate-400 hover:text-slate-600">
+              <button @click="showDetailModal = false" class="text-slate-400 hover:text-slate-600 dark:text-[#bcc9c7]">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
           </div>
           <div class="flex-1 overflow-y-auto px-6 py-4">
-            <div v-if="detailLoading" class="text-center py-10 text-slate-500 text-sm">Memuat...</div>
+            <div v-if="detailLoading" class="text-center py-10 text-slate-500 dark:text-[#869392] text-sm">Memuat...</div>
             <div v-else-if="detail">
               <!-- Transfer Info -->
               <div class="grid grid-cols-2 gap-4 mb-4 text-xs">
                 <div>
                   <p class="text-slate-500 dark:text-[#869392]">Diminta oleh</p>
                   <p class="font-medium text-slate-900 dark:text-[#e3e2e2]">{{ detail.requestedBy.name }}</p>
-                  <p class="text-slate-400">{{ formatDateTime(detail.requestedAt) }}</p>
+                  <p class="text-slate-400 dark:text-[#869392]">{{ formatDateTime(detail.requestedAt) }}</p>
                 </div>
                 <div v-if="detail.approvedBy">
                   <p class="text-slate-500 dark:text-[#869392]">{{ detail.status === 'REJECTED' ? 'Ditolak oleh' : 'Disetujui oleh' }}</p>
                   <p class="font-medium text-slate-900 dark:text-[#e3e2e2]">{{ detail.approvedBy.name }}</p>
-                  <p class="text-slate-400">{{ detail.approvedAt ? formatDateTime(detail.approvedAt) : '-' }}</p>
+                  <p class="text-slate-400 dark:text-[#869392]">{{ detail.approvedAt ? formatDateTime(detail.approvedAt) : '-' }}</p>
                 </div>
                 <div v-if="detail.shippedAt">
                   <p class="text-slate-500 dark:text-[#869392]">Dikirim</p>
-                  <p class="text-slate-400">{{ formatDateTime(detail.shippedAt) }}</p>
+                  <p class="text-slate-400 dark:text-[#869392]">{{ formatDateTime(detail.shippedAt) }}</p>
                 </div>
                 <div v-if="detail.receivedAt">
                   <p class="text-slate-500 dark:text-[#869392]">Diterima</p>
-                  <p class="text-slate-400">{{ formatDateTime(detail.receivedAt) }}</p>
+                  <p class="text-slate-400 dark:text-[#869392]">{{ formatDateTime(detail.receivedAt) }}</p>
                 </div>
               </div>
 
-              <div v-if="detail.notes" class="mb-3 p-3 bg-slate-50 rounded-lg">
-                <p class="text-[11px] text-slate-500 uppercase font-bold">Catatan</p>
-                <p class="text-xs text-slate-700 mt-1">{{ detail.notes }}</p>
+              <div v-if="detail.notes" class="mb-3 p-3 bg-slate-50 dark:bg-[#1a1c1c] rounded-lg">
+                <p class="text-[11px] text-slate-500 dark:text-[#869392] uppercase font-bold">Catatan</p>
+                <p class="text-xs text-slate-700 dark:text-[#bcc9c7] mt-1">{{ detail.notes }}</p>
               </div>
 
               <div v-if="detail.approvalNotes" class="mb-3 p-3 bg-red-50 rounded-lg">
@@ -217,21 +217,21 @@
               <!-- Items Table -->
               <table class="w-full text-sm">
                 <thead>
-                  <tr class="text-left text-[11px] text-slate-500 uppercase tracking-wide border-b border-slate-200">
+                  <tr class="text-left text-[11px] text-slate-500 dark:text-[#869392] uppercase tracking-wide border-b border-slate-200">
                     <th class="pb-2 pr-3">Produk</th>
                     <th class="pb-2 pr-3 text-right">Qty Diminta</th>
                     <th class="pb-2 text-right">Qty Diterima</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="item in detail.items" :key="item.id" class="border-b border-slate-200 last:border-0">
+                  <tr v-for="item in detail.items" :key="item.id" class="border-b border-slate-200 dark:border-[#3d4948] last:border-0">
                     <td class="py-2 pr-3">
                       <p class="text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ item.productName }}</p>
-                      <p class="text-[10px] text-slate-400">{{ item.productSku }}</p>
+                      <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ item.productSku }}</p>
                     </td>
                     <td class="py-2 pr-3 text-right text-xs">{{ item.quantity }}</td>
                     <td class="py-2 text-right text-xs">
-                      <span :class="item.receivedQty > 0 ? 'text-emerald-600 font-semibold' : 'text-slate-400'">
+                      <span :class="item.receivedQty > 0 ? 'text-emerald-600 font-semibold' : 'text-slate-400 dark:text-[#869392]'">
                         {{ item.receivedQty }}
                       </span>
                     </td>
@@ -242,7 +242,7 @@
           </div>
 
           <!-- Action Buttons (role-based: pengirim vs penerima) -->
-          <div v-if="detail && !['RECEIVED', 'REJECTED', 'CANCELLED'].includes(detail.status)" class="px-6 py-4 border-t border-slate-200 flex justify-between">
+          <div v-if="detail && !['RECEIVED', 'REJECTED', 'CANCELLED'].includes(detail.status)" class="px-6 py-4 border-t border-slate-200 dark:border-[#3d4948] flex justify-between">
             <button
               type="button"
               class="h-9 px-4 text-xs font-semibold text-red-600 border border-red-300 rounded-lg hover:bg-red-50"
@@ -271,7 +271,7 @@
                 >Tandai Dikirim</button>
               </template>
               <template v-if="detail.status === 'APPROVED' && isDetailIncoming">
-                <span class="text-xs text-slate-500 flex items-center">Menunggu cabang asal mengirim...</span>
+                <span class="text-xs text-slate-500 dark:text-[#869392] flex items-center">Menunggu cabang asal mengirim...</span>
               </template>
               <!-- In Transit: receive (hanya cabang PENERIMA) -->
               <template v-if="detail.status === 'IN_TRANSIT' && isDetailIncoming">
@@ -282,7 +282,7 @@
                 >Terima Barang + Update Stok</button>
               </template>
               <template v-if="detail.status === 'IN_TRANSIT' && isDetailOutgoing">
-                <span class="text-xs text-slate-500 flex items-center">Menunggu cabang tujuan menerima...</span>
+                <span class="text-xs text-slate-500 dark:text-[#869392] flex items-center">Menunggu cabang tujuan menerima...</span>
               </template>
             </div>
           </div>
@@ -295,11 +295,11 @@
     <!-- ============================================ -->
     <teleport to="body">
       <div v-if="showRejectModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showRejectModal = false">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm p-6">
-          <h2 class="text-base font-bold text-slate-900 mb-3">Tolak Transfer</h2>
-          <textarea v-model="rejectNotes" placeholder="Alasan penolakan (opsional)" rows="3" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none resize-none"></textarea>
+        <div class="bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-sm p-6">
+          <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2] mb-3">Tolak Transfer</h2>
+          <textarea v-model="rejectNotes" placeholder="Alasan penolakan (opsional)" rows="3" class="w-full px-3 py-2 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg outline-none resize-none"></textarea>
           <div class="flex justify-end gap-2 pt-3">
-            <button type="button" @click="showRejectModal = false" class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
+            <button type="button" @click="showRejectModal = false" class="h-9 px-4 text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
             <button type="button" @click="confirmReject" class="h-9 px-4 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700">Tolak Transfer</button>
           </div>
         </div>
@@ -413,8 +413,8 @@ function statusBadge(status: TransferStatus): string {
     case 'IN_TRANSIT': return 'bg-indigo-100 text-indigo-700';
     case 'RECEIVED': return 'bg-emerald-100 text-emerald-700';
     case 'REJECTED': return 'bg-red-100 text-red-600';
-    case 'CANCELLED': return 'bg-slate-100 text-slate-500';
-    default: return 'bg-slate-100 text-slate-600';
+    case 'CANCELLED': return 'bg-slate-100 text-slate-500 dark:text-[#869392]';
+    default: return 'bg-slate-100 text-slate-600 dark:text-[#bcc9c7]';
   }
 }
 

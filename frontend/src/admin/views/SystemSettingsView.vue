@@ -2,7 +2,7 @@
   <div class="space-y-6">
     <div>
     <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-5 text-white shadow-lg">
-      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white dark:bg-[#1e2020]/10" />
       <h1 class="relative text-lg font-bold">Pengaturan Sistem</h1>
       <p class="relative text-xs text-emerald-100 mt-0.5">Fitur toggle, mode shift, konfigurasi BRILink module.</p>
     </div>
@@ -16,15 +16,15 @@
     <template v-else>
       <!-- Modul -->
       <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 space-y-4">
-        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Modul</h2>
+        <h2 class="text-sm font-bold text-slate-800 dark:text-[#bcc9c7] uppercase tracking-wide">Modul</h2>
         <ToggleRow v-model="form.brilinkEnabled" label="Modul BRILink" desc="Menu BRILink, transaksi, fee, laporan BRILink. Jika OFF: bottom nav hanya 4 tab, dashboard retail only." />
       </section>
 
       <!-- Shift -->
       <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 space-y-4">
-        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Shift</h2>
+        <h2 class="text-sm font-bold text-slate-800 dark:text-[#bcc9c7] uppercase tracking-wide">Shift</h2>
         <div class="space-y-1">
-          <label class="text-xs font-semibold text-slate-700">Mode Shift</label>
+          <label class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]">Mode Shift</label>
           <select v-model="form.shiftMode" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none">
             <option value="FLOWING">Saldo Mengalir (rekomendasi UMKM)</option>
             <option value="RESET">Shift Reset (setiap shift input modal awal)</option>
@@ -38,13 +38,13 @@
 
       <!-- Kas & Pengeluaran -->
       <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 space-y-4">
-        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Kas & Pengeluaran</h2>
+        <h2 class="text-sm font-bold text-slate-800 dark:text-[#bcc9c7] uppercase tracking-wide">Kas & Pengeluaran</h2>
         <ToggleRow v-model="form.cashOutApprovalEnabled" label="Approval Pengeluaran (Cash Out)" desc="Kasir bisa cash out langsung, admin verifikasi belakangan. Jika OFF: tanpa approval." />
       </section>
 
       <!-- Metode Pembayaran -->
       <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 space-y-4">
-        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Metode Pembayaran</h2>
+        <h2 class="text-sm font-bold text-slate-800 dark:text-[#bcc9c7] uppercase tracking-wide">Metode Pembayaran</h2>
         <ToggleRow v-model="form.paymentCashEnabled" label="Tunai" desc="Pembayaran cash/tunai di POS." />
         <ToggleRow v-model="form.paymentQrisEnabled" label="QRIS" desc="Pembayaran via QRIS (QR Code)." />
         <ToggleRow v-model="form.paymentHutangEnabled" label="Hutang" desc="Pelanggan bisa hutang (full atau partial)." />
@@ -52,7 +52,7 @@
 
       <!-- Fitur POS -->
       <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 space-y-4">
-        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Fitur POS</h2>
+        <h2 class="text-sm font-bold text-slate-800 dark:text-[#bcc9c7] uppercase tracking-wide">Fitur POS</h2>
         <ToggleRow v-model="form.saveBillEnabled" label="Simpan Bill (Open Bill)" desc="Kasir bisa park transaksi dan buka kembali nanti." />
         <ToggleRow v-model="form.discountPerItemEnabled" label="Diskon Per Produk" desc="Kasir bisa beri diskon per item di keranjang." />
         <ToggleRow v-model="form.discountTotalEnabled" label="Diskon Total Transaksi" desc="Kasir bisa beri diskon untuk keseluruhan transaksi." />
@@ -64,7 +64,7 @@
         <button :disabled="saving || !hasChanges" class="h-10 px-6 bg-blue-600 text-white font-semibold text-sm rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2" @click="showConfirmModal = true">
           <span>Simpan Pengaturan</span>
         </button>
-        <p v-if="!hasChanges && !saving && !saveSuccess" class="text-xs text-slate-400">Tidak ada perubahan.</p>
+        <p v-if="!hasChanges && !saving && !saveSuccess" class="text-xs text-slate-400 dark:text-[#869392]">Tidak ada perubahan.</p>
         <p v-if="saveSuccess" class="text-xs text-emerald-600 font-medium">Berhasil disimpan & diterapkan ke webapp kasir!</p>
       </div>
     </template>
@@ -75,7 +75,7 @@
     <Teleport to="body">
       <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showConfirmModal = false"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
+        <div class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
           <div class="flex items-start gap-3">
             <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
               <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -102,11 +102,11 @@
           </div>
 
           <!-- Changes list -->
-          <div class="bg-slate-50 rounded-lg p-4 max-h-60 overflow-y-auto">
-            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-2">Perubahan yang akan diterapkan:</p>
+          <div class="bg-slate-50 dark:bg-[#1a1c1c] rounded-lg p-4 max-h-60 overflow-y-auto">
+            <p class="text-[11px] font-bold text-slate-500 dark:text-[#869392] uppercase tracking-wide mb-2">Perubahan yang akan diterapkan:</p>
             <ul class="space-y-1.5">
               <li v-for="change in pendingChanges" :key="change.key" class="flex items-center justify-between text-xs">
-                <span class="text-slate-700">{{ change.label }}</span>
+                <span class="text-slate-700 dark:text-[#bcc9c7]">{{ change.label }}</span>
                 <span :class="['font-bold px-2 py-0.5 rounded', change.newValue ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700']">
                   {{ change.display }}
                 </span>
@@ -124,7 +124,7 @@
           <div class="flex justify-end gap-2 pt-1">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-100"
+              class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] border border-slate-200 rounded-lg hover:bg-slate-100"
               @click="showConfirmModal = false"
             >
               Batal

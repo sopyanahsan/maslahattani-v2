@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-cyan-600 to-teal-600 px-6 py-5 text-white shadow-lg flex-1 mr-4">
-        <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+        <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white dark:bg-[#1e2020]/10" />
         <h1 class="relative text-lg font-bold">Stock Opname</h1>
         <p class="relative text-xs text-cyan-100 mt-0.5">
           Verifikasi stok fisik vs sistem. Buat sesi, hitung, dan sesuaikan.
@@ -33,24 +33,24 @@
         <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3">
           <p class="text-[10px] font-semibold text-red-500 uppercase tracking-wide">Kerugian</p>
           <p class="text-lg font-bold text-red-600 mt-1">{{ monthlyStats.totalLoss }} item</p>
-          <p class="text-[10px] text-slate-400 mt-0.5">produk kurang (defisit)</p>
+          <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">produk kurang (defisit)</p>
         </div>
         <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3">
           <p class="text-[10px] font-semibold text-emerald-500 uppercase tracking-wide">Akurasi Stok</p>
-          <p class="text-lg font-bold text-slate-900 mt-1">
+          <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mt-1">
             {{ monthlyStats.totalItems > 0 ? Math.round((monthlyStats.matched / monthlyStats.totalItems) * 100) + '%' : '—' }}
           </p>
-          <p class="text-[10px] text-slate-400 mt-0.5">item cocok / dihitung</p>
+          <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">item cocok / dihitung</p>
         </div>
         <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3">
           <p class="text-[10px] font-semibold text-blue-500 uppercase tracking-wide">Jumlah Sesi</p>
-          <p class="text-lg font-bold text-slate-900 mt-1">{{ monthlyStats.totalSessions }}</p>
-          <p class="text-[10px] text-slate-400 mt-0.5">sesi bulan ini</p>
+          <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mt-1">{{ monthlyStats.totalSessions }}</p>
+          <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">sesi bulan ini</p>
         </div>
         <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3">
-          <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Opname Terakhir</p>
-          <p class="text-lg font-bold text-slate-900 mt-1">{{ monthlyStats.lastOpnameDate || '—' }}</p>
-          <p class="text-[10px] text-slate-400 mt-0.5">{{ monthlyStats.lastOpnameDate ? '' : 'belum ada' }}</p>
+          <p class="text-[10px] font-semibold text-slate-500 dark:text-[#869392] uppercase tracking-wide">Opname Terakhir</p>
+          <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mt-1">{{ monthlyStats.lastOpnameDate || '—' }}</p>
+          <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">{{ monthlyStats.lastOpnameDate ? '' : 'belum ada' }}</p>
         </div>
       </div>
     </div>
@@ -59,7 +59,7 @@
     <div class="flex gap-3">
       <select
         v-model="filterStatus"
-        class="h-9 px-3 text-sm border border-slate-200 rounded-lg
+        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg
                focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
         @change="resetAndFetch"
       >
@@ -71,13 +71,13 @@
     </div>
 
     <!-- Sessions List -->
-    <div v-if="loading" class="text-center py-10 text-slate-500 text-sm">Memuat...</div>
+    <div v-if="loading" class="text-center py-10 text-slate-500 dark:text-[#869392] text-sm">Memuat...</div>
 
     <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4">
       <p class="text-sm text-red-700">{{ error }}</p>
     </div>
 
-    <div v-else-if="sessions.length === 0" class="text-center py-10 text-slate-400 text-sm">
+    <div v-else-if="sessions.length === 0" class="text-center py-10 text-slate-400 dark:text-[#869392] text-sm">
       Belum ada sesi opname. Klik "Mulai Opname" untuk memulai.
     </div>
 
@@ -110,7 +110,7 @@
             <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">
               Oleh {{ session.conductorName }} &middot; {{ formatDate(session.createdAt) }}
             </p>
-            <p v-if="session.participantCount && session.participantCount > 0" class="text-[10px] text-slate-400 mt-0.5">
+            <p v-if="session.participantCount && session.participantCount > 0" class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">
               {{ session.participantCount }} petugas bergabung
               <span v-if="session.allCounted" class="ml-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700 text-[9px] font-bold">
                 <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,7 +120,7 @@
               </span>
             </p>
           </div>
-          <div class="text-right text-xs text-slate-600">
+          <div class="text-right text-xs text-slate-600 dark:text-[#bcc9c7]">
             <p>{{ session.totalProducts }} produk</p>
             <p v-if="session.status === 'COMPLETED'" class="mt-0.5">
               <span class="text-emerald-600">{{ session.totalMatched }} cocok</span> &middot;
@@ -141,7 +141,7 @@
             'h-8 w-8 rounded text-xs font-semibold transition-colors',
             currentPage === p
               ? 'bg-blue-600 text-white'
-              : 'bg-slate-100 text-slate-600 hover:bg-slate-200',
+              : 'bg-slate-100 text-slate-600 dark:text-[#bcc9c7] hover:bg-slate-200',
           ]"
           @click="goPage(p)"
         >
@@ -159,8 +159,8 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
         <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showCreateModal = false"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4 max-h-[80vh] overflow-y-auto">
-          <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
+        <div class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-md p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+          <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2] flex items-center gap-2">
             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
             </svg>
@@ -169,7 +169,7 @@
 
           <!-- Mode selection -->
           <div class="space-y-2">
-            <p class="text-xs font-semibold text-slate-700">Cakupan Opname</p>
+            <p class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]">Cakupan Opname</p>
             <div class="grid grid-cols-2 gap-2">
               <button
                 type="button"
@@ -177,12 +177,12 @@
                   'p-3 rounded-lg border-2 text-left transition-all',
                   createMode === 'all'
                     ? 'border-blue-500 bg-blue-50'
-                    : 'border-slate-200 hover:border-slate-200'
+                    : 'border-slate-200 dark:border-[#3d4948] hover:border-slate-200 dark:border-[#3d4948]'
                 ]"
                 @click="createMode = 'all'; selectedRackIds = []"
               >
                 <p class="text-xs font-bold text-slate-900 dark:text-[#e3e2e2]">Semua Produk</p>
-                <p class="text-[10px] text-slate-500 mt-0.5">Hitung seluruh produk cabang ini</p>
+                <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">Hitung seluruh produk cabang ini</p>
               </button>
               <button
                 type="button"
@@ -190,47 +190,47 @@
                   'p-3 rounded-lg border-2 text-left transition-all',
                   createMode === 'by-rack'
                     ? 'border-violet-500 bg-violet-50'
-                    : 'border-slate-200 hover:border-slate-200'
+                    : 'border-slate-200 dark:border-[#3d4948] hover:border-slate-200 dark:border-[#3d4948]'
                 ]"
                 @click="createMode = 'by-rack'"
               >
                 <p class="text-xs font-bold text-slate-900 dark:text-[#e3e2e2]">Per Rak</p>
-                <p class="text-[10px] text-slate-500 mt-0.5">Pilih rak tertentu saja</p>
+                <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">Pilih rak tertentu saja</p>
               </button>
             </div>
           </div>
 
           <!-- Rack selection (only if by-rack mode) -->
           <div v-if="createMode === 'by-rack'" class="space-y-2">
-            <p class="text-xs font-semibold text-slate-700">
+            <p class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]">
               Pilih Rak
               <span v-if="selectedRackIds.length > 0" class="text-blue-600">({{ selectedRackIds.length }} dipilih)</span>
             </p>
 
-            <div v-if="loadingRacks" class="text-center py-4 text-xs text-slate-400">Memuat rak...</div>
+            <div v-if="loadingRacks" class="text-center py-4 text-xs text-slate-400 dark:text-[#869392]">Memuat rak...</div>
 
             <div v-else-if="availableRacks.length === 0" class="bg-amber-50 border border-amber-200 rounded-lg p-3">
               <p class="text-xs text-amber-700">Belum ada rak di cabang ini. Buat rak dulu di menu "Label Rak".</p>
             </div>
 
-            <div v-else class="max-h-48 overflow-y-auto space-y-1 border border-slate-200 rounded-lg p-2">
+            <div v-else class="max-h-48 overflow-y-auto space-y-1 border border-slate-200 dark:border-[#3d4948] rounded-lg p-2">
               <label
                 v-for="rack in availableRacks"
                 :key="rack.id"
                 :class="[
                   'flex items-center gap-2.5 p-2 rounded-md cursor-pointer transition-colors',
-                  selectedRackIds.includes(rack.id) ? 'bg-violet-50' : 'hover:bg-slate-50'
+                  selectedRackIds.includes(rack.id) ? 'bg-violet-50' : 'hover:bg-slate-50 dark:bg-[#1a1c1c]'
                 ]"
               >
                 <input
                   type="checkbox"
                   :checked="selectedRackIds.includes(rack.id)"
-                  class="w-4 h-4 text-violet-600 border-slate-200 rounded"
+                  class="w-4 h-4 text-violet-600 border-slate-200 dark:border-[#3d4948] rounded"
                   @change="toggleRackSelection(rack.id)"
                 />
                 <div class="flex-1 min-w-0">
                   <p class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ rack.code }} <span v-if="rack.name" class="font-normal text-slate-500 dark:text-[#869392]">— {{ rack.name }}</span></p>
-                  <p class="text-[10px] text-slate-400">{{ rack.zoneName }} · {{ rack.productCount }} produk</p>
+                  <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ rack.zoneName }} · {{ rack.productCount }} produk</p>
                 </div>
               </label>
             </div>
@@ -240,7 +240,7 @@
           <div class="flex items-center justify-end gap-2 pt-2">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-lg
+              class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-lg
                      hover:bg-slate-200 transition-colors"
               @click="showCreateModal = false"
             >
@@ -274,7 +274,7 @@
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
         <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showPasscodeModal = false"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 text-center space-y-4">
+        <div class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-sm p-6 text-center space-y-4">
           <!-- Success icon -->
           <div class="mx-auto w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center">
             <svg class="w-7 h-7 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -290,9 +290,9 @@
           </div>
 
           <!-- Passcode display -->
-          <div class="bg-slate-50 border-2 border-dashed border-slate-200 rounded-lg py-5 px-4">
-            <p class="text-[10px] text-slate-500 uppercase font-semibold tracking-wide mb-1">Kode Opname</p>
-            <p class="text-3xl font-black font-mono text-slate-900 tracking-[0.3em]">
+          <div class="bg-slate-50 dark:bg-[#1a1c1c] border-2 border-dashed border-slate-200 rounded-lg py-5 px-4">
+            <p class="text-[10px] text-slate-500 dark:text-[#869392] uppercase font-semibold tracking-wide mb-1">Kode Opname</p>
+            <p class="text-3xl font-black font-mono text-slate-900 dark:text-[#e3e2e2] tracking-[0.3em]">
               {{ createdPasscode }}
             </p>
           </div>
@@ -311,7 +311,7 @@
           <div class="flex gap-2">
             <button
               type="button"
-              class="flex-1 h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-lg
+              class="flex-1 h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-lg
                      hover:bg-slate-200 transition-colors flex items-center justify-center gap-1.5"
               @click="copyPasscode"
             >
@@ -342,9 +342,9 @@
         class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm"
         @click.self="showDetail = false"
       >
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
           <!-- Modal Header -->
-          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#3d4948]">
             <div>
               <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ detail?.sessionNumber }}</h2>
               <p class="text-xs text-slate-500 dark:text-[#869392]">
@@ -367,7 +367,7 @@
               <span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', detail ? statusBadge(detail.status) : '']">
                 {{ detail ? statusLabel(detail.status) : '' }}
               </span>
-              <button @click="showDetail = false" class="text-slate-400 hover:text-slate-600">
+              <button @click="showDetail = false" class="text-slate-400 hover:text-slate-600 dark:text-[#bcc9c7]">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
@@ -377,12 +377,12 @@
 
           <!-- Modal Body -->
           <div class="flex-1 overflow-y-auto px-6 py-4">
-            <div v-if="detailLoading" class="text-center py-10 text-slate-500 text-sm">Memuat detail...</div>
+            <div v-if="detailLoading" class="text-center py-10 text-slate-500 dark:text-[#869392] text-sm">Memuat detail...</div>
             <div v-else-if="detail">
               <!-- Participants section (for active sessions) -->
               <div v-if="detail.participants && detail.participants.length > 0" class="mb-5">
-                <h3 class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1.5">
-                  <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <h3 class="text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-2 flex items-center gap-1.5">
+                  <svg class="w-3.5 h-3.5 text-slate-400 dark:text-[#869392]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
                   </svg>
                   Petugas ({{ detail.participants.length }})
@@ -391,13 +391,13 @@
                   <span
                     v-for="p in detail.participants"
                     :key="p.id"
-                    class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 rounded-md text-[11px] text-slate-700"
+                    class="inline-flex items-center gap-1 px-2 py-1 bg-slate-100 rounded-md text-[11px] text-slate-700 dark:text-[#bcc9c7]"
                   >
                     <span class="w-4 h-4 bg-blue-500 text-white rounded-full text-[8px] font-bold flex items-center justify-center">
                       {{ p.name.charAt(0).toUpperCase() }}
                     </span>
                     {{ p.name }}
-                    <span class="text-slate-400 text-[9px]">{{ formatTime(p.joinedAt) }}</span>
+                    <span class="text-slate-400 dark:text-[#869392] text-[9px]">{{ formatTime(p.joinedAt) }}</span>
                   </span>
                 </div>
               </div>
@@ -429,7 +429,7 @@
               <!-- Items Table -->
               <table class="w-full text-sm">
                 <thead>
-                  <tr class="text-left text-[11px] text-slate-500 uppercase tracking-wide border-b border-slate-200">
+                  <tr class="text-left text-[11px] text-slate-500 dark:text-[#869392] uppercase tracking-wide border-b border-slate-200">
                     <th class="pb-2 pr-3">Produk</th>
                     <th class="pb-2 pr-3 text-right">Sistem</th>
                     <th class="pb-2 pr-3 text-right">Fisik</th>
@@ -440,26 +440,26 @@
                   <tr
                     v-for="item in detail.items"
                     :key="item.id"
-                    class="border-b border-slate-200 last:border-0"
+                    class="border-b border-slate-200 dark:border-[#3d4948] last:border-0"
                   >
                     <td class="py-2.5 pr-3">
                       <p class="text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ item.productName }}</p>
-                      <p class="text-[10px] text-slate-400">{{ item.productSku }}</p>
+                      <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ item.productSku }}</p>
                     </td>
-                    <td class="py-2.5 pr-3 text-right text-xs text-slate-700">{{ item.systemQty }}</td>
+                    <td class="py-2.5 pr-3 text-right text-xs text-slate-700 dark:text-[#bcc9c7]">{{ item.systemQty }}</td>
                     <td class="py-2.5 pr-3 text-right">
                       <template v-if="detail.status === 'IN_PROGRESS'">
                         <input
                           type="number"
                           :value="item.actualQty ?? ''"
                           min="0"
-                          class="w-16 h-7 px-2 text-xs text-right border border-slate-200 rounded
+                          class="w-16 h-7 px-2 text-xs text-right border border-slate-200 dark:border-[#3d4948] rounded
                                  focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
                           @change="(e) => handleUpdateItem(item.id, parseInt((e.target as HTMLInputElement).value), item.systemQty)"
                         />
                       </template>
                       <template v-else>
-                        <span class="text-xs text-slate-700">{{ item.actualQty ?? '-' }}</span>
+                        <span class="text-xs text-slate-700 dark:text-[#bcc9c7]">{{ item.actualQty ?? '-' }}</span>
                       </template>
                     </td>
                     <td class="py-2.5 text-right">
@@ -467,7 +467,7 @@
                         v-if="item.variance !== null"
                         :class="[
                           'text-xs font-semibold',
-                          item.variance === 0 ? 'text-slate-400' :
+                          item.variance === 0 ? 'text-slate-400 dark:text-[#869392]' :
                           item.variance > 0 ? 'text-amber-600' : 'text-red-600'
                         ]"
                       >
@@ -482,7 +482,7 @@
           </div>
 
           <!-- Modal Footer -->
-          <div v-if="detail && detail.status === 'IN_PROGRESS'" class="px-6 py-4 border-t border-slate-200 flex justify-between">
+          <div v-if="detail && detail.status === 'IN_PROGRESS'" class="px-6 py-4 border-t border-slate-200 dark:border-[#3d4948] flex justify-between">
             <button
               type="button"
               class="h-9 px-4 text-xs font-semibold text-red-600 border border-red-300 rounded-lg
@@ -495,7 +495,7 @@
             <div class="flex gap-2">
               <button
                 type="button"
-                class="h-9 px-4 text-xs font-semibold text-slate-700 border border-slate-200 rounded-lg
+                class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] border border-slate-200 rounded-lg
                        hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
                 @click="handleComplete(false)"
                 :disabled="completing"
@@ -524,7 +524,7 @@
         class="fixed inset-0 z-[60] flex items-center justify-center p-4"
       >
         <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="handleConfirmNo"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4">
+        <div class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4">
           <div class="text-center">
             <div class="mx-auto w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-3">
               <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -532,12 +532,12 @@
               </svg>
             </div>
             <h3 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ confirmTitle }}</h3>
-            <p class="text-sm text-slate-500 mt-1.5">{{ confirmMessage }}</p>
+            <p class="text-sm text-slate-500 dark:text-[#869392] mt-1.5">{{ confirmMessage }}</p>
           </div>
           <div class="flex gap-2">
             <button
               type="button"
-              class="flex-1 h-9 text-xs font-semibold text-slate-700 bg-slate-100 rounded-lg
+              class="flex-1 h-9 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-lg
                      hover:bg-slate-200 transition-colors"
               @click="handleConfirmNo"
             >
@@ -562,7 +562,7 @@
         class="fixed inset-0 z-[60] flex items-center justify-center p-4"
       >
         <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showAlertModal = false"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4">
+        <div class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4">
           <div class="text-center">
             <div
               :class="[
@@ -582,7 +582,7 @@
               </svg>
             </div>
             <h3 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ alertTitle }}</h3>
-            <p class="text-sm text-slate-500 mt-1.5">{{ alertMessage }}</p>
+            <p class="text-sm text-slate-500 dark:text-[#869392] mt-1.5">{{ alertMessage }}</p>
           </div>
           <button
             type="button"
@@ -700,9 +700,9 @@ function statusBadge(status: OpnameStatus): string {
   switch (status) {
     case 'IN_PROGRESS': return 'bg-blue-100 text-blue-700';
     case 'COMPLETED': return 'bg-emerald-100 text-emerald-700';
-    case 'CANCELLED': return 'bg-slate-100 text-slate-500';
+    case 'CANCELLED': return 'bg-slate-100 text-slate-500 dark:text-[#869392]';
     case 'DRAFT': return 'bg-amber-100 text-amber-700';
-    default: return 'bg-slate-100 text-slate-700';
+    default: return 'bg-slate-100 text-slate-700 dark:text-[#bcc9c7]';
   }
 }
 

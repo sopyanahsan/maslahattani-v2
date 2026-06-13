@@ -6,8 +6,8 @@
     <div class="flex gap-1 bg-slate-100 dark:bg-[#292a2a] rounded-lg p-1 w-fit">
       <button v-for="tab in tabs" :key="tab.key" type="button"
         :class="['h-8 px-4 text-xs font-semibold rounded-md transition-colors',
-          activeTab === tab.key ? 'bg-white text-slate-900 shadow-sm'
-            : 'text-slate-600 hover:text-slate-900']"
+          activeTab === tab.key ? 'bg-white text-slate-900 dark:text-[#e3e2e2] shadow-sm'
+            : 'text-slate-600 hover:text-slate-900 dark:text-[#e3e2e2]']"
         @click="handleTabChange(tab.key)">{{ tab.label }}</button>
     </div>
 
@@ -31,16 +31,16 @@
       <!-- Saldo Kas Strip -->
       <div class="flex gap-3 overflow-x-auto pb-1 -mx-1 px-1">
         <!-- Total Pill -->
-        <div class="shrink-0 bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200/80 rounded-lg px-5 py-3 shadow-sm">
-          <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400 mb-0.5">Total Kas</p>
-          <p class="text-lg font-bold font-mono tabular-nums text-slate-900 whitespace-nowrap leading-tight">{{ formatRupiah(cashBox?.balance ?? 0) }}</p>
+        <div class="shrink-0 bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 dark:border-[#3d4948]/80 rounded-lg px-5 py-3 shadow-sm">
+          <p class="text-[9px] font-semibold uppercase tracking-wider text-slate-400 dark:text-[#869392] mb-0.5">Total Kas</p>
+          <p class="text-lg font-bold font-mono tabular-nums text-slate-900 dark:text-[#e3e2e2] whitespace-nowrap leading-tight">{{ formatRupiah(cashBox?.balance ?? 0) }}</p>
         </div>
         <!-- Per-Kas Pill -->
         <div v-for="cb in cashBox?.cashBoxes || []" :key="cb.id"
-          class="shrink-0 bg-white border border-slate-200/80 rounded-lg px-4 py-3 shadow-sm hover:shadow-md transition-shadow flex items-center gap-3 group">
+          class="shrink-0 bg-white dark:bg-[#1e2020] border border-slate-200/80 rounded-lg px-4 py-3 shadow-sm hover:shadow-md transition-shadow flex items-center gap-3 group">
           <div class="min-w-0">
             <div class="flex items-center gap-1.5 mb-0.5">
-              <p class="text-[11px] font-semibold text-slate-700 truncate max-w-[120px]">{{ cb.label }}</p>
+              <p class="text-[11px] font-semibold text-slate-700 dark:text-[#bcc9c7] truncate max-w-[120px]">{{ cb.label }}</p>
               <span v-if="cb.isDefault" class="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0" title="Default"></span>
             </div>
             <p class="text-sm font-bold font-mono tabular-nums whitespace-nowrap leading-tight" :class="cb.balance > 0 ? 'text-slate-900 dark:text-[#e3e2e2]' : 'text-red-500'">{{ formatRupiah(cb.balance) }}</p>
@@ -48,7 +48,7 @@
           <div class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity shrink-0">
             <button type="button" class="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold flex items-center justify-center hover:bg-emerald-100 transition-colors" @click="openMutationModalForKas('CASH_IN', cb)" title="Setor">+</button>
             <button type="button" class="w-6 h-6 rounded-full bg-red-50 text-red-600 text-[10px] font-bold flex items-center justify-center hover:bg-red-100 transition-colors" @click="openMutationModalForKas('CASH_OUT', cb)" title="Tarik">−</button>
-            <button type="button" class="w-6 h-6 rounded-full bg-slate-100 text-slate-500 text-[10px] flex items-center justify-center hover:bg-slate-200 transition-colors" @click="filterByKas(cb)" title="Riwayat">↗</button>
+            <button type="button" class="w-6 h-6 rounded-full bg-slate-100 text-slate-500 dark:text-[#869392] text-[10px] flex items-center justify-center hover:bg-slate-200 transition-colors" @click="filterByKas(cb)" title="Riwayat">↗</button>
           </div>
         </div>
       </div>
@@ -63,7 +63,7 @@
         <input v-model="mutasiStartDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="fetchHistory" />
         <input v-model="mutasiEndDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="fetchHistory" />
         <div class="flex-1"></div>
-        <span v-if="historyMeta" class="text-xs text-slate-500 self-center">{{ historyMeta.total }} mutasi</span>
+        <span v-if="historyMeta" class="text-xs text-slate-500 dark:text-[#869392] self-center">{{ historyMeta.total }} mutasi</span>
       </div>
 
 
@@ -75,7 +75,7 @@
       <!-- Empty -->
       <div v-else-if="historyData.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
         <WalletIcon class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-        <p class="text-sm font-bold text-slate-700">Belum ada riwayat mutasi</p>
+        <p class="text-sm font-bold text-slate-700 dark:text-[#bcc9c7]">Belum ada riwayat mutasi</p>
       </div>
 
       <!-- Table -->
@@ -93,21 +93,21 @@
             </thead>
 
             <tbody class="divide-y divide-slate-100">
-              <tr v-for="item in historyData" :key="item.id" class="hover:bg-slate-50">
-                <td class="px-4 py-3 text-xs font-mono tabular-nums text-slate-600">{{ formatDateTime(item.createdAt) }}</td>
+              <tr v-for="item in historyData" :key="item.id" class="hover:bg-slate-50 dark:bg-[#1a1c1c]">
+                <td class="px-4 py-3 text-xs font-mono tabular-nums text-slate-600 dark:text-[#bcc9c7]">{{ formatDateTime(item.createdAt) }}</td>
                 <td class="px-4 py-3 text-center"><span :class="['px-2 py-0.5 rounded text-[10px] font-bold uppercase', item.type === 'CASH_IN' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700']">{{ item.type === 'CASH_IN' ? 'Masuk' : 'Keluar' }}</span></td>
                 <td class="px-4 py-3 text-right text-xs font-mono tabular-nums font-semibold" :class="item.type === 'CASH_IN' ? 'text-emerald-600' : 'text-red-600'">{{ item.type === 'CASH_IN' ? '+' : '-' }}{{ formatRupiah(item.amount) }}</td>
-                <td class="px-4 py-3 text-right text-xs font-mono tabular-nums text-slate-700">{{ formatRupiah(item.balanceAfter) }}</td>
-                <td class="px-4 py-3 text-xs text-slate-600">{{ item.notes || '—' }}</td>
+                <td class="px-4 py-3 text-right text-xs font-mono tabular-nums text-slate-700 dark:text-[#bcc9c7]">{{ formatRupiah(item.balanceAfter) }}</td>
+                <td class="px-4 py-3 text-xs text-slate-600 dark:text-[#bcc9c7]">{{ item.notes || '—' }}</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <div v-if="historyMeta && historyMeta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 flex items-center justify-between">
+        <div v-if="historyMeta && historyMeta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 dark:border-[#3d4948] flex items-center justify-between">
           <p class="text-xs text-slate-500 dark:text-[#869392]">Hal. {{ historyMeta.page }} / {{ historyMeta.totalPages }}</p>
           <div class="flex gap-1">
-            <button :disabled="historyMeta.page <= 1" class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded disabled:opacity-40 text-slate-700 hover:bg-slate-50" @click="fetchHistoryPage(historyMeta!.page - 1)">Prev</button>
-            <button :disabled="historyMeta.page >= historyMeta.totalPages" class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded disabled:opacity-40 text-slate-700 hover:bg-slate-50" @click="fetchHistoryPage(historyMeta!.page + 1)">Next</button>
+            <button :disabled="historyMeta.page <= 1" class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded disabled:opacity-40 text-slate-700 dark:text-[#bcc9c7] hover:bg-slate-50" @click="fetchHistoryPage(historyMeta!.page - 1)">Prev</button>
+            <button :disabled="historyMeta.page >= historyMeta.totalPages" class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded disabled:opacity-40 text-slate-700 dark:text-[#bcc9c7] hover:bg-slate-50" @click="fetchHistoryPage(historyMeta!.page + 1)">Next</button>
           </div>
         </div>
       </div>
@@ -121,7 +121,7 @@
     <template v-if="activeTab === 'kelola'">
       <!-- Actions bar -->
       <div class="flex items-center justify-between">
-        <p class="text-sm text-slate-600">Kelola kas retail. Setiap kas punya saldo sendiri.</p>
+        <p class="text-sm text-slate-600 dark:text-[#bcc9c7]">Kelola kas retail. Setiap kas punya saldo sendiri.</p>
         <button type="button"
           class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5"
           @click="openCashBoxModal(null)">
@@ -138,7 +138,7 @@
       <!-- Empty -->
       <div v-else-if="kelolaKasList.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
         <BoxesIcon class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-        <p class="text-sm font-bold text-slate-700">Belum ada kas</p>
+        <p class="text-sm font-bold text-slate-700 dark:text-[#bcc9c7]">Belum ada kas</p>
         <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">Tambahkan kas retail untuk mulai tracking saldo.</p>
       </div>
 
@@ -146,14 +146,14 @@
       <!-- Kas Cards -->
       <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <div v-for="kas in kelolaKasList" :key="kas.id"
-          class="relative bg-white border border-slate-200/80 rounded-lg p-4 shadow-sm hover:shadow-md transition-all group">
+          class="relative bg-white dark:bg-[#1e2020] border border-slate-200/80 rounded-lg p-4 shadow-sm hover:shadow-md transition-all group">
           <!-- Header -->
           <div class="flex items-center justify-between mb-2">
-            <h4 class="text-sm font-bold text-slate-900 truncate pr-2">{{ kas.label }}</h4>
+            <h4 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] truncate pr-2">{{ kas.label }}</h4>
             <div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button class="w-6 h-6 rounded-full flex items-center justify-center hover:bg-slate-100 transition-colors"
+              <button class="w-6 h-6 rounded-full flex items-center justify-center hover:bg-slate-100 dark:bg-[#292a2a] transition-colors"
                 title="Edit" @click="openCashBoxModal(kas)">
-                <PencilIcon class="w-3 h-3 text-slate-500" />
+                <PencilIcon class="w-3 h-3 text-slate-500 dark:text-[#869392]" />
               </button>
               <button class="w-6 h-6 rounded-full flex items-center justify-center hover:bg-red-50 transition-colors"
                 title="Hapus" @click="handleDeleteCashBox(kas)">
@@ -176,7 +176,7 @@
               class="flex-1 h-7 text-[10px] font-semibold text-red-600 bg-red-50/80 rounded-lg hover:bg-red-100 transition-colors"
               @click="openMutationModalForKas('CASH_OUT', kas)">− Tarik</button>
             <button type="button"
-              class="flex-1 h-7 text-[10px] font-semibold text-slate-600 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+              class="flex-1 h-7 text-[10px] font-semibold text-slate-600 dark:text-[#bcc9c7] bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
               @click="filterByKas(kas)">Riwayat</button>
           </div>
         </div>
@@ -189,10 +189,10 @@
     <Teleport to="body">
       <div v-if="showMutationModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showMutationModal = false"></div>
-        <form class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleMutation">
+        <form class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleMutation">
           <h3 class="text-sm font-bold" :class="mutationType === 'CASH_IN' ? 'text-emerald-700' : 'text-red-700'">{{ mutationType === 'CASH_IN' ? 'Cash In' : 'Cash Out' }}</h3>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Kas / Kategori *</label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Kas / Kategori *</label>
             <select v-model="mutationCategoryId" required class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
               <option value="">— Pilih Kas —</option>
               <option v-for="cat in mutationCategories" :key="cat.id" :value="cat.id">{{ cat.name }} ({{ cat.code }})</option>
@@ -202,7 +202,7 @@
           <div><label class="block text-xs font-semibold text-slate-700 mb-1">Catatan</label><input v-model="mutationNotes" type="text" placeholder="Opsional" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" /></div>
           <div v-if="mutationError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ mutationError }}</div>
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showMutationModal = false">Batal</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-md hover:bg-slate-200" @click="showMutationModal = false">Batal</button>
             <button type="submit" :disabled="mutationSaving" :class="['h-9 px-4 text-xs font-semibold text-white rounded-md disabled:opacity-50', mutationType === 'CASH_IN' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700']">{{ mutationType === 'CASH_IN' ? 'Cash In' : 'Cash Out' }}</button>
           </div>
         </form>
@@ -214,22 +214,22 @@
     <Teleport to="body">
       <div v-if="showCashBoxModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showCashBoxModal = false"></div>
-        <form class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleSaveCashBox">
+        <form class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleSaveCashBox">
           <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ editingCashBox ? 'Edit Kas' : 'Tambah Kas Baru' }}</h3>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Kas <span class="text-red-500">*</span></label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Nama Kas <span class="text-red-500">*</span></label>
             <input v-model="cashBoxForm.label" type="text" required placeholder="Kas Retail"
               class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">{{ editingCashBox ? 'Saldo (update manual)' : 'Saldo Awal (Rp)' }}</label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">{{ editingCashBox ? 'Saldo (update manual)' : 'Saldo Awal (Rp)' }}</label>
             <input v-model.number="cashBoxForm.balance" type="number" min="0" placeholder="0"
               class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
-            <p class="text-[10px] text-slate-400 mt-0.5">{{ editingCashBox ? 'Ubah saldo akan tercatat sebagai mutasi penyesuaian.' : 'Saldo kas saat ini. Bisa 0 kalau baru.' }}</p>
+            <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">{{ editingCashBox ? 'Ubah saldo akan tercatat sebagai mutasi penyesuaian.' : 'Saldo kas saat ini. Bisa 0 kalau baru.' }}</p>
           </div>
           <div v-if="cashBoxError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ cashBoxError }}</div>
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showCashBoxModal = false">Batal</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-md hover:bg-slate-200" @click="showCashBoxModal = false">Batal</button>
             <button type="submit" :disabled="cashBoxSaving" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">{{ editingCashBox ? 'Simpan' : 'Tambah' }}</button>
           </div>
         </form>

@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-5">
     <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-slate-800 to-slate-700 px-6 py-5 text-white shadow-lg">
-      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/5" />
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white dark:bg-[#1e2020]/5" />
       <h1 class="relative text-lg font-bold">Integrasi API</h1>
       <p class="relative text-xs text-slate-300 mt-0.5">
         Kelola koneksi API pihak ketiga — Tripay PPOB, dan integrasi lainnya.
@@ -9,7 +9,7 @@
     </div>
 
     <!-- Tab switcher -->
-    <div class="border-b border-slate-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+    <div class="border-b border-slate-200 dark:border-[#3d4948] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
       <nav class="flex gap-1 overflow-x-auto">
         <button
           v-for="tab in tabs"
@@ -19,7 +19,7 @@
             'px-3 py-2 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1.5 shrink-0',
             activeTab === tab.value
               ? 'border-blue-600 text-blue-700'
-              : 'border-transparent text-slate-600 hover:text-slate-900',
+              : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-[#e3e2e2]',
           ]"
           @click="activeTab = tab.value"
         >
@@ -39,22 +39,22 @@
       <!-- TAB: TRIPAY PPOB -->
       <section v-if="activeTab === 'tripay'" class="space-y-4">
         <!-- Status Card -->
-        <div :class="['rounded-lg border p-4 flex items-center gap-4', config.isActive ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 border-slate-200']">
-          <div :class="['w-10 h-10 rounded-full flex items-center justify-center', config.isActive ? 'bg-emerald-100' : 'bg-slate-100']">
-            <PlugIcon :class="['w-5 h-5', config.isActive ? 'text-emerald-600' : 'text-slate-400']" />
+        <div :class="['rounded-lg border p-4 flex items-center gap-4', config.isActive ? 'bg-emerald-50 border-emerald-200' : 'bg-slate-50 dark:bg-[#1a1c1c] border-slate-200']">
+          <div :class="['w-10 h-10 rounded-full flex items-center justify-center', config.isActive ? 'bg-emerald-100' : 'bg-slate-100 dark:bg-[#292a2a]']">
+            <PlugIcon :class="['w-5 h-5', config.isActive ? 'text-emerald-600' : 'text-slate-400 dark:text-[#869392]']" />
           </div>
           <div class="flex-1 min-w-0">
-            <p class="text-sm font-bold" :class="config.isActive ? 'text-emerald-800' : 'text-slate-700'">
+            <p class="text-sm font-bold" :class="config.isActive ? 'text-emerald-800' : 'text-slate-700 dark:text-[#bcc9c7]'">
               {{ config.isActive ? 'Tripay Aktif' : 'Tripay Belum Aktif' }}
             </p>
             <p class="text-xs text-slate-500 dark:text-[#869392]">
               {{ config.isActive ? `Mode: ${config.mode} — Merchant: ${config.merchantCode}` : 'Masukkan kredensial API untuk mengaktifkan PPOB.' }}
             </p>
-            <p v-if="config.lastVerifiedAt" class="text-[10px] text-slate-400 mt-0.5">
+            <p v-if="config.lastVerifiedAt" class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">
               Terakhir diverifikasi: {{ formatDate(config.lastVerifiedAt) }}
             </p>
           </div>
-          <span :class="['px-2 py-1 text-[10px] font-bold uppercase rounded-full', config.isActive ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600']">
+          <span :class="['px-2 py-1 text-[10px] font-bold uppercase rounded-full', config.isActive ? 'bg-emerald-200 text-emerald-800' : 'bg-slate-200 text-slate-600 dark:text-[#bcc9c7]']">
             {{ config.isActive ? 'AKTIF' : 'NONAKTIF' }}
           </span>
         </div>
@@ -93,10 +93,10 @@
         <!-- Config Form -->
         <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
           <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
-            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] flex items-center gap-2">
               <KeyIcon class="w-4 h-4 text-blue-600" /> Kredensial Tripay API
             </h3>
-            <p class="text-[11px] text-slate-500 mt-0.5">
+            <p class="text-[11px] text-slate-500 dark:text-[#869392] mt-0.5">
               Dapatkan dari <a href="https://tripay.co.id" target="_blank" class="text-blue-600 hover:underline">tripay.co.id</a> → Menu Developer.
             </p>
           </div>
@@ -104,23 +104,23 @@
           <form class="p-5 space-y-4" @submit.prevent="handleSaveConfig">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="sm:col-span-2">
-                <label class="block text-xs font-semibold text-slate-700 mb-1">API Key</label>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">API Key</label>
                 <input v-model="form.apiKey" type="password" placeholder="DEV-xxxxxxxx" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               </div>
               <div class="sm:col-span-2">
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Private Key</label>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Private Key</label>
                 <input v-model="form.privateKey" type="password" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Merchant Code</label>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Merchant Code</label>
                 <input v-model="form.merchantCode" type="text" placeholder="T12345" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Transaksi</label>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">PIN Transaksi</label>
                 <input v-model="form.pin" type="password" placeholder="4 digit" maxlength="4" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               </div>
               <div>
-                <label class="block text-xs font-semibold text-slate-700 mb-1">Mode</label>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Mode</label>
                 <select v-model="form.mode" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
                   <option value="sandbox">Sandbox (Testing)</option>
                   <option value="production">Production (Live)</option>
@@ -132,13 +132,13 @@
             <div class="flex items-center gap-3 pt-2">
               <label class="relative inline-flex items-center cursor-pointer">
                 <input v-model="form.isActive" type="checkbox" class="sr-only peer" />
-                <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
+                <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white dark:bg-[#1e2020] after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
               </label>
-              <span class="text-xs font-medium text-slate-700">Aktifkan Integrasi Tripay</span>
+              <span class="text-xs font-medium text-slate-700 dark:text-[#bcc9c7]">Aktifkan Integrasi Tripay</span>
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center gap-3 pt-3 border-t border-slate-200">
+            <div class="flex items-center gap-3 pt-3 border-t border-slate-200 dark:border-[#3d4948]">
               <button type="submit" :disabled="saving" class="inline-flex items-center gap-2 px-4 h-9 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg transition-colors disabled:opacity-50">
                 <Loader2Icon v-if="saving" class="w-3.5 h-3.5 animate-spin" />
                 <SaveIcon v-else class="w-3.5 h-3.5" />
@@ -158,17 +158,17 @@
         <!-- PPOB Categories Info -->
         <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
           <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
-            <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] flex items-center gap-2">
               <ZapIcon class="w-4 h-4 text-amber-500" /> Layanan PPOB Tersedia
             </h3>
-            <p class="text-[11px] text-slate-500 mt-0.5">Setelah Tripay aktif, kasir bisa akses layanan ini dari menu PPOB di webapp.</p>
+            <p class="text-[11px] text-slate-500 dark:text-[#869392] mt-0.5">Setelah Tripay aktif, kasir bisa akses layanan ini dari menu PPOB di webapp.</p>
           </div>
           <div class="p-5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-            <div v-for="cat in ppobCategories" :key="cat.code" class="flex flex-col items-center gap-2 p-3 rounded-lg bg-slate-50 border border-slate-200">
+            <div v-for="cat in ppobCategories" :key="cat.code" class="flex flex-col items-center gap-2 p-3 rounded-lg bg-slate-50 dark:bg-[#1a1c1c] border border-slate-200">
               <div class="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center">
                 <component :is="getCategoryIcon(cat.icon)" class="w-4 h-4 text-indigo-600" />
               </div>
-              <p class="text-[10px] font-semibold text-slate-700 text-center leading-tight">{{ cat.label }}</p>
+              <p class="text-[10px] font-semibold text-slate-700 dark:text-[#bcc9c7] text-center leading-tight">{{ cat.label }}</p>
             </div>
           </div>
         </div>
@@ -177,16 +177,16 @@
       <!-- TAB: WEBHOOK -->
       <section v-if="activeTab === 'webhook'" class="space-y-4">
         <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-6 text-center">
-          <div class="w-14 h-14 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-3">
-            <WebhookIcon class="w-7 h-7 text-slate-400" />
+          <div class="w-14 h-14 mx-auto rounded-full bg-slate-100 dark:bg-[#292a2a] flex items-center justify-center mb-3">
+            <WebhookIcon class="w-7 h-7 text-slate-400 dark:text-[#869392]" />
           </div>
-          <h3 class="text-sm font-bold text-slate-700">Webhook & Callback</h3>
+          <h3 class="text-sm font-bold text-slate-700 dark:text-[#bcc9c7]">Webhook & Callback</h3>
           <p class="text-xs text-slate-500 dark:text-[#869392] mt-1 max-w-md mx-auto">
             URL callback Tripay untuk update status transaksi otomatis. Set di panel Tripay:
           </p>
-          <div class="mt-3 inline-flex items-center gap-2 px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg">
-            <code class="text-[11px] font-mono text-slate-800">{{ callbackUrl }}</code>
-            <button type="button" class="p-1 text-slate-400 hover:text-blue-600 transition-colors" @click="copyCallback">
+          <div class="mt-3 inline-flex items-center gap-2 px-3 py-2 bg-slate-100 dark:bg-[#292a2a] border border-slate-200 rounded-lg">
+            <code class="text-[11px] font-mono text-slate-800 dark:text-[#bcc9c7]">{{ callbackUrl }}</code>
+            <button type="button" class="p-1 text-slate-400 dark:text-[#869392] hover:text-blue-600 transition-colors" @click="copyCallback">
               <CopyIcon class="w-3.5 h-3.5" />
             </button>
           </div>

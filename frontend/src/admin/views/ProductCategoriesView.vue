@@ -33,7 +33,7 @@
         </div>
         <div class="flex items-center gap-1">
           <button class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800" @click="openEdit(cat)">
-            <Edit3Icon class="w-3.5 h-3.5 text-slate-500" />
+            <Edit3Icon class="w-3.5 h-3.5 text-slate-500 dark:text-[#869392]" />
           </button>
           <button class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-red-50 dark:hover:bg-red-900/20" @click="handleDelete(cat)">
             <Trash2Icon class="w-3.5 h-3.5 text-red-500" />
@@ -58,7 +58,7 @@
           </div>
           <div v-if="formError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ formError }}</div>
           <div class="flex justify-end gap-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showModal = false">Batal</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-md hover:bg-slate-200" @click="showModal = false">Batal</button>
             <button type="submit" :disabled="submitting" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
               {{ submitting ? 'Menyimpan...' : (editing ? 'Simpan' : 'Buat') }}
             </button>

@@ -2,7 +2,7 @@
   <div class="space-y-5">
     <!-- Header -->
     <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-pink-600 to-rose-500 px-6 py-5 text-white shadow-lg">
-      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white dark:bg-[#1e2020]/10" />
       <h1 class="relative text-lg font-bold">Cetak Label Barcode</h1>
       <p class="relative text-xs text-pink-100 mt-0.5">Pilih produk dan cetak label barcode untuk rak toko.</p>
     </div>
@@ -21,8 +21,8 @@
         <option value="a4">A4 Bebas (70×42mm) — 21/lembar</option>
       </select>
       <label class="flex items-center gap-1.5 cursor-pointer">
-        <input v-model="showPrice" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-200 rounded" />
-        <span class="text-xs text-slate-700">Tampilkan Harga</span>
+        <input v-model="showPrice" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-200 dark:border-[#3d4948] rounded" />
+        <span class="text-xs text-slate-700 dark:text-[#bcc9c7]">Tampilkan Harga</span>
       </label>
       <div class="flex-1"></div>
       <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg hover:bg-slate-50 flex items-center gap-1.5" @click="selectAll">
@@ -35,11 +35,11 @@
 
     <!-- Product selection table -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <span class="text-sm text-slate-400">Memuat produk...</span>
+      <span class="text-sm text-slate-400 dark:text-[#869392]">Memuat produk...</span>
     </div>
 
     <div v-else-if="products.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
-      <p class="text-sm font-semibold text-slate-700">Belum ada produk</p>
+      <p class="text-sm font-semibold text-slate-700 dark:text-[#bcc9c7]">Belum ada produk</p>
     </div>
 
     <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
@@ -47,7 +47,7 @@
         <table class="w-full">
           <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
             <tr>
-              <th class="px-3 py-2.5 text-center w-10"><input type="checkbox" :checked="allSelected" class="w-4 h-4 text-blue-600 border-slate-200 rounded" @change="toggleAll" /></th>
+              <th class="px-3 py-2.5 text-center w-10"><input type="checkbox" :checked="allSelected" class="w-4 h-4 text-blue-600 border-slate-200 dark:border-[#3d4948] rounded" @change="toggleAll" /></th>
               <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Produk</th>
               <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">SKU / Barcode</th>
               <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Kategori</th>
@@ -55,12 +55,12 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr v-for="p in products" :key="p.id" class="hover:bg-slate-50/50 cursor-pointer" @click="toggleSelect(p.id)">
-              <td class="px-3 py-2.5 text-center"><input type="checkbox" :checked="selectedIds.includes(p.id)" class="w-4 h-4 text-blue-600 border-slate-200 rounded pointer-events-none" /></td>
+            <tr v-for="p in products" :key="p.id" class="hover:bg-slate-50 dark:bg-[#1a1c1c]/50 cursor-pointer" @click="toggleSelect(p.id)">
+              <td class="px-3 py-2.5 text-center"><input type="checkbox" :checked="selectedIds.includes(p.id)" class="w-4 h-4 text-blue-600 border-slate-200 dark:border-[#3d4948] rounded pointer-events-none" /></td>
               <td class="px-3 py-2.5 text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">{{ p.name }}</td>
-              <td class="px-3 py-2.5"><code class="text-[10px] font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">{{ p.barcode || p.sku }}</code></td>
+              <td class="px-3 py-2.5"><code class="text-[10px] font-mono text-slate-600 dark:text-[#bcc9c7] bg-slate-100 px-1.5 py-0.5 rounded">{{ p.barcode || p.sku }}</code></td>
               <td class="px-3 py-2.5 text-xs text-slate-500 dark:text-[#869392]">{{ p.category?.name || '—' }}</td>
-              <td class="px-3 py-2.5 text-right text-xs font-mono text-slate-700">{{ formatRupiah(p.price) }}</td>
+              <td class="px-3 py-2.5 text-right text-xs font-mono text-slate-700 dark:text-[#bcc9c7]">{{ formatRupiah(p.price) }}</td>
             </tr>
           </tbody>
         </table>

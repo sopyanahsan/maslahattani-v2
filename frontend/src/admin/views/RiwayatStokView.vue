@@ -2,8 +2,8 @@
   <div class="space-y-5">
     <!-- Header -->
     <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-5 text-white shadow-lg">
-      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
-      <div class="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white/5" />
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white dark:bg-[#1e2020]/10" />
+      <div class="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white dark:bg-[#1e2020]/5" />
       <h1 class="relative text-lg font-bold">Riwayat Stok</h1>
       <p class="relative text-xs text-indigo-100 mt-0.5">Riwayat lengkap keluar masuk barang — siapa, dari mana, metode bayar.</p>
     </div>
@@ -34,7 +34,7 @@
       <input v-model="filter.startDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch" />
       <input v-model="filter.endDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch" />
       <div class="flex-1"></div>
-      <span v-if="meta" class="text-xs text-slate-500 self-center">{{ meta.total }} riwayat</span>
+      <span v-if="meta" class="text-xs text-slate-500 dark:text-[#869392] self-center">{{ meta.total }} riwayat</span>
     </div>
 
     <!-- Loading -->
@@ -45,7 +45,7 @@
     <!-- Empty -->
     <div v-else-if="items.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
       <ClipboardListIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
-      <p class="text-sm font-semibold text-slate-700">Belum ada riwayat stok</p>
+      <p class="text-sm font-semibold text-slate-700 dark:text-[#bcc9c7]">Belum ada riwayat stok</p>
       <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">Riwayat akan muncul setelah ada transaksi, restock, transfer, atau opname.</p>
     </div>
 
@@ -65,11 +65,11 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr v-for="h in items" :key="h.id" class="hover:bg-slate-50/50 transition-colors">
-              <td class="px-4 py-3 text-xs text-slate-900 font-mono whitespace-nowrap">{{ formatDateTime(h.createdAt) }}</td>
+            <tr v-for="h in items" :key="h.id" class="hover:bg-slate-50 dark:bg-[#1a1c1c]/50 transition-colors">
+              <td class="px-4 py-3 text-xs text-slate-900 dark:text-[#e3e2e2] font-mono whitespace-nowrap">{{ formatDateTime(h.createdAt) }}</td>
               <td class="px-4 py-3">
                 <p class="text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">{{ h.stock?.product?.name || '—' }}</p>
-                <p class="text-[10px] text-slate-400 font-mono">{{ h.stock?.product?.sku || '' }}</p>
+                <p class="text-[10px] text-slate-400 dark:text-[#869392] font-mono">{{ h.stock?.product?.sku || '' }}</p>
               </td>
               <td class="px-4 py-3 text-center">
                 <span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', typeBadge(h.type)]">{{ typeLabel(h.type) }}</span>
@@ -84,7 +84,7 @@
                 <span :class="['text-xs font-mono font-bold', h.quantityChange > 0 ? 'text-emerald-600' : 'text-red-600']">
                   {{ h.quantityChange > 0 ? '+' : '' }}{{ h.quantityChange }}
                 </span>
-                <p class="text-[9px] text-slate-400 font-mono">{{ h.quantityBefore }}→{{ h.quantityAfter }}</p>
+                <p class="text-[9px] text-slate-400 dark:text-[#869392] font-mono">{{ h.quantityBefore }}→{{ h.quantityAfter }}</p>
               </td>
               <td class="px-4 py-3">
                 <div v-if="h.createdBy" class="flex items-center gap-1.5">
@@ -92,24 +92,24 @@
                     <span class="text-[8px] font-bold text-slate-900 dark:text-[#e3e2e2]">{{ (h.createdBy.username || h.createdBy.email || '?')[0].toUpperCase() }}</span>
                   </div>
                   <div>
-                    <p class="text-[11px] font-medium text-slate-800">{{ h.createdBy.username || h.createdBy.email }}</p>
-                    <p class="text-[9px] text-slate-400">{{ h.createdBy.role === 'ADMIN' || h.createdBy.role === 'SUPER_ADMIN' ? 'Admin' : 'Kasir' }}</p>
+                    <p class="text-[11px] font-medium text-slate-800 dark:text-[#bcc9c7]">{{ h.createdBy.username || h.createdBy.email }}</p>
+                    <p class="text-[9px] text-slate-400 dark:text-[#869392]">{{ h.createdBy.role === 'ADMIN' || h.createdBy.role === 'SUPER_ADMIN' ? 'Admin' : 'Kasir' }}</p>
                   </div>
                 </div>
-                <span v-else class="text-[10px] text-slate-400">Sistem</span>
+                <span v-else class="text-[10px] text-slate-400 dark:text-[#869392]">Sistem</span>
               </td>
-              <td class="px-4 py-3 text-xs text-slate-900 max-w-[180px] truncate">{{ h.notes || '—' }}</td>
+              <td class="px-4 py-3 text-xs text-slate-900 dark:text-[#e3e2e2] max-w-[180px] truncate">{{ h.notes || '—' }}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <!-- Pagination -->
-      <div v-if="meta && meta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 flex items-center justify-between">
+      <div v-if="meta && meta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 dark:border-[#3d4948] flex items-center justify-between">
         <p class="text-xs text-slate-500 dark:text-[#869392]">Hal. {{ meta.page }} / {{ meta.totalPages }}</p>
         <div class="flex gap-1">
-          <button :disabled="meta.page <= 1" class="h-7 px-2.5 text-xs border border-slate-200 rounded disabled:opacity-40 text-slate-700" @click="fetchData(meta!.page - 1)">Prev</button>
-          <button :disabled="meta.page >= meta.totalPages" class="h-7 px-2.5 text-xs border border-slate-200 rounded disabled:opacity-40 text-slate-700" @click="fetchData(meta!.page + 1)">Next</button>
+          <button :disabled="meta.page <= 1" class="h-7 px-2.5 text-xs border border-slate-200 rounded disabled:opacity-40 text-slate-700 dark:text-[#bcc9c7]" @click="fetchData(meta!.page - 1)">Prev</button>
+          <button :disabled="meta.page >= meta.totalPages" class="h-7 px-2.5 text-xs border border-slate-200 rounded disabled:opacity-40 text-slate-700 dark:text-[#bcc9c7]" @click="fetchData(meta!.page + 1)">Next</button>
         </div>
       </div>
     </div>
@@ -142,7 +142,7 @@ function typeLabel(t: string) {
 }
 function typeBadge(t: string) {
   const m: Record<string, string> = { IN: 'bg-emerald-100 text-emerald-700', OUT: 'bg-red-100 text-red-700', OPNAME: 'bg-blue-100 text-blue-700', TRANSFER_IN: 'bg-indigo-100 text-indigo-700', TRANSFER_OUT: 'bg-purple-100 text-purple-700', ADJUSTMENT: 'bg-amber-100 text-amber-700' };
-  return m[t] || 'bg-slate-100 text-slate-900';
+  return m[t] || 'bg-slate-100 text-slate-900 dark:text-[#e3e2e2]';
 }
 
 function sourceLabel(s?: string | null) {
@@ -151,9 +151,9 @@ function sourceLabel(s?: string | null) {
   return m[s] || s;
 }
 function sourceBadge(s?: string | null) {
-  if (!s) return 'bg-slate-100 text-slate-900';
-  const m: Record<string, string> = { INITIAL: 'bg-slate-100 text-slate-700', BULK_UPLOAD: 'bg-violet-100 text-violet-700', STOCK_IN: 'bg-emerald-100 text-emerald-700', SALE: 'bg-blue-100 text-blue-700', SALE_VOID: 'bg-amber-100 text-amber-700', OPNAME_INLINE: 'bg-cyan-100 text-cyan-700', OPNAME_SESSION: 'bg-cyan-100 text-cyan-700', TRANSFER_OUT: 'bg-purple-100 text-purple-700', TRANSFER_IN: 'bg-indigo-100 text-indigo-700', PURCHASE_ORDER: 'bg-teal-100 text-teal-700', ADJUSTMENT: 'bg-orange-100 text-orange-700' };
-  return m[s] || 'bg-slate-100 text-slate-900';
+  if (!s) return 'bg-slate-100 text-slate-900 dark:text-[#e3e2e2]';
+  const m: Record<string, string> = { INITIAL: 'bg-slate-100 text-slate-700 dark:text-[#bcc9c7]', BULK_UPLOAD: 'bg-violet-100 text-violet-700', STOCK_IN: 'bg-emerald-100 text-emerald-700', SALE: 'bg-blue-100 text-blue-700', SALE_VOID: 'bg-amber-100 text-amber-700', OPNAME_INLINE: 'bg-cyan-100 text-cyan-700', OPNAME_SESSION: 'bg-cyan-100 text-cyan-700', TRANSFER_OUT: 'bg-purple-100 text-purple-700', TRANSFER_IN: 'bg-indigo-100 text-indigo-700', PURCHASE_ORDER: 'bg-teal-100 text-teal-700', ADJUSTMENT: 'bg-orange-100 text-orange-700' };
+  return m[s] || 'bg-slate-100 text-slate-900 dark:text-[#e3e2e2]';
 }
 
 function pmLabel(m?: string | null) {

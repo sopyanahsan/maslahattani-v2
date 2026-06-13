@@ -4,10 +4,10 @@
       <div class="mx-auto w-20 h-20 rounded-2xl bg-blue-600 flex items-center justify-center mb-6 shadow-lg">
         <span class="material-symbols-outlined text-white text-4xl">store</span>
       </div>
-      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 mb-3">
+      <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-[#e3e2e2] mb-3">
         Posify
       </h1>
-      <p class="text-base sm:text-lg text-slate-600 mb-8">
+      <p class="text-base sm:text-lg text-slate-600 dark:text-[#bcc9c7] mb-8">
         Sistem POS &amp; BRILink untuk Agen Retail
       </p>
 
@@ -35,14 +35,14 @@
 
         <RouterLink
           to="/showcase"
-          class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-slate-900 text-sm sm:text-base font-semibold rounded-lg border border-slate-200 hover:bg-slate-50 transition shadow-md"
+          class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-slate-900 dark:text-[#e3e2e2] text-sm sm:text-base font-semibold rounded-lg border border-slate-200 hover:bg-slate-50 transition shadow-md"
         >
           <span class="material-symbols-outlined text-[20px]">palette</span>
           UI Showcase
         </RouterLink>
       </div>
 
-      <p class="mt-8 text-xs text-slate-500">v2.0 • Vue 3 + Vite + Tailwind</p>
+      <p class="mt-8 text-xs text-slate-500 dark:text-[#869392]">v2.0 • Vue 3 + Vite + Tailwind</p>
     </div>
   </div>
 </template>

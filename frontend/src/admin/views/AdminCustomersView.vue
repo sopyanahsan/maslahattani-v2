@@ -12,15 +12,15 @@
     <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
       <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm">
         <p class="text-[10px] font-semibold text-blue-500 uppercase tracking-wide">Total Customer</p>
-        <p class="text-lg font-bold text-slate-900 mt-1">{{ customers.length }}</p>
+        <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mt-1">{{ customers.length }}</p>
       </div>
       <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm">
         <p class="text-[10px] font-semibold text-emerald-500 uppercase tracking-wide">Aktif</p>
-        <p class="text-lg font-bold text-slate-900 mt-1">{{ activeCount }}</p>
+        <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mt-1">{{ activeCount }}</p>
       </div>
       <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm">
-        <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wide">Nonaktif</p>
-        <p class="text-lg font-bold text-slate-900 mt-1">{{ customers.length - activeCount }}</p>
+        <p class="text-[10px] font-semibold text-slate-400 dark:text-[#869392] uppercase tracking-wide">Nonaktif</p>
+        <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mt-1">{{ customers.length - activeCount }}</p>
       </div>
     </div>
 
@@ -57,14 +57,14 @@
         class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm flex items-center justify-between hover:border-slate-200/50 transition-colors"
       >
         <div class="cursor-pointer" @click="$router.push(`/admin/customers/${c.id}`)">
-          <p class="text-sm font-semibold text-slate-900 hover:text-[#00A19B] transition-colors">{{ c.name }}</p>
+          <p class="text-sm font-semibold text-slate-900 dark:text-[#e3e2e2] hover:text-[#00A19B] transition-colors">{{ c.name }}</p>
           <p class="text-xs text-slate-500 dark:text-[#869392] mt-0.5">
             {{ c.phone || '-' }} &middot; {{ c.address || 'Alamat belum diisi' }}
           </p>
-          <p v-if="c.notes" class="text-[10px] text-slate-400 mt-0.5 italic">{{ c.notes }}</p>
+          <p v-if="c.notes" class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5 italic">{{ c.notes }}</p>
         </div>
         <div class="flex items-center gap-2">
-          <span :class="['text-[10px] font-bold uppercase px-2 py-0.5 rounded', c.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500']">
+          <span :class="['text-[10px] font-bold uppercase px-2 py-0.5 rounded', c.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500 dark:text-[#869392]']">
             {{ c.isActive ? 'Aktif' : 'Nonaktif' }}
           </span>
           <button @click="openModal(c)" class="text-xs text-blue-600 hover:underline">Edit</button>
@@ -78,8 +78,8 @@
     <!-- ============================================ -->
     <teleport to="body">
       <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="showModal = false">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-          <h2 class="text-base font-bold text-slate-900 mb-4">{{ editing ? 'Edit Customer' : 'Tambah Customer' }}</h2>
+        <div class="bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-md p-6">
+          <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2] mb-4">{{ editing ? 'Edit Customer' : 'Tambah Customer' }}</h2>
           <form @submit.prevent="handleSave" class="space-y-3">
             <!-- Name with anti-double check -->
             <div>
@@ -92,13 +92,13 @@
                   ? 'border-red-400 bg-red-50'
                   : nameStatus === 'available'
                     ? 'border-emerald-400 bg-emerald-50'
-                    : 'border-slate-200'"
+                    : 'border-slate-200 dark:border-[#3d4948]'"
                 @input="checkDuplicateName"
               />
               <p v-if="nameStatus === 'duplicate'" class="text-[11px] text-red-500 mt-1 font-medium">
                 Nama "{{ form.name.trim() }}" sudah terdaftar di cabang ini.
               </p>
-              <p v-else-if="nameStatus === 'checking'" class="text-[11px] text-slate-400 mt-1">
+              <p v-else-if="nameStatus === 'checking'" class="text-[11px] text-slate-400 dark:text-[#869392] mt-1">
                 Memeriksa...
               </p>
               <p v-else-if="nameStatus === 'available'" class="text-[11px] text-emerald-600 mt-1">
@@ -110,11 +110,11 @@
             <textarea v-model="form.notes" placeholder="Catatan" rows="2" class="w-full px-3 py-2 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none resize-none"></textarea>
             <div v-if="editing" class="flex items-center gap-2">
               <input type="checkbox" id="isActive" v-model="form.isActive" class="rounded" />
-              <label for="isActive" class="text-xs text-slate-600">Aktif</label>
+              <label for="isActive" class="text-xs text-slate-600 dark:text-[#bcc9c7]">Aktif</label>
             </div>
             <div v-if="saveError" class="text-xs text-red-500 bg-red-50 px-3 py-2 rounded-lg">{{ saveError }}</div>
             <div class="flex justify-end gap-2 pt-2">
-              <button type="button" @click="showModal = false" class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
+              <button type="button" @click="showModal = false" class="h-9 px-4 text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
               <button
                 type="submit"
                 :disabled="saving || nameStatus === 'duplicate'"
@@ -131,12 +131,12 @@
     <!-- Delete Confirmation -->
     <teleport to="body">
       <div v-if="showDeleteConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" @click.self="showDeleteConfirm = false">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm p-6 text-center">
-          <p class="text-sm text-slate-700 mb-4">
+        <div class="bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-sm p-6 text-center">
+          <p class="text-sm text-slate-700 dark:text-[#bcc9c7] mb-4">
             Hapus customer <strong>"{{ deleteTarget?.name }}"</strong>?
           </p>
           <div class="flex justify-center gap-3">
-            <button type="button" @click="showDeleteConfirm = false" class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
+            <button type="button" @click="showDeleteConfirm = false" class="h-9 px-4 text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
             <button type="button" @click="handleDelete" :disabled="deleting" class="h-9 px-4 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700">
               {{ deleting ? 'Menghapus...' : 'Hapus' }}
             </button>

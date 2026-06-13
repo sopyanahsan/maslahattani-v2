@@ -3,15 +3,15 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-5 text-white shadow-lg flex-1">
-        <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
-        <div class="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white/5" />
+        <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white dark:bg-[#1e2020]/10" />
+        <div class="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white dark:bg-[#1e2020]/5" />
         <h1 class="relative text-lg font-bold">Stok &amp; Inventaris</h1>
         <p class="relative text-xs text-violet-100 mt-0.5">Overview stok, restok cepat, dan opname produk.</p>
       </div>
       <div class="flex items-center gap-2 shrink-0">
         <button
           type="button"
-          class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
+          class="h-9 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-lg
                  hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
           @click="showRestockModal = true"
         >
@@ -20,7 +20,7 @@
         </button>
         <button
           type="button"
-          class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
+          class="h-9 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-lg
                  hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
           @click="showOpnameModal = true"
         >
@@ -33,25 +33,25 @@
     <!-- Summary Cards -->
     <div v-if="summary" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
       <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-        <p class="text-[11px] text-slate-500 uppercase tracking-wide">Total Produk</p>
+        <p class="text-[11px] text-slate-500 dark:text-[#869392] uppercase tracking-wide">Total Produk</p>
         <p class="text-lg font-bold font-mono tabular-nums text-slate-950 dark:text-[#e3e2e2] mt-1">
           {{ summary.totalProducts }}
         </p>
       </div>
       <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-        <p class="text-[11px] text-slate-500 uppercase tracking-wide">Stok Habis</p>
+        <p class="text-[11px] text-slate-500 dark:text-[#869392] uppercase tracking-wide">Stok Habis</p>
         <p class="text-lg font-bold font-mono tabular-nums text-red-600 mt-1">
           {{ summary.outOfStock }}
         </p>
       </div>
       <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-        <p class="text-[11px] text-slate-500 uppercase tracking-wide">Stok Menipis (&le;5)</p>
+        <p class="text-[11px] text-slate-500 dark:text-[#869392] uppercase tracking-wide">Stok Menipis (&le;5)</p>
         <p class="text-lg font-bold font-mono tabular-nums text-amber-600 mt-1">
           {{ summary.lowStock }}
         </p>
       </div>
       <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-        <p class="text-[11px] text-slate-500 uppercase tracking-wide">Nilai Stok (Modal)</p>
+        <p class="text-[11px] text-slate-500 dark:text-[#869392] uppercase tracking-wide">Nilai Stok (Modal)</p>
         <p class="text-lg font-bold font-mono tabular-nums text-slate-950 dark:text-[#e3e2e2] mt-1">
           {{ formatRupiah(summary.totalStockValue) }}
         </p>
@@ -66,8 +66,8 @@
         :class="[
           'h-8 px-4 text-xs font-semibold rounded-md transition-all',
           activeTab === tab.value
-            ? 'bg-white text-slate-950 shadow-sm'
-            : 'text-slate-500 hover:text-slate-900',
+            ? 'bg-white text-slate-950 dark:text-[#e3e2e2] shadow-sm'
+            : 'text-slate-500 hover:text-slate-900 dark:text-[#e3e2e2]',
         ]"
         @click="activeTab = tab.value"
       >
@@ -133,12 +133,12 @@
                   {{ item.product.name }}
                 </td>
                 <td class="px-4 py-3">
-                  <code class="text-xs font-mono text-slate-600">{{ item.product.sku }}</code>
+                  <code class="text-xs font-mono text-slate-600 dark:text-[#bcc9c7]">{{ item.product.sku }}</code>
                 </td>
                 <td class="px-4 py-3 text-center text-sm font-mono tabular-nums font-semibold text-slate-900 dark:text-[#e3e2e2]">
                   {{ item.quantity }}
                 </td>
-                <td class="px-4 py-3 text-right text-sm font-mono tabular-nums text-slate-700">
+                <td class="px-4 py-3 text-right text-sm font-mono tabular-nums text-slate-700 dark:text-[#bcc9c7]">
                   {{ formatRupiah(item.quantity * item.product.cost) }}
                 </td>
                 <td class="px-4 py-3 text-center">
@@ -210,7 +210,7 @@
                 :key="h.id"
                 class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
               >
-                <td class="px-4 py-2.5 text-xs text-slate-600 font-mono tabular-nums">
+                <td class="px-4 py-2.5 text-xs text-slate-600 dark:text-[#bcc9c7] font-mono tabular-nums">
                   {{ formatDateTime(h.createdAt) }}
                 </td>
                 <td class="px-4 py-2.5 text-sm text-slate-900 dark:text-[#e3e2e2]">
@@ -256,11 +256,11 @@
                   >
                     {{ h.quantityChange > 0 ? '+' : '' }}{{ h.quantityChange }}
                   </span>
-                  <span class="text-[10px] text-slate-400 ml-1">
+                  <span class="text-[10px] text-slate-400 dark:text-[#869392] ml-1">
                     ({{ h.quantityBefore }} → {{ h.quantityAfter }})
                   </span>
                 </td>
-                <td class="px-4 py-2.5 text-xs text-slate-600 max-w-[200px] truncate">
+                <td class="px-4 py-2.5 text-xs text-slate-600 dark:text-[#bcc9c7] max-w-[200px] truncate">
                   {{ h.notes || '—' }}
                 </td>
               </tr>
@@ -271,7 +271,7 @@
         <!-- History pagination -->
         <div
           v-if="historyMeta && historyMeta.totalPages > 1"
-          class="px-4 py-3 border-t border-slate-200 flex items-center justify-between"
+          class="px-4 py-3 border-t border-slate-200 dark:border-[#3d4948] flex items-center justify-between"
         >
           <p class="text-xs text-slate-500 dark:text-[#869392]">
             Halaman {{ historyMeta.page }} dari {{ historyMeta.totalPages }}
@@ -279,16 +279,16 @@
           <div class="flex items-center gap-1">
             <button
               :disabled="historyMeta.page <= 1"
-              class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded-md
-                     hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md
+                     hover:bg-slate-50 dark:bg-[#1a1c1c] disabled:opacity-40 disabled:cursor-not-allowed"
               @click="fetchHistory(historyMeta!.page - 1)"
             >
               Prev
             </button>
             <button
               :disabled="historyMeta.page >= historyMeta.totalPages"
-              class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded-md
-                     hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md
+                     hover:bg-slate-50 dark:bg-[#1a1c1c] disabled:opacity-40 disabled:cursor-not-allowed"
               @click="fetchHistory(historyMeta!.page + 1)"
             >
               Next
@@ -313,23 +313,23 @@
       >
         <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showRestockModal = false"></div>
         <form
-          class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4"
+          class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-md p-6 space-y-4"
           @submit.prevent="handleRestock"
         >
-          <h2 class="text-base font-bold text-slate-950 flex items-center gap-2">
+          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2] flex items-center gap-2">
             <PackagePlusIcon class="w-5 h-5 text-emerald-600" />
             Restok Produk
           </h2>
 
           <!-- Product select -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
               Produk <span class="text-red-500">*</span>
             </label>
             <select
               v-model="restockForm.productId"
               required
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-md
                      focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
             >
               <option value="">— Pilih produk —</option>
@@ -341,7 +341,7 @@
 
           <!-- Quantity -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
               Jumlah Masuk <span class="text-red-500">*</span>
             </label>
             <input
@@ -350,19 +350,19 @@
               min="1"
               required
               placeholder="25"
-              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md
+              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] rounded-md
                      focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
             />
           </div>
 
           <!-- Notes -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan</label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Catatan</label>
             <input
               v-model="restockForm.notes"
               type="text"
               placeholder="Restok dari supplier X"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-md
                      focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
             />
           </div>
@@ -377,7 +377,7 @@
           <div class="flex items-center justify-end gap-2 pt-2">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md
+              class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-md
                      hover:bg-slate-200"
               @click="showRestockModal = false"
             >
@@ -407,10 +407,10 @@
       >
         <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showOpnameModal = false"></div>
         <form
-          class="relative bg-white rounded-lg shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto"
+          class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto"
           @submit.prevent="handleOpname"
         >
-          <h2 class="text-base font-bold text-slate-950 flex items-center gap-2">
+          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2] flex items-center gap-2">
             <ClipboardCheckIcon class="w-5 h-5 text-blue-600" />
             Stok Opname
           </h2>
@@ -423,10 +423,10 @@
             <div
               v-for="item in opnameItems"
               :key="item.productId"
-              class="flex items-center gap-3 bg-slate-50 rounded-md px-3 py-2"
+              class="flex items-center gap-3 bg-slate-50 dark:bg-[#1a1c1c] rounded-md px-3 py-2"
             >
               <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium text-slate-900 truncate">
+                <p class="text-xs font-medium text-slate-900 dark:text-[#e3e2e2] truncate">
                   {{ item.productName }}
                 </p>
                 <p class="text-[10px] text-slate-500 dark:text-[#869392]">Sistem: {{ item.systemQty }}</p>
@@ -435,7 +435,7 @@
                 v-model.number="item.actualQuantity"
                 type="number"
                 min="0"
-                class="w-20 h-8 px-2 text-sm font-mono text-center border border-slate-200 rounded-md
+                class="w-20 h-8 px-2 text-sm font-mono text-center border border-slate-200 dark:border-[#3d4948] rounded-md
                        focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
               />
             </div>
@@ -443,12 +443,12 @@
 
           <!-- Notes -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan Opname</label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Catatan Opname</label>
             <input
               v-model="opnameNotes"
               type="text"
               placeholder="Opname bulanan Mei 2026"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-md
                      focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
             />
           </div>
@@ -476,7 +476,7 @@
           <div class="flex items-center justify-end gap-2 pt-2">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md
+              class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-md
                      hover:bg-slate-200"
               @click="showOpnameModal = false"
             >
@@ -715,7 +715,7 @@ function historyTypeBadge(type: string): string {
     case 'TRANSFER_OUT':
       return 'bg-purple-100 text-purple-700';
     default:
-      return 'bg-slate-100 text-slate-700';
+      return 'bg-slate-100 text-slate-700 dark:text-[#bcc9c7]';
   }
 }
 
@@ -739,11 +739,11 @@ function sourceLabel(source?: string | null): string {
 }
 
 function sourceBadgeClass(source?: string | null): string {
-  if (!source) return 'bg-slate-100 text-slate-600';
+  if (!source) return 'bg-slate-100 text-slate-600 dark:text-[#bcc9c7]';
   const map: Record<string, string> = {
-    INITIAL: 'bg-slate-100 text-slate-700',
+    INITIAL: 'bg-slate-100 text-slate-700 dark:text-[#bcc9c7]',
     BULK_UPLOAD: 'bg-violet-100 text-violet-700',
-    SEED: 'bg-slate-100 text-slate-600',
+    SEED: 'bg-slate-100 text-slate-600 dark:text-[#bcc9c7]',
     STOCK_IN: 'bg-emerald-100 text-emerald-700',
     SALE: 'bg-blue-100 text-blue-700',
     SALE_VOID: 'bg-amber-100 text-amber-700',
@@ -754,7 +754,7 @@ function sourceBadgeClass(source?: string | null): string {
     PURCHASE_ORDER: 'bg-teal-100 text-teal-700',
     ADJUSTMENT: 'bg-orange-100 text-orange-700',
   };
-  return map[source] || 'bg-slate-100 text-slate-700';
+  return map[source] || 'bg-slate-100 text-slate-700 dark:text-[#bcc9c7]';
 }
 
 function paymentMethodLabel(method?: string | null): string {
@@ -776,7 +776,7 @@ function paymentMethodBadge(method?: string | null): string {
     TRANSFER: 'bg-indigo-50 text-indigo-700 border border-indigo-200',
     HUTANG: 'bg-amber-50 text-amber-700 border border-amber-200',
   };
-  return map[method] || 'bg-slate-50 text-slate-600 border border-slate-200';
+  return map[method] || 'bg-slate-50 text-slate-600 dark:text-[#bcc9c7] border border-slate-200';
 }
 
 // ============================================

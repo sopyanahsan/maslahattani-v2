@@ -2,7 +2,7 @@
   <div class="max-w-3xl space-y-5">
     <!-- Header -->
     <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 text-white shadow-lg">
-      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white dark:bg-[#1e2020]/10" />
       <h1 class="relative text-lg font-bold">Profil Saya</h1>
       <p class="relative text-xs text-blue-100 mt-0.5">
         Kelola data pribadi, foto profil, dan keamanan akun.
@@ -43,76 +43,76 @@
 
     <!-- Personal data form -->
     <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5">
-      <h2 class="text-sm font-bold text-slate-900 mb-4">Data Pribadi</h2>
+      <h2 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] mb-4">Data Pribadi</h2>
       <form @submit.prevent="handleSaveProfile" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600">
+          <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-[#bcc9c7]">
             Username
           </label>
           <input
             v-model="form.username"
             type="text"
             placeholder="username"
-            class="mt-1 w-full h-9 px-3 text-sm font-mono bg-white
-                   border border-slate-200 rounded-lg
-                   text-slate-900
+            class="mt-1 w-full h-9 px-3 text-sm font-mono bg-white dark:bg-[#1e2020]
+                   border border-slate-200 dark:border-[#3d4948] rounded-lg
+                   text-slate-900 dark:text-[#e3e2e2]
                    focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
           />
-          <p class="text-[9px] text-slate-400 mt-0.5">Huruf kecil, angka, tanpa spasi. Dipakai untuk login.</p>
+          <p class="text-[9px] text-slate-400 dark:text-[#869392] mt-0.5">Huruf kecil, angka, tanpa spasi. Dipakai untuk login.</p>
         </div>
         <div>
-          <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600">
+          <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-[#bcc9c7]">
             Nama Lengkap
           </label>
           <input
             v-model="form.fullName"
             type="text"
             placeholder="Nama lengkap Anda"
-            class="mt-1 w-full h-9 px-3 text-sm bg-white
-                   border border-slate-200 rounded-lg
-                   text-slate-900
+            class="mt-1 w-full h-9 px-3 text-sm bg-white dark:bg-[#1e2020]
+                   border border-slate-200 dark:border-[#3d4948] rounded-lg
+                   text-slate-900 dark:text-[#e3e2e2]
                    focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
           />
         </div>
         <div>
-          <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600">
+          <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-[#bcc9c7]">
             Email
           </label>
           <input
             :value="user?.email || ''"
             type="email"
             disabled
-            class="mt-1 w-full h-9 px-3 text-sm bg-slate-50/50
-                   border border-slate-200 rounded-lg
-                   text-slate-500 cursor-not-allowed"
+            class="mt-1 w-full h-9 px-3 text-sm bg-slate-50 dark:bg-[#1a1c1c]/50
+                   border border-slate-200 dark:border-[#3d4948] rounded-lg
+                   text-slate-500 dark:text-[#869392] cursor-not-allowed"
           />
-          <p class="text-[9px] text-slate-400 mt-0.5">Email tidak bisa diubah langsung.</p>
+          <p class="text-[9px] text-slate-400 dark:text-[#869392] mt-0.5">Email tidak bisa diubah langsung.</p>
         </div>
         <div>
-          <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600">
+          <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-[#bcc9c7]">
             No. HP
           </label>
           <input
             v-model="form.phone"
             type="tel"
             placeholder="08xxxxxxxxxx"
-            class="mt-1 w-full h-9 px-3 text-sm bg-white
-                   border border-slate-200 rounded-lg
-                   text-slate-900
+            class="mt-1 w-full h-9 px-3 text-sm bg-white dark:bg-[#1e2020]
+                   border border-slate-200 dark:border-[#3d4948] rounded-lg
+                   text-slate-900 dark:text-[#e3e2e2]
                    focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
           />
         </div>
         <div class="sm:col-span-2">
-          <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600">
+          <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-[#bcc9c7]">
             Alamat
           </label>
           <textarea
             v-model="form.address"
             rows="2"
             placeholder="Alamat lengkap"
-            class="mt-1 w-full px-3 py-2 text-sm bg-white
-                   border border-slate-200 rounded-lg
-                   text-slate-900
+            class="mt-1 w-full px-3 py-2 text-sm bg-white dark:bg-[#1e2020]
+                   border border-slate-200 dark:border-[#3d4948] rounded-lg
+                   text-slate-900 dark:text-[#e3e2e2]
                    focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-none"
           ></textarea>
         </div>
@@ -136,10 +136,10 @@
 
     <!-- Security section -->
     <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5">
-      <h2 class="text-sm font-bold text-slate-900 mb-4">Keamanan</h2>
+      <h2 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] mb-4">Keamanan</h2>
 
       <!-- Change password -->
-      <div class="flex items-center justify-between py-3 border-b border-slate-200">
+      <div class="flex items-center justify-between py-3 border-b border-slate-200 dark:border-[#3d4948]">
         <div>
           <p class="text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">Password</p>
           <p class="text-xs text-slate-500 dark:text-[#869392]">
@@ -148,8 +148,8 @@
         </div>
         <button
           type="button"
-          class="h-9 px-4 text-xs font-semibold border border-slate-200
-                 text-slate-700 rounded-lg
+          class="h-9 px-4 text-xs font-semibold border border-slate-200 dark:border-[#3d4948]
+                 text-slate-700 dark:text-[#bcc9c7] rounded-lg
                  hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
           @click="showChangePassword = true"
         >
@@ -178,7 +178,7 @@
         >
           <span
             :class="[
-              'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow-sm transition-transform duration-200',
+              'absolute top-0.5 left-0.5 w-5 h-5 bg-white dark:bg-[#1e2020] rounded-full shadow-sm transition-transform duration-200',
               otpEnabled ? 'translate-x-5' : 'translate-x-0',
             ]"
           ></span>
@@ -190,12 +190,12 @@
     <teleport to="body">
       <div v-if="showChangePassword" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showChangePassword = false"></div>
-        <form class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleChangePassword">
+        <form class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleChangePassword">
           <h3 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ hasRealPassword ? 'Ganti Password' : 'Set Password' }}</h3>
 
           <!-- Only show "Password Lama" if user has a real password (not Google-only) -->
           <div v-if="hasRealPassword">
-            <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600">Password Lama</label>
+            <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-[#bcc9c7]">Password Lama</label>
             <input
               v-model="pwForm.currentPassword"
               type="password"
@@ -209,7 +209,7 @@
           </div>
 
           <div>
-            <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600">Password Baru</label>
+            <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-[#bcc9c7]">Password Baru</label>
             <input
               v-model="pwForm.newPassword"
               type="password"
@@ -221,7 +221,7 @@
           </div>
 
           <div>
-            <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600">Konfirmasi Password Baru</label>
+            <label class="text-[11px] font-bold uppercase tracking-wide text-slate-600 dark:text-[#bcc9c7]">Konfirmasi Password Baru</label>
             <input
               v-model="pwForm.confirmPassword"
               type="password"
@@ -237,7 +237,7 @@
           </div>
 
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200" @click="showChangePassword = false">Batal</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] bg-slate-100 rounded-lg hover:bg-slate-200" @click="showChangePassword = false">Batal</button>
             <button type="submit" :disabled="changingPassword" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
               <Loader2Icon v-if="changingPassword" class="w-3.5 h-3.5 animate-spin" />
               {{ changingPassword ? 'Mengubah...' : 'Simpan Password' }}

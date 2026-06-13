@@ -2,8 +2,8 @@
   <div class="space-y-5">
     <!-- Header -->
     <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-5 text-white shadow-lg">
-      <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/10" />
-      <div class="absolute -left-4 -bottom-4 w-24 h-24 rounded-full bg-white/5" />
+      <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white dark:bg-[#1e2020]/10" />
+      <div class="absolute -left-4 -bottom-4 w-24 h-24 rounded-full bg-white dark:bg-[#1e2020]/5" />
       <h1 class="relative text-xl font-bold">Laporan BRILink</h1>
       <p class="relative text-xs text-emerald-100 mt-0.5">Analisis volume, fee, kategori, dan performa kasir BRILink.</p>
     </div>
@@ -14,7 +14,7 @@
       <input v-model="endDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
       <button type="button" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-sm" @click="fetchReport">Terapkan</button>
       <div class="flex items-center gap-1.5">
-        <button v-for="r in quickRanges" :key="r.label" type="button" :class="['h-7 px-2.5 text-[11px] font-medium rounded-md transition-all', activeRange === r.label ? 'bg-blue-600 text-white shadow-sm' : 'border border-slate-200 text-slate-900 hover:bg-slate-50 hover:border-blue-300']" @click="applyRange(r.days, r.label)">{{ r.label }}</button>
+        <button v-for="r in quickRanges" :key="r.label" type="button" :class="['h-7 px-2.5 text-[11px] font-medium rounded-md transition-all', activeRange === r.label ? 'bg-blue-600 text-white shadow-sm' : 'border border-slate-200 text-slate-900 dark:text-[#e3e2e2] hover:bg-slate-50 hover:border-blue-300']" @click="applyRange(r.days, r.label)">{{ r.label }}</button>
       </div>
       <!-- Export -->
       <div v-if="report" class="flex items-center gap-1.5 sm:ml-auto">
@@ -26,7 +26,7 @@
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
           Excel
         </button>
-        <button type="button" class="h-8 px-3 text-[11px] font-semibold border border-slate-200 text-slate-600 rounded-md hover:bg-slate-100 flex items-center gap-1.5" @click="handleExportCSV">
+        <button type="button" class="h-8 px-3 text-[11px] font-semibold border border-slate-200 text-slate-600 dark:text-[#bcc9c7] rounded-md hover:bg-slate-100 flex items-center gap-1.5" @click="handleExportCSV">
           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
           CSV
         </button>
@@ -39,30 +39,30 @@
         <div class="absolute inset-0 border-4 border-slate-100 rounded-full"></div>
         <div class="absolute inset-0 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
       </div>
-      <span class="mt-4 text-sm text-slate-500 animate-pulse">Memuat laporan BRILink...</span>
+      <span class="mt-4 text-sm text-slate-500 dark:text-[#869392] animate-pulse">Memuat laporan BRILink...</span>
     </div>
 
     <template v-else-if="report">
       <!-- KPI Summary -->
       <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <div class="kpi-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
-          <p class="text-[10px] text-slate-500 uppercase tracking-wide">Total Transaksi</p>
+          <p class="text-[10px] text-slate-500 dark:text-[#869392] uppercase tracking-wide">Total Transaksi</p>
           <p class="text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] dark:text-[#e3e2e2] mt-1">{{ (report.summary?.totalTransactions ?? 0).toLocaleString('id-ID') }}</p>
         </div>
         <div class="kpi-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
-          <p class="text-[10px] text-slate-500 uppercase tracking-wide">Volume</p>
+          <p class="text-[10px] text-slate-500 dark:text-[#869392] uppercase tracking-wide">Volume</p>
           <p class="text-lg font-bold font-mono text-blue-600 mt-1">{{ formatRupiah(report.summary?.volume ?? 0) }}</p>
         </div>
         <div class="kpi-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
-          <p class="text-[10px] text-slate-500 uppercase tracking-wide">Fee Earnings</p>
+          <p class="text-[10px] text-slate-500 dark:text-[#869392] uppercase tracking-wide">Fee Earnings</p>
           <p class="text-lg font-bold font-mono text-emerald-600 mt-1">{{ formatRupiah(report.summary?.feeEarnings ?? 0) }}</p>
         </div>
         <div class="kpi-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
-          <p class="text-[10px] text-slate-500 uppercase tracking-wide">Avg Fee/Trx</p>
+          <p class="text-[10px] text-slate-500 dark:text-[#869392] uppercase tracking-wide">Avg Fee/Trx</p>
           <p class="text-lg font-bold font-mono text-indigo-600 mt-1">{{ formatRupiah(report.summary?.avgFee ?? 0) }}</p>
         </div>
         <div class="kpi-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
-          <p class="text-[10px] text-slate-500 uppercase tracking-wide">Void</p>
+          <p class="text-[10px] text-slate-500 dark:text-[#869392] uppercase tracking-wide">Void</p>
           <p class="text-lg font-bold font-mono text-red-600 mt-1">{{ report.summary?.voidedCount ?? 0 }}</p>
         </div>
       </div>
@@ -78,15 +78,15 @@
         </div>
         <div class="flex gap-2">
           <div class="flex flex-col justify-between h-48 text-right pr-1 shrink-0 w-12">
-            <span class="text-[9px] font-mono text-slate-400">{{ formatCompact(volYMax) }}</span>
-            <span class="text-[9px] font-mono text-slate-400">{{ formatCompact(Math.round(volYMax * 0.5)) }}</span>
-            <span class="text-[9px] font-mono text-slate-400">0</span>
+            <span class="text-[9px] font-mono text-slate-400 dark:text-[#869392]">{{ formatCompact(volYMax) }}</span>
+            <span class="text-[9px] font-mono text-slate-400 dark:text-[#869392]">{{ formatCompact(Math.round(volYMax * 0.5)) }}</span>
+            <span class="text-[9px] font-mono text-slate-400 dark:text-[#869392]">0</span>
           </div>
           <div class="flex-1 relative h-48">
             <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
-              <div class="border-b border-dashed border-slate-200" />
-              <div class="border-b border-dashed border-slate-200" />
-              <div class="border-b border-slate-200" />
+              <div class="border-b border-dashed border-slate-200 dark:border-[#3d4948]" />
+              <div class="border-b border-dashed border-slate-200 dark:border-[#3d4948]" />
+              <div class="border-b border-slate-200 dark:border-[#3d4948]" />
             </div>
             <svg class="absolute inset-0 w-full h-full" viewBox="0 0 600 200" preserveAspectRatio="xMidYMid meet">
               <path :d="volAreaPath" fill="url(#brlVolGrad)" />
@@ -99,7 +99,7 @@
         </div>
         <div class="flex mt-2 ml-14">
           <div v-for="(d, i) in report.dailyTrend" :key="i" class="flex-1 text-center">
-            <span v-if="shouldShowLabel(i)" class="text-[8px] font-mono text-slate-400">{{ formatShortDate(d.date) }}</span>
+            <span v-if="shouldShowLabel(i)" class="text-[8px] font-mono text-slate-400 dark:text-[#869392]">{{ formatShortDate(d.date) }}</span>
           </div>
         </div>
       </div>
@@ -111,17 +111,17 @@
         </div>
         <div class="overflow-x-auto">
           <table class="w-full">
-            <thead class="border-b border-slate-200"><tr><th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-500 uppercase">Kategori</th><th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 uppercase">Trx</th><th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 uppercase">Volume</th><th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 uppercase">Fee</th><th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 uppercase">%</th></tr></thead>
+            <thead class="border-b border-slate-200"><tr><th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-500 dark:text-[#869392] uppercase">Kategori</th><th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 dark:text-[#869392] uppercase">Trx</th><th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 dark:text-[#869392] uppercase">Volume</th><th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 dark:text-[#869392] uppercase">Fee</th><th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 dark:text-[#869392] uppercase">%</th></tr></thead>
             <tbody class="divide-y divide-slate-100">
-              <tr v-for="cat in report.categoryBreakdown" :key="cat.category" class="hover:bg-slate-50">
+              <tr v-for="cat in report.categoryBreakdown" :key="cat.category" class="hover:bg-slate-50 dark:bg-[#1a1c1c]">
                 <td class="px-4 py-2.5 text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ categoryLabel(cat.category) }}</td>
                 <td class="px-4 py-2.5 text-right text-xs font-mono">{{ cat.count }}</td>
                 <td class="px-4 py-2.5 text-right text-xs font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(cat.volume) }}</td>
                 <td class="px-4 py-2.5 text-right text-xs font-mono text-emerald-600">{{ formatRupiah(cat.fee) }}</td>
                 <td class="px-4 py-2.5 text-right">
                   <div class="flex items-center justify-end gap-2">
-                    <div class="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-blue-500 rounded-full" :style="{ width: cat.percentVolume + '%' }"></div></div>
-                    <span class="text-[10px] font-mono text-slate-500 w-8">{{ cat.percentVolume }}%</span>
+                    <div class="w-16 h-1.5 bg-slate-100 dark:bg-[#292a2a] rounded-full overflow-hidden"><div class="h-full bg-blue-500 rounded-full" :style="{ width: cat.percentVolume + '%' }"></div></div>
+                    <span class="text-[10px] font-mono text-slate-500 dark:text-[#869392] w-8">{{ cat.percentVolume }}%</span>
                   </div>
                 </td>
               </tr>
@@ -137,8 +137,8 @@
         </div>
         <div class="overflow-x-auto max-h-[350px] overflow-y-auto">
           <table class="w-full">
-            <thead class="border-b border-slate-200 sticky top-0 bg-white"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 uppercase">Tanggal</th><th class="px-4 py-2 text-center text-[10px] font-bold text-slate-500 uppercase">Trx</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Volume</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Fee</th></tr></thead>
-            <tbody class="divide-y divide-slate-100"><tr v-for="d in report.dailyTrend" :key="d.date" class="hover:bg-slate-50"><td class="px-4 py-2 text-xs font-mono">{{ d.date }}</td><td class="px-4 py-2 text-center text-xs font-mono">{{ d.transactions }}</td><td class="px-4 py-2 text-right text-xs font-mono font-semibold">{{ formatRupiah(d.volume) }}</td><td class="px-4 py-2 text-right text-xs font-mono text-emerald-600">{{ formatRupiah(d.fee) }}</td></tr></tbody>
+            <thead class="border-b border-slate-200 sticky top-0 bg-white"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 dark:text-[#869392] uppercase">Tanggal</th><th class="px-4 py-2 text-center text-[10px] font-bold text-slate-500 dark:text-[#869392] uppercase">Trx</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 dark:text-[#869392] uppercase">Volume</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 dark:text-[#869392] uppercase">Fee</th></tr></thead>
+            <tbody class="divide-y divide-slate-100"><tr v-for="d in report.dailyTrend" :key="d.date" class="hover:bg-slate-50 dark:bg-[#1a1c1c]"><td class="px-4 py-2 text-xs font-mono">{{ d.date }}</td><td class="px-4 py-2 text-center text-xs font-mono">{{ d.transactions }}</td><td class="px-4 py-2 text-right text-xs font-mono font-semibold">{{ formatRupiah(d.volume) }}</td><td class="px-4 py-2 text-right text-xs font-mono text-emerald-600">{{ formatRupiah(d.fee) }}</td></tr></tbody>
           </table>
         </div>
       </div>

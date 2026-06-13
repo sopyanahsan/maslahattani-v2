@@ -2,8 +2,8 @@
   <div class="space-y-6 max-w-5xl">
     <!-- Header -->
     <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-6 text-white shadow-lg">
-      <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white/10" />
-      <div class="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white/5" />
+      <div class="absolute -right-8 -top-8 w-32 h-32 rounded-full bg-white dark:bg-[#1e2020]/10" />
+      <div class="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white dark:bg-[#1e2020]/5" />
       <h1 class="relative text-xl font-bold">Langganan & Lisensi</h1>
       <p class="relative text-xs text-purple-100 mt-1">Kelola paket, perpanjang, atau upgrade lisensi Posify Anda.</p>
     </div>
@@ -12,15 +12,15 @@
     <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-6 shadow-sm">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Paket Aktif</p>
+          <p class="text-xs text-slate-500 dark:text-[#869392] uppercase tracking-wide font-semibold">Paket Aktif</p>
           <div class="flex items-center gap-2 mt-2">
             <span :class="['px-3 py-1 text-xs font-bold uppercase rounded-full', planBadge(subscription?.plan)]">{{ subscription?.planLabel || subscription?.plan || 'TRIAL' }}</span>
             <span :class="['px-2.5 py-1 text-xs font-bold uppercase rounded-full', statusBadge(subscription?.status)]">{{ subscription?.status || '-' }}</span>
-            <span v-if="subscription?.cycle" class="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-600 rounded-full">{{ cycleLabel(subscription.cycle) }}</span>
+            <span v-if="subscription?.cycle" class="px-2 py-0.5 text-[10px] font-semibold bg-slate-100 text-slate-600 dark:text-[#bcc9c7] rounded-full">{{ cycleLabel(subscription.cycle) }}</span>
           </div>
         </div>
         <div v-if="subscription?.endDate" class="text-right">
-          <p class="text-[10px] text-slate-500 uppercase tracking-wide font-semibold">Jatuh Tempo</p>
+          <p class="text-[10px] text-slate-500 dark:text-[#869392] uppercase tracking-wide font-semibold">Jatuh Tempo</p>
           <p class="text-base font-bold text-slate-950 dark:text-[#e3e2e2] mt-0.5">{{ formatDate(subscription.endDate) }}</p>
           <p v-if="subscription.daysRemaining !== null" :class="['text-xs font-bold mt-0.5', subscription.daysRemaining <= 7 ? 'text-red-600' : subscription.daysRemaining <= 14 ? 'text-amber-600' : 'text-emerald-600']">
             {{ subscription.daysRemaining }} hari lagi
@@ -28,7 +28,7 @@
           <p v-if="subscription.isExpiringSoon" class="text-[10px] text-red-500 font-semibold mt-1 animate-pulse">⚠️ Segera perpanjang!</p>
         </div>
         <div v-else-if="subscription?.status === 'LIFETIME'" class="text-right">
-          <p class="text-[10px] text-slate-500 uppercase">Durasi</p>
+          <p class="text-[10px] text-slate-500 dark:text-[#869392] uppercase">Durasi</p>
           <p class="text-base font-bold text-emerald-600">Selamanya ∞</p>
         </div>
       </div>
@@ -47,12 +47,12 @@
 
     <!-- Pricing Plans -->
     <div>
-      <h3 class="text-base font-bold text-slate-950 mb-1">Pilih Paket</h3>
-      <p class="text-xs text-slate-500 mb-4">Upgrade kapan saja. Downgrade berlaku di periode berikutnya.</p>
+      <h3 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2] mb-1">Pilih Paket</h3>
+      <p class="text-xs text-slate-500 dark:text-[#869392] mb-4">Upgrade kapan saja. Downgrade berlaku di periode berikutnya.</p>
 
       <!-- Cycle toggle -->
       <div class="flex gap-1 bg-slate-100 dark:bg-[#292a2a] rounded-lg p-1 w-fit mb-6">
-        <button v-for="c in cycles" :key="c.key" :class="['h-8 px-4 text-xs font-semibold rounded-md transition-all', cycle === c.key ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-900']" @click="cycle = c.key">
+        <button v-for="c in cycles" :key="c.key" :class="['h-8 px-4 text-xs font-semibold rounded-md transition-all', cycle === c.key ? 'bg-white text-slate-950 dark:text-[#e3e2e2] shadow-sm' : 'text-slate-500 hover:text-slate-900']" @click="cycle = c.key">
           {{ c.label }}
           <span v-if="c.key === 'yearly'" class="ml-1 text-[9px] text-emerald-600 font-bold">-17%</span>
         </button>
@@ -60,7 +60,7 @@
 
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div v-for="plan in plans" :key="plan.key"
-          :class="['plan-card rounded-lg p-5 border-2 transition-all cursor-pointer relative overflow-hidden', selectedPlan === plan.key ? 'border-blue-500 bg-blue-50/50 shadow-md' : 'border-slate-200 hover:border-blue-300 hover:shadow-sm']"
+          :class="['plan-card rounded-lg p-5 border-2 transition-all cursor-pointer relative overflow-hidden', selectedPlan === plan.key ? 'border-blue-500 bg-blue-50/50 shadow-md' : 'border-slate-200 dark:border-[#3d4948] hover:border-blue-300 hover:shadow-sm']"
           @click="selectedPlan = plan.key"
         >
           <div v-if="plan.popular" class="absolute top-0 right-0 bg-blue-600 text-white text-[8px] font-bold px-2 py-0.5 rounded-bl-lg">POPULER</div>
@@ -76,7 +76,7 @@
           <p class="text-xl font-bold text-slate-950 dark:text-[#e3e2e2] mt-1">Rp {{ formatPrice(plan.price[cycle]) }}</p>
           <p class="text-[10px] text-slate-500 dark:text-[#869392]">{{ cycle === 'lifetime' ? 'sekali bayar selamanya' : cycle === 'yearly' ? 'per tahun' : 'per bulan' }}</p>
           <ul class="mt-3 space-y-1.5">
-            <li v-for="f in plan.features" :key="f" class="text-[11px] text-slate-600 flex items-start gap-1.5">
+            <li v-for="f in plan.features" :key="f" class="text-[11px] text-slate-600 dark:text-[#bcc9c7] flex items-start gap-1.5">
               <svg class="w-3 h-3 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
               {{ f }}
             </li>
@@ -100,13 +100,13 @@
       <div class="space-y-3">
         <p class="text-xs font-bold text-slate-900 dark:text-[#bcc9c7] uppercase tracking-wide">Transfer ke:</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div class="border border-slate-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
-            <p class="text-xs font-bold text-slate-950 mb-1">SeaBank</p>
+          <div class="border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 hover:border-blue-300 transition-colors">
+            <p class="text-xs font-bold text-slate-950 dark:text-[#e3e2e2] mb-1">SeaBank</p>
             <p class="text-lg font-mono font-bold text-slate-950 dark:text-[#e3e2e2]">9012 3456 7890</p>
             <p class="text-[10px] text-slate-500 dark:text-[#869392]">a.n. Sopyan Ahsan</p>
           </div>
-          <div class="border border-slate-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
-            <p class="text-xs font-bold text-slate-950 mb-1">BCA</p>
+          <div class="border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 hover:border-blue-300 transition-colors">
+            <p class="text-xs font-bold text-slate-950 dark:text-[#e3e2e2] mb-1">BCA</p>
             <p class="text-lg font-mono font-bold text-slate-950 dark:text-[#e3e2e2]">1234 5678 90</p>
             <p class="text-[10px] text-slate-500 dark:text-[#869392]">a.n. Sopyan Ahsan</p>
           </div>
@@ -114,9 +114,9 @@
       </div>
 
       <!-- Steps -->
-      <div class="border-t border-slate-200 pt-4 space-y-3">
+      <div class="border-t border-slate-200 dark:border-[#3d4948] pt-4 space-y-3">
         <p class="text-xs font-bold text-slate-900 dark:text-[#bcc9c7] uppercase tracking-wide">Setelah transfer:</p>
-        <ol class="space-y-1.5 text-xs text-slate-600 list-decimal list-inside">
+        <ol class="space-y-1.5 text-xs text-slate-600 dark:text-[#bcc9c7] list-decimal list-inside">
           <li>Transfer sesuai nominal + kode unik (3 digit terakhir)</li>
           <li>Screenshot bukti transfer</li>
           <li>Klik tombol "Konfirmasi" di bawah</li>
@@ -220,7 +220,7 @@ function planBadge(plan?: string) {
   if (plan === 'BUSINESS') return 'bg-purple-100 text-purple-700';
   if (plan === 'PRO') return 'bg-blue-100 text-blue-700';
   if (plan === 'BRILINK') return 'bg-teal-100 text-teal-700';
-  if (plan === 'STARTER') return 'bg-slate-100 text-slate-700';
+  if (plan === 'STARTER') return 'bg-slate-100 text-slate-700 dark:text-[#bcc9c7]';
   return 'bg-amber-100 text-amber-700';
 }
 
@@ -229,7 +229,7 @@ function statusBadge(status?: string) {
   if (status === 'TRIAL') return 'bg-blue-100 text-blue-700';
   if (status === 'EXPIRED') return 'bg-red-100 text-red-700';
   if (status === 'SUSPENDED') return 'bg-red-100 text-red-700';
-  return 'bg-slate-100 text-slate-500';
+  return 'bg-slate-100 text-slate-500 dark:text-[#869392]';
 }
 
 // ============================================

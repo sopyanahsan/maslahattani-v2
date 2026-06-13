@@ -3,7 +3,7 @@
     <!-- Action bar -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
       <div class="flex items-center gap-3">
-        <label class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
+        <label class="flex items-center gap-2 text-xs text-slate-700 dark:text-[#bcc9c7] cursor-pointer">
           <input
             v-model="includeInactive"
             type="checkbox"
@@ -39,7 +39,7 @@
     <!-- Loading -->
     <div
       v-if="loading"
-      class="bg-white border border-slate-200 rounded-2xl p-12 text-center"
+      class="bg-white dark:bg-[#1e2020] border border-slate-200 rounded-2xl p-12 text-center"
     >
       <component :is="Loader2Icon" class="w-6 h-6 animate-spin text-blue-600 mx-auto mb-2" />
       <p class="text-xs text-slate-500 dark:text-[#869392]">Memuat kategori…</p>
@@ -48,7 +48,7 @@
     <!-- Error -->
     <div
       v-else-if="loadError"
-      class="bg-white border border-slate-200 rounded-2xl p-6"
+      class="bg-white dark:bg-[#1e2020] border border-slate-200 rounded-2xl p-6"
     >
       <div class="flex items-start gap-2 bg-red-50 border-l-4 border-red-500 rounded-md p-3">
         <component :is="AlertCircleIcon" class="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
@@ -59,7 +59,7 @@
       </div>
       <button
         type="button"
-        class="mt-3 h-9 px-4 bg-slate-100 text-slate-900 text-xs font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors"
+        class="mt-3 h-9 px-4 bg-slate-100 text-slate-900 dark:text-[#e3e2e2] text-xs font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors"
         @click="loadCategories"
       >
         Coba lagi
@@ -69,7 +69,7 @@
     <!-- Empty state -->
     <div
       v-else-if="categories.length === 0"
-      class="bg-white border border-slate-200 rounded-2xl p-12 text-center"
+      class="bg-white dark:bg-[#1e2020] border border-slate-200 rounded-2xl p-12 text-center"
     >
       <component :is="WalletIcon" class="w-10 h-10 text-slate-300 mx-auto mb-3" />
       <p class="text-sm font-semibold text-slate-900 dark:text-[#e3e2e2]">Belum ada kategori</p>
@@ -81,30 +81,30 @@
     <!-- Table -->
     <div
       v-else
-      class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
+      class="bg-white dark:bg-[#1e2020] border border-slate-200 rounded-2xl shadow-sm overflow-hidden"
     >
       <!-- Desktop table -->
       <table class="hidden md:table w-full">
         <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
           <tr>
-            <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#bcc9c7]">
               Kategori
             </th>
-            <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#bcc9c7]">
               Code
             </th>
-            <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#bcc9c7]">
               Default
             </th>
-            <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#bcc9c7]">
               Status
             </th>
-            <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#bcc9c7]">
               Urutan
             </th>
             <th
               v-if="canEdit"
-              class="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-slate-600"
+              class="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#bcc9c7]"
             >
               Aksi
             </th>
@@ -129,12 +129,12 @@
                   </span>
                 </span>
                 <div class="min-w-0">
-                  <p class="text-sm font-semibold text-slate-900 truncate">
+                  <p class="text-sm font-semibold text-slate-900 dark:text-[#e3e2e2] truncate">
                     {{ cat.name }}
                   </p>
                   <p
                     v-if="cat.description"
-                    class="text-[11px] text-slate-500 truncate max-w-md"
+                    class="text-[11px] text-slate-500 dark:text-[#869392] truncate max-w-md"
                   >
                     {{ cat.description }}
                   </p>
@@ -142,7 +142,7 @@
               </div>
             </td>
             <td class="px-4 py-3">
-              <code class="text-[11px] font-mono text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded">
+              <code class="text-[11px] font-mono text-slate-700 dark:text-[#bcc9c7] bg-slate-100 px-1.5 py-0.5 rounded">
                 {{ cat.code }}
               </code>
             </td>
@@ -162,7 +162,7 @@
                   'inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide',
                   cat.isActive
                     ? 'bg-emerald-100 text-emerald-700'
-                    : 'bg-slate-200 text-slate-600',
+                    : 'bg-slate-200 text-slate-600 dark:text-[#bcc9c7]',
                 ]"
               >
                 <span
@@ -174,14 +174,14 @@
                 {{ cat.isActive ? 'Aktif' : 'Non-aktif' }}
               </span>
             </td>
-            <td class="px-4 py-3 text-center text-xs font-mono text-slate-600">
+            <td class="px-4 py-3 text-center text-xs font-mono text-slate-600 dark:text-[#bcc9c7]">
               {{ cat.sortOrder }}
             </td>
             <td v-if="canEdit" class="px-4 py-3 text-right">
               <div class="flex items-center justify-end gap-1">
                 <button
                   type="button"
-                  class="p-1.5 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
+                  class="p-1.5 text-slate-500 dark:text-[#869392] hover:text-blue-600 hover:bg-blue-50 rounded-md transition-colors"
                   title="Edit"
                   @click="openEditModal(cat)"
                 >
@@ -190,7 +190,7 @@
                 <button
                   type="button"
                   :disabled="cat.isDefault"
-                  class="p-1.5 text-slate-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+                  class="p-1.5 text-slate-500 dark:text-[#869392] hover:text-red-600 hover:bg-red-50 rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
                   :title="cat.isDefault ? 'Default tidak bisa dihapus' : 'Hapus'"
                   @click="openDeleteDialog(cat)"
                 >
@@ -230,7 +230,7 @@
                     'inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wide',
                     cat.isActive
                       ? 'bg-emerald-100 text-emerald-700'
-                      : 'bg-slate-200 text-slate-600',
+                      : 'bg-slate-200 text-slate-600 dark:text-[#bcc9c7]',
                   ]"
                 >
                   {{ cat.isActive ? 'Aktif' : 'Non' }}
@@ -239,7 +239,7 @@
               <code class="text-[11px] font-mono text-slate-500 dark:text-[#869392]">{{ cat.code }}</code>
               <p
                 v-if="cat.description"
-                class="text-[11px] text-slate-500 mt-0.5"
+                class="text-[11px] text-slate-500 dark:text-[#869392] mt-0.5"
               >
                 {{ cat.description }}
               </p>
@@ -248,7 +248,7 @@
           <div v-if="canEdit" class="flex items-center gap-2">
             <button
               type="button"
-              class="flex-1 h-9 px-3 bg-slate-100 text-slate-900 text-xs font-semibold rounded-md hover:bg-slate-200 transition-colors flex items-center justify-center gap-1.5"
+              class="flex-1 h-9 px-3 bg-slate-100 text-slate-900 dark:text-[#e3e2e2] text-xs font-semibold rounded-md hover:bg-slate-200 transition-colors flex items-center justify-center gap-1.5"
               @click="openEditModal(cat)"
             >
               <component :is="EditIcon" class="w-3.5 h-3.5" />

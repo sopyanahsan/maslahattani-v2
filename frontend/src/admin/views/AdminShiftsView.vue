@@ -2,7 +2,7 @@
   <div class="space-y-4">
     <!-- Header -->
     <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-700 to-cyan-600 px-6 py-5 text-white shadow-lg">
-      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white dark:bg-[#1e2020]/10" />
       <h1 class="relative text-lg font-bold">Manajemen Shift</h1>
       <p class="relative text-xs text-blue-100 mt-0.5">Kelola shift kasir — buka, tutup, dan review denominasi kas.</p>
     </div>
@@ -12,7 +12,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         <!-- Status filter -->
         <div>
-          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#869392] mb-1.5">
             Status
           </label>
           <select
@@ -29,7 +29,7 @@
 
         <!-- Start date -->
         <div>
-          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#869392] mb-1.5">
             Dari Tanggal
           </label>
           <input
@@ -42,7 +42,7 @@
 
         <!-- End date -->
         <div>
-          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-[#869392] mb-1.5">
             Sampai Tanggal
           </label>
           <input
@@ -57,7 +57,7 @@
         <div class="flex items-end">
           <button
             type="button"
-            class="h-9 px-4 bg-slate-100 text-slate-700 text-xs font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+            class="h-9 px-4 bg-slate-100 text-slate-700 dark:text-[#bcc9c7] text-xs font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
             @click="resetFilters"
           >
             <component :is="RotateCcwIcon" class="w-3.5 h-3.5" />
@@ -69,11 +69,11 @@
       <!-- Shop scope info (super-admin only) -->
       <p
         v-if="isSuperAdmin && currentShopName"
-        class="text-[11px] text-slate-500 mt-3 flex items-center gap-1.5"
+        class="text-[11px] text-slate-500 dark:text-[#869392] mt-3 flex items-center gap-1.5"
       >
         <component :is="Building2Icon" class="w-3 h-3" />
         Menampilkan shift untuk cabang
-        <strong class="text-slate-700">{{ currentShopName }}</strong>
+        <strong class="text-slate-700 dark:text-[#bcc9c7]">{{ currentShopName }}</strong>
         — ganti dari header untuk lihat cabang lain.
       </p>
     </div>
@@ -82,7 +82,7 @@
     <div v-if="!loading && shifts.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-3">
       <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3">
         <p class="text-[11px] text-slate-500 dark:text-[#869392]">Total Shift</p>
-        <p class="text-lg font-bold text-slate-900 font-mono mt-0.5">
+        <p class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] font-mono mt-0.5">
           {{ shifts.length }}
         </p>
       </div>
@@ -132,7 +132,7 @@
       </div>
       <button
         type="button"
-        class="mt-3 h-9 px-4 bg-slate-100 text-slate-900 text-xs font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors"
+        class="mt-3 h-9 px-4 bg-slate-100 text-slate-900 dark:text-[#e3e2e2] text-xs font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors"
         @click="loadShifts"
       >
         Coba lagi
@@ -161,22 +161,22 @@
       <table class="hidden md:table w-full">
         <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
           <tr>
-            <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#bcc9c7]">
               Tanggal
             </th>
-            <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#bcc9c7]">
               Kasir
             </th>
             <th
               v-if="isSuperAdmin"
-              class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600"
+              class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#bcc9c7]"
             >
               Cabang
             </th>
-            <th class="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <th class="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#bcc9c7]">
               Selisih
             </th>
-            <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600">
+            <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-[#bcc9c7]">
               Status
             </th>
             <th class="px-4 py-3"></th>
@@ -193,7 +193,7 @@
               <p class="text-sm font-semibold text-slate-900 dark:text-[#e3e2e2]">
                 {{ formatDate(shift.startTime) }}
               </p>
-              <p class="text-[11px] text-slate-500 font-mono">
+              <p class="text-[11px] text-slate-500 dark:text-[#869392] font-mono">
                 {{ formatTime(shift.startTime) }}
                 {{ shift.endTime ? `– ${formatTime(shift.endTime)}` : '– aktif' }}
               </p>
@@ -206,12 +206,12 @@
                   {{ initials(shift.user?.username || shift.user?.email || '?') }}
                 </div>
                 <div class="min-w-0">
-                  <p class="text-sm font-semibold text-slate-900 truncate">
+                  <p class="text-sm font-semibold text-slate-900 dark:text-[#e3e2e2] truncate">
                     {{ shift.user?.username || shift.user?.email || '—' }}
                   </p>
                   <p
                     v-if="shift.user?.username && shift.user?.email"
-                    class="text-[11px] text-slate-500 truncate"
+                    class="text-[11px] text-slate-500 dark:text-[#869392] truncate"
                   >
                     {{ shift.user.email }}
                   </p>
@@ -219,7 +219,7 @@
               </div>
             </td>
             <td v-if="isSuperAdmin" class="px-4 py-3">
-              <p class="text-xs text-slate-700 truncate">
+              <p class="text-xs text-slate-700 dark:text-[#bcc9c7] truncate">
                 {{ shift.shop?.name || '—' }}
               </p>
             </td>
@@ -239,15 +239,15 @@
             </td>
             <td class="px-4 py-3 text-center">
               <ShiftStatusBadge :status="shift.status" />
-              <p v-if="shift.status === 'FINALIZED' && shift.finalizedBy" class="text-[9px] text-slate-400 mt-0.5">
+              <p v-if="shift.status === 'FINALIZED' && shift.finalizedBy" class="text-[9px] text-slate-400 dark:text-[#869392] mt-0.5">
                 oleh {{ shift.finalizedBy }}
               </p>
-              <p v-if="shift.status === 'FINALIZED' && shift.finalizedAt" class="text-[9px] text-slate-400">
+              <p v-if="shift.status === 'FINALIZED' && shift.finalizedAt" class="text-[9px] text-slate-400 dark:text-[#869392]">
                 {{ formatDateTime(shift.finalizedAt) }}
               </p>
             </td>
             <td class="px-4 py-3 text-right">
-              <component :is="ChevronRightIcon" class="w-4 h-4 text-slate-400" />
+              <component :is="ChevronRightIcon" class="w-4 h-4 text-slate-400 dark:text-[#869392]" />
             </td>
           </tr>
         </tbody>
@@ -264,13 +264,13 @@
         >
           <div class="flex items-start justify-between gap-3 mb-2">
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-slate-900 truncate">
+              <p class="text-sm font-semibold text-slate-900 dark:text-[#e3e2e2] truncate">
                 {{ shift.user?.username || shift.user?.email }}
               </p>
               <p class="text-[11px] text-slate-500 dark:text-[#869392]">
                 {{ formatDate(shift.startTime) }} · {{ formatTime(shift.startTime) }}
               </p>
-              <p v-if="isSuperAdmin && shift.shop?.name" class="text-[11px] text-slate-600 mt-0.5">
+              <p v-if="isSuperAdmin && shift.shop?.name" class="text-[11px] text-slate-600 dark:text-[#bcc9c7] mt-0.5">
                 {{ shift.shop.name }}
               </p>
             </div>

@@ -6,27 +6,27 @@
     <!-- Stats cards (6 KPI) -->
     <div v-if="stats" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
       <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
-        <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Omzet</p>
+        <p class="text-[10px] text-slate-500 dark:text-[#869392] font-medium uppercase tracking-wide">Omzet</p>
         <p class="text-base sm:text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] dark:text-[#e3e2e2] mt-1 tabular-nums">{{ formatRupiah(stats.omzet) }}</p>
       </div>
       <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
-        <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Laba Kotor</p>
+        <p class="text-[10px] text-slate-500 dark:text-[#869392] font-medium uppercase tracking-wide">Laba Kotor</p>
         <p class="text-base sm:text-lg font-bold font-mono text-emerald-600 mt-1 tabular-nums">{{ formatRupiah(stats.profit) }}</p>
       </div>
       <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
-        <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Transaksi</p>
+        <p class="text-[10px] text-slate-500 dark:text-[#869392] font-medium uppercase tracking-wide">Transaksi</p>
         <p class="text-base sm:text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] dark:text-[#e3e2e2] mt-1 tabular-nums">{{ stats.totalTransaksi }}</p>
       </div>
       <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
-        <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">AOV</p>
+        <p class="text-[10px] text-slate-500 dark:text-[#869392] font-medium uppercase tracking-wide">AOV</p>
         <p class="text-base sm:text-lg font-bold font-mono text-blue-600 mt-1 tabular-nums">{{ formatRupiah(stats.totalTransaksi > 0 ? Math.round(stats.omzet / stats.totalTransaksi) : 0) }}</p>
       </div>
       <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
-        <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Diskon</p>
+        <p class="text-[10px] text-slate-500 dark:text-[#869392] font-medium uppercase tracking-wide">Diskon</p>
         <p class="text-base sm:text-lg font-bold font-mono text-amber-600 mt-1 tabular-nums">{{ formatRupiah(stats.totalDiskon ?? 0) }}</p>
       </div>
       <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
-        <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Void</p>
+        <p class="text-[10px] text-slate-500 dark:text-[#869392] font-medium uppercase tracking-wide">Void</p>
         <p class="text-base sm:text-lg font-bold font-mono text-red-600 mt-1 tabular-nums">{{ stats.totalVoid }}</p>
       </div>
     </div>
@@ -35,13 +35,13 @@
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
       <!-- Search -->
       <div class="relative">
-        <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+        <SearchIcon class="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-[#869392]" />
         <input
           v-model="filterSearch"
           type="text"
           placeholder="Cari no. transaksi / nama pembeli..."
-          class="h-9 pl-9 pr-3 w-52 text-sm border border-slate-200 rounded-lg
-                 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-colors placeholder:text-slate-400"
+          class="h-9 pl-9 pr-3 w-52 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg
+                 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-colors placeholder:text-slate-400 dark:text-[#869392]"
           @input="debouncedFetch"
         />
       </div>
@@ -50,7 +50,7 @@
       <!-- Status filter -->
       <select
         v-model="filterStatus"
-        class="h-9 px-3 text-sm border border-slate-200 rounded-lg
+        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg
                focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-colors"
         @change="resetAndFetch"
       >
@@ -63,7 +63,7 @@
       <!-- Payment method filter -->
       <select
         v-model="filterPaymentMethod"
-        class="h-9 px-3 text-sm border border-slate-200 rounded-lg
+        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg
                focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-colors"
         @change="resetAndFetch"
       >
@@ -78,20 +78,20 @@
       <input
         v-model="filterStartDate"
         type="date"
-        class="h-9 px-3 text-sm border border-slate-200 rounded-lg
+        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg
                focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-colors"
         @change="resetAndFetch"
       />
       <input
         v-model="filterEndDate"
         type="date"
-        class="h-9 px-3 text-sm border border-slate-200 rounded-lg
+        class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg
                focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none transition-colors"
         @change="resetAndFetch"
       />
 
       <div class="flex-1"></div>
-      <span v-if="meta" class="text-xs text-slate-500 self-center font-medium tabular-nums">
+      <span v-if="meta" class="text-xs text-slate-500 dark:text-[#869392] self-center font-medium tabular-nums">
         {{ meta.total }} transaksi
       </span>
     </div>
@@ -121,7 +121,7 @@
       class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-12 text-center shadow-sm"
     >
       <ReceiptIcon class="w-12 h-12 text-slate-300 mx-auto mb-3" />
-      <p class="text-sm font-bold text-slate-700">Belum ada transaksi</p>
+      <p class="text-sm font-bold text-slate-700 dark:text-[#bcc9c7]">Belum ada transaksi</p>
       <p class="text-xs text-slate-500 dark:text-[#869392] mt-1.5 max-w-[260px] mx-auto">Transaksi dari POS kasir akan muncul di sini.</p>
     </div>
 
@@ -154,17 +154,17 @@
                 <code class="text-xs font-mono text-slate-900 dark:text-[#e3e2e2]">{{ trx.transactionNumber }}</code>
               </td>
               <td class="px-4 py-3">
-                <span v-if="trx.customerName" class="text-xs font-medium text-slate-800">{{ trx.customerName }}</span>
-                <span v-else class="text-[10px] text-slate-400 italic">Umum</span>
+                <span v-if="trx.customerName" class="text-xs font-medium text-slate-800 dark:text-[#bcc9c7]">{{ trx.customerName }}</span>
+                <span v-else class="text-[10px] text-slate-400 dark:text-[#869392] italic">Umum</span>
               </td>
-              <td class="px-4 py-3 text-sm text-slate-700">
+              <td class="px-4 py-3 text-sm text-slate-700 dark:text-[#bcc9c7]">
                 {{ trx.user?.username ?? trx.user?.email ?? '—' }}
               </td>
-              <td class="px-4 py-3 text-xs text-slate-600 font-mono tabular-nums">
+              <td class="px-4 py-3 text-xs text-slate-600 dark:text-[#bcc9c7] font-mono tabular-nums">
                 {{ formatDateTime(trx.createdAt) }}
               </td>
               <td class="px-4 py-3 text-center">
-                <span class="text-xs font-semibold text-slate-600">{{ trx.items?.length ?? 0 }}</span>
+                <span class="text-xs font-semibold text-slate-600 dark:text-[#bcc9c7]">{{ trx.items?.length ?? 0 }}</span>
               </td>
               <td class="px-4 py-3 text-center">
                 <span
@@ -173,7 +173,7 @@
                   :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', methodBadge(p.method)]"
                 >{{ p.method }}</span>
               </td>
-              <td class="px-4 py-3 text-right text-sm font-mono font-semibold text-slate-900 tabular-nums">
+              <td class="px-4 py-3 text-right text-sm font-mono font-semibold text-slate-900 dark:text-[#e3e2e2] tabular-nums">
                 {{ formatRupiah(trx.totalPrice) }}
               </td>
               <td class="px-4 py-3 text-right text-xs font-mono font-semibold text-emerald-600 tabular-nums">
@@ -187,14 +187,14 @@
               <td class="px-4 py-3 text-center">
                 <div class="flex items-center justify-center gap-1.5">
                   <button
-                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center hover:bg-slate-100 dark:bg-[#292a2a] transition-colors"
                     title="Detail"
                     @click="openDetail(trx)"
                   >
-                    <EyeIcon class="w-3.5 h-3.5 text-slate-600" />
+                    <EyeIcon class="w-3.5 h-3.5 text-slate-600 dark:text-[#bcc9c7]" />
                   </button>
                   <button
-                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center hover:bg-blue-50 hover:border-blue-200 transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center hover:bg-blue-50 hover:border-blue-200 transition-colors"
                     title="Cetak Ulang Struk"
                     @click="handlePrintReceipt(trx)"
                   >
@@ -202,7 +202,7 @@
                   </button>
                   <button
                     v-if="trx.status === 'COMPLETED'"
-                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-[#3d4948] flex items-center justify-center hover:bg-red-50 hover:border-red-200 transition-colors"
                     title="Void"
                     @click="openVoidModal(trx)"
                   >
@@ -219,20 +219,20 @@
       <!-- Pagination -->
       <div
         v-if="meta && meta.totalPages > 1"
-        class="px-4 py-3 border-t border-slate-200 flex items-center justify-between"
+        class="px-4 py-3 border-t border-slate-200 dark:border-[#3d4948] flex items-center justify-between"
       >
-        <p class="text-xs text-slate-500 tabular-nums">
+        <p class="text-xs text-slate-500 dark:text-[#869392] tabular-nums">
           Halaman {{ meta.page }} dari {{ meta.totalPages }}
         </p>
         <div class="flex items-center gap-1.5">
           <button
             :disabled="meta.page <= 1"
-            class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 transition-colors"
+            class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 dark:text-[#bcc9c7] transition-colors"
             @click="goPage(meta!.page - 1)"
           >Prev</button>
           <button
             :disabled="meta.page >= meta.totalPages"
-            class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 transition-colors"
+            class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed text-slate-700 dark:text-[#bcc9c7] transition-colors"
             @click="goPage(meta!.page + 1)"
           >Next</button>
         </div>
@@ -246,7 +246,7 @@
     <Teleport to="body">
       <div v-if="showDetailModal && detailTrx" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showDetailModal = false"></div>
-        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[85vh] overflow-y-auto">
+        <div class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[85vh] overflow-y-auto">
           <div class="flex items-start justify-between">
             <div>
               <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2]">Detail Transaksi</h2>
@@ -267,16 +267,16 @@
               <p class="text-slate-500 dark:text-[#869392]">Pembeli</p>
               <p class="font-semibold text-slate-900 dark:text-[#e3e2e2]">
                 {{ detailTrx.customerName || 'Umum' }}
-                <span v-if="detailTrx.customerPhone" class="text-slate-500 font-normal"> · {{ detailTrx.customerPhone }}</span>
+                <span v-if="detailTrx.customerPhone" class="text-slate-500 dark:text-[#869392] font-normal"> · {{ detailTrx.customerPhone }}</span>
               </p>
             </div>
             <div>
               <p class="text-slate-500 dark:text-[#869392]">Waktu</p>
-              <p class="font-semibold text-slate-900 font-mono">{{ formatDateTime(detailTrx.createdAt) }}</p>
+              <p class="font-semibold text-slate-900 dark:text-[#e3e2e2] font-mono">{{ formatDateTime(detailTrx.createdAt) }}</p>
             </div>
             <div>
               <p class="text-slate-500 dark:text-[#869392]">Total</p>
-              <p class="font-semibold text-slate-900 font-mono">{{ formatRupiah(detailTrx.totalPrice) }}</p>
+              <p class="font-semibold text-slate-900 dark:text-[#e3e2e2] font-mono">{{ formatRupiah(detailTrx.totalPrice) }}</p>
             </div>
             <div>
               <p class="text-slate-500 dark:text-[#869392]">Profit</p>
@@ -298,15 +298,15 @@
           <div>
             <p class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide mb-2">Item ({{ detailTrx.items.length }})</p>
             <div class="space-y-1.5">
-              <div v-for="item in detailTrx.items" :key="item.id" class="flex items-center justify-between bg-slate-50 rounded-md px-3 py-2">
+              <div v-for="item in detailTrx.items" :key="item.id" class="flex items-center justify-between bg-slate-50 dark:bg-[#1a1c1c] rounded-md px-3 py-2">
                 <div class="min-w-0 flex-1">
-                  <p class="text-xs font-medium text-slate-900 truncate">{{ item.product.name }}</p>
-                  <p class="text-[10px] text-slate-500 font-mono">
+                  <p class="text-xs font-medium text-slate-900 dark:text-[#e3e2e2] truncate">{{ item.product.name }}</p>
+                  <p class="text-[10px] text-slate-500 dark:text-[#869392] font-mono">
                     {{ item.quantity }} × {{ formatRupiah(item.unitPrice) }}
                     <span v-if="item.discount > 0" class="text-red-500"> -{{ formatRupiah(item.discount) }}</span>
                   </p>
                 </div>
-                <span class="text-xs font-mono font-semibold text-slate-900 shrink-0 ml-3">{{ formatRupiah(item.subtotal) }}</span>
+                <span class="text-xs font-mono font-semibold text-slate-900 dark:text-[#e3e2e2] shrink-0 ml-3">{{ formatRupiah(item.subtotal) }}</span>
               </div>
             </div>
           </div>
@@ -323,7 +323,7 @@
           </div>
 
           <div class="flex justify-end pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showDetailModal = false">Tutup</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-md hover:bg-slate-200" @click="showDetailModal = false">Tutup</button>
           </div>
         </div>
       </div>
@@ -336,22 +336,22 @@
     <Teleport to="body">
       <div v-if="showVoidModal && voidTrx" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showVoidModal = false"></div>
-        <form class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleVoid">
+        <form class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleVoid">
           <h3 class="text-sm font-bold text-red-700">Void Transaksi</h3>
-          <p class="text-xs text-slate-600">
+          <p class="text-xs text-slate-600 dark:text-[#bcc9c7]">
             Batalkan <strong class="text-slate-900 dark:text-[#e3e2e2]">{{ voidTrx.transactionNumber }}</strong> ({{ formatRupiah(voidTrx.totalPrice) }})?
             Stok akan dikembalikan.
           </p>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Kode OTP <span class="text-red-500">*</span></label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Kode OTP <span class="text-red-500">*</span></label>
             <input v-model="voidForm.otp" type="text" required minlength="6" placeholder="Masukkan OTP admin"
               class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none" />
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Alasan <span class="text-red-500">*</span></label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Alasan <span class="text-red-500">*</span></label>
             <textarea v-model="voidForm.reason" required minlength="3" rows="2" placeholder="Alasan pembatalan..."
-              class="w-full text-sm border border-slate-200 rounded-md px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none resize-none" />
+              class="w-full text-sm border border-slate-200 dark:border-[#3d4948] rounded-md px-3 py-2 focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none resize-none" />
           </div>
 
           <div v-if="voidError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">
@@ -359,7 +359,7 @@
           </div>
 
           <div class="flex items-center justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showVoidModal = false">Batal</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-md hover:bg-slate-200" @click="showVoidModal = false">Batal</button>
             <button type="submit" :disabled="voiding" class="h-9 px-4 text-xs font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50 flex items-center gap-1.5">
               <Loader2Icon v-if="voiding" class="w-3.5 h-3.5 animate-spin" />
               Konfirmasi Void
@@ -457,7 +457,7 @@ function methodBadge(method: string): string {
     case 'QRIS': return 'bg-blue-100 text-blue-700';
     case 'TRANSFER': return 'bg-indigo-100 text-indigo-700';
     case 'HUTANG': return 'bg-amber-100 text-amber-700';
-    default: return 'bg-slate-100 text-slate-700';
+    default: return 'bg-slate-100 text-slate-700 dark:text-[#bcc9c7]';
   }
 }
 
@@ -466,7 +466,7 @@ function statusBadge(status: string): string {
     case 'COMPLETED': return 'bg-emerald-100 text-emerald-700';
     case 'VOIDED': return 'bg-red-100 text-red-700';
     case 'PENDING': return 'bg-amber-100 text-amber-700';
-    default: return 'bg-slate-100 text-slate-700';
+    default: return 'bg-slate-100 text-slate-700 dark:text-[#bcc9c7]';
   }
 }
 

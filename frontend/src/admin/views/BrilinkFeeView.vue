@@ -2,8 +2,8 @@
   <div class="space-y-5">
     <!-- Header -->
     <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 text-white shadow-lg">
-      <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/10" />
-      <div class="absolute -left-4 -bottom-4 w-24 h-24 rounded-full bg-white/5" />
+      <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white dark:bg-[#1e2020]/10" />
+      <div class="absolute -left-4 -bottom-4 w-24 h-24 rounded-full bg-white dark:bg-[#1e2020]/5" />
       <h1 class="relative text-xl font-bold">Pengaturan Fee BRILink</h1>
       <p class="relative text-xs text-blue-100 mt-0.5">
         Atur fee per kategori &amp; nominal, serta daftar produk/layanan BRILink.
@@ -19,8 +19,8 @@
         :class="[
           'h-8 px-4 text-xs font-semibold rounded-md transition-colors',
           activeTab === tab.key
-            ? 'bg-white text-slate-900 shadow-sm'
-            : 'text-slate-600 hover:text-slate-900',
+            ? 'bg-white text-slate-900 dark:text-[#e3e2e2] shadow-sm'
+            : 'text-slate-600 hover:text-slate-900 dark:text-[#e3e2e2]',
         ]"
         @click="activeTab = tab.key"
       >
@@ -34,7 +34,7 @@
     <template v-if="activeTab === 'fee-rules'">
       <!-- Actions -->
       <div class="flex items-center justify-between">
-        <p class="text-sm text-slate-600">
+        <p class="text-sm text-slate-600 dark:text-[#bcc9c7]">
           Aturan fee berdasarkan kategori dan range nominal transaksi.
         </p>
         <button
@@ -70,13 +70,13 @@
             <div class="flex items-center gap-2">
               <span :class="['w-3 h-3 rounded-sm', categoryColor(category)]" />
               <h3 class="text-xs font-bold text-slate-900 dark:text-[#bcc9c7] uppercase tracking-wide">{{ categoryLabel(category) }}</h3>
-              <span class="text-[10px] text-slate-400">({{ group.length }} rules)</span>
+              <span class="text-[10px] text-slate-400 dark:text-[#869392]">({{ group.length }} rules)</span>
             </div>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
-                <tr class="text-[10px] text-slate-500 uppercase tracking-wide">
+                <tr class="text-[10px] text-slate-500 dark:text-[#869392] uppercase tracking-wide">
                   <th class="px-4 py-2 text-left">Label</th>
                   <th class="px-4 py-2 text-right">Min</th>
                   <th class="px-4 py-2 text-right">Max</th>
@@ -88,10 +88,10 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
-                <tr v-for="fee in group" :key="fee.id" class="hover:bg-slate-50">
+                <tr v-for="fee in group" :key="fee.id" class="hover:bg-slate-50 dark:bg-[#1a1c1c]">
                   <td class="px-4 py-2.5 text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ fee.label }}</td>
-                  <td class="px-4 py-2.5 text-xs font-mono text-right text-slate-600">{{ formatRupiah(fee.minAmount) }}</td>
-                  <td class="px-4 py-2.5 text-xs font-mono text-right text-slate-600">{{ formatRupiah(fee.maxAmount) }}</td>
+                  <td class="px-4 py-2.5 text-xs font-mono text-right text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(fee.minAmount) }}</td>
+                  <td class="px-4 py-2.5 text-xs font-mono text-right text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(fee.maxAmount) }}</td>
                   <td class="px-4 py-2.5 text-xs font-mono text-right text-red-600">{{ formatRupiah(fee.systemFee || 0) }}</td>
                   <td class="px-4 py-2.5 text-center">
                     <span :class="['text-[10px] font-bold px-1.5 py-0.5 rounded', fee.feeType === 'FLAT' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700']">
@@ -129,14 +129,14 @@
     <Teleport to="body">
       <div v-if="showFeeModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showFeeModal = false" />
-        <form class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleSaveFee">
+        <form class="relative bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleSaveFee">
           <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">
             {{ editingFee ? 'Edit Fee Rule' : 'Tambah Fee Rule' }}
           </h3>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-900 mb-1">Kategori *</label>
-            <select v-model="feeForm.category" required class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md">
+            <label class="block text-xs font-semibold text-slate-900 dark:text-[#e3e2e2] mb-1">Kategori *</label>
+            <select v-model="feeForm.category" required class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-md">
               <option value="TRANSFER_BRI">Transfer BRI</option>
               <option value="TRANSFER_OTHER">Transfer Bank Lain</option>
               <option value="TARIK_TUNAI">Tarik Tunai</option>
@@ -144,37 +144,37 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-900 mb-1">Label *</label>
-            <input v-model="feeForm.label" type="text" required placeholder="Transfer BRI s/d 5jt" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md" />
+            <label class="block text-xs font-semibold text-slate-900 dark:text-[#e3e2e2] mb-1">Label *</label>
+            <input v-model="feeForm.label" type="text" required placeholder="Transfer BRI s/d 5jt" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-md" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-900 mb-1">Min Nominal *</label>
-              <input v-model.number="feeForm.minAmount" type="number" min="0" required class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md" />
+              <label class="block text-xs font-semibold text-slate-900 dark:text-[#e3e2e2] mb-1">Min Nominal *</label>
+              <input v-model.number="feeForm.minAmount" type="number" min="0" required class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] rounded-md" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-900 mb-1">Max Nominal *</label>
-              <input v-model.number="feeForm.maxAmount" type="number" min="0" required class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md" />
+              <label class="block text-xs font-semibold text-slate-900 dark:text-[#e3e2e2] mb-1">Max Nominal *</label>
+              <input v-model.number="feeForm.maxAmount" type="number" min="0" required class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] rounded-md" />
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-900 mb-1">Biaya Sistem / Potongan Bank (Rp)</label>
-            <input v-model.number="feeForm.systemFee" type="number" min="0" placeholder="0" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md" />
-            <p class="text-[10px] text-slate-400 mt-0.5">Biaya yang dipotong bank/sistem (bukan profit agen). Rp 0 jika tidak ada.</p>
+            <label class="block text-xs font-semibold text-slate-900 dark:text-[#e3e2e2] mb-1">Biaya Sistem / Potongan Bank (Rp)</label>
+            <input v-model.number="feeForm.systemFee" type="number" min="0" placeholder="0" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] rounded-md" />
+            <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">Biaya yang dipotong bank/sistem (bukan profit agen). Rp 0 jika tidak ada.</p>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-900 mb-1">Tipe Fee *</label>
-              <select v-model="feeForm.feeType" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md">
+              <label class="block text-xs font-semibold text-slate-900 dark:text-[#e3e2e2] mb-1">Tipe Fee *</label>
+              <select v-model="feeForm.feeType" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-md">
                 <option value="FLAT">Flat (Rp)</option>
                 <option value="PERCENT">Persen (%)</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-900 mb-1">
+              <label class="block text-xs font-semibold text-slate-900 dark:text-[#e3e2e2] mb-1">
                 {{ feeForm.feeType === 'FLAT' ? 'Fee (Rp) *' : 'Fee (%) *' }}
               </label>
               <input
@@ -183,7 +183,7 @@
                 type="number"
                 min="0"
                 required
-                class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md"
+                class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] rounded-md"
               />
               <input
                 v-else
@@ -192,20 +192,20 @@
                 min="0"
                 step="0.1"
                 required
-                class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md"
+                class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] rounded-md"
               />
             </div>
           </div>
 
           <label class="flex items-center gap-2 cursor-pointer">
-            <input v-model="feeForm.isActive" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-200 rounded" />
+            <input v-model="feeForm.isActive" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-200 dark:border-[#3d4948] rounded" />
             <span class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">Aktif</span>
           </label>
 
           <div v-if="feeError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ feeError }}</div>
 
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-900 bg-slate-100 rounded-md hover:bg-slate-200" @click="showFeeModal = false">Batal</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-900 dark:text-[#e3e2e2] bg-slate-100 rounded-md hover:bg-slate-200" @click="showFeeModal = false">Batal</button>
             <button type="submit" :disabled="savingFee" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
               {{ savingFee ? '...' : editingFee ? 'Simpan' : 'Tambah' }}
             </button>

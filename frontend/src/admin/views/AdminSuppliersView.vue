@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex items-center justify-between">
       <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 px-6 py-5 text-white shadow-lg flex-1">
-        <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+        <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white dark:bg-[#1e2020]/10" />
         <h1 class="relative text-lg font-bold">Supplier &amp; PO</h1>
         <p class="relative text-xs text-amber-100 mt-0.5">Kelola supplier dan purchase order pembelian barang.</p>
       </div>
@@ -14,12 +14,12 @@
       <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Total Pembelian</p>
         <p class="text-lg font-bold text-slate-950 dark:text-[#e3e2e2] mt-1">{{ formatRupiah(stats.totalPurchaseThisMonth) }}</p>
-        <p class="text-[10px] text-slate-400 mt-0.5">bulan ini</p>
+        <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">bulan ini</p>
       </div>
       <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">PO Pending</p>
         <p class="text-lg font-bold text-amber-600 mt-1">{{ stats.poPending }}</p>
-        <p class="text-[10px] text-slate-400 mt-0.5">
+        <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">
           belum diterima
           <span v-if="stats.overdueCount > 0" class="text-red-600 font-semibold"> · {{ stats.overdueCount }} overdue!</span>
         </p>
@@ -27,12 +27,12 @@
       <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">Supplier Aktif</p>
         <p class="text-lg font-bold text-slate-950 dark:text-[#e3e2e2] mt-1">{{ stats.activeSuppliers }}</p>
-        <p class="text-[10px] text-slate-400 mt-0.5">dari {{ suppliers.length }} total</p>
+        <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">dari {{ suppliers.length }} total</p>
       </div>
       <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] font-semibold text-indigo-600 uppercase tracking-wide">PO Bulan Ini</p>
         <p class="text-lg font-bold text-slate-950 dark:text-[#e3e2e2] mt-1">{{ stats.poThisMonth }}</p>
-        <p class="text-[10px] text-slate-400 mt-0.5">{{ stats.poReceivedThisMonth }} sudah diterima</p>
+        <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">{{ stats.poReceivedThisMonth }} sudah diterima</p>
       </div>
     </div>
 
@@ -43,7 +43,7 @@
         :key="tab.key"
         type="button"
         :class="['h-8 px-4 text-xs font-semibold rounded-md transition-colors',
-          activeTab === tab.key ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900']"
+          activeTab === tab.key ? 'bg-white text-slate-900 dark:text-[#e3e2e2] shadow-sm' : 'text-slate-600 hover:text-slate-900 dark:text-[#e3e2e2]']"
         @click="activeTab = tab.key"
       >{{ tab.label }}</button>
     </div>
@@ -61,8 +61,8 @@
         >+ Tambah Supplier</button>
       </div>
 
-      <div v-if="suppliersLoading" class="text-center py-10 text-slate-500 text-sm">Memuat...</div>
-      <div v-else-if="suppliers.length === 0" class="text-center py-10 text-slate-400 text-sm">Belum ada supplier.</div>
+      <div v-if="suppliersLoading" class="text-center py-10 text-slate-500 dark:text-[#869392] text-sm">Memuat...</div>
+      <div v-else-if="suppliers.length === 0" class="text-center py-10 text-slate-400 dark:text-[#869392] text-sm">Belum ada supplier.</div>
       <div v-else class="space-y-2">
         <div
           v-for="s in suppliers"
@@ -76,7 +76,7 @@
             </p>
           </div>
           <div class="flex items-center gap-2">
-            <span :class="['text-[10px] font-bold uppercase px-2 py-0.5 rounded', s.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500']">
+            <span :class="['text-[10px] font-bold uppercase px-2 py-0.5 rounded', s.isActive ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500 dark:text-[#869392]']">
               {{ s.isActive ? 'Aktif' : 'Nonaktif' }}
             </span>
             <button @click="openSupplierModal(s)" class="text-xs text-blue-600 hover:underline">Edit</button>
@@ -108,8 +108,8 @@
         >+ Buat PO</button>
       </div>
 
-      <div v-if="posLoading" class="text-center py-10 text-slate-500 text-sm">Memuat...</div>
-      <div v-else-if="purchaseOrders.length === 0" class="text-center py-10 text-slate-400 text-sm">Belum ada Purchase Order.</div>
+      <div v-if="posLoading" class="text-center py-10 text-slate-500 dark:text-[#869392] text-sm">Memuat...</div>
+      <div v-else-if="purchaseOrders.length === 0" class="text-center py-10 text-slate-400 dark:text-[#869392] text-sm">Belum ada Purchase Order.</div>
       <div v-else class="space-y-2">
         <div
           v-for="po in purchaseOrders"
@@ -140,15 +140,15 @@
     <!-- ============================================ -->
     <teleport to="body">
       <div v-if="showSupplierModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showSupplierModal = false">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-          <h2 class="text-base font-bold text-slate-900 mb-4">{{ editingSupplier ? 'Edit Supplier' : 'Tambah Supplier' }}</h2>
+        <div class="bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-md p-6">
+          <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2] mb-4">{{ editingSupplier ? 'Edit Supplier' : 'Tambah Supplier' }}</h2>
           <form @submit.prevent="handleSaveSupplier" class="space-y-3">
             <input v-model="supplierForm.name" placeholder="Nama supplier *" required class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" />
             <input v-model="supplierForm.phone" placeholder="No. HP" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" />
             <input v-model="supplierForm.address" placeholder="Alamat" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" />
             <textarea v-model="supplierForm.notes" placeholder="Catatan" rows="2" class="w-full px-3 py-2 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none resize-none"></textarea>
             <div class="flex justify-end gap-2 pt-2">
-              <button type="button" @click="showSupplierModal = false" class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
+              <button type="button" @click="showSupplierModal = false" class="h-9 px-4 text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
               <button type="submit" :disabled="savingSupplier" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700">
                 {{ savingSupplier ? 'Menyimpan...' : 'Simpan' }}
               </button>
@@ -163,8 +163,8 @@
     <!-- ============================================ -->
     <teleport to="body">
       <div v-if="showPODetail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showPODetail = false">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
+        <div class="bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-[#3d4948]">
             <div>
               <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ poDetail?.orderNumber }}</h2>
               <p class="text-xs text-slate-500 dark:text-[#869392]">{{ poDetail?.supplier.name }} &middot; {{ poDetail ? formatDate(poDetail.createdAt) : '' }}</p>
@@ -173,7 +173,7 @@
               <button
                 v-if="poDetail"
                 type="button"
-                class="h-7 px-2.5 text-[10px] font-semibold text-slate-600 border border-slate-200 rounded-md hover:bg-slate-50 flex items-center gap-1"
+                class="h-7 px-2.5 text-[10px] font-semibold text-slate-600 dark:text-[#bcc9c7] border border-slate-200 rounded-md hover:bg-slate-50 flex items-center gap-1"
                 @click="handleSharePO"
                 title="Salin teks PO untuk kirim ke supplier"
               >
@@ -193,17 +193,17 @@
               <span v-if="poDetail" :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', poStatusBadge(poDetail.status)]">
                 {{ poStatusLabel(poDetail.status) }}
               </span>
-              <button @click="showPODetail = false" class="text-slate-400 hover:text-slate-600">
+              <button @click="showPODetail = false" class="text-slate-400 hover:text-slate-600 dark:text-[#bcc9c7]">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
           </div>
           <div class="flex-1 overflow-y-auto px-6 py-4">
-            <div v-if="poDetailLoading" class="text-center py-10 text-slate-500 text-sm">Memuat...</div>
+            <div v-if="poDetailLoading" class="text-center py-10 text-slate-500 dark:text-[#869392] text-sm">Memuat...</div>
             <div v-else-if="poDetail">
               <table class="w-full text-sm mb-4">
                 <thead>
-                  <tr class="text-left text-[11px] text-slate-500 uppercase tracking-wide border-b border-slate-200">
+                  <tr class="text-left text-[11px] text-slate-500 dark:text-[#869392] uppercase tracking-wide border-b border-slate-200">
                     <th class="pb-2 pr-3">Produk</th>
                     <th class="pb-2 pr-3 text-right">Qty Order</th>
                     <th class="pb-2 pr-3 text-right">Diterima</th>
@@ -212,14 +212,14 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="item in poDetail.items" :key="item.id" class="border-b border-slate-200 last:border-0">
+                  <tr v-for="item in poDetail.items" :key="item.id" class="border-b border-slate-200 dark:border-[#3d4948] last:border-0">
                     <td class="py-2 pr-3">
                       <p class="text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ item.productName }}</p>
-                      <p class="text-[10px] text-slate-400">{{ item.productSku }}</p>
+                      <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ item.productSku }}</p>
                     </td>
                     <td class="py-2 pr-3 text-right text-xs">{{ item.quantity }}</td>
                     <td class="py-2 pr-3 text-right text-xs">
-                      <span :class="item.receivedQty >= item.quantity ? 'text-emerald-600 font-semibold' : item.receivedQty > 0 ? 'text-blue-600 font-semibold' : 'text-slate-400'">
+                      <span :class="item.receivedQty >= item.quantity ? 'text-emerald-600 font-semibold' : item.receivedQty > 0 ? 'text-blue-600 font-semibold' : 'text-slate-400 dark:text-[#869392]'">
                         {{ item.receivedQty }} / {{ item.quantity }}
                       </span>
                     </td>
@@ -228,15 +228,15 @@
                   </tr>
                 </tbody>
                 <tfoot>
-                  <tr class="border-t border-slate-200">
-                    <td colspan="3" class="pt-2 text-right text-xs font-bold text-slate-700">Total</td>
+                  <tr class="border-t border-slate-200 dark:border-[#3d4948]">
+                    <td colspan="3" class="pt-2 text-right text-xs font-bold text-slate-700 dark:text-[#bcc9c7]">Total</td>
                     <td class="pt-2 text-right text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(poDetail.totalAmount) }}</td>
                   </tr>
                 </tfoot>
               </table>
             </div>
           </div>
-          <div v-if="poDetail && (poDetail.status === 'DRAFT' || poDetail.status === 'ORDERED' || poDetail.status === 'PARTIAL')" class="px-6 py-4 border-t border-slate-200 flex justify-between">
+          <div v-if="poDetail && (poDetail.status === 'DRAFT' || poDetail.status === 'ORDERED' || poDetail.status === 'PARTIAL')" class="px-6 py-4 border-t border-slate-200 dark:border-[#3d4948] flex justify-between">
             <button
               type="button"
               class="h-9 px-4 text-xs font-semibold text-red-600 border border-red-300 rounded-lg hover:bg-red-50"
@@ -266,9 +266,9 @@
     <!-- ============================================ -->
     <teleport to="body">
       <div v-if="showCreatePO" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showCreatePO = false">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
-          <h2 class="text-base font-bold text-slate-900 mb-1">Buat Purchase Order</h2>
-          <p class="text-xs text-slate-500 mb-4">Cari produk, tentukan qty. Harga beli diisi nanti saat terima barang.</p>
+        <div class="bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
+          <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2] mb-1">Buat Purchase Order</h2>
+          <p class="text-xs text-slate-500 dark:text-[#869392] mb-4">Cari produk, tentukan qty. Harga beli diisi nanti saat terima barang.</p>
           <form @submit.prevent="handleCreatePO" class="space-y-4">
             <!-- Supplier -->
             <div>
@@ -283,7 +283,7 @@
             <div>
               <label class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Tambah Produk</label>
               <div class="relative mt-1">
-                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-[#869392]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                 </svg>
                 <input
@@ -300,12 +300,12 @@
                   v-if="showProductDropdown"
                   class="absolute z-10 top-full left-0 right-0 mt-1 bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-lg max-h-56 overflow-y-auto"
                 >
-                  <div v-if="productSearchLoading" class="px-3 py-4 text-center text-xs text-slate-400">
+                  <div v-if="productSearchLoading" class="px-3 py-4 text-center text-xs text-slate-400 dark:text-[#869392]">
                     Mencari...
                   </div>
                   <template v-else>
                     <!-- No results message -->
-                    <div v-if="productSearchResults.length === 0 && productSearchQuery.length >= 2" class="px-3 py-3 text-center text-xs text-slate-400">
+                    <div v-if="productSearchResults.length === 0 && productSearchQuery.length >= 2" class="px-3 py-3 text-center text-xs text-slate-400 dark:text-[#869392]">
                       Produk "{{ productSearchQuery }}" tidak ditemukan di cabang ini.
                     </div>
                     <!-- Result items -->
@@ -313,20 +313,20 @@
                       v-for="p in productSearchResults"
                       :key="p.id"
                       type="button"
-                      class="w-full px-3 py-2.5 text-left hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-200"
+                      class="w-full px-3 py-2.5 text-left hover:bg-blue-50 transition-colors flex items-center justify-between border-b border-slate-200 dark:border-[#3d4948]"
                       @mousedown.prevent="selectProductForPO(p)"
                     >
                       <div class="min-w-0">
-                        <p class="text-xs font-semibold text-slate-900 truncate">{{ p.name }}</p>
-                        <p class="text-[10px] text-slate-400 font-mono">{{ p.sku }}</p>
+                        <p class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2] truncate">{{ p.name }}</p>
+                        <p class="text-[10px] text-slate-400 dark:text-[#869392] font-mono">{{ p.sku }}</p>
                       </div>
-                      <span class="text-[10px] text-slate-500 shrink-0 ml-2">Stok: {{ p.stock }}</span>
+                      <span class="text-[10px] text-slate-500 dark:text-[#869392] shrink-0 ml-2">Stok: {{ p.stock }}</span>
                     </button>
                     <!-- Quick add option (always visible when search query >= 2) -->
                     <button
                       v-if="productSearchQuery.length >= 2"
                       type="button"
-                      class="w-full px-3 py-2.5 text-left hover:bg-emerald-50 transition-colors flex items-center gap-2 border-t border-slate-200 sticky bottom-0 bg-white"
+                      class="w-full px-3 py-2.5 text-left hover:bg-emerald-50 transition-colors flex items-center gap-2 border-t border-slate-200 sticky bottom-0 bg-white dark:bg-[#1e2020]"
                       @mousedown.prevent="openQuickAddProduct"
                     >
                       <div class="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
@@ -336,7 +336,7 @@
                       </div>
                       <div>
                         <p class="text-xs font-semibold text-emerald-700">Tambah "{{ productSearchQuery }}" sebagai produk baru</p>
-                        <p class="text-[10px] text-slate-400">SKU auto-generate, harga diisi nanti</p>
+                        <p class="text-[10px] text-slate-400 dark:text-[#869392]">SKU auto-generate, harga diisi nanti</p>
                       </div>
                     </button>
                   </template>
@@ -359,13 +359,13 @@
                   type="text"
                   required
                   placeholder="Nama produk baru"
-                  class="w-full h-8 px-2.5 text-xs border border-emerald-300 rounded-md outline-none focus:border-emerald-500 bg-white"
+                  class="w-full h-8 px-2.5 text-xs border border-emerald-300 rounded-md outline-none focus:border-emerald-500 bg-white dark:bg-[#1e2020]"
                 />
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
                   <label class="text-[9px] text-emerald-700 font-semibold">Satuan</label>
-                  <select v-model="quickAddForm.unit" class="w-full h-8 px-2 text-xs border border-emerald-300 rounded-md outline-none focus:border-emerald-500 bg-white">
+                  <select v-model="quickAddForm.unit" class="w-full h-8 px-2 text-xs border border-emerald-300 rounded-md outline-none focus:border-emerald-500 bg-white dark:bg-[#1e2020]">
                     <option value="pcs">pcs</option>
                     <option value="kg">kg</option>
                     <option value="liter">liter</option>
@@ -378,7 +378,7 @@
                 </div>
                 <div>
                   <label class="text-[9px] text-emerald-700 font-semibold">Kategori <span class="text-emerald-500">(opsional)</span></label>
-                  <select v-model="quickAddForm.categoryId" class="w-full h-8 px-2 text-xs border border-emerald-300 rounded-md outline-none focus:border-emerald-500 bg-white">
+                  <select v-model="quickAddForm.categoryId" class="w-full h-8 px-2 text-xs border border-emerald-300 rounded-md outline-none focus:border-emerald-500 bg-white dark:bg-[#1e2020]">
                     <option value="">Tanpa kategori</option>
                     <option v-for="c in productCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
                   </select>
@@ -409,12 +409,12 @@
                 <div
                   v-for="(item, idx) in poForm.items"
                   :key="item.productId"
-                  class="p-2.5 bg-slate-50 border border-slate-200 rounded-lg"
+                  class="p-2.5 bg-slate-50 dark:bg-[#1a1c1c] border border-slate-200 rounded-lg"
                 >
                   <div class="flex items-center justify-between mb-1.5">
                     <div class="min-w-0">
-                      <p class="text-xs font-semibold text-slate-900 truncate">{{ item.productName }}</p>
-                      <p class="text-[10px] text-slate-400 font-mono">{{ item.productSku }}</p>
+                      <p class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2] truncate">{{ item.productName }}</p>
+                      <p class="text-[10px] text-slate-400 dark:text-[#869392] font-mono">{{ item.productSku }}</p>
                     </div>
                     <button type="button" @click="removePoItem(idx)" class="w-6 h-6 flex items-center justify-center rounded text-red-400 hover:text-red-600 hover:bg-red-50 shrink-0">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -423,13 +423,13 @@
                   <div class="grid grid-cols-2 gap-2">
                     <div>
                       <label class="text-[9px] text-slate-500 dark:text-[#869392]">Qty *</label>
-                      <input v-model.number="item.quantity" type="number" min="1" required class="w-full h-7 px-2 text-xs font-mono border border-slate-200 rounded-md outline-none focus:border-blue-600" />
+                      <input v-model.number="item.quantity" type="number" min="1" required class="w-full h-7 px-2 text-xs font-mono border border-slate-200 dark:border-[#3d4948] rounded-md outline-none focus:border-blue-600" />
                     </div>
                     <div>
                       <label class="text-[9px] text-slate-500 dark:text-[#869392]">Harga beli <span class="text-slate-400">(opsional)</span></label>
                       <div class="relative">
-                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-400">Rp</span>
-                        <input v-model.number="item.unitCost" type="number" min="0" placeholder="Isi nanti" class="w-full h-7 pl-6 pr-2 text-xs font-mono text-right border border-slate-200 rounded-md outline-none focus:border-blue-600" />
+                        <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 dark:text-[#869392]">Rp</span>
+                        <input v-model.number="item.unitCost" type="number" min="0" placeholder="Isi nanti" class="w-full h-7 pl-6 pr-2 text-xs font-mono text-right border border-slate-200 dark:border-[#3d4948] rounded-md outline-none focus:border-blue-600" />
                       </div>
                     </div>
                   </div>
@@ -438,7 +438,7 @@
             </div>
 
             <!-- Empty state -->
-            <div v-else class="bg-slate-50 border border-dashed border-slate-200 rounded-lg p-6 text-center">
+            <div v-else class="bg-slate-50 dark:bg-[#1a1c1c] border border-dashed border-slate-200 rounded-lg p-6 text-center">
               <svg class="w-8 h-8 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
               </svg>
@@ -448,12 +448,12 @@
             <!-- Notes -->
             <div>
               <label class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Catatan</label>
-              <textarea v-model="poForm.notes" placeholder="Catatan untuk supplier (opsional)" rows="2" class="mt-1 w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none resize-none focus:border-blue-600"></textarea>
+              <textarea v-model="poForm.notes" placeholder="Catatan untuk supplier (opsional)" rows="2" class="mt-1 w-full px-3 py-2 text-sm border border-slate-200 dark:border-[#3d4948] rounded-lg outline-none resize-none focus:border-blue-600"></textarea>
             </div>
 
             <!-- Actions -->
             <div class="flex justify-end gap-2 pt-2">
-              <button type="button" @click="showCreatePO = false" class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
+              <button type="button" @click="showCreatePO = false" class="h-9 px-4 text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
               <button type="submit" :disabled="creatingPO || poForm.items.length === 0" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50">
                 {{ creatingPO ? 'Membuat...' : 'Buat PO' }}
               </button>
@@ -467,20 +467,20 @@
     <!-- ============================================ -->
     <teleport to="body">
       <div v-if="showPartialReceive" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showPartialReceive = false">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
-          <h2 class="text-base font-bold text-slate-900 mb-1">Terima Barang</h2>
-          <p class="text-xs text-slate-500 mb-4">Masukkan qty diterima dan <strong>harga beli dari nota supplier</strong> per item.</p>
+        <div class="bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
+          <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2] mb-1">Terima Barang</h2>
+          <p class="text-xs text-slate-500 dark:text-[#869392] mb-4">Masukkan qty diterima dan <strong>harga beli dari nota supplier</strong> per item.</p>
           <div class="space-y-3">
-            <div v-for="item in partialReceiveItems" :key="item.itemId" class="p-3 bg-slate-50 rounded-lg space-y-2">
+            <div v-for="item in partialReceiveItems" :key="item.itemId" class="p-3 bg-slate-50 dark:bg-[#1a1c1c] rounded-lg space-y-2">
               <div class="flex items-center justify-between">
                 <div class="min-w-0">
-                  <p class="text-xs font-semibold text-slate-900 truncate">{{ item.productName }}</p>
+                  <p class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2] truncate">{{ item.productName }}</p>
                   <p class="text-[10px] text-slate-500 dark:text-[#869392]">Sisa: {{ item.remaining }} dari {{ item.orderQty }}</p>
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-2">
                 <div>
-                  <label class="text-[9px] font-bold text-slate-500 uppercase">Qty Diterima</label>
+                  <label class="text-[9px] font-bold text-slate-500 dark:text-[#869392] uppercase">Qty Diterima</label>
                   <input
                     v-model.number="item.receivedQty"
                     type="number"
@@ -490,9 +490,9 @@
                   />
                 </div>
                 <div>
-                  <label class="text-[9px] font-bold text-slate-500 uppercase">Harga Beli (Nota)</label>
+                  <label class="text-[9px] font-bold text-slate-500 dark:text-[#869392] uppercase">Harga Beli (Nota)</label>
                   <div class="relative">
-                    <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400">Rp</span>
+                    <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] text-slate-400 dark:text-[#869392]">Rp</span>
                     <input
                       v-model.number="item.actualCost"
                       type="number"
@@ -501,13 +501,13 @@
                       class="w-full h-8 pl-7 pr-2 text-sm font-mono text-right border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none"
                     />
                   </div>
-                  <p v-if="item.lastCost" class="text-[9px] text-slate-400 mt-0.5">Terakhir: {{ formatRupiah(item.lastCost) }}</p>
+                  <p v-if="item.lastCost" class="text-[9px] text-slate-400 dark:text-[#869392] mt-0.5">Terakhir: {{ formatRupiah(item.lastCost) }}</p>
                 </div>
               </div>
             </div>
           </div>
           <div class="flex justify-end gap-2 pt-4">
-            <button type="button" @click="showPartialReceive = false" class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
+            <button type="button" @click="showPartialReceive = false" class="h-9 px-4 text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
             <button type="button" :disabled="receivingPartial" class="h-9 px-4 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 disabled:opacity-50" @click="handlePartialReceive">
               {{ receivingPartial ? 'Memproses...' : 'Konfirmasi Terima' }}
             </button>
@@ -521,7 +521,7 @@
     <!-- ============================================ -->
     <teleport to="body">
       <div v-if="showPriceReviewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showPriceReviewModal = false">
-        <div class="bg-white rounded-lg shadow-xl w-full max-w-xl p-6 max-h-[85vh] overflow-hidden flex flex-col">
+        <div class="bg-white dark:bg-[#1e2020] rounded-lg shadow-xl w-full max-w-xl p-6 max-h-[85vh] overflow-hidden flex flex-col">
           <!-- Header -->
           <div class="flex items-start gap-3 mb-4">
             <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
@@ -558,30 +558,30 @@
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ item.productName }}</p>
-                      <p class="text-[10px] text-slate-400 font-mono">{{ item.productSku }}</p>
+                      <p class="text-[10px] text-slate-400 dark:text-[#869392] font-mono">{{ item.productSku }}</p>
                     </div>
                     <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">BARU</span>
                   </div>
 
                   <div class="grid grid-cols-3 gap-2 text-center">
-                    <div class="bg-white rounded-md p-1.5 border border-emerald-100">
+                    <div class="bg-white dark:bg-[#1e2020] rounded-md p-1.5 border border-emerald-100">
                       <p class="text-[9px] text-emerald-600 uppercase font-bold">Harga Beli</p>
                       <p class="text-xs font-mono font-bold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(item.cost) }}</p>
                     </div>
-                    <div class="bg-white rounded-md p-1.5 border border-emerald-100">
+                    <div class="bg-white dark:bg-[#1e2020] rounded-md p-1.5 border border-emerald-100">
                       <p class="text-[9px] text-blue-600 uppercase">Margin</p>
                       <p class="text-xs font-mono font-bold text-blue-700">{{ item.defaultMarginPercent }}%</p>
                     </div>
-                    <div class="bg-white rounded-md p-1.5 border border-emerald-100">
-                      <p class="text-[9px] text-slate-500 uppercase">Saran Jual</p>
+                    <div class="bg-white dark:bg-[#1e2020] rounded-md p-1.5 border border-emerald-100">
+                      <p class="text-[9px] text-slate-500 dark:text-[#869392] uppercase">Saran Jual</p>
                       <p class="text-xs font-mono font-bold text-emerald-700">{{ formatRupiah(item.suggestedPrice) }}</p>
                     </div>
                   </div>
 
                   <div class="flex items-center gap-2">
-                    <p class="text-[9px] text-slate-500 flex-1">Harga jual:</p>
+                    <p class="text-[9px] text-slate-500 dark:text-[#869392] flex-1">Harga jual:</p>
                     <div class="relative">
-                      <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-400">Rp</span>
+                      <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 dark:text-[#869392]">Rp</span>
                       <input
                         v-model.number="newProductPriceInputs[idx]"
                         type="number"
@@ -608,12 +608,12 @@
                 <div
                   v-for="(item, idx) in pendingPriceChanges"
                   :key="item.productId"
-                  class="border border-slate-200 rounded-lg p-3 space-y-2"
+                  class="border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 space-y-2"
                 >
                   <div class="flex items-center justify-between">
                     <div>
                       <p class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ item.productName }}</p>
-                      <p class="text-[10px] text-slate-400 font-mono">{{ item.productSku }}</p>
+                      <p class="text-[10px] text-slate-400 dark:text-[#869392] font-mono">{{ item.productSku }}</p>
                     </div>
                     <span
                       :class="[
@@ -627,9 +627,9 @@
                   </div>
 
                   <div class="grid grid-cols-3 gap-2 text-center">
-                    <div class="bg-slate-50 rounded-md p-1.5">
-                      <p class="text-[9px] text-slate-500 uppercase">Modal Lama</p>
-                      <p class="text-xs font-mono text-slate-600 line-through">{{ formatRupiah(item.oldCost) }}</p>
+                    <div class="bg-slate-50 dark:bg-[#1a1c1c] rounded-md p-1.5">
+                      <p class="text-[9px] text-slate-500 dark:text-[#869392] uppercase">Modal Lama</p>
+                      <p class="text-xs font-mono text-slate-600 dark:text-[#bcc9c7] line-through">{{ formatRupiah(item.oldCost) }}</p>
                     </div>
                     <div class="bg-amber-50 rounded-md p-1.5">
                       <p class="text-[9px] text-amber-600 uppercase font-bold">Modal Baru</p>
@@ -642,9 +642,9 @@
                   </div>
 
                   <div class="flex items-center gap-2">
-                    <p class="text-[9px] text-slate-500 flex-1">Jual sekarang: <strong>{{ formatRupiah(item.currentPrice) }}</strong> → Saran ({{ item.marginPercent }}%):</p>
+                    <p class="text-[9px] text-slate-500 dark:text-[#869392] flex-1">Jual sekarang: <strong>{{ formatRupiah(item.currentPrice) }}</strong> → Saran ({{ item.marginPercent }}%):</p>
                     <div class="relative">
-                      <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-400">Rp</span>
+                      <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-400 dark:text-[#869392]">Rp</span>
                       <input
                         v-model.number="priceReviewInputs[idx]"
                         type="number"
@@ -659,10 +659,10 @@
           </div>
 
           <!-- Actions -->
-          <div class="flex items-center justify-between pt-3 border-t border-slate-200">
+          <div class="flex items-center justify-between pt-3 border-t border-slate-200 dark:border-[#3d4948]">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50"
+              class="h-9 px-4 text-xs font-semibold text-slate-600 dark:text-[#bcc9c7] border border-slate-200 rounded-lg hover:bg-slate-50"
               @click="handleSkipPriceReview"
             >
               Lewati (Harga Tetap)
@@ -671,7 +671,7 @@
               <button
                 v-if="pendingPriceChanges.length > 0"
                 type="button"
-                class="h-9 px-4 text-xs font-semibold text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-50"
+                class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] border border-slate-200 rounded-lg hover:bg-slate-50"
                 @click="handleUpdateCostOnly"
               >
                 Update Modal Saja
@@ -832,12 +832,12 @@ function formatDate(iso: string): string {
 
 function poStatusBadge(status: POStatus): string {
   switch (status) {
-    case 'DRAFT': return 'bg-slate-100 text-slate-600';
+    case 'DRAFT': return 'bg-slate-100 text-slate-600 dark:text-[#bcc9c7]';
     case 'ORDERED': return 'bg-amber-100 text-amber-700';
     case 'PARTIAL': return 'bg-blue-100 text-blue-700';
     case 'RECEIVED': return 'bg-emerald-100 text-emerald-700';
     case 'CANCELLED': return 'bg-red-100 text-red-600';
-    default: return 'bg-slate-100 text-slate-600';
+    default: return 'bg-slate-100 text-slate-600 dark:text-[#bcc9c7]';
   }
 }
 

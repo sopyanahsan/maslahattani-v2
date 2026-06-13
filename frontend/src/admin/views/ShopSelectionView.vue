@@ -9,7 +9,7 @@
           <component :is="Building2Icon" class="w-8 h-8 text-blue-400" />
         </div>
         <h1 class="text-2xl font-bold text-white">Pilih Cabang</h1>
-        <p class="text-sm text-slate-400 mt-1">
+        <p class="text-sm text-slate-400 dark:text-[#869392] mt-1">
           Halo <span class="text-blue-300">{{ displayName }}</span>, pilih cabang yang
           ingin dikelola sekarang.
         </p>
@@ -18,16 +18,16 @@
       <!-- Loading state -->
       <div
         v-if="isLoading"
-        class="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 text-center"
+        class="bg-white dark:bg-[#1e2020] rounded-2xl shadow-xl border border-slate-200 p-8 text-center"
       >
         <component :is="Loader2Icon" class="w-8 h-8 animate-spin text-blue-600 mx-auto mb-3" />
-        <p class="text-sm text-slate-600">Memuat daftar cabang…</p>
+        <p class="text-sm text-slate-600 dark:text-[#bcc9c7]">Memuat daftar cabang…</p>
       </div>
 
       <!-- Error state -->
       <div
         v-else-if="errorMessage"
-        class="bg-white rounded-2xl shadow-xl border border-slate-200 p-6"
+        class="bg-white dark:bg-[#1e2020] rounded-2xl shadow-xl border border-slate-200 p-6"
       >
         <div class="flex items-start gap-2 bg-red-50 border-l-4 border-red-500 rounded-md p-4">
           <component :is="AlertCircleIcon" class="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
@@ -38,7 +38,7 @@
         </div>
         <button
           type="button"
-          class="mt-4 w-full h-10 px-4 bg-slate-100 text-slate-900 text-sm font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors"
+          class="mt-4 w-full h-10 px-4 bg-slate-100 text-slate-900 dark:text-[#e3e2e2] text-sm font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors"
           @click="loadShops"
         >
           Coba lagi
@@ -48,11 +48,11 @@
       <!-- Empty state — no shops -->
       <div
         v-else-if="shops.length === 0"
-        class="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 text-center"
+        class="bg-white dark:bg-[#1e2020] rounded-2xl shadow-xl border border-slate-200 p-8 text-center"
       >
         <div class="text-4xl mb-3 opacity-50">🏪</div>
         <p class="text-base font-semibold text-slate-900 dark:text-[#e3e2e2]">Belum ada cabang</p>
-        <p class="text-sm text-slate-600 mt-1 max-w-sm mx-auto">
+        <p class="text-sm text-slate-600 dark:text-[#bcc9c7] mt-1 max-w-sm mx-auto">
           Sistem belum punya cabang terdaftar. Hubungi developer untuk seed data
           atau buat cabang pertama via API.
         </p>
@@ -65,7 +65,7 @@
           :key="shop.id"
           type="button"
           :disabled="selectingShopId !== null"
-          class="w-full bg-white rounded-2xl shadow-xl border border-slate-200 p-5 sm:p-6 text-left hover:border-blue-400 hover:shadow-2xl transition-all disabled:opacity-60 disabled:cursor-not-allowed group"
+          class="w-full bg-white dark:bg-[#1e2020] rounded-2xl shadow-xl border border-slate-200 p-5 sm:p-6 text-left hover:border-blue-400 hover:shadow-2xl transition-all disabled:opacity-60 disabled:cursor-not-allowed group"
           @click="handleSelect(shop.id)"
         >
           <div class="flex items-start gap-4">
@@ -86,13 +86,13 @@
 
             <!-- Info -->
             <div class="flex-1 min-w-0">
-              <h3 class="text-base font-bold text-slate-950 truncate">
+              <h3 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2] truncate">
                 {{ shop.name }}
               </h3>
               <p class="text-xs text-slate-500 dark:text-[#869392] mt-0.5 line-clamp-1">
                 {{ shop.address }}
               </p>
-              <p class="text-[11px] font-mono text-slate-400 mt-0.5">
+              <p class="text-[11px] font-mono text-slate-400 dark:text-[#869392] mt-0.5">
                 {{ shop.phone }}
               </p>
 
@@ -101,15 +101,15 @@
                 v-if="hasCounts(shop)"
                 class="flex flex-wrap items-center gap-3 mt-3 text-[11px]"
               >
-                <div class="flex items-center gap-1 text-slate-600">
+                <div class="flex items-center gap-1 text-slate-600 dark:text-[#bcc9c7]">
                   <component :is="UsersIcon" class="w-3 h-3" />
                   <span>{{ shop._count?.users ?? 0 }} kasir</span>
                 </div>
-                <div class="flex items-center gap-1 text-slate-600">
+                <div class="flex items-center gap-1 text-slate-600 dark:text-[#bcc9c7]">
                   <component :is="PackageIcon" class="w-3 h-3" />
                   <span>{{ shop._count?.products ?? 0 }} produk</span>
                 </div>
-                <div class="flex items-center gap-1 text-slate-600">
+                <div class="flex items-center gap-1 text-slate-600 dark:text-[#bcc9c7]">
                   <component :is="ReceiptIcon" class="w-3 h-3" />
                   <span>{{ shop._count?.transactions ?? 0 }} trx</span>
                 </div>
@@ -138,7 +138,7 @@
       <div class="text-center mt-6">
         <button
           type="button"
-          class="text-sm text-slate-400 hover:text-slate-300 transition-colors"
+          class="text-sm text-slate-400 dark:text-[#869392] hover:text-slate-300 transition-colors"
           @click="handleLogout"
         >
           Bukan saya, keluar →

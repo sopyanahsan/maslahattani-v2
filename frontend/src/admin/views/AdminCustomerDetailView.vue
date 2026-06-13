@@ -15,7 +15,7 @@
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="text-center py-16 text-slate-500 text-sm">Memuat data customer...</div>
+    <div v-if="loading" class="text-center py-16 text-slate-500 dark:text-[#869392] text-sm">Memuat data customer...</div>
 
     <template v-else-if="data">
       <!-- Stats Cards -->
@@ -23,12 +23,12 @@
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
           <p class="text-[10px] font-semibold text-[#00A19B] uppercase tracking-wide">Total Kunjungan</p>
           <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ data.stats.totalVisits }}</p>
-          <p class="text-[10px] text-slate-400 mt-0.5">{{ data.stats.retailCount }} retail · {{ data.stats.brilinkCount }} brilink</p>
+          <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">{{ data.stats.retailCount }} retail · {{ data.stats.brilinkCount }} brilink</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
           <p class="text-[10px] font-semibold text-[#00A19B] uppercase tracking-wide">Total Belanja</p>
           <p class="text-2xl font-bold text-slate-900 dark:text-slate-100 mt-1">{{ formatRupiah(data.stats.grandTotal) }}</p>
-          <p class="text-[10px] text-slate-400 mt-0.5">retail {{ formatRupiah(data.stats.retailTotal) }}</p>
+          <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-0.5">retail {{ formatRupiah(data.stats.retailTotal) }}</p>
         </div>
         <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
           <p class="text-[10px] font-semibold text-[#00A19B] uppercase tracking-wide">Rata-rata / Kunjungan</p>
@@ -46,7 +46,7 @@
         <div class="space-y-2">
           <div v-for="(p, i) in data.topProducts" :key="i" class="flex items-center justify-between py-1.5 border-b border-slate-50 dark:border-slate-800 last:border-0">
             <div class="flex items-center gap-3">
-              <span class="text-[10px] font-bold text-slate-400 w-5 text-center">{{ i + 1 }}</span>
+              <span class="text-[10px] font-bold text-slate-400 dark:text-[#869392] w-5 text-center">{{ i + 1 }}</span>
               <p class="text-xs font-medium text-slate-800 dark:text-slate-200">{{ p.name }}</p>
             </div>
             <div class="flex items-center gap-4">
@@ -73,11 +73,11 @@
 
       <!-- Retail History -->
       <div v-if="activeTab === 'retail'" class="space-y-2">
-        <div v-if="data.recentRetail.length === 0" class="text-center py-8 text-slate-400 text-sm">Belum ada transaksi retail.</div>
+        <div v-if="data.recentRetail.length === 0" class="text-center py-8 text-slate-400 dark:text-[#869392] text-sm">Belum ada transaksi retail.</div>
         <div v-for="t in data.recentRetail" :key="t.id" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between">
           <div>
             <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 font-mono">{{ t.transactionNumber }}</p>
-            <p class="text-[10px] text-slate-500 mt-0.5">{{ formatDate(t.createdAt) }} · {{ t.itemCount }} item</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">{{ formatDate(t.createdAt) }} · {{ t.itemCount }} item</p>
           </div>
           <div class="text-right">
             <p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(t.totalPrice) }}</p>
@@ -88,12 +88,12 @@
 
       <!-- BRILink History -->
       <div v-if="activeTab === 'brilink'" class="space-y-2">
-        <div v-if="data.recentBrilink.length === 0" class="text-center py-8 text-slate-400 text-sm">Belum ada transaksi BRILink.</div>
+        <div v-if="data.recentBrilink.length === 0" class="text-center py-8 text-slate-400 dark:text-[#869392] text-sm">Belum ada transaksi BRILink.</div>
         <div v-for="t in data.recentBrilink" :key="t.id" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-center justify-between">
           <div>
             <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 font-mono">{{ t.refNumber }}</p>
-            <p class="text-[10px] text-slate-500 mt-0.5">{{ t.category }} · {{ t.destination }}</p>
-            <p class="text-[10px] text-slate-400">{{ formatDate(t.createdAt) }}</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392] mt-0.5">{{ t.category }} · {{ t.destination }}</p>
+            <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ formatDate(t.createdAt) }}</p>
           </div>
           <div class="text-right">
             <p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(t.total) }}</p>

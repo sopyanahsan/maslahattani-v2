@@ -6,7 +6,7 @@
       <div class="flex items-center gap-2">
         <button
           type="button"
-          class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
+          class="h-9 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-lg
                  hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
           @click="openMutationModal('CASH_IN')"
         >
@@ -15,7 +15,7 @@
         </button>
         <button
           type="button"
-          class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
+          class="h-9 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-lg
                  hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
           @click="openMutationModal('CASH_OUT')"
         >
@@ -24,7 +24,7 @@
         </button>
         <button
           type="button"
-          class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
+          class="h-9 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-lg
                  hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
           @click="showAuditModal = true"
         >
@@ -41,7 +41,7 @@
         <p class="text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] dark:text-[#e3e2e2] mt-1">
           {{ formatRupiah(kasSummary.cashBoxBalance) }}
         </p>
-        <p v-if="kasSummary.lastAudit" class="text-[10px] text-slate-400 mt-1">
+        <p v-if="kasSummary.lastAudit" class="text-[10px] text-slate-400 dark:text-[#869392] mt-1">
           Audit: {{ formatDate(kasSummary.lastAudit) }}
         </p>
       </div>
@@ -72,14 +72,14 @@
     </div>
 
     <!-- Tab switcher -->
-    <div class="border-b border-slate-200 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
+    <div class="border-b border-slate-200 dark:border-[#3d4948] -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8">
       <nav class="flex gap-1">
         <button
           type="button"
           :class="['px-3 py-2 text-xs font-semibold border-b-2 transition-colors',
             activeTab === 'history'
               ? 'border-blue-600 text-blue-700'
-              : 'border-transparent text-slate-600 hover:text-slate-900']"
+              : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-[#e3e2e2]']"
           @click="activeTab = 'history'"
         >
           Riwayat Pembayaran
@@ -89,7 +89,7 @@
           :class="['px-3 py-2 text-xs font-semibold border-b-2 transition-colors flex items-center gap-1.5',
             activeTab === 'pending'
               ? 'border-blue-600 text-blue-700'
-              : 'border-transparent text-slate-600 hover:text-slate-900']"
+              : 'border-transparent text-slate-600 hover:text-slate-900 dark:text-[#e3e2e2]']"
           @click="activeTab = 'pending'; fetchPending()"
         >
           Persetujuan Pengeluaran
@@ -111,15 +111,15 @@
 
       <div v-else-if="pendingItems.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-300 rounded-xl p-10 text-center">
         <ShieldCheckIcon class="w-10 h-10 text-emerald-300 mx-auto mb-3" />
-        <p class="text-sm font-semibold text-slate-700">Tidak ada pengeluaran yang menunggu persetujuan</p>
-        <p class="text-xs text-slate-400 mt-1">Semua cash-out sudah diverifikasi.</p>
+        <p class="text-sm font-semibold text-slate-700 dark:text-[#bcc9c7]">Tidak ada pengeluaran yang menunggu persetujuan</p>
+        <p class="text-xs text-slate-400 dark:text-[#869392] mt-1">Semua cash-out sudah diverifikasi.</p>
       </div>
 
       <div v-else class="space-y-3">
         <div
           v-for="item in pendingItems"
           :key="item.id"
-          class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3"
+          class="bg-white dark:bg-[#1e2020] border border-slate-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3"
         >
           <!-- Info -->
           <div class="flex-1 min-w-0 space-y-1">
@@ -127,12 +127,12 @@
               <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-100 text-amber-700">PENDING</span>
               <span class="text-xs text-slate-500 dark:text-[#869392]">{{ formatDateTime(item.createdAt) }}</span>
             </div>
-            <p class="text-sm font-bold text-slate-900 font-mono">{{ formatRupiah(item.amount) }}</p>
-            <p class="text-xs text-slate-600">
+            <p class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2] font-mono">{{ formatRupiah(item.amount) }}</p>
+            <p class="text-xs text-slate-600 dark:text-[#bcc9c7]">
               Kasir: <strong>{{ item.user?.username ?? '—' }}</strong>
               · Kategori: {{ item.category?.name ?? '—' }}
             </p>
-            <p v-if="item.notes" class="text-xs text-slate-400 italic">{{ item.notes }}</p>
+            <p v-if="item.notes" class="text-xs text-slate-400 dark:text-[#869392] italic">{{ item.notes }}</p>
           </div>
 
           <!-- Actions -->
@@ -166,7 +166,7 @@
       <Teleport to="body">
         <div v-if="rejectModalId" class="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div class="absolute inset-0 bg-black/40" @click="rejectModalId = null"></div>
-          <form class="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleReject(rejectModalId!)">
+          <form class="relative bg-white dark:bg-[#1e2020] rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleReject(rejectModalId!)">
             <h3 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">Alasan Penolakan</h3>
             <input
               v-model="rejectReason"
@@ -175,7 +175,7 @@
               class="w-full h-9 px-3 text-sm border border-slate-300 rounded-md focus:border-blue-500 outline-none"
             />
             <div class="flex justify-end gap-2">
-              <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="rejectModalId = null">Batal</button>
+              <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-md hover:bg-slate-200" @click="rejectModalId = null">Batal</button>
               <button type="submit" :disabled="!!actionLoading" class="h-9 px-4 text-xs font-semibold text-white bg-red-600 rounded-md hover:bg-red-700 disabled:opacity-50">Tolak</button>
             </div>
           </form>
@@ -205,7 +205,7 @@
         @change="resetAndFetch"
       />
       <div class="flex-1"></div>
-      <span v-if="meta" class="text-xs text-slate-500 self-center">{{ meta.total }} pembayaran</span>
+      <span v-if="meta" class="text-xs text-slate-500 dark:text-[#869392] self-center">{{ meta.total }} pembayaran</span>
     </div>
 
     <!-- Loading -->
@@ -223,11 +223,11 @@
     <!-- Empty -->
     <div v-else-if="payments.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-300 rounded-xl p-10 text-center">
       <WalletIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
-      <p class="text-sm font-semibold text-slate-700">Belum ada riwayat pembayaran</p>
+      <p class="text-sm font-semibold text-slate-700 dark:text-[#bcc9c7]">Belum ada riwayat pembayaran</p>
     </div>
 
     <!-- Payment history table -->
-    <div v-else class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
+    <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[650px]">
           <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
@@ -241,9 +241,9 @@
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr v-for="p in payments" :key="p.id" class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors">
-              <td class="px-4 py-2.5 text-xs text-slate-600 font-mono">{{ formatDateTime(p.createdAt) }}</td>
+              <td class="px-4 py-2.5 text-xs text-slate-600 dark:text-[#bcc9c7] font-mono">{{ formatDateTime(p.createdAt) }}</td>
               <td class="px-4 py-2.5">
-                <code class="text-xs font-mono text-slate-700">{{ p.transaction?.transactionNumber ?? '—' }}</code>
+                <code class="text-xs font-mono text-slate-700 dark:text-[#bcc9c7]">{{ p.transaction?.transactionNumber ?? '—' }}</code>
               </td>
               <td class="px-4 py-2.5 text-center">
                 <span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', methodBadge(p.method)]">
@@ -264,11 +264,11 @@
       </div>
 
       <!-- Pagination -->
-      <div v-if="meta && meta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 flex items-center justify-between">
+      <div v-if="meta && meta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 dark:border-[#3d4948] flex items-center justify-between">
         <p class="text-xs text-slate-500 dark:text-[#869392]">Halaman {{ meta.page }} dari {{ meta.totalPages }}</p>
         <div class="flex items-center gap-1">
-          <button :disabled="meta.page <= 1" class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed" @click="goPage(meta!.page - 1)">Prev</button>
-          <button :disabled="meta.page >= meta.totalPages" class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed" @click="goPage(meta!.page + 1)">Next</button>
+          <button :disabled="meta.page <= 1" class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 dark:bg-[#1a1c1c] disabled:opacity-40 disabled:cursor-not-allowed" @click="goPage(meta!.page - 1)">Prev</button>
+          <button :disabled="meta.page >= meta.totalPages" class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 dark:bg-[#1a1c1c] disabled:opacity-40 disabled:cursor-not-allowed" @click="goPage(meta!.page + 1)">Next</button>
         </div>
       </div>
     </div>
@@ -284,19 +284,19 @@
     <Teleport to="body">
       <div v-if="showMutationModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showMutationModal = false"></div>
-        <form class="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleMutation">
-          <h2 class="text-base font-bold text-slate-950 flex items-center gap-2">
+        <form class="relative bg-white dark:bg-[#1e2020] rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleMutation">
+          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2] flex items-center gap-2">
             <component :is="mutationType === 'CASH_IN' ? ArrowDownIcon : ArrowUpIcon" :class="['w-5 h-5', mutationType === 'CASH_IN' ? 'text-emerald-600' : 'text-red-600']" />
             {{ mutationType === 'CASH_IN' ? 'Pemasukan Kas' : 'Pengeluaran Kas' }}
           </h2>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Jumlah (Rp) <span class="text-red-500">*</span></label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Jumlah (Rp) <span class="text-red-500">*</span></label>
             <input v-model.number="mutationForm.amount" type="number" min="1" required placeholder="500000" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Kategori <span class="text-red-500">*</span></label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Kategori <span class="text-red-500">*</span></label>
             <select v-model="mutationForm.category" required class="w-full h-9 px-3 text-sm border border-slate-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none">
               <option value="">— Pilih —</option>
               <template v-if="mutationType === 'CASH_IN'">
@@ -315,7 +315,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan</label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Catatan</label>
             <input v-model="mutationForm.notes" type="text" placeholder="Keterangan..." class="w-full h-9 px-3 text-sm border border-slate-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
           </div>
 
@@ -328,7 +328,7 @@
           </div>
 
           <div class="flex items-center justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showMutationModal = false">
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-md hover:bg-slate-200" @click="showMutationModal = false">
               {{ mutationResult ? 'Tutup' : 'Batal' }}
             </button>
             <button v-if="!mutationResult" type="submit" :disabled="mutating" :class="['h-9 px-4 text-xs font-semibold text-white rounded-md disabled:opacity-50 flex items-center gap-1.5', mutationType === 'CASH_IN' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700']">
@@ -346,8 +346,8 @@
     <Teleport to="body">
       <div v-if="showAuditModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showAuditModal = false"></div>
-        <form class="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleAudit">
-          <h2 class="text-base font-bold text-slate-950 flex items-center gap-2">
+        <form class="relative bg-white dark:bg-[#1e2020] rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleAudit">
+          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2] flex items-center gap-2">
             <ClipboardCheckIcon class="w-5 h-5 text-blue-600" />
             Audit Saldo Kas
           </h2>
@@ -355,18 +355,18 @@
             Hitung uang fisik di laci kas, lalu input totalnya. Sistem bandingkan dgn saldo digital.
           </p>
 
-          <div v-if="kasSummary" class="bg-slate-50 rounded-md px-3 py-2 text-xs">
+          <div v-if="kasSummary" class="bg-slate-50 dark:bg-[#1a1c1c] rounded-md px-3 py-2 text-xs">
             <span class="text-slate-500 dark:text-[#869392]">Saldo sistem: </span>
             <span class="font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(kasSummary.cashBoxBalance) }}</span>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Saldo Fisik (Rp) <span class="text-red-500">*</span></label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Saldo Fisik (Rp) <span class="text-red-500">*</span></label>
             <input v-model.number="auditForm.actualBalance" type="number" min="0" required placeholder="1500000" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan</label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Catatan</label>
             <input v-model="auditForm.notes" type="text" placeholder="Audit harian sore" class="w-full h-9 px-3 text-sm border border-slate-300 rounded-md focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none" />
           </div>
 
@@ -379,7 +379,7 @@
           </div>
 
           <div class="flex items-center justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showAuditModal = false">
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 rounded-md hover:bg-slate-200" @click="showAuditModal = false">
               {{ auditResult ? 'Tutup' : 'Batal' }}
             </button>
             <button v-if="!auditResult" type="submit" :disabled="auditing" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5">
@@ -639,7 +639,7 @@ function methodBadge(method: string): string {
     case 'QRIS': return 'bg-blue-100 text-blue-700';
     case 'TRANSFER': return 'bg-indigo-100 text-indigo-700';
     case 'HUTANG': return 'bg-amber-100 text-amber-700';
-    default: return 'bg-slate-100 text-slate-700';
+    default: return 'bg-slate-100 text-slate-700 dark:text-[#bcc9c7]';
   }
 }
 
