@@ -6,8 +6,8 @@
       <div class="flex items-center gap-2">
         <button
           type="button"
-          class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
-                 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5"
+          class="h-9 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-lg
+                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
           @click="showRestockModal = true"
         >
           <PackagePlusIcon class="w-4 h-4 text-emerald-600" />
@@ -15,8 +15,8 @@
         </button>
         <button
           type="button"
-          class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
-                 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-1.5"
+          class="h-9 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-lg
+                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
           @click="showOpnameModal = true"
         >
           <ClipboardCheckIcon class="w-4 h-4 text-blue-600" />
@@ -27,42 +27,42 @@
 
     <!-- Summary Cards -->
     <div v-if="summary" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Total Produk</p>
-        <p class="text-lg font-bold font-mono text-slate-950 mt-1">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm">
+        <p class="text-[11px] text-slate-500 dark:text-[#869392]">Total Produk</p>
+        <p class="text-lg font-bold font-mono tabular-nums text-slate-950 dark:text-[#e3e2e2] mt-1">
           {{ summary.totalProducts }}
         </p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Stok Habis</p>
-        <p class="text-lg font-bold font-mono text-red-600 mt-1">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm">
+        <p class="text-[11px] text-slate-500 dark:text-[#869392]">Stok Habis</p>
+        <p class="text-lg font-bold font-mono tabular-nums text-red-600 mt-1">
           {{ summary.outOfStock }}
         </p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Stok Menipis (≤5)</p>
-        <p class="text-lg font-bold font-mono text-amber-600 mt-1">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm">
+        <p class="text-[11px] text-slate-500 dark:text-[#869392]">Stok Menipis (≤5)</p>
+        <p class="text-lg font-bold font-mono tabular-nums text-amber-600 mt-1">
           {{ summary.lowStock }}
         </p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Nilai Stok (Modal)</p>
-        <p class="text-lg font-bold font-mono text-slate-950 mt-1">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm">
+        <p class="text-[11px] text-slate-500 dark:text-[#869392]">Nilai Stok (Modal)</p>
+        <p class="text-lg font-bold font-mono tabular-nums text-slate-950 dark:text-[#e3e2e2] mt-1">
           {{ formatRupiah(summary.totalStockValue) }}
         </p>
       </div>
     </div>
 
     <!-- Tab switcher -->
-    <div class="flex items-center gap-1 border-b border-slate-200 dark:border-slate-800">
+    <div class="flex items-center gap-1 border-b border-slate-200 dark:border-[#3d4948]">
       <button
         v-for="tab in tabs"
         :key="tab.value"
         :class="[
           'px-4 py-2 text-xs font-semibold border-b-2 transition-colors -mb-px',
           activeTab === tab.value
-            ? 'border-blue-600 text-blue-700'
-            : 'border-transparent text-slate-500 hover:text-slate-700',
+            ? 'border-[#03a29c] text-[#03a29c]'
+            : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-[#bcc9c7] dark:hover:text-[#e3e2e2]',
         ]"
         @click="activeTab = tab.value"
       >
@@ -76,61 +76,64 @@
     <section v-if="activeTab === 'overview'">
       <!-- Loading -->
       <div v-if="loading" class="flex items-center justify-center py-12">
-        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-        <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat stok...</span>
+        <Loader2Icon class="w-5 h-5 animate-spin text-[#03a29c]" />
+        <span class="ml-2 text-sm text-slate-500 dark:text-[#bcc9c7]">Memuat stok...</span>
       </div>
 
       <!-- Error -->
       <div
         v-else-if="error"
-        class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-2"
+        class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-4 shadow-sm flex items-start gap-2"
       >
-        <AlertCircleIcon class="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-        <p class="text-sm text-red-800">{{ error }}</p>
+        <AlertCircleIcon class="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+        <div>
+          <p class="text-sm font-bold text-red-800 dark:text-red-200">Error</p>
+          <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
+        </div>
       </div>
 
       <!-- Stock table -->
       <div
         v-else-if="stockItems.length > 0"
-        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden"
+        class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl shadow-sm overflow-hidden"
       >
         <div class="overflow-x-auto">
           <table class="w-full min-w-[600px]">
-            <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+            <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
               <tr>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
                   Produk
                 </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
                   SKU
                 </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
                   Qty
                 </th>
-                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
                   Nilai (Modal)
                 </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
                   Status
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody class="divide-y divide-slate-100 dark:divide-[#3d4948]">
               <tr
                 v-for="item in stockItems"
                 :key="item.id"
-                class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
               >
-                <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-slate-100">
+                <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">
                   {{ item.product.name }}
                 </td>
                 <td class="px-4 py-3">
-                  <code class="text-xs font-mono text-slate-600 dark:text-slate-400">{{ item.product.sku }}</code>
+                  <code class="text-xs font-mono text-slate-600 dark:text-[#bcc9c7]">{{ item.product.sku }}</code>
                 </td>
-                <td class="px-4 py-3 text-center text-sm font-mono font-semibold text-slate-900 dark:text-slate-100">
+                <td class="px-4 py-3 text-center text-sm font-mono tabular-nums font-semibold text-slate-900 dark:text-[#e3e2e2]">
                   {{ item.quantity }}
                 </td>
-                <td class="px-4 py-3 text-right text-sm font-mono text-slate-700 dark:text-slate-300">
+                <td class="px-4 py-3 text-right text-sm font-mono tabular-nums text-slate-700 dark:text-[#bcc9c7]">
                   {{ formatRupiah(item.quantity * item.product.cost) }}
                 </td>
                 <td class="px-4 py-3 text-center">
@@ -153,9 +156,9 @@
         </div>
       </div>
 
-      <div v-else class="bg-white border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-8 text-center">
-        <PackageIcon class="w-8 h-8 text-slate-300 mx-auto mb-2" />
-        <p class="text-xs text-slate-500 dark:text-slate-400">Belum ada data stok.</p>
+      <div v-else class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-300 dark:border-[#3d4948] rounded-xl p-8 text-center">
+        <PackageIcon class="w-12 h-12 text-slate-300 dark:text-[#3d4948] mx-auto mb-2" />
+        <p class="text-sm font-bold text-slate-500 dark:text-[#bcc9c7]">Belum ada data stok.</p>
       </div>
     </section>
 
@@ -164,48 +167,48 @@
     <!-- ============================================ -->
     <section v-if="activeTab === 'history'">
       <div v-if="historyLoading" class="flex items-center justify-center py-12">
-        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-        <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat riwayat...</span>
+        <Loader2Icon class="w-5 h-5 animate-spin text-[#03a29c]" />
+        <span class="ml-2 text-sm text-slate-500 dark:text-[#bcc9c7]">Memuat riwayat...</span>
       </div>
 
       <div
         v-else-if="historyItems.length > 0"
-        class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden"
+        class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl shadow-sm overflow-hidden"
       >
         <div class="overflow-x-auto">
           <table class="w-full min-w-[650px]">
-            <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+            <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
               <tr>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
                   Waktu
                 </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
                   Produk
                 </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
                   Tipe
                 </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
                   Sumber
                 </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
                   Perubahan
                 </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
                   Catatan
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody class="divide-y divide-slate-100 dark:divide-[#3d4948]">
               <tr
                 v-for="h in historyItems"
                 :key="h.id"
-                class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
               >
-                <td class="px-4 py-2.5 text-xs text-slate-600 font-mono">
+                <td class="px-4 py-2.5 text-xs text-slate-600 dark:text-[#bcc9c7] font-mono tabular-nums">
                   {{ formatDateTime(h.createdAt) }}
                 </td>
-                <td class="px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100">
+                <td class="px-4 py-2.5 text-sm text-slate-900 dark:text-[#e3e2e2]">
                   {{ h.stock.product.name }}
                 </td>
                 <td class="px-4 py-2.5 text-center">
@@ -242,17 +245,17 @@
                 <td class="px-4 py-2.5 text-center">
                   <span
                     :class="[
-                      'text-xs font-mono font-semibold',
+                      'text-xs font-mono tabular-nums font-semibold',
                       h.quantityChange > 0 ? 'text-emerald-600' : 'text-red-600',
                     ]"
                   >
                     {{ h.quantityChange > 0 ? '+' : '' }}{{ h.quantityChange }}
                   </span>
-                  <span class="text-[10px] text-slate-400 ml-1">
+                  <span class="text-[10px] text-slate-400 dark:text-[#869392] ml-1">
                     ({{ h.quantityBefore }} → {{ h.quantityAfter }})
                   </span>
                 </td>
-                <td class="px-4 py-2.5 text-xs text-slate-600 max-w-[200px] truncate">
+                <td class="px-4 py-2.5 text-xs text-slate-600 dark:text-[#bcc9c7] max-w-[200px] truncate">
                   {{ h.notes || '—' }}
                 </td>
               </tr>
@@ -263,24 +266,24 @@
         <!-- History pagination -->
         <div
           v-if="historyMeta && historyMeta.totalPages > 1"
-          class="px-4 py-3 border-t border-slate-200 flex items-center justify-between"
+          class="px-4 py-3 border-t border-slate-200 dark:border-[#3d4948] flex items-center justify-between"
         >
-          <p class="text-xs text-slate-500 dark:text-slate-400">
+          <p class="text-xs text-slate-500 dark:text-[#bcc9c7]">
             Halaman {{ historyMeta.page }} dari {{ historyMeta.totalPages }}
           </p>
           <div class="flex items-center gap-1">
             <button
               :disabled="historyMeta.page <= 1"
-              class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md
-                     hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+              class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md
+                     hover:bg-slate-50 dark:hover:bg-[#292a2a] disabled:opacity-40 disabled:cursor-not-allowed dark:text-[#bcc9c7]"
               @click="fetchHistory(historyMeta!.page - 1)"
             >
               Prev
             </button>
             <button
               :disabled="historyMeta.page >= historyMeta.totalPages"
-              class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md
-                     hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+              class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md
+                     hover:bg-slate-50 dark:hover:bg-[#292a2a] disabled:opacity-40 disabled:cursor-not-allowed dark:text-[#bcc9c7]"
               @click="fetchHistory(historyMeta!.page + 1)"
             >
               Next
@@ -289,9 +292,9 @@
         </div>
       </div>
 
-      <div v-else class="bg-white border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-8 text-center">
-        <HistoryIcon class="w-8 h-8 text-slate-300 mx-auto mb-2" />
-        <p class="text-xs text-slate-500 dark:text-slate-400">Belum ada riwayat stok.</p>
+      <div v-else class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-300 dark:border-[#3d4948] rounded-xl p-8 text-center">
+        <HistoryIcon class="w-12 h-12 text-slate-300 dark:text-[#3d4948] mx-auto mb-2" />
+        <p class="text-sm font-bold text-slate-500 dark:text-[#bcc9c7]">Belum ada riwayat stok.</p>
       </div>
     </section>
 
@@ -305,24 +308,24 @@
       >
         <div class="absolute inset-0 bg-black/50" @click="showRestockModal = false"></div>
         <form
-          class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4"
+          class="relative bg-white dark:bg-[#1e2020] rounded-xl shadow-xl w-full max-w-md p-6 space-y-4"
           @submit.prevent="handleRestock"
         >
-          <h2 class="text-base font-bold text-slate-950 flex items-center gap-2">
+          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2] flex items-center gap-2">
             <PackagePlusIcon class="w-5 h-5 text-emerald-600" />
             Restok Produk
           </h2>
 
           <!-- Product select -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
               Produk <span class="text-red-500">*</span>
             </label>
             <select
               v-model="restockForm.productId"
               required
-              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                     focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md
+                     focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
             >
               <option value="">— Pilih produk —</option>
               <option v-for="item in stockItems" :key="item.productId" :value="item.productId">
@@ -333,7 +336,7 @@
 
           <!-- Quantity -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
               Jumlah Masuk <span class="text-red-500">*</span>
             </label>
             <input
@@ -342,26 +345,26 @@
               min="1"
               required
               placeholder="25"
-              class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                     focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md
+                     focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
             />
           </div>
 
           <!-- Notes -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan</label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Catatan</label>
             <input
               v-model="restockForm.notes"
               type="text"
               placeholder="Restok dari supplier X"
-              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                     focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md
+                     focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
             />
           </div>
 
           <div
             v-if="restockError"
-            class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700"
+            class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300"
           >
             {{ restockError }}
           </div>
@@ -369,8 +372,8 @@
           <div class="flex items-center justify-end gap-2 pt-2">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 dark:bg-slate-800 rounded-md
-                     hover:bg-slate-200"
+              class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 dark:bg-[#292a2a] rounded-md
+                     hover:bg-slate-200 dark:hover:bg-[#3d4948]"
               @click="showRestockModal = false"
             >
               Batal
@@ -399,14 +402,14 @@
       >
         <div class="absolute inset-0 bg-black/50" @click="showOpnameModal = false"></div>
         <form
-          class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto"
+          class="relative bg-white dark:bg-[#1e2020] rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto"
           @submit.prevent="handleOpname"
         >
-          <h2 class="text-base font-bold text-slate-950 flex items-center gap-2">
+          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2] flex items-center gap-2">
             <ClipboardCheckIcon class="w-5 h-5 text-blue-600" />
             Stok Opname
           </h2>
-          <p class="text-xs text-slate-500 dark:text-slate-400">
+          <p class="text-xs text-slate-500 dark:text-[#869392]">
             Input stok fisik aktual per produk. Sistem otomatis hitung selisih.
           </p>
 
@@ -415,39 +418,39 @@
             <div
               v-for="item in opnameItems"
               :key="item.productId"
-              class="flex items-center gap-3 bg-slate-50 dark:bg-slate-800/50 rounded-md px-3 py-2"
+              class="flex items-center gap-3 bg-slate-50 dark:bg-[#292a2a] rounded-md px-3 py-2"
             >
               <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium text-slate-900 truncate">
+                <p class="text-xs font-medium text-slate-900 dark:text-[#e3e2e2] truncate">
                   {{ item.productName }}
                 </p>
-                <p class="text-[10px] text-slate-500 dark:text-slate-400">Sistem: {{ item.systemQty }}</p>
+                <p class="text-[10px] text-slate-500 dark:text-[#869392]">Sistem: {{ item.systemQty }}</p>
               </div>
               <input
                 v-model.number="item.actualQuantity"
                 type="number"
                 min="0"
-                class="w-20 h-8 px-2 text-sm font-mono text-center border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+                class="w-20 h-8 px-2 text-sm font-mono text-center border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md
+                       focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
               />
             </div>
           </div>
 
           <!-- Notes -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan Opname</label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Catatan Opname</label>
             <input
               v-model="opnameNotes"
               type="text"
               placeholder="Opname bulanan Mei 2026"
-              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md
-                     focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md
+                     focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
             />
           </div>
 
           <div
             v-if="opnameError"
-            class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700"
+            class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300"
           >
             {{ opnameError }}
           </div>
@@ -468,8 +471,8 @@
           <div class="flex items-center justify-end gap-2 pt-2">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 dark:bg-slate-800 rounded-md
-                     hover:bg-slate-200"
+              class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 dark:bg-[#292a2a] rounded-md
+                     hover:bg-slate-200 dark:hover:bg-[#3d4948]"
               @click="showOpnameModal = false"
             >
               {{ opnameResult ? 'Tutup' : 'Batal' }}
@@ -478,8 +481,8 @@
               v-if="!opnameResult"
               type="submit"
               :disabled="opnaming"
-              class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md
-                     hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5"
+              class="h-9 px-4 text-xs font-semibold text-white bg-[#03a29c] rounded-md
+                     hover:bg-[#028a85] disabled:opacity-50 flex items-center gap-1.5"
             >
               <Loader2Icon v-if="opnaming" class="w-3.5 h-3.5 animate-spin" />
               Submit Opname
