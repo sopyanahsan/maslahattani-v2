@@ -1,23 +1,23 @@
 <template>
   <div
-    class="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden"
+    class="rounded-lg border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] overflow-hidden"
   >
     <div
-      class="px-4 sm:px-5 py-3 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between"
+      class="px-4 sm:px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] flex items-center justify-between"
     >
       <div>
-        <h3 class="text-sm font-bold text-slate-950 dark:text-slate-100">
+        <h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">
           Grafik Penjualan
         </h3>
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">
+        <p class="text-[11px] text-slate-500 dark:text-[#bcc9c7]">
           {{ subtitle }}
         </p>
       </div>
       <div class="flex items-center gap-3">
-        <span class="flex items-center gap-1.5 text-[10px] text-slate-600 dark:text-slate-400">
+        <span class="flex items-center gap-1.5 text-[10px] text-slate-600 dark:text-[#bcc9c7]">
           <span class="w-3 h-3 rounded-full bg-[#00A19B] inline-block" /> Omzet
         </span>
-        <span class="flex items-center gap-1.5 text-[10px] text-slate-600 dark:text-slate-400">
+        <span class="flex items-center gap-1.5 text-[10px] text-slate-600 dark:text-[#bcc9c7]">
           <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block" /> Profit
         </span>
       </div>
@@ -26,13 +26,13 @@
     <div class="p-4 sm:p-5">
       <!-- Loading -->
       <div v-if="loading" class="h-56 flex items-center justify-center">
-        <div class="w-8 h-8 border-4 border-slate-200 dark:border-slate-700 border-t-[#00A19B] rounded-full animate-spin" />
+        <div class="w-8 h-8 border-4 border-slate-200 dark:border-[#3d4948] border-t-[#00A19B] rounded-full animate-spin" />
       </div>
 
       <!-- Empty: no transactions at all -->
       <div
         v-else-if="activePoints.length === 0"
-        class="h-56 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500"
+        class="h-56 flex flex-col items-center justify-center text-slate-400 dark:text-[#bcc9c7]"
       >
         <svg class="w-10 h-10 mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 13l4-4 4 4 4-8 4 4"/><path stroke-linecap="round" stroke-width="1.5" d="M3 18h18"/></svg>
         <p class="text-sm font-semibold">Belum ada transaksi</p>
@@ -55,11 +55,11 @@
           <div class="flex-1 relative h-56" ref="chartContainer">
             <!-- Grid lines (horizontal) -->
             <div class="absolute inset-0 flex flex-col justify-between pointer-events-none">
-              <div class="border-b border-dashed border-slate-100 dark:border-slate-800" />
-              <div class="border-b border-dashed border-slate-100 dark:border-slate-800" />
-              <div class="border-b border-dashed border-slate-100 dark:border-slate-800" />
-              <div class="border-b border-dashed border-slate-100 dark:border-slate-800" />
-              <div class="border-b border-slate-200 dark:border-slate-700" />
+              <div class="border-b border-dashed border-slate-100 dark:border-[#3d4948]" />
+              <div class="border-b border-dashed border-slate-100 dark:border-[#3d4948]" />
+              <div class="border-b border-dashed border-slate-100 dark:border-[#3d4948]" />
+              <div class="border-b border-dashed border-slate-100 dark:border-[#3d4948]" />
+              <div class="border-b border-slate-200 dark:border-[#3d4948]" />
             </div>
 
             <!-- SVG Chart -->

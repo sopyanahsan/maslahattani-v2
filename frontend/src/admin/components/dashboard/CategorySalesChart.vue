@@ -1,12 +1,12 @@
 <template>
   <div
-    class="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 overflow-hidden"
+    class="rounded-lg border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] overflow-hidden"
   >
-    <div class="px-4 sm:px-5 py-3 border-b border-slate-200 dark:border-slate-800">
-      <h3 class="text-sm font-bold text-slate-950 dark:text-slate-100">
+    <div class="px-4 sm:px-5 py-3 border-b border-slate-200 dark:border-[#3d4948]">
+      <h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">
         Penjualan per Kategori
       </h3>
-      <p class="text-[11px] text-slate-500 dark:text-slate-400">
+      <p class="text-[11px] text-slate-500 dark:text-[#bcc9c7]">
         Proporsi omzet per kategori produk
       </p>
     </div>
@@ -15,15 +15,15 @@
       <!-- Loading -->
       <div v-if="loading" class="space-y-3">
         <div v-for="i in 5" :key="i" class="flex items-center gap-3 animate-pulse">
-          <div class="h-4 w-20 bg-slate-200 dark:bg-slate-800 rounded" />
-          <div class="flex-1 h-4 bg-slate-200 dark:bg-slate-800 rounded" />
+          <div class="h-4 w-20 bg-slate-200 dark:bg-[#292a2a] rounded" />
+          <div class="flex-1 h-4 bg-slate-200 dark:bg-[#292a2a] rounded" />
         </div>
       </div>
 
       <!-- Empty -->
       <div
         v-else-if="sortedCategories.length === 0"
-        class="py-8 text-center text-slate-400 dark:text-slate-500"
+        class="py-8 text-center text-slate-400 dark:text-[#bcc9c7]"
       >
         <p class="text-xs">Belum ada data kategori</p>
       </div>
@@ -37,11 +37,11 @@
         >
           <div class="flex items-center gap-3">
             <!-- Category name -->
-            <span class="text-[11px] font-medium text-slate-700 dark:text-slate-300 w-24 shrink-0 truncate">
+            <span class="text-[11px] font-medium text-slate-700 dark:text-[#bcc9c7] w-24 shrink-0 truncate">
               {{ cat.name || 'Lainnya' }}
             </span>
             <!-- Bar -->
-            <div class="flex-1 h-6 bg-slate-100 dark:bg-slate-800 rounded-md overflow-hidden relative">
+            <div class="flex-1 h-6 bg-slate-100 dark:bg-[#292a2a] rounded-md overflow-hidden relative">
               <div
                 :class="['h-full rounded-md transition-all duration-500', COLORS[idx % COLORS.length]]"
                 :style="{ width: barWidth(cat.revenue) }"
@@ -54,18 +54,18 @@
               </div>
             </div>
             <!-- Value -->
-            <span class="text-[10px] font-mono text-slate-600 dark:text-slate-400 w-14 shrink-0 text-right">
+            <span class="text-[10px] font-mono text-slate-600 dark:text-[#bcc9c7] w-14 shrink-0 text-right">
               {{ formatCompact(cat.revenue) }}
             </span>
           </div>
         </div>
 
         <!-- Legend -->
-        <div class="flex flex-wrap gap-2 pt-3 border-t border-slate-100 dark:border-slate-800 mt-3">
+        <div class="flex flex-wrap gap-2 pt-3 border-t border-slate-100 dark:border-[#3d4948] mt-3">
           <span
             v-for="(cat, idx) in sortedCategories"
             :key="`leg-${cat.name}`"
-            class="inline-flex items-center gap-1 text-[9px] text-slate-600 dark:text-slate-400"
+            class="inline-flex items-center gap-1 text-[9px] text-slate-600 dark:text-[#bcc9c7]"
           >
             <span :class="['w-2 h-2 rounded-sm inline-block', COLORS[idx % COLORS.length]]" />
             {{ cat.name || 'Lainnya' }}: {{ cat.percentage }}%
