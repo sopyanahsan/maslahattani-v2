@@ -1,30 +1,30 @@
 <template>
   <div
-    class="rounded-lg border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] p-4 sm:p-5 shadow-sm transition-colors hover:border-slate-300 dark:hover:border-[#5fd9d2]/40"
+    class="rounded-lg border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] p-4 sm:p-6 shadow-sm transition-all hover:border-slate-300 dark:hover:border-[#5fd9d2]/40 hover:shadow-md"
   >
     <div class="flex items-start justify-between mb-3">
       <div
         :class="[
-          'w-9 h-9 rounded-lg flex items-center justify-center',
+          'p-2 rounded-lg flex items-center justify-center',
           toneIconBg,
         ]"
       >
-        <component :is="icon" :class="['w-4 h-4', toneIconColor]" />
+        <component :is="icon" :class="['w-5 h-5', toneIconColor]" />
       </div>
 
       <span
         v-if="!loading && previousValue !== undefined && previousValue !== null"
         :class="[
-          'text-[11px] font-semibold flex items-center gap-0.5',
+          'text-xs font-semibold flex items-center gap-0.5',
           deltaColor,
         ]"
       >
-        <component :is="deltaIcon" class="w-3 h-3" />
+        <component :is="deltaIcon" class="w-3.5 h-3.5" />
         {{ formatPercent(changePercent) }}
       </span>
     </div>
 
-    <p class="text-[11px] sm:text-xs mb-1 text-slate-500 dark:text-[#bcc9c7]">
+    <p class="text-xs text-slate-600 dark:text-[#bcc9c7] mb-1">
       {{ label }}
     </p>
 
@@ -34,14 +34,14 @@
     />
     <p
       v-else
-      class="text-lg sm:text-xl font-bold font-mono leading-tight break-words text-slate-950 dark:text-[#e3e2e2]"
+      class="text-xl sm:text-2xl font-bold font-mono leading-tight break-words text-slate-950 dark:text-[#e3e2e2]"
     >
       {{ formattedValue }}
     </p>
 
     <p
       v-if="!loading && previousValue !== undefined && previousValue !== null"
-      class="text-[10px] text-slate-400 dark:text-[#869392] mt-1"
+      class="text-[10px] text-slate-400 dark:text-[#869392] mt-1.5 font-medium"
     >
       Sebelumnya: {{ formatValue(previousValue) }}
     </p>
@@ -64,7 +64,6 @@ const props = withDefaults(
     label: string;
     value: number;
     previousValue?: number | null;
-    /** Optional pre-computed change %; kalau gak di-pass, di-derive dari value/previousValue. */
     changePercent?: number;
     icon: Component;
     tone?: Tone;
@@ -98,7 +97,7 @@ const deltaColor = computed(() => {
   if (changePercent.value > 0)
     return 'text-emerald-600 dark:text-emerald-400';
   if (changePercent.value < 0) return 'text-red-600 dark:text-red-400';
-  return 'text-slate-500 dark:text-slate-400';
+  return 'text-slate-500 dark:text-[#869392]';
 });
 
 const deltaIcon = computed<Component>(() => {
@@ -114,7 +113,7 @@ const toneIconBg = computed(() => {
     emerald: 'bg-emerald-100 dark:bg-emerald-900/30',
     amber: 'bg-amber-100 dark:bg-amber-900/30',
     red: 'bg-red-100 dark:bg-red-900/30',
-    slate: 'bg-slate-100 dark:bg-slate-800',
+    slate: 'bg-slate-100 dark:bg-[#292a2a]',
   };
   return map[props.tone];
 });
@@ -126,7 +125,7 @@ const toneIconColor = computed(() => {
     emerald: 'text-emerald-600 dark:text-emerald-400',
     amber: 'text-amber-600 dark:text-amber-400',
     red: 'text-red-600 dark:text-red-400',
-    slate: 'text-slate-700 dark:text-slate-300',
+    slate: 'text-slate-700 dark:text-[#bcc9c7]',
   };
   return map[props.tone];
 });

@@ -4,21 +4,21 @@
     <!-- STICKY TOP BAR                                -->
     <!-- ============================================ -->
     <div
-      class="sticky top-0 lg:top-16 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-slate-50/95 dark:bg-[#121414]/95 backdrop-blur border-b border-slate-200 dark:border-[#3d4948] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+      class="sticky top-0 lg:top-16 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3.5 bg-white/95 dark:bg-[#121414]/95 backdrop-blur-sm border-b border-slate-200 dark:border-[#3d4948] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shadow-sm"
     >
       <!-- Period selector -->
       <div
-        class="inline-flex items-center gap-1 bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-1 self-start"
+        class="inline-flex items-center gap-0.5 bg-slate-100 dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-1 self-start"
       >
         <button
           v-for="p in periods"
           :key="p.value"
           type="button"
           :class="[
-            'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
+            'px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all',
             store.period === p.value
               ? 'bg-[#03a29c] text-white shadow-sm'
-              : 'text-slate-600 dark:text-[#bcc9c7] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
+              : 'text-slate-600 dark:text-[#bcc9c7] hover:text-slate-900 dark:hover:text-[#e3e2e2] hover:bg-white dark:hover:bg-[#292a2a]',
           ]"
           @click="setPeriod(p.value)"
         >
@@ -28,7 +28,7 @@
 
       <!-- Last updated indicator -->
       <div class="flex items-center gap-2 flex-wrap">
-        <span class="text-[11px] text-slate-500 dark:text-slate-400">
+        <span class="text-[11px] text-slate-500 dark:text-[#869392] font-medium">
           {{ lastUpdatedLabel }}
         </span>
       </div>
@@ -39,12 +39,15 @@
     <!-- ============================================ -->
     <div
       v-if="!shopId"
-      class="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 p-6 text-center"
+      class="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-950/30 p-8 text-center shadow-sm"
     >
-      <p class="text-sm font-semibold text-amber-800 dark:text-amber-200">
+      <div class="w-12 h-12 mx-auto mb-3 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
+        <component :is="AlertTriangleIcon" class="w-6 h-6 text-amber-600 dark:text-amber-400" />
+      </div>
+      <p class="text-sm font-bold text-amber-800 dark:text-amber-200">
         Silakan pilih cabang terlebih dahulu
       </p>
-      <p class="text-xs text-amber-700 dark:text-amber-300 mt-1">
+      <p class="text-xs text-amber-700 dark:text-amber-300 mt-1.5 leading-relaxed">
         Dashboard butuh konteks cabang aktif untuk memuat data.
       </p>
     </div>
@@ -364,21 +367,21 @@ const SectionWrapper: FunctionalComponent<
       'div',
       {
         class:
-          'rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 p-4 flex items-start gap-3',
+          'rounded-lg border border-red-200 dark:border-red-900/50 bg-red-50 dark:bg-red-950/30 p-5 flex items-start gap-3 shadow-sm',
       },
       [
         h(AlertTriangleIcon, {
-          class: 'w-4 h-4 text-red-600 dark:text-red-400 shrink-0 mt-0.5',
+          class: 'w-5 h-5 text-red-600 dark:text-red-400 shrink-0 mt-0.5',
         }),
         h('div', { class: 'flex-1 min-w-0' }, [
           h(
             'p',
-            { class: 'text-sm font-semibold text-red-800 dark:text-red-200' },
+            { class: 'text-sm font-bold text-red-800 dark:text-red-200' },
             'Section gagal dimuat',
           ),
           h(
             'p',
-            { class: 'text-[11px] text-red-700 dark:text-red-300 mt-0.5 break-words' },
+            { class: 'text-[11px] text-red-700 dark:text-red-300 mt-1 break-words leading-relaxed' },
             props.error,
           ),
           h(
@@ -386,7 +389,7 @@ const SectionWrapper: FunctionalComponent<
             {
               type: 'button',
               class:
-                'mt-2 text-[11px] font-semibold text-red-700 dark:text-red-300 hover:underline',
+                'mt-2.5 text-[11px] font-semibold text-red-700 dark:text-red-300 hover:underline underline-offset-2',
               onClick: () => emit('retry'),
             },
             'Coba lagi →',

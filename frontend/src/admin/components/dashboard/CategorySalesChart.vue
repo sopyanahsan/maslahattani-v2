@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded-lg border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] overflow-hidden"
+    class="rounded-lg border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] overflow-hidden shadow-sm"
   >
     <div class="px-4 sm:px-5 py-3 border-b border-slate-200 dark:border-[#3d4948]">
       <h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">

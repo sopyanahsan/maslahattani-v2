@@ -1,13 +1,13 @@
 <template>
   <div
     :class="[
-      'rounded-lg border p-4 sm:p-5 flex flex-col gap-2 transition-colors',
+      'rounded-lg border p-4 sm:p-5 flex flex-col gap-2 transition-colors shadow-sm',
       cardClass,
     ]"
   >
     <div class="flex items-start gap-3">
-      <div :class="['w-9 h-9 rounded-lg flex items-center justify-center shrink-0', iconBg]">
-        <component :is="resolvedIcon" :class="['w-4 h-4', iconColor]" />
+      <div :class="['w-10 h-10 rounded-lg flex items-center justify-center shrink-0', iconBg]">
+        <component :is="resolvedIcon" :class="['w-5 h-5', iconColor]" />
       </div>
       <div class="min-w-0 flex-1">
         <div class="flex items-center justify-between gap-2">
@@ -25,7 +25,7 @@
           </span>
         </div>
         <p
-          class="text-[11px] mt-0.5 leading-snug"
+          class="text-[11px] mt-1 leading-relaxed"
           :class="descColor"
         >
           {{ description }}
@@ -35,11 +35,11 @@
 
     <slot />
 
-    <div v-if="actionLabel && actionTo && !allClear" class="mt-1">
+    <div v-if="actionLabel && actionTo && !allClear" class="mt-2">
       <RouterLink
         :to="actionTo"
         :class="[
-          'inline-flex items-center gap-1 text-[11px] font-semibold underline-offset-2 hover:underline',
+          'inline-flex items-center gap-1 text-[11px] font-semibold underline-offset-2 hover:underline transition-colors',
           actionColor,
         ]"
       >
