@@ -1,23 +1,26 @@
 <template>
-  <div class="min-h-screen bg-slate-50">
-    <!-- Topbar -->
-    <header class="sticky top-0 z-30 bg-white border-b border-slate-200 px-4 sm:px-6 h-14 flex items-center justify-between">
+  <div class="min-h-screen bg-slate-50 font-sans">
+    <!-- Topbar — premium dark gradient -->
+    <header class="sticky top-0 z-30 bg-gradient-to-r from-slate-900 via-purple-900 to-indigo-900 px-4 sm:px-6 h-14 flex items-center justify-between shadow-lg">
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        <div class="w-8 h-8 rounded-lg bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center">
+          <svg class="w-5 h-5 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
         </div>
         <div>
-          <h1 class="text-sm font-bold text-slate-900">Posify Owner</h1>
-          <p class="text-[10px] text-slate-500">Platform Dashboard</p>
+          <h1 class="text-sm font-bold text-white">Posify Owner</h1>
+          <p class="text-[10px] text-purple-300">Platform Dashboard</p>
         </div>
       </div>
-      <a href="/admin/home" class="text-[11px] font-semibold text-blue-600 hover:underline">← Admin Panel</a>
+      <a href="/admin/home" class="h-7 px-3 text-[11px] font-semibold text-purple-200 bg-white/10 border border-white/20 rounded-md hover:bg-white/20 transition-colors flex items-center gap-1">
+        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Admin Panel
+      </a>
     </header>
 
-    <!-- Tabs -->
+    <!-- Tabs — pill style -->
     <div class="sticky top-14 z-20 bg-white border-b border-slate-200 px-4 sm:px-6">
-      <div class="flex gap-1 py-2 overflow-x-auto">
-        <button v-for="t in tabs" :key="t.key" :class="['shrink-0 h-8 px-4 text-xs font-semibold rounded-md transition-colors', activeTab === t.key ? 'bg-purple-100 text-purple-700' : 'text-slate-600 hover:bg-slate-100']" @click="activeTab = t.key">{{ t.label }}</button>
+      <div class="flex gap-1 py-2.5 overflow-x-auto">
+        <button v-for="t in tabs" :key="t.key" :class="['shrink-0 h-8 px-4 text-xs font-semibold rounded-md transition-all', activeTab === t.key ? 'bg-purple-600 text-white shadow-sm shadow-purple-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-950']" @click="activeTab = t.key">{{ t.label }}</button>
       </div>
     </div>
 
@@ -29,21 +32,21 @@
       <template v-if="activeTab === 'dashboard'">
         <!-- KPI Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
-            <p class="text-[9px] font-bold uppercase text-slate-400">Total Tenant</p>
-            <p class="text-2xl font-bold text-slate-900 mt-1">{{ stats.totalTenants }}</p>
+          <div class="kpi-card bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Total Tenant</p>
+            <p class="text-2xl font-bold text-slate-950 mt-1 font-mono">{{ stats.totalTenants }}</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
-            <p class="text-[9px] font-bold uppercase text-slate-400">Aktif (Bayar)</p>
-            <p class="text-2xl font-bold text-emerald-600 mt-1">{{ stats.activeSubs }}</p>
+          <div class="kpi-card bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Aktif (Bayar)</p>
+            <p class="text-2xl font-bold text-emerald-600 mt-1 font-mono">{{ stats.activeSubs }}</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
-            <p class="text-[9px] font-bold uppercase text-slate-400">Trial</p>
-            <p class="text-2xl font-bold text-blue-600 mt-1">{{ stats.trialSubs }}</p>
+          <div class="kpi-card bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Trial</p>
+            <p class="text-2xl font-bold text-blue-600 mt-1 font-mono">{{ stats.trialSubs }}</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
-            <p class="text-[9px] font-bold uppercase text-slate-400">Revenue Total</p>
-            <p class="text-xl font-bold text-slate-900 mt-1">{{ formatRupiah(stats.totalRevenue) }}</p>
+          <div class="kpi-card bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Revenue Total</p>
+            <p class="text-xl font-bold text-slate-950 mt-1 font-mono">{{ formatRupiah(stats.totalRevenue) }}</p>
           </div>
         </div>
 
@@ -58,10 +61,10 @@
             <div v-if="expiringSoon.length === 0" class="p-6 text-center">
               <p class="text-xs text-slate-500">Tidak ada yang expire dalam 7 hari.</p>
             </div>
-            <div v-else class="divide-y divide-slate-100 max-h-[280px] overflow-y-auto">
+            <div v-else class="divide-y divide-slate-200 max-h-[280px] overflow-y-auto">
               <div v-for="t in expiringSoon" :key="t.id" class="px-5 py-3 flex items-center justify-between">
                 <div>
-                  <p class="text-xs font-semibold text-slate-900">{{ t.name }}</p>
+                  <p class="text-xs font-semibold text-slate-950">{{ t.name }}</p>
                   <p class="text-[10px] text-slate-500">{{ t.ownerPhone }} • expire {{ formatDate(t.subscription?.endDate) }}</p>
                 </div>
                 <div class="flex items-center gap-2">
@@ -80,7 +83,7 @@
             <div v-if="recentActivity.length === 0" class="p-6 text-center">
               <p class="text-xs text-slate-500">Belum ada aktivitas.</p>
             </div>
-            <div v-else class="divide-y divide-slate-100 max-h-[280px] overflow-y-auto">
+            <div v-else class="divide-y divide-slate-200 max-h-[280px] overflow-y-auto">
               <div v-for="a in recentActivity" :key="a.id" class="px-5 py-3 flex items-start gap-3">
                 <span :class="['w-2 h-2 rounded-full shrink-0 mt-1.5', activityDot(a.type)]"></span>
                 <div>
@@ -94,17 +97,17 @@
 
         <!-- Conversion + Revenue Row -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
-            <p class="text-[9px] font-bold uppercase text-slate-400">Conversion (Trial→Bayar)</p>
-            <p class="text-xl font-bold text-indigo-600 mt-1">{{ stats.totalTenants > 0 ? Math.round((stats.activeSubs / stats.totalTenants) * 100) : 0 }}%</p>
+          <div class="kpi-card bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Conversion (Trial→Bayar)</p>
+            <p class="text-xl font-bold text-indigo-600 mt-1 font-mono">{{ stats.totalTenants > 0 ? Math.round((stats.activeSubs / stats.totalTenants) * 100) : 0 }}%</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
-            <p class="text-[9px] font-bold uppercase text-slate-400">Expired/Suspend</p>
-            <p class="text-xl font-bold text-red-500 mt-1">{{ stats.expiredSubs }}</p>
+          <div class="kpi-card bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Expired/Suspend</p>
+            <p class="text-xl font-bold text-red-600 mt-1 font-mono">{{ stats.expiredSubs }}</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
-            <p class="text-[9px] font-bold uppercase text-slate-400">Pending Bayar</p>
-            <p class="text-xl font-bold text-amber-500 mt-1">{{ stats.pendingPayments }}</p>
+          <div class="kpi-card bg-white border border-slate-200 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow">
+            <p class="text-[9px] font-bold uppercase tracking-wider text-slate-400">Pending Bayar</p>
+            <p class="text-xl font-bold text-amber-600 mt-1 font-mono">{{ stats.pendingPayments }}</p>
           </div>
         </div>
       </template>
@@ -141,10 +144,10 @@
                   <th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 uppercase">Aksi</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100">
+              <tbody class="divide-y divide-slate-200">
                 <tr v-for="t in tenants" :key="t.id" class="hover:bg-slate-50/50">
                   <td class="px-4 py-3">
-                    <p class="text-xs font-semibold text-slate-900">{{ t.name }}</p>
+                    <p class="text-xs font-semibold text-slate-950">{{ t.name }}</p>
                     <p class="text-[10px] text-slate-500">{{ t.shopCount }} cabang • {{ t.userCount || 0 }} user</p>
                   </td>
                   <td class="px-4 py-3">
@@ -179,16 +182,16 @@
       <template v-if="activeTab === 'payments'">
         <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
           <div class="px-5 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-            <h3 class="text-sm font-bold text-slate-900">Pending Payments</h3>
+            <h3 class="text-sm font-bold text-slate-950">Pending Payments</h3>
             <button class="text-[10px] font-semibold text-blue-600 hover:underline" @click="fetchPayments">Refresh</button>
           </div>
           <div v-if="pendingPayments.length === 0" class="p-10 text-center">
             <p class="text-xs text-slate-500">Tidak ada pembayaran pending.</p>
           </div>
-          <div v-else class="divide-y divide-slate-100">
+          <div v-else class="divide-y divide-slate-200">
             <div v-for="p in pendingPayments" :key="p.id" class="px-5 py-4 flex items-center justify-between gap-3">
               <div class="min-w-0">
-                <p class="text-xs font-semibold text-slate-900 truncate">{{ p.tenant?.name }} — {{ p.plan }} ({{ p.cycle }})</p>
+                <p class="text-xs font-semibold text-slate-950 truncate">{{ p.tenant?.name }} — {{ p.plan }} ({{ p.cycle }})</p>
                 <p class="text-[10px] text-slate-500">{{ p.method }} • Rp {{ p.amount?.toLocaleString('id-ID') }} • {{ new Date(p.createdAt).toLocaleDateString('id-ID') }}</p>
                 <p v-if="p.uniqueCode" class="text-[10px] text-amber-600 font-mono">Kode: {{ p.uniqueCode }}</p>
               </div>
@@ -212,11 +215,11 @@
           <div v-if="expiringSoon.length === 0" class="p-10 text-center">
             <p class="text-xs text-slate-500">Semua tenant aman — tidak ada yang expire dalam 7 hari.</p>
           </div>
-          <div v-else class="divide-y divide-slate-100">
+          <div v-else class="divide-y divide-slate-200">
             <div v-for="t in expiringSoon" :key="t.id" class="px-5 py-4">
               <div class="flex items-center justify-between mb-2">
                 <div>
-                  <p class="text-xs font-semibold text-slate-900">{{ t.name }} — {{ t.ownerName }}</p>
+                  <p class="text-xs font-semibold text-slate-950">{{ t.name }} — {{ t.ownerName }}</p>
                   <p class="text-[10px] text-slate-500">{{ t.ownerPhone }} • Plan: {{ t.subscription?.plan }} • Expire: {{ formatDate(t.subscription?.endDate) }}</p>
                 </div>
                 <span :class="['px-1.5 py-0.5 text-[8px] font-bold rounded', daysUntil(t.subscription?.endDate) <= 1 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700']">H-{{ daysUntil(t.subscription?.endDate) }}</span>
@@ -240,16 +243,16 @@
       <template v-if="activeTab === 'system'">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div class="bg-white border border-slate-200 rounded-lg p-5">
-            <h3 class="text-sm font-bold text-slate-900 mb-3">Maintenance Mode</h3>
+            <h3 class="text-sm font-bold text-slate-950 mb-3">Maintenance Mode</h3>
             <p class="text-xs text-slate-500 mb-3">Block akses semua tenant (kecuali owner) saat maintenance.</p>
             <button :class="['h-9 px-4 text-xs font-bold rounded-lg transition-colors', maintenanceMode ? 'bg-red-600 text-white hover:bg-red-700' : 'bg-slate-200 text-slate-700 hover:bg-slate-300']" @click="toggleMaintenance">
               {{ maintenanceMode ? 'Maintenance ON — Klik untuk OFF' : 'OFF — Klik untuk ON' }}
             </button>
           </div>
           <div class="bg-white border border-slate-200 rounded-lg p-5">
-            <h3 class="text-sm font-bold text-slate-900 mb-3">Quick Stats</h3>
+            <h3 class="text-sm font-bold text-slate-950 mb-3">Quick Stats</h3>
             <ul class="space-y-2 text-xs text-slate-600">
-              <li>Tenants total: <strong class="text-slate-900">{{ stats.totalTenants }}</strong></li>
+              <li>Tenants total: <strong class="text-slate-950">{{ stats.totalTenants }}</strong></li>
               <li>Pending payments: <strong class="text-amber-600">{{ stats.pendingPayments }}</strong></li>
               <li>Expiring (7d): <strong class="text-red-500">{{ expiringSoon.length }}</strong></li>
             </ul>
@@ -263,7 +266,7 @@
       <div v-if="showActivateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50" @click="showActivateModal = false"></div>
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4">
-          <h3 class="text-base font-bold text-slate-900">Activate Subscription</h3>
+          <h3 class="text-base font-bold text-slate-950">Activate Subscription</h3>
           <p class="text-xs text-slate-500">Tenant: <strong>{{ activatingTenant?.name }}</strong></p>
           <select v-model="activatePlan" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg">
             <option value="STARTER">Starter — Rp 29rb/bln</option>
@@ -491,24 +494,84 @@ onMounted(() => { fetchStats(); fetchTenants(); fetchPayments(); });
 .fade-leave-active { transition: opacity 0.3s 1.5s; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 
-/* Fancy CSS */
-@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
-.space-y-6 > * { animation: fadeSlideUp 0.4s ease-out both; }
+/* ── Fancy CSS: Owner Dashboard Premium ── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.space-y-6 > * {
+  animation: fadeSlideUp 0.45s ease-out both;
+}
 .space-y-6 > *:nth-child(1) { animation-delay: 0ms; }
-.space-y-6 > *:nth-child(2) { animation-delay: 80ms; }
-.space-y-6 > *:nth-child(3) { animation-delay: 160ms; }
-.space-y-6 > *:nth-child(4) { animation-delay: 240ms; }
+.space-y-6 > *:nth-child(2) { animation-delay: 100ms; }
+.space-y-6 > *:nth-child(3) { animation-delay: 200ms; }
+.space-y-6 > *:nth-child(4) { animation-delay: 300ms; }
 
-@keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
-.grid > div[class*="rounded-lg"] { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
-.grid > div:nth-child(1) { animation-delay: 100ms; }
-.grid > div:nth-child(2) { animation-delay: 180ms; }
-.grid > div:nth-child(3) { animation-delay: 260ms; }
-.grid > div:nth-child(4) { animation-delay: 340ms; }
+/* KPI card bounce entrance */
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.88); }
+  60% { transform: scale(1.03); }
+  to { opacity: 1; transform: scale(1); }
+}
+.kpi-card {
+  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.kpi-card:nth-child(1) { animation-delay: 100ms; }
+.kpi-card:nth-child(2) { animation-delay: 200ms; }
+.kpi-card:nth-child(3) { animation-delay: 300ms; }
+.kpi-card:nth-child(4) { animation-delay: 400ms; }
 
-table tbody tr { transition: all 0.15s ease; }
-table tbody tr:hover { box-shadow: inset 3px 0 0 #7C3AED; }
+/* Table row hover glow */
+table tbody tr {
+  transition: all 0.15s ease;
+}
+table tbody tr:hover {
+  box-shadow: inset 3px 0 0 #7C3AED;
+}
 
-@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-div[class*="rounded-lg"][class*="shadow-xl"] { animation: scaleIn 0.25s ease-out; }
+/* Topbar gradient shimmer */
+@keyframes topbarShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+header[class*="bg-gradient"] {
+  background-size: 200% 200%;
+  animation: topbarShimmer 8s ease infinite;
+}
+
+/* Modal entrance */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+div[class*="rounded-lg"][class*="shadow-xl"] {
+  animation: scaleIn 0.25s ease-out;
+}
+
+/* Payment verify button pulse */
+button[class*="bg-emerald-600"] {
+  position: relative;
+  overflow: hidden;
+}
+button[class*="bg-emerald-600"]::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  animation: btnShimmer 2s ease-in-out infinite;
+}
+@keyframes btnShimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* Expiring card urgency pulse */
+span[class*="bg-red-100"][class*="text-red-700"] {
+  animation: urgentPulse 1.5s ease-in-out infinite;
+}
+@keyframes urgentPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; transform: scale(1.05); }
+}
 </style>
