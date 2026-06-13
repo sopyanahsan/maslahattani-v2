@@ -1,23 +1,23 @@
 <template>
-  <div class="font-hanken overflow-x-hidden w-full">
+  <div class="font-sans overflow-x-hidden w-full">
 
     <!-- ============================================================ -->
     <!-- STEP 1: Form Transfer                                         -->
     <!-- ============================================================ -->
     <template v-if="step === 'form'">
       <!-- Header -->
-      <div class="shrink-0 px-4 py-3 bg-white dark:bg-[#1e2020] border-b border-slate-200 dark:border-[#3d4948] flex items-center gap-3">
-        <RouterLink to="/brilink/menu" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#292a2a] transition-colors">
-          <ChevronLeftIcon class="w-5 h-5 text-slate-600 dark:text-[#bcc9c7]" />
+      <div class="shrink-0 px-4 py-3 bg-white border-b border-slate-200 flex items-center gap-3">
+        <RouterLink to="/brilink/menu" class="p-1.5 rounded-lg hover:bg-slate-100 transition-colors">
+          <ChevronLeftIcon class="w-5 h-5 text-slate-600" />
         </RouterLink>
         <div>
-          <h1 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ categoryTitle }}</h1>
-          <p class="text-[10px] text-slate-500 dark:text-[#869392]">Pilih sumber dana &amp; isi data tujuan</p>
+          <h1 class="text-base font-bold text-slate-900">{{ categoryTitle }}</h1>
+          <p class="text-[10px] text-slate-500">Pilih sumber dana &amp; isi data tujuan</p>
         </div>
       </div>
 
       <!-- Saldo strip: pilih sumber dana -->
-      <div class="bg-gradient-to-br from-[#00756f] via-[#00A19B] to-[#00bdb6] px-4 py-4 overflow-hidden">
+      <div class="bg-gradient-to-br from-blue-800 via-blue-600 to-blue-500 px-4 py-4 overflow-hidden">
         <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-2">Sumber Dana (pilih rekening)</p>
         <div ref="sourceStrip" class="flex gap-3 overflow-x-auto pb-1 hide-scrollbar snap-x snap-mandatory">
           <!-- Rekening agen -->
@@ -26,7 +26,7 @@
             :key="acc.id"
             type="button"
             :class="[
-              'shrink-0 snap-start w-[55vw] min-w-[180px] max-w-[220px] rounded-2xl px-4 py-3 text-left transition-all border',
+              'shrink-0 snap-start w-[55vw] min-w-[180px] max-w-[220px] rounded-lg px-4 py-3 text-left transition-all border',
               selectedAccountId === acc.id
                 ? 'bg-white/25 border-white/60 shadow-lg scale-[1.02]'
                 : 'bg-white/10 border-white/20 hover:bg-white/15',
@@ -37,7 +37,7 @@
               <CreditCardIcon class="w-3.5 h-3.5 text-white/70" />
               <p class="text-[10px] font-semibold text-white/80 uppercase tracking-wider truncate">{{ acc.label }}</p>
               <span v-if="selectedAccountId === acc.id && !isCustomerCard" class="ml-auto w-4 h-4 rounded-full bg-white/90 flex items-center justify-center">
-                <CheckIcon class="w-2.5 h-2.5 text-[#00756f]" />
+                <CheckIcon class="w-2.5 h-2.5 text-blue-700" />
               </span>
             </div>
             <p class="text-[9px] text-white/50 font-mono">{{ acc.accountNumber }}</p>
@@ -48,7 +48,7 @@
           <button
             type="button"
             :class="[
-              'shrink-0 snap-start w-[55vw] min-w-[180px] max-w-[220px] rounded-2xl px-4 py-3 text-left transition-all border',
+              'shrink-0 snap-start w-[55vw] min-w-[180px] max-w-[220px] rounded-lg px-4 py-3 text-left transition-all border',
               isCustomerCard
                 ? 'bg-amber-400/30 border-amber-300/60 shadow-lg scale-[1.02]'
                 : 'bg-white/10 border-white/20 hover:bg-white/15',
@@ -59,7 +59,7 @@
               <UserIcon class="w-3.5 h-3.5 text-white/70" />
               <p class="text-[10px] font-semibold text-white/80 uppercase tracking-wider">Kartu Customer</p>
               <span v-if="isCustomerCard" class="ml-auto w-4 h-4 rounded-full bg-white/90 flex items-center justify-center">
-                <CheckIcon class="w-2.5 h-2.5 text-[#00756f]" />
+                <CheckIcon class="w-2.5 h-2.5 text-blue-700" />
               </span>
             </div>
             <p class="text-[9px] text-amber-200/80 leading-tight">Uang dari nasabah langsung</p>
@@ -68,14 +68,14 @@
 
           <!-- Empty state -->
           <div v-if="accounts.length === 0 && !accountsLoading"
-            class="shrink-0 snap-start w-[55vw] min-w-[180px] rounded-2xl border border-dashed border-white/30 px-4 py-4 flex flex-col items-center justify-center text-white/50">
+            class="shrink-0 snap-start w-[55vw] min-w-[180px] rounded-lg border border-dashed border-white/30 px-4 py-4 flex flex-col items-center justify-center text-white/50">
             <LandmarkIcon class="w-5 h-5 mb-1" />
             <p class="text-[10px] text-center">Belum ada rekening</p>
           </div>
 
           <!-- Loading -->
           <template v-if="accountsLoading">
-            <div v-for="i in 2" :key="i" class="shrink-0 snap-start w-[55vw] min-w-[180px] max-w-[220px] rounded-2xl bg-white/10 border border-white/20 px-4 py-3 animate-pulse">
+            <div v-for="i in 2" :key="i" class="shrink-0 snap-start w-[55vw] min-w-[180px] max-w-[220px] rounded-lg bg-white/10 border border-white/20 px-4 py-3 animate-pulse">
               <div class="h-3 w-20 rounded bg-white/20 mb-2" />
               <div class="h-5 w-28 rounded bg-white/20" />
             </div>
@@ -84,36 +84,36 @@
       </div>
 
       <!-- Form Fields -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-[#1a1c1c]">
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
 
         <!-- Bank Tujuan -->
         <div v-if="showBankField">
-          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">
             Bank Tujuan <span class="text-red-500">*</span>
           </label>
           <!-- Transfer Sesama BRI: locked -->
           <div v-if="selectedCategory === 'TRANSFER_BRI'"
-            class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-slate-50 dark:bg-[#292a2a] flex items-center text-slate-700 dark:text-[#e3e2e2] font-medium">
-            <LandmarkIcon class="w-4 h-4 text-[#00A19B] dark:text-[#5fd9d2] mr-2 shrink-0" />
+            class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-slate-50 flex items-center text-slate-700 font-medium">
+            <LandmarkIcon class="w-4 h-4 text-blue-600 mr-2 shrink-0" />
             Bank Rakyat Indonesia (BRI)
           </div>
           <!-- Transfer Antar Bank: bisa search & ganti -->
           <button
             v-else
             type="button"
-            class="w-full h-10 px-3 text-left text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] flex items-center justify-between hover:border-[#00A19B] dark:hover:border-[#5fd9d2] transition-colors"
+            class="w-full h-10 px-3 text-left text-sm border border-slate-200 rounded-md bg-white flex items-center justify-between hover:border-blue-400 transition-colors"
             @click="showBankSearch = true"
           >
-            <span :class="form.bankCode ? 'text-slate-900 dark:text-[#e3e2e2] font-medium' : 'text-slate-400 dark:text-[#869392]'">
+            <span :class="form.bankCode ? 'text-slate-900 font-medium' : 'text-slate-400'">
               {{ selectedBankName || 'Cari bank tujuan...' }}
             </span>
-            <SearchIcon class="w-4 h-4 text-slate-400 dark:text-[#869392] shrink-0" />
+            <SearchIcon class="w-4 h-4 text-slate-400 shrink-0" />
           </button>
         </div>
 
         <!-- No Rekening Tujuan (numeric only) — TIDAK tampil untuk TARIK TUNAI -->
         <div v-if="selectedCategory !== 'TARIK_TUNAI'">
-          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">
             {{ destinationLabel }} <span class="text-red-500">*</span>
           </label>
           <input
@@ -123,109 +123,109 @@
             pattern="[0-9]*"
             required
             :placeholder="destinationPlaceholder"
-            class="w-full h-10 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
+            class="w-full h-10 px-3 text-sm font-mono border border-slate-200 rounded-md bg-white text-slate-900 focus:border-blue-600 outline-none"
             @input="filterNumericOnly"
           />
         </div>
 
         <!-- Nama Penerima (opsional) -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
-            Nama Penerima <span class="text-slate-400 dark:text-[#869392] font-normal">(opsional)</span>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+            Nama Penerima <span class="text-slate-400 font-normal">(opsional)</span>
           </label>
           <input
             v-model="form.customerName"
             type="text"
             placeholder="Nama lengkap penerima"
-            class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
+            class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white text-slate-900 focus:border-blue-600 outline-none"
             @input="searchCustomer"
             @focus="showSuggestions = true"
           />
           <!-- Autocomplete -->
           <div v-if="showSuggestions && suggestions.length > 0"
-            class="mt-1 bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl shadow-lg max-h-32 overflow-y-auto z-20 relative">
+            class="mt-1 bg-white border border-slate-200 rounded-md shadow-lg max-h-32 overflow-y-auto z-20 relative">
             <button v-for="s in suggestions" :key="s.id" type="button"
-              class="w-full px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-[#292a2a] border-b border-slate-50 dark:border-[#292a2a] last:border-0"
+              class="w-full px-3 py-2 text-left hover:bg-slate-50 border-b border-slate-50 last:border-0"
               @click="selectSuggestion(s)">
-              <p class="text-xs font-medium text-slate-800 dark:text-[#e3e2e2]">{{ s.name }}</p>
-              <p v-if="s.phone" class="text-[10px] text-slate-400 dark:text-[#869392]">{{ s.phone }}</p>
+              <p class="text-xs font-medium text-slate-800">{{ s.name }}</p>
+              <p v-if="s.phone" class="text-[10px] text-slate-400">{{ s.phone }}</p>
             </button>
           </div>
         </div>
 
         <!-- No HP (optional) -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
-            No. HP Customer <span class="text-slate-400 dark:text-[#869392] font-normal">(opsional)</span>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+            No. HP Customer <span class="text-slate-400 font-normal">(opsional)</span>
           </label>
           <input
             v-model="form.customerPhone"
             type="tel"
             placeholder="08xxxxxxxxxx"
-            class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
+            class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white text-slate-900 focus:border-blue-600 outline-none"
           />
         </div>
 
         <!-- Metode Admin — HANYA untuk Tarik Tunai -->
         <div v-if="selectedCategory === 'TARIK_TUNAI'">
-          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">Metode Admin</label>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">Metode Admin</label>
           <div class="grid grid-cols-3 gap-2">
             <button v-for="m in feeMethodOptions" :key="m.value" type="button"
               :class="[
-                'p-2.5 rounded-xl border text-center transition-all',
+                'p-2.5 rounded-md border text-center transition-all',
                 form.feeMethod === m.value
-                  ? 'border-[#00A19B] dark:border-[#5fd9d2] bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10'
-                  : 'border-slate-200 dark:border-[#3d4948] hover:border-slate-300 dark:hover:border-[#5fd9d2]/30',
+                  ? 'border-blue-600 bg-blue-50'
+                  : 'border-slate-200 hover:border-slate-300',
               ]"
               @click="form.feeMethod = m.value"
             >
-              <p :class="['text-[11px] font-bold', form.feeMethod === m.value ? 'text-[#00756f] dark:text-[#5fd9d2]' : 'text-slate-700 dark:text-[#e3e2e2]']">{{ m.label }}</p>
-              <p class="text-[9px] text-slate-400 dark:text-[#869392] mt-0.5 leading-tight">{{ m.hint }}</p>
+              <p :class="['text-[11px] font-bold', form.feeMethod === m.value ? 'text-blue-700' : 'text-slate-700']">{{ m.label }}</p>
+              <p class="text-[9px] text-slate-400 mt-0.5 leading-tight">{{ m.hint }}</p>
             </button>
           </div>
         </div>
 
         <!-- Nominal (formatted Rupiah) -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">
             Nominal <span class="text-red-500">*</span>
           </label>
           <div class="relative">
-            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400 dark:text-[#869392] pointer-events-none">Rp</span>
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-lg font-bold text-slate-400 pointer-events-none">Rp</span>
             <input
               :value="formatNumber(form.amount)"
               type="text"
               inputmode="numeric"
               required
               placeholder="0"
-              class="w-full h-12 pl-12 pr-4 text-xl font-mono font-bold text-center border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] focus:ring-2 focus:ring-[#00A19B]/20 outline-none"
+              class="w-full h-12 pl-12 pr-4 text-xl font-mono font-bold text-center border border-slate-200 rounded-md bg-white text-slate-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
               @input="onNominalInput"
             />
           </div>
-          <p class="text-[10px] text-slate-400 dark:text-[#869392] mt-1">Minimal transfer Rp 10.000</p>
+          <p class="text-[10px] text-slate-400 mt-1">Minimal transfer Rp 10.000</p>
         </div>
 
         <!-- Fee Preview -->
-        <div v-if="form.amount >= 10000" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl p-3 space-y-1.5">
+        <div v-if="form.amount >= 10000" class="bg-white border border-slate-200 rounded-md p-3 space-y-1.5">
           <div class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Nominal</span>
-            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount) }}</span>
+            <span class="text-slate-500">Nominal</span>
+            <span class="font-mono text-slate-900">{{ formatRupiah(form.amount) }}</span>
           </div>
           <div class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Biaya Sistem <span class="text-[9px]">(potongan bank)</span></span>
-            <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(calculatedSystemFee) }}</span>
+            <span class="text-slate-500">Biaya Sistem <span class="text-[9px]">(potongan bank)</span></span>
+            <span class="font-mono text-slate-600">{{ formatRupiah(calculatedSystemFee) }}</span>
           </div>
           <div class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Biaya Admin <span class="text-[9px]">(charge nasabah)</span></span>
-            <span class="font-mono text-slate-800 dark:text-[#e3e2e2]">{{ formatRupiah(calculatedAdminFee) }}</span>
+            <span class="text-slate-500">Biaya Admin <span class="text-[9px]">(charge nasabah)</span></span>
+            <span class="font-mono text-slate-800">{{ formatRupiah(calculatedAdminFee) }}</span>
           </div>
           <div v-if="selectedCategory !== 'TARIK_TUNAI'" class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Profit Agen</span>
-            <span class="font-mono font-semibold text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedAdminFee - calculatedSystemFee) }}</span>
+            <span class="text-slate-500">Profit Agen</span>
+            <span class="font-mono font-semibold text-blue-600">{{ formatRupiah(calculatedAdminFee - calculatedSystemFee) }}</span>
           </div>
-          <div class="flex justify-between text-sm font-bold border-t border-slate-100 dark:border-[#3d4948] pt-1.5">
-            <span class="text-slate-700 dark:text-[#bcc9c7]">Uang Diterima</span>
-            <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(totalReceived) }}</span>
+          <div class="flex justify-between text-sm font-bold border-t border-slate-100 pt-1.5">
+            <span class="text-slate-700">Uang Diterima</span>
+            <span class="font-mono text-blue-600">{{ formatRupiah(totalReceived) }}</span>
           </div>
         </div>
 
@@ -233,21 +233,21 @@
 
         <!-- Catatan -->
         <div>
-          <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1.5">
-            Catatan <span class="text-slate-400 dark:text-[#869392] font-normal">(tidak wajib, max 30 karakter)</span>
+          <label class="block text-xs font-semibold text-slate-700 mb-1.5">
+            Catatan <span class="text-slate-400 font-normal">(tidak wajib, max 30 karakter)</span>
           </label>
           <input
             v-model="form.notes"
             type="text"
             maxlength="30"
             placeholder="Catatan singkat..."
-            class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-white dark:bg-[#1e2020] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
+            class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white text-slate-900 focus:border-blue-600 outline-none"
           />
-          <p class="text-[10px] text-slate-400 dark:text-[#869392] text-right mt-0.5">{{ form.notes.length }}/30</p>
+          <p class="text-[10px] text-slate-400 text-right mt-0.5">{{ form.notes.length }}/30</p>
         </div>
 
         <!-- Insufficient balance -->
-        <div v-if="insufficientBalance" class="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/30 rounded-xl p-3 flex items-start gap-2 text-xs text-amber-800 dark:text-amber-300">
+        <div v-if="insufficientBalance" class="bg-amber-50 border border-amber-200 rounded-md p-3 flex items-start gap-2 text-xs text-amber-800">
           <AlertTriangleIcon class="w-4 h-4 shrink-0 mt-0.5" />
           <span v-if="selectedCategory === 'TARIK_TUNAI'">Kas tunai tidak cukup ({{ formatRupiah(cashBox?.balance ?? 0) }}). Setor kas dulu.</span>
           <span v-else>Nominal melebihi saldo rekening ({{ formatRupiah(selectedAccount?.balance ?? 0) }}). Setor saldo dulu.</span>
@@ -257,7 +257,7 @@
         <button
           type="button"
           :disabled="!canProceed"
-          class="w-full h-12 rounded-xl text-sm font-bold text-white bg-[#00A19B] hover:brightness-110 dark:shadow-[0_0_15px_rgba(0,161,155,0.3)] flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+          class="w-full h-12 rounded-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           @click="goToConfirm"
         >
           Selanjutnya
@@ -271,19 +271,19 @@
     <!-- ============================================================ -->
     <template v-if="step === 'confirm'">
       <!-- Header -->
-      <div class="shrink-0 px-4 py-3 bg-white dark:bg-[#1e2020] border-b border-slate-200 dark:border-[#3d4948] flex items-center gap-3">
-        <button type="button" class="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-[#292a2a]" @click="step = 'form'">
-          <ChevronLeftIcon class="w-5 h-5 text-slate-600 dark:text-[#bcc9c7]" />
+      <div class="shrink-0 px-4 py-3 bg-white border-b border-slate-200 flex items-center gap-3">
+        <button type="button" class="p-1.5 rounded-lg hover:bg-slate-100" @click="step = 'form'">
+          <ChevronLeftIcon class="w-5 h-5 text-slate-600" />
         </button>
-        <h1 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">Konfirmasi Transaksi</h1>
+        <h1 class="text-base font-bold text-slate-900">Konfirmasi Transaksi</h1>
       </div>
 
-      <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50 dark:bg-[#1a1c1c]">
+      <div class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
 
         <!-- Pengirim & Penerima — hanya tampil untuk Transfer, tidak untuk Tarik Tunai -->
         <template v-if="selectedCategory !== 'TARIK_TUNAI'">
         <!-- Pengirim Card -->
-        <div v-if="!isCustomerCard" class="bg-gradient-to-r from-[#00756f] to-[#00A19B] rounded-2xl px-4 py-3 text-white">
+        <div v-if="!isCustomerCard" class="bg-gradient-to-r from-blue-800 to-blue-600 rounded-lg px-4 py-3 text-white">
           <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-0.5">Pengirim (Sumber Dana)</p>
           <div class="flex items-center gap-2">
             <LandmarkIcon class="w-5 h-5 text-white/80 shrink-0" />
@@ -293,7 +293,7 @@
             </div>
           </div>
         </div>
-        <div v-else class="bg-gradient-to-r from-amber-500 to-amber-400 rounded-2xl px-4 py-3 text-white">
+        <div v-else class="bg-gradient-to-r from-amber-500 to-amber-400 rounded-lg px-4 py-3 text-white">
           <p class="text-[10px] font-semibold text-white/70 uppercase tracking-wider mb-0.5">Sumber Dana</p>
           <div class="flex items-center gap-2">
             <UserIcon class="w-5 h-5 text-white/80 shrink-0" />
@@ -306,124 +306,124 @@
 
         <!-- Arrow down -->
         <div class="flex justify-center">
-          <div class="w-8 h-8 rounded-full bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] flex items-center justify-center shadow-sm">
-            <ChevronDownIcon class="w-4 h-4 text-[#00A19B] dark:text-[#5fd9d2]" />
+          <div class="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center shadow-sm">
+            <ChevronDownIcon class="w-4 h-4 text-blue-600" />
           </div>
         </div>
 
         <!-- Penerima Card -->
-        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl px-4 py-3">
-          <p class="text-[10px] font-semibold text-slate-400 dark:text-[#869392] uppercase tracking-wider mb-1">Penerima</p>
+        <div class="bg-white border border-slate-200 rounded-lg px-4 py-3">
+          <p class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Penerima</p>
           <div class="flex items-center gap-2">
-            <LandmarkIcon class="w-5 h-5 text-slate-400 dark:text-[#869392] shrink-0" />
+            <LandmarkIcon class="w-5 h-5 text-slate-400 shrink-0" />
             <div>
-              <p class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ form.customerName || 'Nasabah' }}</p>
-              <p class="text-[11px] text-slate-500 dark:text-[#869392] font-mono">{{ form.destination }}</p>
-              <p v-if="selectedBankName" class="text-[10px] text-slate-400 dark:text-[#869392]">{{ selectedBankName }}</p>
+              <p class="text-sm font-bold text-slate-900">{{ form.customerName || 'Nasabah' }}</p>
+              <p class="text-[11px] text-slate-500 font-mono">{{ form.destination }}</p>
+              <p v-if="selectedBankName" class="text-[10px] text-slate-400">{{ selectedBankName }}</p>
             </div>
           </div>
         </div>
         </template>
 
         <!-- Detail Transaksi -->
-        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 space-y-2">
-          <h3 class="text-xs font-bold text-slate-800 dark:text-[#e3e2e2] mb-2">Detail Transaksi</h3>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 space-y-2">
+          <h3 class="text-xs font-bold text-slate-800 mb-2">Detail Transaksi</h3>
 
           <div class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Jenis Layanan</span>
-            <span class="font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ categoryTitle }}</span>
+            <span class="text-slate-500">Jenis Layanan</span>
+            <span class="font-semibold text-slate-800">{{ categoryTitle }}</span>
           </div>
           <div v-if="selectedCategory === 'TARIK_TUNAI'" class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Metode Admin</span>
-            <span class="font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ feeMethodLabel }}</span>
+            <span class="text-slate-500">Metode Admin</span>
+            <span class="font-semibold text-slate-800">{{ feeMethodLabel }}</span>
           </div>
           <div v-if="form.notes" class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Catatan</span>
-            <span class="text-slate-800 dark:text-[#e3e2e2]">{{ form.notes }}</span>
+            <span class="text-slate-500">Catatan</span>
+            <span class="text-slate-800">{{ form.notes }}</span>
           </div>
 
-          <div class="border-t border-slate-100 dark:border-[#3d4948] pt-2 mt-2 space-y-1.5">
+          <div class="border-t border-slate-100 pt-2 mt-2 space-y-1.5">
             <div class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">Nominal</span>
-              <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount) }}</span>
+              <span class="text-slate-500">Nominal</span>
+              <span class="font-mono text-slate-900">{{ formatRupiah(form.amount) }}</span>
             </div>
             <div class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">Biaya Sistem (EDC)</span>
-              <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(calculatedSystemFee) }}</span>
+              <span class="text-slate-500">Biaya Sistem (EDC)</span>
+              <span class="font-mono text-slate-600">{{ formatRupiah(calculatedSystemFee) }}</span>
             </div>
             <div class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">Biaya Admin (profit)</span>
-              <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedAdminFee) }}</span>
+              <span class="text-slate-500">Biaya Admin (profit)</span>
+              <span class="font-mono text-blue-600">{{ formatRupiah(calculatedAdminFee) }}</span>
             </div>
             <template v-if="!isCustomerCard">
             <div class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">Saldo Rek Sebelum</span>
-              <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(selectedAccount?.balance ?? 0) }}</span>
+              <span class="text-slate-500">Saldo Rek Sebelum</span>
+              <span class="font-mono text-slate-600">{{ formatRupiah(selectedAccount?.balance ?? 0) }}</span>
             </div>
             <div class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">{{ selectedCategory === 'TARIK_TUNAI' ? 'Rek Masuk' : 'Rek Keluar' }}</span>
-              <span :class="['font-mono font-semibold', selectedCategory === 'TARIK_TUNAI' ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400']">
+              <span class="text-slate-500">{{ selectedCategory === 'TARIK_TUNAI' ? 'Rek Masuk' : 'Rek Keluar' }}</span>
+              <span :class="['font-mono font-semibold', selectedCategory === 'TARIK_TUNAI' ? 'text-emerald-600' : 'text-red-500']">
                 {{ selectedCategory === 'TARIK_TUNAI' ? '+' : '-' }}{{ formatRupiah(debitAmount) }}
               </span>
             </div>
             <div class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">Saldo Rek Setelah</span>
-              <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? (selectedAccount?.balance ?? 0) + debitAmount : (selectedAccount?.balance ?? 0) - debitAmount) }}</span>
+              <span class="text-slate-500">Saldo Rek Setelah</span>
+              <span class="font-mono text-slate-600">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? (selectedAccount?.balance ?? 0) + debitAmount : (selectedAccount?.balance ?? 0) - debitAmount) }}</span>
             </div>
             </template>
             <div v-if="isCustomerCard" class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">Dampak Rekening</span>
-              <span class="font-mono font-semibold text-slate-500 dark:text-[#869392]">Rp 0 (Kartu Customer)</span>
+              <span class="text-slate-500">Dampak Rekening</span>
+              <span class="font-mono font-semibold text-slate-500">Rp 0 (Kartu Customer)</span>
             </div>
           </div>
 
           <!-- Arus Kas Tunai Agen -->
-          <div v-if="cashBox" class="border-t border-slate-100 dark:border-[#3d4948] pt-2 mt-2 space-y-1.5">
-            <p class="text-[10px] font-bold text-slate-500 dark:text-[#869392] uppercase tracking-wider">Arus Kas Tunai</p>
+          <div v-if="cashBox" class="border-t border-slate-100 pt-2 mt-2 space-y-1.5">
+            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Arus Kas Tunai</p>
             <div class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">Kas Tunai Sebelum</span>
-              <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(cashBox.balance) }}</span>
+              <span class="text-slate-500">Kas Tunai Sebelum</span>
+              <span class="font-mono text-slate-600">{{ formatRupiah(cashBox.balance) }}</span>
             </div>
             <div class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">{{ cashImpact >= 0 ? 'Kas Masuk' : 'Kas Keluar' }}</span>
-              <span :class="['font-mono font-semibold', cashImpact >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-500 dark:text-red-400']">
+              <span class="text-slate-500">{{ cashImpact >= 0 ? 'Kas Masuk' : 'Kas Keluar' }}</span>
+              <span :class="['font-mono font-semibold', cashImpact >= 0 ? 'text-emerald-600' : 'text-red-500']">
                 {{ cashImpact >= 0 ? '+' : '' }}{{ formatRupiah(cashImpact) }}
               </span>
             </div>
             <div class="flex justify-between text-xs">
-              <span class="text-slate-500 dark:text-[#869392]">Kas Tunai Setelah</span>
-              <span class="font-mono text-slate-600 dark:text-[#bcc9c7]">{{ formatRupiah(cashBox.balance + cashImpact) }}</span>
+              <span class="text-slate-500">Kas Tunai Setelah</span>
+              <span class="font-mono text-slate-600">{{ formatRupiah(cashBox.balance + cashImpact) }}</span>
             </div>
           </div>
 
-          <div class="border-t border-slate-200 dark:border-[#3d4948] pt-2 mt-2">
+          <div class="border-t border-slate-200 pt-2 mt-2">
             <div class="flex justify-between text-base font-bold">
-              <span class="text-slate-800 dark:text-[#e3e2e2]">Total</span>
-              <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? form.amount : form.amount + calculatedAdminFee) }}</span>
+              <span class="text-slate-800">Total</span>
+              <span class="font-mono text-slate-900">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? form.amount : form.amount + calculatedAdminFee) }}</span>
             </div>
             <div class="flex justify-between text-sm mt-1">
-              <span class="text-slate-500 dark:text-[#869392]">Uang Diterima</span>
-              <span class="font-mono font-bold text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(totalReceived) }}</span>
+              <span class="text-slate-500">Uang Diterima</span>
+              <span class="font-mono font-bold text-blue-600">{{ formatRupiah(totalReceived) }}</span>
             </div>
           </div>
         </div>
 
         <!-- Progress bar saat proses -->
         <div v-if="submitting" class="space-y-2">
-          <div class="h-2 bg-slate-200 dark:bg-[#3d4948] rounded-full overflow-hidden">
-            <div class="h-full bg-gradient-to-r from-[#00A19B] to-[#5fd9d2] rounded-full animate-progress" />
+          <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div class="h-full bg-blue-600 rounded-full animate-progress" />
           </div>
-          <p class="text-center text-xs text-slate-500 dark:text-[#869392]">Memproses transaksi...</p>
+          <p class="text-center text-xs text-slate-500">Memproses transaksi...</p>
         </div>
 
         <!-- Error -->
-        <div v-if="submitError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-xl p-3 text-xs text-red-700 dark:text-red-300">{{ submitError }}</div>
+        <div v-if="submitError" class="bg-red-50 border border-red-200 rounded-md p-3 text-xs text-red-700">{{ submitError }}</div>
 
         <!-- Konfirmasi Button -->
         <button
           type="button"
           :disabled="submitting"
-          class="w-full h-12 rounded-xl text-sm font-bold text-white bg-[#00A19B] hover:brightness-110 dark:shadow-[0_0_15px_rgba(0,161,155,0.3)] flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+          class="w-full h-12 rounded-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2 transition-all disabled:opacity-50"
           @click="handleSubmit"
         >
           <Loader2Icon v-if="submitting" class="w-4 h-4 animate-spin" />
@@ -437,60 +437,60 @@
     <!-- STEP 3: Sukses / Receipt                                      -->
     <!-- ============================================================ -->
     <template v-if="step === 'success'">
-      <div class="flex-1 flex flex-col items-center justify-center p-6 text-center bg-slate-50 dark:bg-[#1a1c1c] min-h-[60vh]">
-        <div class="w-16 h-16 rounded-full bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 flex items-center justify-center mb-4">
-          <CheckCircleIcon class="w-8 h-8 text-[#00A19B] dark:text-[#5fd9d2]" />
+      <div class="flex-1 flex flex-col items-center justify-center p-6 text-center bg-slate-50 min-h-[60vh]">
+        <div class="w-16 h-16 rounded-full bg-blue-600/10 flex items-center justify-center mb-4">
+          <CheckCircleIcon class="w-8 h-8 text-blue-600" />
         </div>
-        <h2 class="text-lg font-bold text-slate-900 dark:text-[#e3e2e2] mb-1">Transaksi Berhasil!</h2>
-        <code class="text-xs font-mono text-slate-500 dark:text-[#869392]">{{ receiptRef }}</code>
+        <h2 class="text-lg font-bold text-slate-900 mb-1">Transaksi Berhasil!</h2>
+        <code class="text-xs font-mono text-slate-500">{{ receiptRef }}</code>
 
-        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-2xl p-4 mt-4 w-full max-w-sm space-y-2 text-left">
+        <div class="bg-white border border-slate-200 rounded-lg p-4 mt-4 w-full max-w-sm space-y-2 text-left">
           <div class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Kategori</span>
-            <span class="font-bold text-slate-800 dark:text-[#e3e2e2]">{{ categoryTitle }}</span>
+            <span class="text-slate-500">Kategori</span>
+            <span class="font-bold text-slate-800">{{ categoryTitle }}</span>
           </div>
           <div v-if="selectedCategory === 'TARIK_TUNAI'" class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Metode Admin</span>
-            <span class="font-semibold text-slate-800 dark:text-[#e3e2e2]">{{ feeMethodLabel }}</span>
+            <span class="text-slate-500">Metode Admin</span>
+            <span class="font-semibold text-slate-800">{{ feeMethodLabel }}</span>
           </div>
           <div v-if="form.customerName" class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Nasabah</span>
-            <span class="font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ form.customerName }}</span>
+            <span class="text-slate-500">Nasabah</span>
+            <span class="font-semibold text-slate-900">{{ form.customerName }}</span>
           </div>
           <div v-if="form.destination && selectedCategory !== 'TARIK_TUNAI'" class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Tujuan</span>
-            <span class="font-mono text-slate-700 dark:text-[#bcc9c7]">{{ form.destination }}</span>
+            <span class="text-slate-500">Tujuan</span>
+            <span class="font-mono text-slate-700">{{ form.destination }}</span>
           </div>
-          <div class="border-t border-slate-100 dark:border-[#3d4948] pt-2 flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">{{ selectedCategory === 'TARIK_TUNAI' ? 'Nominal' : 'Jumlah Trf' }}</span>
-            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(form.amount) }}</span>
-          </div>
-          <div class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Biaya Admin</span>
-            <span class="font-mono text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(calculatedAdminFee) }}</span>
-          </div>
-          <div class="flex justify-between text-sm font-bold border-t border-slate-200 dark:border-[#3d4948] pt-2">
-            <span class="text-slate-800 dark:text-[#e3e2e2]">Total</span>
-            <span class="font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? form.amount : form.amount + calculatedAdminFee) }}</span>
+          <div class="border-t border-slate-100 pt-2 flex justify-between text-xs">
+            <span class="text-slate-500">{{ selectedCategory === 'TARIK_TUNAI' ? 'Nominal' : 'Jumlah Trf' }}</span>
+            <span class="font-mono text-slate-900">{{ formatRupiah(form.amount) }}</span>
           </div>
           <div class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Status</span>
-            <span class="font-semibold text-emerald-600 dark:text-emerald-400">Sukses</span>
+            <span class="text-slate-500">Biaya Admin</span>
+            <span class="font-mono text-blue-600">{{ formatRupiah(calculatedAdminFee) }}</span>
+          </div>
+          <div class="flex justify-between text-sm font-bold border-t border-slate-200 pt-2">
+            <span class="text-slate-800">Total</span>
+            <span class="font-mono text-slate-900">{{ formatRupiah(selectedCategory === 'TARIK_TUNAI' ? form.amount : form.amount + calculatedAdminFee) }}</span>
+          </div>
+          <div class="flex justify-between text-xs">
+            <span class="text-slate-500">Status</span>
+            <span class="font-semibold text-emerald-600">Sukses</span>
           </div>
           <div v-if="selectedCategory === 'TARIK_TUNAI'" class="flex justify-between text-xs">
-            <span class="text-slate-500 dark:text-[#869392]">Uang Diterima Nasabah</span>
-            <span class="font-mono font-bold text-[#00A19B] dark:text-[#5fd9d2]">{{ formatRupiah(totalReceived) }}</span>
+            <span class="text-slate-500">Uang Diterima Nasabah</span>
+            <span class="font-mono font-bold text-blue-600">{{ formatRupiah(totalReceived) }}</span>
           </div>
         </div>
 
         <div class="flex gap-3 mt-6 w-full max-w-sm">
           <button type="button"
-            class="flex-1 h-11 border border-slate-200 dark:border-[#3d4948] rounded-xl text-sm font-semibold text-slate-600 dark:text-[#bcc9c7] hover:bg-slate-100 dark:hover:bg-[#292a2a] flex items-center justify-center gap-1.5 transition-colors"
+            class="flex-1 h-11 border border-slate-200 rounded-md text-sm font-semibold text-slate-600 hover:bg-slate-100 flex items-center justify-center gap-1.5 transition-colors"
             @click="handlePrint">
             <PrinterIcon class="w-4 h-4" /> Cetak Struk
           </button>
           <button type="button"
-            class="flex-1 h-11 rounded-xl text-sm font-bold text-white bg-[#00A19B] hover:brightness-110 flex items-center justify-center gap-1.5 transition-all"
+            class="flex-1 h-11 rounded-md text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-1.5 transition-all"
             @click="resetForm">
             Transaksi Baru
           </button>
@@ -503,50 +503,50 @@
     <!-- ============================================================ -->
     <Teleport to="body">
       <Transition name="sheet">
-        <div v-if="showBankSearch" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center font-hanken">
-          <div class="absolute inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-[2px]" @click="showBankSearch = false" />
-          <div class="relative w-full sm:max-w-md bg-white dark:bg-[#1e2020] rounded-t-3xl sm:rounded-2xl border-t sm:border border-slate-200 dark:border-[#3d4948] shadow-2xl max-h-[75vh] flex flex-col">
+        <div v-if="showBankSearch" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center font-sans">
+          <div class="absolute inset-0 bg-black/50 backdrop-blur-sm backdrop-blur-sm" @click="showBankSearch = false" />
+          <div class="relative w-full sm:max-w-md bg-white rounded-t-xl sm:rounded-lg border-t sm:border border-slate-200 shadow-2xl max-h-[75vh] flex flex-col">
             <!-- handle -->
-            <div class="w-10 h-1 rounded-full bg-slate-200 dark:bg-[#3d4948] mx-auto mt-3 sm:hidden" />
+            <div class="w-10 h-1 rounded-full bg-slate-200 mx-auto mt-3 sm:hidden" />
             <!-- search input -->
             <div class="px-4 pt-4 pb-2 shrink-0">
               <div class="relative">
-                <SearchIcon class="w-4 h-4 text-slate-400 dark:text-[#869392] absolute left-3 top-1/2 -translate-y-1/2" />
+                <SearchIcon class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   ref="bankSearchInput"
                   v-model="bankSearchQuery"
                   type="text"
                   placeholder="Cari nama bank..."
                   autofocus
-                  class="w-full h-10 pl-9 pr-3 text-sm border border-slate-200 dark:border-[#3d4948] rounded-xl bg-slate-50 dark:bg-[#1a1c1c] text-slate-900 dark:text-[#e3e2e2] focus:border-[#00A19B] dark:focus:border-[#5fd9d2] outline-none"
+                  class="w-full h-10 pl-9 pr-3 text-sm border border-slate-200 rounded-md bg-slate-50 text-slate-900 focus:border-blue-600 outline-none"
                 />
               </div>
             </div>
             <!-- bank list -->
             <div class="flex-1 overflow-y-auto px-4 pb-4">
               <div v-if="filteredBanks.length === 0" class="py-8 text-center">
-                <p class="text-xs text-slate-400 dark:text-[#869392]">Bank tidak ditemukan</p>
+                <p class="text-xs text-slate-400">Bank tidak ditemukan</p>
               </div>
               <button
                 v-for="bank in filteredBanks"
                 :key="bank.id"
                 type="button"
                 :class="[
-                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors mb-1',
+                  'w-full flex items-center gap-3 px-3 py-2.5 rounded-md text-left transition-colors mb-1',
                   form.bankCode === bank.code
-                    ? 'bg-[#00A19B]/10 dark:bg-[#5fd9d2]/10 border border-[#00A19B]/30 dark:border-[#5fd9d2]/30'
-                    : 'hover:bg-slate-50 dark:hover:bg-[#292a2a]',
+                    ? 'bg-blue-600/10 border border-blue-200'
+                    : 'hover:bg-slate-50',
                 ]"
                 @click="selectBank(bank)"
               >
-                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-[#292a2a] flex items-center justify-center shrink-0">
-                  <LandmarkIcon class="w-4 h-4 text-slate-500 dark:text-[#869392]" />
+                <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                  <LandmarkIcon class="w-4 h-4 text-slate-500" />
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="text-sm font-medium text-slate-800 dark:text-[#e3e2e2] truncate">{{ bank.name }}</p>
-                  <p class="text-[10px] text-slate-400 dark:text-[#869392]">{{ bank.shortName }} · {{ bank.code }}</p>
+                  <p class="text-sm font-medium text-slate-800 truncate">{{ bank.name }}</p>
+                  <p class="text-[10px] text-slate-400">{{ bank.shortName }} · {{ bank.code }}</p>
                 </div>
-                <CheckIcon v-if="form.bankCode === bank.code" class="w-4 h-4 text-[#00A19B] dark:text-[#5fd9d2] shrink-0" />
+                <CheckIcon v-if="form.bankCode === bank.code" class="w-4 h-4 text-blue-600 shrink-0" />
               </button>
             </div>
           </div>
