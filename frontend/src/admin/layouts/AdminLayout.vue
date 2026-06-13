@@ -340,17 +340,18 @@
             <span v-if="offlinePendingCount > 0" class="ml-0.5 px-1 py-0 text-[9px] font-bold bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded-full">{{ offlinePendingCount }} pending</span>
           </span>
           <div class="h-8 w-px bg-slate-200 dark:bg-slate-700"></div>
-          <div class="flex items-center gap-2">
+          <RouterLink to="/admin/profil" class="flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer" title="Profil Saya">
             <div
-              class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-700 flex items-center justify-center text-xs font-semibold text-blue-700 dark:text-blue-300"
+              class="w-9 h-9 rounded-full bg-blue-100 border-2 border-blue-200 flex items-center justify-center text-xs font-semibold text-blue-700 overflow-hidden shadow-sm hover:shadow-md transition-shadow"
             >
-              {{ userInitials }}
+              <img v-if="userAvatarUrl" :src="userAvatarUrl" alt="Avatar" class="w-full h-full object-cover" />
+              <span v-else>{{ userInitials }}</span>
             </div>
-            <div class="text-right">
+            <div class="text-right hidden lg:block">
               <p class="text-xs font-semibold text-slate-900 dark:text-slate-100">{{ displayName }}</p>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ displayUsername || roleLabel }}</p>
+              <p class="text-[11px] text-slate-500 dark:text-slate-400">{{ roleLabel }}</p>
             </div>
-          </div>
+          </RouterLink>
         </div>
       </header>
 
@@ -1030,7 +1031,6 @@ const bottomNav = computed<NavItem[]>(() => {
   if (isSuperAdmin.value) {
     items.push({ to: '/admin/super-admin-settings', label: 'Super Admin', icon: ShieldIcon });
   }
-  items.push({ to: '/admin/profil', label: 'Profil', icon: UserIcon });
   return items;
 });
 
@@ -1061,6 +1061,11 @@ const userInitials = computed(() => {
   const first = parts[0]?.[0] ?? 'A';
   const second = parts[1]?.[0] ?? '';
   return (first + second).toUpperCase().slice(0, 2);
+});
+
+const userAvatarUrl = computed(() => {
+  const u = authStore.user as any;
+  return u?.avatarUrl || null;
 });
 
 const roleLabel = computed(() => {
