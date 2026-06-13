@@ -185,9 +185,35 @@
           Logout
         </button>
 
-        <!-- Upgrade Lisensi button -->
+        <!-- License / Developer Badge -->
         <div class="mt-2 pt-3 border-t border-[#3d4948] px-2">
+          <!-- DEVELOPER: link to Owner Dashboard -->
           <RouterLink
+            v-if="isDeveloper"
+            to="/owner"
+            class="w-full flex items-center justify-center gap-2 h-10 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-bold shadow-sm hover:shadow-md hover:brightness-110 transition-all"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            DEVELOPER
+          </RouterLink>
+
+          <!-- Active subscription: show tier badge -->
+          <RouterLink
+            v-else-if="isSubscriptionActive"
+            to="/admin/billing"
+            class="w-full flex items-center justify-center gap-2 h-10 rounded-lg bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs font-bold shadow-sm hover:shadow-md hover:brightness-110 transition-all"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            {{ subscriptionPlanLabel }}
+          </RouterLink>
+
+          <!-- Trial / Expired: show upgrade button -->
+          <RouterLink
+            v-else
             to="/admin/upgrade"
             class="w-full flex items-center justify-center gap-2 h-10 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold shadow-sm hover:shadow-md hover:brightness-110 transition-all"
           >
@@ -961,6 +987,24 @@ const topItems: NavItem[] = [
 // Role-aware navigation: certain groups/items only show for specific roles
 const isSuperAdmin = computed(() => authStore.user?.role === 'SUPER_ADMIN');
 const isAdminOrAbove = computed(() => ['SUPER_ADMIN', 'ADMIN'].includes(authStore.user?.role || ''));
+const isDeveloper = computed(() => authStore.user?.role === 'DEVELOPER');
+
+// Subscription status for sidebar badge
+const isSubscriptionActive = computed(() => {
+  const status = (authStore.user as any)?.subscriptionStatus;
+  return status === 'ACTIVE' || status === 'LIFETIME';
+});
+
+const subscriptionPlanLabel = computed(() => {
+  const plan = (authStore.user as any)?.subscriptionPlan;
+  const labels: Record<string, string> = {
+    STARTER: 'Starter',
+    BRILINK: 'BRILink',
+    PRO: 'Pro',
+    BUSINESS: 'Business',
+  };
+  return labels[plan] || plan || 'Aktif';
+});
 
 // Permission-based sidebar filtering
 const permStore = usePermissionsStore();
