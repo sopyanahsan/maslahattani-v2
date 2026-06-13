@@ -1,6 +1,6 @@
 <template>
   <div
-    class="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 sm:p-5 shadow-sm transition-colors"
+    class="rounded-lg border border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020] p-4 sm:p-5 shadow-sm transition-colors hover:border-slate-300 dark:hover:border-[#5fd9d2]/40"
   >
     <div class="flex items-start justify-between mb-3">
       <div
@@ -24,24 +24,24 @@
       </span>
     </div>
 
-    <p class="text-[11px] sm:text-xs mb-1 text-slate-500 dark:text-slate-400">
+    <p class="text-[11px] sm:text-xs mb-1 text-slate-500 dark:text-[#bcc9c7]">
       {{ label }}
     </p>
 
     <p
       v-if="loading"
-      class="h-7 w-28 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"
+      class="h-7 w-28 bg-slate-200 dark:bg-[#292a2a] rounded animate-pulse"
     />
     <p
       v-else
-      class="text-lg sm:text-xl font-bold font-mono leading-tight break-words text-slate-950 dark:text-slate-100"
+      class="text-lg sm:text-xl font-bold font-mono leading-tight break-words text-slate-950 dark:text-[#e3e2e2]"
     >
       {{ formattedValue }}
     </p>
 
     <p
       v-if="!loading && previousValue !== undefined && previousValue !== null"
-      class="text-[10px] text-slate-400 dark:text-slate-500 mt-1"
+      class="text-[10px] text-slate-400 dark:text-[#869392] mt-1"
     >
       Sebelumnya: {{ formatValue(previousValue) }}
     </p>

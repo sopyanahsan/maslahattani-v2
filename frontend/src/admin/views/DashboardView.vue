@@ -4,11 +4,11 @@
     <!-- STICKY TOP BAR                                -->
     <!-- ============================================ -->
     <div
-      class="sticky top-0 lg:top-16 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-slate-50/95 dark:bg-slate-950/95 backdrop-blur border-b border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+      class="sticky top-0 lg:top-16 z-10 -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3 bg-slate-50/95 dark:bg-[#121414]/95 backdrop-blur border-b border-slate-200 dark:border-[#3d4948] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
     >
       <!-- Period selector -->
       <div
-        class="inline-flex items-center gap-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-1 self-start"
+        class="inline-flex items-center gap-1 bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-1 self-start"
       >
         <button
           v-for="p in periods"
@@ -17,8 +17,8 @@
           :class="[
             'px-3 py-1.5 text-xs font-medium rounded-md transition-colors',
             store.period === p.value
-              ? 'bg-blue-600 text-white shadow-sm'
-              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100',
+              ? 'bg-[#03a29c] text-white shadow-sm'
+              : 'text-slate-600 dark:text-[#bcc9c7] hover:text-slate-900 dark:hover:text-[#e3e2e2]',
           ]"
           @click="setPeriod(p.value)"
         >

@@ -6,8 +6,8 @@
       :to="action.to"
       :class="[
         'group rounded-lg border px-3 py-2.5 transition-colors flex items-center gap-2',
-        'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900',
-        'hover:border-blue-300 dark:hover:border-blue-700 hover:bg-blue-50/40 dark:hover:bg-blue-950/30',
+        'border-slate-200 dark:border-[#3d4948] bg-white dark:bg-[#1e2020]',
+        'hover:border-blue-300 dark:hover:border-[#5fd9d2]/50 hover:bg-blue-50/40 dark:hover:bg-[#5fd9d2]/5',
       ]"
     >
       <div
@@ -19,12 +19,12 @@
         <component :is="action.icon" :class="['w-4 h-4', action.iconColor]" />
       </div>
       <div class="min-w-0">
-        <p class="text-xs font-semibold text-slate-900 dark:text-slate-100 truncate">
+        <p class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2] truncate">
           {{ action.label }}
         </p>
         <p
           v-if="action.desc"
-          class="text-[10px] text-slate-500 dark:text-slate-400 truncate"
+          class="text-[10px] text-slate-500 dark:text-[#bcc9c7] truncate"
         >
           {{ action.desc }}
         </p>

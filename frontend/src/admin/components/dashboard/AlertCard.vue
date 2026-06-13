@@ -104,13 +104,13 @@ const effectiveSeverity = computed<Severity>(() =>
 const cardClass = computed(() => {
   switch (effectiveSeverity.value) {
     case 'red':
-      return 'bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-900/50';
+      return 'bg-red-50 border-red-200 dark:bg-[#93000a]/10 dark:border-[#ffb4ab]/20';
     case 'yellow':
-      return 'bg-yellow-50 border-yellow-200 dark:bg-yellow-950/30 dark:border-yellow-900/50';
+      return 'bg-yellow-50 border-yellow-200 dark:bg-amber-500/10 dark:border-amber-500/20';
     case 'orange':
-      return 'bg-orange-50 border-orange-200 dark:bg-orange-950/30 dark:border-orange-900/50';
+      return 'bg-orange-50 border-orange-200 dark:bg-orange-500/10 dark:border-orange-500/20';
     case 'green':
-      return 'bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-900/50';
+      return 'bg-emerald-50 border-emerald-200 dark:bg-[#03a29c]/10 dark:border-[#5fd9d2]/20';
   }
 });
 

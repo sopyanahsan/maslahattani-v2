@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors">
+  <div class="min-h-screen bg-slate-50 dark:bg-[#121414] transition-colors">
     <!-- Mobile Topbar -->
     <header
       class="lg:hidden sticky top-0 z-30 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 h-14 flex items-center justify-between"
@@ -65,27 +65,27 @@
       @click="sidebarOpen = false"
     ></div>
 
-    <!-- Sidebar (always dark) -->
+    <!-- Sidebar (always dark — Posify Design System) -->
     <aside
-      class="fixed top-0 left-0 z-50 h-screen w-64 bg-slate-900 text-white flex flex-col transition-transform duration-300 lg:translate-x-0"
+      class="fixed top-0 left-0 z-50 h-screen w-64 bg-[#0d0e0f] text-[#e3e2e2] flex flex-col transition-transform duration-300 lg:translate-x-0"
       :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
     >
       <!-- Logo -->
-      <div class="h-16 px-5 flex items-center border-b border-slate-800 shrink-0">
+      <div class="h-16 px-5 flex items-center border-b border-[#3d4948] shrink-0">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center">
+          <div class="w-9 h-9 rounded-lg bg-[#03a29c] flex items-center justify-center">
             <component :is="StoreIcon" class="w-5 h-5 text-white" />
           </div>
           <div>
-            <p class="text-sm font-bold leading-tight">Posify</p>
-            <p class="text-[11px] text-slate-400 leading-tight">Admin Dashboard</p>
+            <p class="text-sm font-bold leading-tight text-[#5fd9d2]">Posify</p>
+            <p class="text-[11px] text-[#bcc9c7] leading-tight">Admin Dashboard</p>
           </div>
         </div>
       </div>
 
       <!-- Nav -->
       <nav class="flex-1 overflow-y-auto py-3 px-2 space-y-1">
-        <!-- Top-level items (Home, Dashboard Retail) -->
+        <!-- Top-level items -->
         <div class="space-y-0.5 mb-3">
           <RouterLink
             v-for="item in topItems"
@@ -99,8 +99,8 @@
               :class="[
                 'flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors',
                 isActive
-                  ? 'bg-blue-600 text-white font-medium'
-                  : 'text-slate-300 hover:bg-slate-800 hover:text-white',
+                  ? 'bg-[#1e2020] text-[#5fd9d2] font-medium border-l-[3px] border-[#5fd9d2] pl-[9px]'
+                  : 'text-[#bcc9c7] hover:bg-[#1e2020] hover:text-[#e3e2e2]',
               ]"
               @click="(e) => onNavClick(e, navigate)"
             >
@@ -113,11 +113,10 @@
         <!-- Grouped items -->
         <div v-for="group in navGroups" :key="group.title" class="mb-3">
           <div class="px-3 mb-1.5">
-            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+            <p class="text-[10px] font-bold uppercase tracking-wider text-[#869392]">
               {{ group.title }}
             </p>
           </div>
-
           <div class="space-y-0.5">
             <RouterLink
               v-for="item in group.items"
@@ -131,8 +130,8 @@
                 :class="[
                   'flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors',
                   isActive
-                    ? 'bg-blue-600 text-white font-medium'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white',
+                    ? 'bg-[#1e2020] text-[#5fd9d2] font-medium border-l-[3px] border-[#5fd9d2] pl-[9px]'
+                    : 'text-[#bcc9c7] hover:bg-[#1e2020] hover:text-[#e3e2e2]',
                 ]"
                 @click="(e) => onNavClick(e, navigate)"
               >
@@ -154,7 +153,7 @@
       </nav>
 
       <!-- Bottom section -->
-      <div class="border-t border-slate-800 p-3 space-y-0.5 shrink-0">
+      <div class="border-t border-[#3d4948] p-3 space-y-0.5 shrink-0">
         <RouterLink
           v-for="item in bottomNav"
           :key="item.to"
@@ -167,8 +166,8 @@
             :class="[
               'flex items-center gap-3 px-3 py-2.5 text-sm rounded-md transition-colors',
               isActive
-                ? 'bg-blue-600 text-white font-medium'
-                : 'text-slate-300 hover:bg-slate-800 hover:text-white',
+                ? 'bg-[#1e2020] text-[#5fd9d2] font-medium border-l-[3px] border-[#5fd9d2] pl-[9px]'
+                : 'text-[#bcc9c7] hover:bg-[#1e2020] hover:text-[#e3e2e2]',
             ]"
             @click="(e) => onNavClick(e, navigate)"
           >
@@ -179,7 +178,7 @@
 
         <button
           type="button"
-          class="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-md transition-colors text-slate-300 hover:bg-red-600/20 hover:text-red-300"
+          class="w-full flex items-center gap-3 px-3 py-2.5 text-sm rounded-md transition-colors text-[#bcc9c7] hover:bg-[#ffb4ab]/10 hover:text-[#ffb4ab]"
           @click="handleLogout"
         >
           <component :is="LogOutIcon" class="w-4 h-4 shrink-0" />
@@ -187,15 +186,15 @@
         </button>
 
         <!-- User info -->
-        <div class="mt-2 pt-3 border-t border-slate-800 flex items-center gap-2 px-2">
+        <div class="mt-2 pt-3 border-t border-[#3d4948] flex items-center gap-2 px-2">
           <div
-            class="w-8 h-8 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-xs font-semibold text-blue-300"
+            class="w-8 h-8 rounded-full bg-[#03a29c]/20 border border-[#5fd9d2]/30 flex items-center justify-center text-xs font-semibold text-[#5fd9d2]"
           >
             {{ userInitials }}
           </div>
           <div class="min-w-0 flex-1">
-            <p class="text-xs font-medium text-white truncate">{{ displayName }}</p>
-            <p class="text-[11px] text-slate-400 truncate">{{ displayUsername || roleLabel }}</p>
+            <p class="text-xs font-medium text-[#e3e2e2] truncate">{{ displayName }}</p>
+            <p class="text-[11px] text-[#bcc9c7] truncate">{{ displayUsername || roleLabel }}</p>
           </div>
         </div>
       </div>
@@ -205,11 +204,11 @@
     <main class="lg:ml-64 min-h-screen">
       <!-- Desktop + Tablet topbar -->
       <header
-        class="hidden md:flex sticky top-0 z-20 h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 lg:px-6 items-center justify-between transition-colors"
+        class="hidden md:flex sticky top-0 z-20 h-16 bg-white dark:bg-[#121414] border-b border-slate-200 dark:border-[#3d4948] px-4 lg:px-6 items-center justify-between transition-colors"
       >
         <div>
-          <h2 class="text-lg font-bold text-slate-950 dark:text-slate-100">{{ pageTitle }}</h2>
-          <p class="text-[11px] text-slate-400 dark:text-slate-500">
+          <h2 class="text-lg font-bold text-slate-950 dark:text-[#e3e2e2]">{{ pageTitle }}</h2>
+          <p class="text-[11px] text-slate-400 dark:text-[#bcc9c7]">
             {{ todayLabel }}
           </p>
         </div>
@@ -358,7 +357,7 @@
 
 
       <!-- Branch Context Banner -->
-      <div class="sticky top-16 z-10 bg-gradient-to-r from-blue-600 via-blue-600 to-blue-700 dark:from-blue-900 dark:via-blue-900 dark:to-blue-950 px-4 lg:px-6 py-2 flex items-center justify-between shadow-sm">
+      <div class="sticky top-16 z-10 bg-gradient-to-r from-[#03a29c] via-[#03a29c] to-[#006a66] dark:from-[#003735] dark:via-[#003735] dark:to-[#00201e] px-4 lg:px-6 py-2 flex items-center justify-between shadow-sm">
         <div class="flex items-center gap-3 min-w-0">
           <div :class="['w-2 h-2 rounded-full shrink-0', wsConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400']" :title="wsConnected ? 'Online' : 'Offline'"></div>
           <div class="min-w-0">
@@ -376,7 +375,7 @@
         </button>
       </div>
 
-      <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto text-slate-900 dark:text-slate-100">
+      <div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto text-slate-900 dark:text-[#e3e2e2]">
         <RouterView />
       </div>
     </main>
