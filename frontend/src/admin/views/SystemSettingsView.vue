@@ -1,8 +1,12 @@
 <template>
   <div class="space-y-6">
     <div>
-      <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Pengaturan Sistem</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Toggle fitur ON/OFF untuk menyesuaikan webapp kasir sesuai kebutuhan toko.</p>
+    <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-5 text-white shadow-lg">
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+      <h1 class="relative text-lg font-bold">Pengaturan Sistem</h1>
+      <p class="relative text-xs text-emerald-100 mt-0.5">Fitur toggle, mode shift, konfigurasi BRILink module.</p>
+    </div>
+      <p class="text-xs text-slate-500 mt-0.5">Toggle fitur ON/OFF untuk menyesuaikan webapp kasir sesuai kebutuhan toko.</p>
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-16">
@@ -11,17 +15,17 @@
 
     <template v-else>
       <!-- Modul -->
-      <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
-        <h2 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">Modul</h2>
+      <section class="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Modul</h2>
         <ToggleRow v-model="form.brilinkEnabled" label="Modul BRILink" desc="Menu BRILink, transaksi, fee, laporan BRILink. Jika OFF: bottom nav hanya 4 tab, dashboard retail only." />
       </section>
 
       <!-- Shift -->
-      <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
-        <h2 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">Shift</h2>
+      <section class="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Shift</h2>
         <div class="space-y-1">
-          <label class="text-xs font-semibold text-slate-700 dark:text-slate-300">Mode Shift</label>
-          <select v-model="form.shiftMode" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none">
+          <label class="text-xs font-semibold text-slate-700">Mode Shift</label>
+          <select v-model="form.shiftMode" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none">
             <option value="FLOWING">Saldo Mengalir (rekomendasi UMKM)</option>
             <option value="RESET">Shift Reset (setiap shift input modal awal)</option>
           </select>
@@ -33,22 +37,22 @@
       </section>
 
       <!-- Kas & Pengeluaran -->
-      <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
-        <h2 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">Kas & Pengeluaran</h2>
+      <section class="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Kas & Pengeluaran</h2>
         <ToggleRow v-model="form.cashOutApprovalEnabled" label="Approval Pengeluaran (Cash Out)" desc="Kasir bisa cash out langsung, admin verifikasi belakangan. Jika OFF: tanpa approval." />
       </section>
 
       <!-- Metode Pembayaran -->
-      <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
-        <h2 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">Metode Pembayaran</h2>
+      <section class="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Metode Pembayaran</h2>
         <ToggleRow v-model="form.paymentCashEnabled" label="Tunai" desc="Pembayaran cash/tunai di POS." />
         <ToggleRow v-model="form.paymentQrisEnabled" label="QRIS" desc="Pembayaran via QRIS (QR Code)." />
         <ToggleRow v-model="form.paymentHutangEnabled" label="Hutang" desc="Pelanggan bisa hutang (full atau partial)." />
       </section>
 
       <!-- Fitur POS -->
-      <section class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5 space-y-4">
-        <h2 class="text-sm font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wide">Fitur POS</h2>
+      <section class="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+        <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Fitur POS</h2>
         <ToggleRow v-model="form.saveBillEnabled" label="Simpan Bill (Open Bill)" desc="Kasir bisa park transaksi dan buka kembali nanti." />
         <ToggleRow v-model="form.discountPerItemEnabled" label="Diskon Per Produk" desc="Kasir bisa beri diskon per item di keranjang." />
         <ToggleRow v-model="form.discountTotalEnabled" label="Diskon Total Transaksi" desc="Kasir bisa beri diskon untuk keseluruhan transaksi." />
@@ -70,48 +74,48 @@
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50" @click="showConfirmModal = false"></div>
-        <div class="relative bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showConfirmModal = false"></div>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
           <div class="flex items-start gap-3">
-            <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+            <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
               <svg class="w-5 h-5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" />
               </svg>
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900 dark:text-slate-100">Konfirmasi Perubahan Pengaturan</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">
+              <h3 class="text-base font-bold text-slate-900">Konfirmasi Perubahan Pengaturan</h3>
+              <p class="text-xs text-slate-500 mt-1">
                 Perubahan ini akan <strong>langsung diterapkan</strong> ke webapp kasir yang sedang aktif.
               </p>
             </div>
           </div>
 
           <!-- Target shop emphasis -->
-          <div class="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-lg p-3 flex items-center gap-2">
-            <svg class="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div class="bg-blue-50/40 border border-blue-200 rounded-lg p-3 flex items-center gap-2">
+            <svg class="w-4 h-4 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
             </svg>
-            <p class="text-xs text-blue-900 dark:text-blue-100">
+            <p class="text-xs text-blue-900">
               <span class="font-semibold">Diterapkan ke cabang:</span>
               <span class="font-bold ml-1">{{ shopStore.currentShopName || '—' }}</span>
             </p>
           </div>
 
           <!-- Changes list -->
-          <div class="bg-slate-50 dark:bg-slate-800 rounded-xl p-4 max-h-60 overflow-y-auto">
-            <p class="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wide mb-2">Perubahan yang akan diterapkan:</p>
+          <div class="bg-slate-50 rounded-lg p-4 max-h-60 overflow-y-auto">
+            <p class="text-[11px] font-bold text-slate-500 uppercase tracking-wide mb-2">Perubahan yang akan diterapkan:</p>
             <ul class="space-y-1.5">
               <li v-for="change in pendingChanges" :key="change.key" class="flex items-center justify-between text-xs">
-                <span class="text-slate-700 dark:text-slate-300">{{ change.label }}</span>
-                <span :class="['font-bold px-2 py-0.5 rounded', change.newValue ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400']">
+                <span class="text-slate-700">{{ change.label }}</span>
+                <span :class="['font-bold px-2 py-0.5 rounded', change.newValue ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700']">
                   {{ change.display }}
                 </span>
               </li>
             </ul>
           </div>
 
-          <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-            <p class="text-[11px] text-amber-700 dark:text-amber-300">
+          <div class="bg-amber-50amber-900/20 border border-amber-200 rounded-lg p-3">
+            <p class="text-[11px] text-amber-700">
               <strong>Perhatian:</strong> Kasir yang sedang menggunakan webapp akan menerima notifikasi perubahan dalam waktu 30 detik.
             </p>
           </div>
@@ -120,7 +124,7 @@
           <div class="flex justify-end gap-2 pt-1">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-700 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+              class="h-9 px-4 text-xs font-semibold text-slate-700 border border-slate-200 rounded-lg hover:bg-slate-100"
               @click="showConfirmModal = false"
             >
               Batal
@@ -268,3 +272,16 @@ watch(shopId, (next, prev) => {
   if (next && next !== prev) fetchSettings();
 });
 </script>
+
+
+<style scoped>
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.space-y-5 > * { animation: fadeSlideUp 0.4s ease-out both; }
+.space-y-5 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-5 > *:nth-child(2) { animation-delay: 80ms; }
+.space-y-5 > *:nth-child(3) { animation-delay: 160ms; }
+div[class*="bg-gradient-to-r"][class*="from-emerald"] { background-size: 200% 200%; animation: headerShimmer 6s ease infinite; }
+@keyframes headerShimmer { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes toggleSlide { from { transform: translateX(-100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+button[class*="rounded-full"] { transition: background-color 0.3s ease; }
+</style>

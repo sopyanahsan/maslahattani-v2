@@ -1,7 +1,14 @@
 <template>
   <div class="space-y-4">
+    <!-- Header -->
+    <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-700 to-cyan-600 px-6 py-5 text-white shadow-lg">
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+      <h1 class="relative text-lg font-bold">Manajemen Shift</h1>
+      <p class="relative text-xs text-blue-100 mt-0.5">Kelola shift kasir — buka, tutup, dan review denominasi kas.</p>
+    </div>
+
     <!-- Filters bar -->
-    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
+    <div class="bg-white border border-slate-200 rounded-lg p-4">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         <!-- Status filter -->
         <div>
@@ -50,7 +57,7 @@
         <div class="flex items-end">
           <button
             type="button"
-            class="h-9 px-4 bg-slate-100 dark:bg-slate-800 text-slate-700 text-xs font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
+            class="h-9 px-4 bg-slate-100 text-slate-700 text-xs font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
             @click="resetFilters"
           >
             <component :is="RotateCcwIcon" class="w-3.5 h-3.5" />
@@ -66,33 +73,33 @@
       >
         <component :is="Building2Icon" class="w-3 h-3" />
         Menampilkan shift untuk cabang
-        <strong class="text-slate-700 dark:text-slate-300">{{ currentShopName }}</strong>
+        <strong class="text-slate-700">{{ currentShopName }}</strong>
         — ganti dari header untuk lihat cabang lain.
       </p>
     </div>
 
     <!-- Stats summary -->
     <div v-if="!loading && shifts.length > 0" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Total Shift</p>
-        <p class="text-lg font-bold text-slate-900 dark:text-slate-100 font-mono mt-0.5">
+      <div class="bg-white border border-slate-200 rounded-lg p-3">
+        <p class="text-[11px] text-slate-500">Total Shift</p>
+        <p class="text-lg font-bold text-slate-900 font-mono mt-0.5">
           {{ shifts.length }}
         </p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Menunggu Review</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-3">
+        <p class="text-[11px] text-slate-500">Menunggu Review</p>
         <p class="text-lg font-bold text-amber-600 font-mono mt-0.5">
           {{ closedCount }}
         </p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Sedang Aktif</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-3">
+        <p class="text-[11px] text-slate-500">Sedang Aktif</p>
         <p class="text-lg font-bold text-emerald-600 font-mono mt-0.5">
           {{ openCount }}
         </p>
       </div>
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3">
-        <p class="text-[11px] text-slate-500 dark:text-slate-400">Total Selisih</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-3">
+        <p class="text-[11px] text-slate-500">Total Selisih</p>
         <p
           :class="[
             'text-lg font-bold font-mono mt-0.5',
@@ -109,13 +116,13 @@
     </div>
 
     <!-- Loading -->
-    <div v-if="loading" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center">
+    <div v-if="loading" class="bg-white border border-slate-200 rounded-lg p-12 text-center">
       <component :is="Loader2Icon" class="w-6 h-6 animate-spin text-blue-600 mx-auto mb-2" />
-      <p class="text-xs text-slate-500 dark:text-slate-400">Memuat shifts…</p>
+      <p class="text-xs text-slate-500">Memuat shifts…</p>
     </div>
 
     <!-- Error -->
-    <div v-else-if="loadError" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
+    <div v-else-if="loadError" class="bg-white border border-slate-200 rounded-lg p-6">
       <div class="flex items-start gap-2 bg-red-50 border-l-4 border-red-500 rounded-md p-3">
         <component :is="AlertCircleIcon" class="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
         <div class="flex-1">
@@ -125,7 +132,7 @@
       </div>
       <button
         type="button"
-        class="mt-3 h-9 px-4 bg-slate-100 dark:bg-slate-800 text-slate-900 text-xs font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors"
+        class="mt-3 h-9 px-4 bg-slate-100 text-slate-900 text-xs font-semibold rounded-md border border-slate-200 hover:bg-slate-200 transition-colors"
         @click="loadShifts"
       >
         Coba lagi
@@ -135,10 +142,10 @@
     <!-- Empty -->
     <div
       v-else-if="shifts.length === 0"
-      class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center"
+      class="bg-white border border-slate-200 rounded-lg p-12 text-center"
     >
       <component :is="ClockIcon" class="w-10 h-10 text-slate-300 mx-auto mb-3" />
-      <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">Belum ada shift</p>
+      <p class="text-sm font-semibold text-slate-900">Belum ada shift</p>
       <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
         {{
           hasActiveFilters
@@ -149,15 +156,15 @@
     </div>
 
     <!-- Table -->
-    <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+    <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
       <!-- Desktop table -->
       <table class="hidden md:table w-full">
-        <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+        <thead class="bg-slate-50 border-b border-slate-200">
           <tr>
-            <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+            <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600">
               Tanggal
             </th>
-            <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+            <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600">
               Kasir
             </th>
             <th
@@ -166,24 +173,24 @@
             >
               Cabang
             </th>
-            <th class="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+            <th class="px-4 py-3 text-right text-[10px] font-bold uppercase tracking-wider text-slate-600">
               Selisih
             </th>
-            <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+            <th class="px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-slate-600">
               Status
             </th>
             <th class="px-4 py-3"></th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+        <tbody class="divide-y divide-slate-100">
           <tr
             v-for="shift in shifts"
             :key="shift.id"
-            class="hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+            class="hover:bg-slate-50 transition-colors cursor-pointer"
             @click="openDetail(shift.id)"
           >
             <td class="px-4 py-3">
-              <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">
+              <p class="text-sm font-semibold text-slate-900">
                 {{ formatDate(shift.startTime) }}
               </p>
               <p class="text-[11px] text-slate-500 font-mono">
@@ -199,7 +206,7 @@
                   {{ initials(shift.user?.username || shift.user?.email || '?') }}
                 </div>
                 <div class="min-w-0">
-                  <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+                  <p class="text-sm font-semibold text-slate-900 truncate">
                     {{ shift.user?.username || shift.user?.email || '—' }}
                   </p>
                   <p
@@ -247,20 +254,20 @@
       </table>
 
       <!-- Mobile cards -->
-      <div class="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
+      <div class="md:hidden divide-y divide-slate-100">
         <button
           v-for="shift in shifts"
           :key="shift.id"
           type="button"
-          class="w-full text-left p-4 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          class="w-full text-left p-4 hover:bg-slate-50 transition-colors"
           @click="openDetail(shift.id)"
         >
           <div class="flex items-start justify-between gap-3 mb-2">
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-slate-900 dark:text-slate-100 truncate">
+              <p class="text-sm font-semibold text-slate-900 truncate">
                 {{ shift.user?.username || shift.user?.email }}
               </p>
-              <p class="text-[11px] text-slate-500 dark:text-slate-400">
+              <p class="text-[11px] text-slate-500">
                 {{ formatDate(shift.startTime) }} · {{ formatTime(shift.startTime) }}
               </p>
               <p v-if="isSuperAdmin && shift.shop?.name" class="text-[11px] text-slate-600 mt-0.5">
@@ -270,7 +277,7 @@
             <ShiftStatusBadge :status="shift.status" />
           </div>
           <div v-if="shift.status !== 'OPEN'" class="flex items-center justify-between text-[11px]">
-            <span class="text-slate-500 dark:text-slate-400">Selisih</span>
+            <span class="text-slate-500">Selisih</span>
             <span
               :class="[
                 'font-mono font-bold',
@@ -434,3 +441,19 @@ function initials(text: string): string {
 
 onMounted(loadShifts);
 </script>
+
+
+<style scoped>
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.space-y-4 > * { animation: fadeSlideUp 0.4s ease-out both; }
+.space-y-4 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-4 > *:nth-child(2) { animation-delay: 80ms; }
+.space-y-4 > *:nth-child(3) { animation-delay: 160ms; }
+.space-y-4 > *:nth-child(4) { animation-delay: 240ms; }
+div[class*="bg-gradient-to-r"][class*="from-blue-700"] { background-size: 200% 200%; animation: headerShimmer 6s ease infinite; }
+@keyframes headerShimmer { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+table tbody tr { transition: all 0.15s ease; }
+table tbody tr:hover { box-shadow: inset 3px 0 0 #2563EB; }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+div[class*="rounded-lg"][class*="shadow-xl"] { animation: scaleIn 0.25s ease-out; }
+</style>

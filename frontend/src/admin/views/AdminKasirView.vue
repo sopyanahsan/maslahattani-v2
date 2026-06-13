@@ -1,11 +1,15 @@
 <template>
   <div class="space-y-5">
+    <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-      <div class="min-w-0"></div>
+      <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-5 text-white shadow-lg flex-1 mr-3">
+        <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+        <h1 class="relative text-lg font-bold">Multi User &amp; Kasir</h1>
+        <p class="relative text-xs text-indigo-100 mt-0.5">Kelola akun kasir, role, dan hak akses cabang.</p>
+      </div>
       <button
         type="button"
-        style="background-color: #2563eb; color: white;"
-        class="h-10 px-5 text-sm font-semibold rounded-lg hover:opacity-90 transition-opacity inline-flex items-center gap-2 shrink-0 shadow-sm shadow-violet-200"
+        class="h-10 px-5 text-sm font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 transition-colors inline-flex items-center gap-2 shrink-0 shadow-sm"
         @click="openCreateModal"
       >
         <UserPlusIcon class="w-4 h-4" />
@@ -15,45 +19,45 @@
 
     <div v-if="loading" class="flex items-center justify-center py-16">
       <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-      <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat daftar user...</span>
+      <span class="ml-2 text-sm text-slate-500">Memuat daftar user...</span>
     </div>
 
-    <div v-else-if="error" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-4 flex items-start gap-2">
-      <AlertCircleIcon class="w-4 h-4 text-red-500 dark:text-red-400 shrink-0 mt-0.5" />
-      <p class="text-sm text-red-800 dark:text-red-200">{{ error }}</p>
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-2">
+      <AlertCircleIcon class="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+      <p class="text-sm text-red-800">{{ error }}</p>
     </div>
 
-    <div v-else-if="kasirList.length === 0" class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center">
-      <UsersIcon class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-      <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada kasir terdaftar</p>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Buat akun kasir pertama lewat tombol di atas.</p>
+    <div v-else-if="kasirList.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+      <UsersIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
+      <p class="text-sm font-semibold text-slate-700">Belum ada kasir terdaftar</p>
+      <p class="text-xs text-slate-500 mt-1">Buat akun kasir pertama lewat tombol di atas.</p>
     </div>
 
-    <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
+    <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[700px]">
-          <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+          <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">User</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Role</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Cabang</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Status</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Login</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Last Login</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-wide">Aksi</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">User</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Role</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">Cabang</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Status</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Login</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">Last Login</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Aksi</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-            <tr v-for="kasir in kasirList" :key="kasir.id" class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+          <tbody class="divide-y divide-slate-100">
+            <tr v-for="kasir in kasirList" :key="kasir.id" class="hover:bg-slate-50/50 transition-colors">
               <td class="px-4 py-3">
                 <div class="flex items-center gap-2.5">
                   <div :class="['w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold', roleBg(kasir.role)]">
                     {{ initials(kasir.username || kasir.email) }}
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ kasir.username ?? '—' }}</p>
-                    <p v-if="hasRealEmail(kasir.email)" class="text-[10px] text-slate-500 dark:text-slate-400">{{ kasir.email }}</p>
-                    <p v-else class="text-[10px] text-slate-400 dark:text-slate-600 italic">Belum ada email</p>
+                    <p class="text-sm font-medium text-slate-900">{{ kasir.username ?? '—' }}</p>
+                    <p v-if="hasRealEmail(kasir.email)" class="text-[10px] text-slate-500">{{ kasir.email }}</p>
+                    <p v-else class="text-[10px] text-slate-400 italic">Belum ada email</p>
                   </div>
                 </div>
               </td>
@@ -61,28 +65,28 @@
                 <span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', roleBadge(kasir.role)]">{{ roleLabel(kasir.role) }}</span>
               </td>
               <td class="px-4 py-3">
-                <span v-if="kasir.shopName" class="text-xs text-slate-700 dark:text-slate-300">{{ kasir.shopName }}</span>
-                <span v-else class="text-[10px] text-slate-400 dark:text-slate-600 italic">Belum assign</span>
+                <span v-if="kasir.shopName" class="text-xs text-slate-700">{{ kasir.shopName }}</span>
+                <span v-else class="text-[10px] text-slate-400 italic">Belum assign</span>
               </td>
               <td class="px-4 py-3 text-center">
                 <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold uppercase', statusBadge(kasir.status)]">{{ kasir.status }}</span>
               </td>
               <td class="px-4 py-3 text-center">
-                <span v-if="kasir.role === 'ADMIN'" class="text-[10px] text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950 px-1.5 py-0.5 rounded font-semibold">Password</span>
-                <span v-else class="text-[10px] text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-950 px-1.5 py-0.5 rounded font-semibold">PIN</span>
+                <span v-if="kasir.role === 'ADMIN'" class="text-[10px] text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded font-semibold">Password</span>
+                <span v-else class="text-[10px] text-violet-600 bg-violet-50 px-1.5 py-0.5 rounded font-semibold">PIN</span>
               </td>
-              <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400 font-mono">{{ kasir.lastLogin ? formatDateTime(kasir.lastLogin) : 'Belum login' }}</td>
+              <td class="px-4 py-3 text-xs text-slate-600 font-mono">{{ kasir.lastLogin ? formatDateTime(kasir.lastLogin) : 'Belum login' }}</td>
               <td class="px-4 py-3 text-center">
                 <div class="flex items-center justify-center gap-1">
-                  <button class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" :title="kasir.status === 'ACTIVE' ? 'Nonaktifkan' : 'Aktifkan'" @click="toggleStatus(kasir)">
+                  <button class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-colors" :title="kasir.status === 'ACTIVE' ? 'Nonaktifkan' : 'Aktifkan'" @click="toggleStatus(kasir)">
                     <component :is="kasir.status === 'ACTIVE' ? UserXIcon : UserCheckIcon" :class="['w-3.5 h-3.5', kasir.status === 'ACTIVE' ? 'text-amber-600' : 'text-emerald-600']" />
                   </button>
                   <button
-                    class="w-7 h-7 rounded-md border border-slate-200 dark:border-slate-700 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                    class="w-7 h-7 rounded-md border border-slate-200 flex items-center justify-center hover:bg-slate-100 transition-colors"
                     :title="kasir.role === 'ADMIN' ? 'Reset Password' : 'Reset PIN'"
                     @click="kasir.role === 'ADMIN' ? confirmResetPassword(kasir) : confirmResetPin(kasir)"
                   >
-                    <KeyIcon class="w-3.5 h-3.5 text-violet-600 dark:text-violet-400" />
+                    <KeyIcon class="w-3.5 h-3.5 text-violet-600" />
                   </button>
                 </div>
               </td>
@@ -96,66 +100,66 @@
     <Teleport to="body">
       <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showCreateModal = false"></div>
-        <form class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleCreate">
-          <h2 class="text-base font-bold text-slate-950 dark:text-slate-100 flex items-center gap-2"><UserPlusIcon class="w-5 h-5 text-violet-600 dark:text-violet-400" /> Tambah User Baru</h2>
+        <form class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleCreate">
+          <h2 class="text-base font-bold text-slate-950 flex items-center gap-2"><UserPlusIcon class="w-5 h-5 text-violet-600" /> Tambah User Baru</h2>
 
           <!-- Role Selection (Super Admin only) -->
           <div v-if="authStore.isSuperAdmin">
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Role</label>
-            <select v-model="createForm.role" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Role</label>
+            <select v-model="createForm.role" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none">
               <option value="KASIR">Kasir</option>
               <option value="ADMIN">Admin Cabang</option>
             </select>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-            <input v-model="createForm.name" type="text" required minlength="2" placeholder="Nama kasir" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
+            <input v-model="createForm.name" type="text" required minlength="2" placeholder="Nama kasir" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Username <span class="text-red-500">*</span></label>
-            <input v-model="createForm.username" type="text" required minlength="3" placeholder="username (untuk login)" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none font-mono" />
-            <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1">Huruf kecil, angka, tanpa spasi. Digunakan kasir untuk login.</p>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Username <span class="text-red-500">*</span></label>
+            <input v-model="createForm.username" type="text" required minlength="3" placeholder="username (untuk login)" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none font-mono" />
+            <p class="text-[10px] text-slate-400 mt-1">Huruf kecil, angka, tanpa spasi. Digunakan kasir untuk login.</p>
           </div>
 
           <!-- PIN (untuk role KASIR) -->
           <div v-if="createForm.role === 'KASIR'">
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">PIN Awal <span class="text-red-500">*</span></label>
-            <input v-model="createForm.pin" type="text" :required="createForm.role === 'KASIR'" minlength="4" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="4-6 digit angka" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none font-mono tracking-widest text-center" />
-            <p class="text-[10px] text-amber-600 dark:text-amber-400 mt-1">Kasir wajib ganti PIN saat login pertama kali.</p>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Awal <span class="text-red-500">*</span></label>
+            <input v-model="createForm.pin" type="text" :required="createForm.role === 'KASIR'" minlength="4" maxlength="6" inputmode="numeric" pattern="[0-9]*" placeholder="4-6 digit angka" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none font-mono tracking-widest text-center" />
+            <p class="text-[10px] text-amber-600 mt-1">Kasir wajib ganti PIN saat login pertama kali.</p>
           </div>
 
           <!-- Password (untuk role ADMIN) -->
           <div v-if="createForm.role === 'ADMIN'">
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Password <span class="text-red-500">*</span></label>
-            <input v-model="createForm.password" type="password" :required="createForm.role === 'ADMIN'" minlength="6" placeholder="Minimal 6 karakter" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
-            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Admin login pakai username + password. Wajib ganti password saat login pertama.</p>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Password <span class="text-red-500">*</span></label>
+            <input v-model="createForm.password" type="password" :required="createForm.role === 'ADMIN'" minlength="6" placeholder="Minimal 6 karakter" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+            <p class="text-[10px] text-slate-500 mt-1">Admin login pakai username + password. Wajib ganti password saat login pertama.</p>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Email <span class="text-red-500">*</span></label>
-            <input v-model="createForm.email" type="email" placeholder="kasir@gmail.com" required class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
-            <p class="text-[10px] text-slate-500 dark:text-slate-400 mt-1">Wajib diisi. Kode verifikasi akan dikirim ke email ini.</p>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Email <span class="text-red-500">*</span></label>
+            <input v-model="createForm.email" type="email" placeholder="kasir@gmail.com" required class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none" />
+            <p class="text-[10px] text-slate-500 mt-1">Wajib diisi. Kode verifikasi akan dikirim ke email ini.</p>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Assign ke Cabang</label>
-            <select v-model="createForm.shopId" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Assign ke Cabang</label>
+            <select v-model="createForm.shopId" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-violet-500 focus:ring-1 focus:ring-violet-500 outline-none">
               <option value="">— Belum assign —</option>
               <option v-for="shop in shopsList" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
             </select>
           </div>
 
-          <div v-if="createError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ createError }}</div>
+          <div v-if="createError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ createError }}</div>
 
-          <div v-if="createResult" class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-lg p-4 space-y-2">
-            <p class="text-xs font-bold text-emerald-800 dark:text-emerald-200">{{ createForm.role === 'ADMIN' ? 'Admin Cabang' : 'Kasir' }} berhasil dibuat!</p>
-            <div class="bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 rounded-md px-3 py-2 space-y-1">
-              <p class="text-[10px] text-slate-500 dark:text-slate-400">Username</p>
-              <p class="text-sm font-mono font-semibold text-slate-900 dark:text-slate-100">{{ createResult.kasir.username }}</p>
+          <div v-if="createResult" class="bg-emerald-50 border border-emerald-200 rounded-lg p-4 space-y-2">
+            <p class="text-xs font-bold text-emerald-800">{{ createForm.role === 'ADMIN' ? 'Admin Cabang' : 'Kasir' }} berhasil dibuat!</p>
+            <div class="bg-white border border-emerald-200 rounded-md px-3 py-2 space-y-1">
+              <p class="text-[10px] text-slate-500">Username</p>
+              <p class="text-sm font-mono font-semibold text-slate-900">{{ createResult.kasir.username }}</p>
             </div>
-            <p class="text-[10px] text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-900/30 rounded px-2 py-1">
+            <p class="text-[10px] text-amber-700 bg-amber-50 rounded px-2 py-1">
               <template v-if="createForm.role === 'KASIR'">
                 Kasir login dengan username + PIN. PIN wajib diganti saat login pertama.
               </template>
@@ -166,7 +170,7 @@
           </div>
 
           <div class="flex items-center justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700" @click="closeCreateModal">{{ createResult ? 'Tutup' : 'Batal' }}</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="closeCreateModal">{{ createResult ? 'Tutup' : 'Batal' }}</button>
             <button v-if="!createResult" type="submit" :disabled="creating" class="h-9 px-4 text-xs font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50 flex items-center gap-1.5">
               <Loader2Icon v-if="creating" class="w-3.5 h-3.5 animate-spin" /> Buat Kasir
             </button>
@@ -179,20 +183,20 @@
     <Teleport to="body">
       <div v-if="showResetModal && resettingKasir" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showResetModal = false"></div>
-        <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Reset PIN Kasir</h3>
-          <p class="text-xs text-slate-600 dark:text-slate-400">PIN untuk <strong class="text-slate-900 dark:text-slate-100">{{ resettingKasir.username ?? resettingKasir.email }}</strong> akan direset ke PIN baru acak.</p>
-          <div v-if="resetError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ resetError }}</div>
-          <div v-if="resetResult" class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-lg p-3 space-y-2">
-            <p class="text-xs font-bold text-emerald-800 dark:text-emerald-200">PIN berhasil direset!</p>
-            <div class="bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 rounded-md px-3 py-2 text-center">
-              <p class="text-[10px] text-slate-500 dark:text-slate-400 mb-1">PIN Baru</p>
-              <p class="text-2xl font-mono font-bold text-violet-600 dark:text-violet-400 tracking-[0.3em]">{{ resetResult.tempPin }}</p>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4">
+          <h3 class="text-sm font-bold text-slate-900">Reset PIN Kasir</h3>
+          <p class="text-xs text-slate-600">PIN untuk <strong class="text-slate-900">{{ resettingKasir.username ?? resettingKasir.email }}</strong> akan direset ke PIN baru acak.</p>
+          <div v-if="resetError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ resetError }}</div>
+          <div v-if="resetResult" class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 space-y-2">
+            <p class="text-xs font-bold text-emerald-800">PIN berhasil direset!</p>
+            <div class="bg-white border border-emerald-200 rounded-md px-3 py-2 text-center">
+              <p class="text-[10px] text-slate-500 mb-1">PIN Baru</p>
+              <p class="text-2xl font-mono font-bold text-violet-600 tracking-[0.3em]">{{ resetResult.tempPin }}</p>
             </div>
-            <p class="text-[10px] text-amber-700 dark:text-amber-300">Berikan ke kasir. Wajib ganti PIN saat login berikutnya.</p>
+            <p class="text-[10px] text-amber-700">Berikan ke kasir. Wajib ganti PIN saat login berikutnya.</p>
           </div>
           <div class="flex items-center justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700" @click="showResetModal = false">{{ resetResult ? 'Tutup' : 'Batal' }}</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showResetModal = false">{{ resetResult ? 'Tutup' : 'Batal' }}</button>
             <button v-if="!resetResult" type="button" :disabled="resetting" class="h-9 px-4 text-xs font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50 flex items-center gap-1.5" @click="handleResetPin">
               <Loader2Icon v-if="resetting" class="w-3.5 h-3.5 animate-spin" /> Reset PIN
             </button>
@@ -205,20 +209,20 @@
     <Teleport to="body">
       <div v-if="showResetPwModal && resettingKasir" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showResetPwModal = false"></div>
-        <div class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Reset Password Admin</h3>
-          <p class="text-xs text-slate-600 dark:text-slate-400">Password untuk <strong class="text-slate-900 dark:text-slate-100">{{ resettingKasir.username ?? resettingKasir.email }}</strong> akan direset ke password baru acak.</p>
-          <div v-if="resetPwError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ resetPwError }}</div>
-          <div v-if="resetPwResult" class="bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-900/50 rounded-lg p-3 space-y-2">
-            <p class="text-xs font-bold text-emerald-800 dark:text-emerald-200">Password berhasil direset!</p>
-            <div class="bg-white dark:bg-slate-800 border border-emerald-200 dark:border-emerald-800 rounded-md px-3 py-2 text-center">
-              <p class="text-[10px] text-slate-500 dark:text-slate-400 mb-1">Password Baru</p>
-              <p class="text-lg font-mono font-bold text-violet-600 dark:text-violet-400 tracking-wider">{{ resetPwResult.tempPassword }}</p>
+        <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4">
+          <h3 class="text-sm font-bold text-slate-900">Reset Password Admin</h3>
+          <p class="text-xs text-slate-600">Password untuk <strong class="text-slate-900">{{ resettingKasir.username ?? resettingKasir.email }}</strong> akan direset ke password baru acak.</p>
+          <div v-if="resetPwError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ resetPwError }}</div>
+          <div v-if="resetPwResult" class="bg-emerald-50 border border-emerald-200 rounded-lg p-3 space-y-2">
+            <p class="text-xs font-bold text-emerald-800">Password berhasil direset!</p>
+            <div class="bg-white border border-emerald-200 rounded-md px-3 py-2 text-center">
+              <p class="text-[10px] text-slate-500 mb-1">Password Baru</p>
+              <p class="text-lg font-mono font-bold text-violet-600 tracking-wider">{{ resetPwResult.tempPassword }}</p>
             </div>
-            <p class="text-[10px] text-amber-700 dark:text-amber-300">Berikan ke admin. Wajib ganti password saat login berikutnya.</p>
+            <p class="text-[10px] text-amber-700">Berikan ke admin. Wajib ganti password saat login berikutnya.</p>
           </div>
           <div class="flex items-center justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700" @click="showResetPwModal = false">{{ resetPwResult ? 'Tutup' : 'Batal' }}</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showResetPwModal = false">{{ resetPwResult ? 'Tutup' : 'Batal' }}</button>
             <button v-if="!resetPwResult" type="button" :disabled="resettingPw" class="h-9 px-4 text-xs font-semibold text-white bg-violet-600 rounded-md hover:bg-violet-700 disabled:opacity-50 flex items-center gap-1.5" @click="handleResetPassword">
               <Loader2Icon v-if="resettingPw" class="w-3.5 h-3.5 animate-spin" /> Reset Password
             </button>
@@ -382,19 +386,36 @@ function hasRealEmail(email?: string | null): boolean {
 function formatDateTime(iso: string): string { const d = iso.endsWith('Z') || iso.includes('+') ? new Date(iso) : new Date(iso + 'Z'); return d.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }); }
 
 function roleBg(role: string): string {
-  switch (role) { case 'SUPER_ADMIN': return 'bg-purple-100 dark:bg-purple-900/30 border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300'; case 'ADMIN': return 'bg-blue-100 dark:bg-blue-900/30 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300'; default: return 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300'; }
+  switch (role) { case 'SUPER_ADMIN': return 'bg-purple-100 border-purple-200 text-purple-700'; case 'ADMIN': return 'bg-blue-100 border-blue-200 text-blue-700'; default: return 'bg-slate-100 border-slate-200 text-slate-700'; }
 }
 function roleBadge(role: string): string {
-  switch (role) { case 'SUPER_ADMIN': return 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'; case 'ADMIN': return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'; case 'CASHIER_SUPERVISOR': return 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300'; default: return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'; }
+  switch (role) { case 'SUPER_ADMIN': return 'bg-purple-100 text-purple-700'; case 'ADMIN': return 'bg-blue-100 text-blue-700'; case 'CASHIER_SUPERVISOR': return 'bg-amber-100 text-amber-700'; default: return 'bg-slate-100 text-slate-600'; }
 }
 function roleLabel(role: string): string {
   switch (role) { case 'SUPER_ADMIN': return 'Super Admin'; case 'ADMIN': return 'Admin'; case 'CASHIER_SUPERVISOR': return 'Supervisor'; case 'KASIR': return 'Kasir'; default: return role; }
 }
 function statusBadge(status: UserStatus): string {
-  switch (status) { case 'ACTIVE': return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'; case 'INACTIVE': return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'; case 'SUSPENDED': return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'; default: return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'; }
+  switch (status) { case 'ACTIVE': return 'bg-emerald-100 text-emerald-700'; case 'INACTIVE': return 'bg-slate-100 text-slate-600'; case 'SUSPENDED': return 'bg-red-100 text-red-700'; default: return 'bg-slate-100 text-slate-600'; }
 }
 
 onMounted(fetchKasir);
 
 useAutoRefresh(fetchKasir);
 </script>
+
+
+<style scoped>
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.space-y-5 > * { animation: fadeSlideUp 0.4s ease-out both; }
+.space-y-5 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-5 > *:nth-child(2) { animation-delay: 80ms; }
+.space-y-5 > *:nth-child(3) { animation-delay: 160ms; }
+div[class*="bg-gradient-to-r"][class*="from-indigo"] { background-size: 200% 200%; animation: headerShimmer 6s ease infinite; }
+@keyframes headerShimmer { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+table tbody tr { transition: all 0.15s ease; }
+table tbody tr:hover { box-shadow: inset 3px 0 0 #6366F1; }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+div[class*="rounded-lg"][class*="shadow-xl"] { animation: scaleIn 0.25s ease-out; }
+@keyframes badgePop { 0% { transform: scale(0.7); opacity: 0; } 70% { transform: scale(1.08); } 100% { transform: scale(1); opacity: 1; } }
+span[class*="rounded-full"][class*="font-medium"] { animation: badgePop 0.3s ease-out both; }
+</style>

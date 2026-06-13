@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-5">
     <!-- Tabs -->
-    <div class="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-fit">
+    <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
       <button
         v-for="tab in tabs"
         :key="tab.key"
@@ -9,8 +9,8 @@
         :class="[
           'h-8 px-4 text-xs font-semibold rounded-md transition-colors',
           activeTab === tab.key
-            ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200',
+            ? 'bg-white text-slate-900 shadow-sm'
+            : 'text-slate-600 hover:text-slate-900',
         ]"
         @click="activeTab = tab.key"
       >
@@ -24,15 +24,15 @@
     <template v-if="activeTab === 'permissions'">
       <!-- Role selector -->
       <div class="flex items-center gap-3 mb-4">
-        <label class="text-xs font-semibold text-slate-600 dark:text-slate-400">Role:</label>
+        <label class="text-xs font-semibold text-slate-600">Role:</label>
         <select
           v-model="selectedRole"
-          class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none"
+          class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
           @change="fetchRolePermissions"
         >
           <option value="ADMIN">Admin Cabang</option>
         </select>
-        <span class="text-[10px] text-slate-400 dark:text-slate-500">Super Admin selalu punya semua akses. Kasir hanya akses webapp POS.</span>
+        <span class="text-[10px] text-slate-400">Super Admin selalu punya semua akses. Kasir hanya akses webapp POS.</span>
       </div>
 
       <!-- Loading -->
@@ -45,10 +45,10 @@
         <div
           v-for="group in permissionGroups"
           :key="group.group"
-          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden"
+          class="bg-white border border-slate-200 rounded-lg overflow-hidden"
         >
-          <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50">
-            <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">{{ group.group }}</h3>
+          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+            <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wide">{{ group.group }}</h3>
           </div>
           <div class="px-5 py-3 space-y-3">
             <label
@@ -57,14 +57,14 @@
               class="flex items-center justify-between gap-3 cursor-pointer group"
             >
               <div class="flex items-center gap-2.5 min-w-0">
-                <span class="text-sm text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ perm.label }}</span>
-                <span class="text-[9px] text-slate-400 dark:text-slate-500 font-mono hidden sm:inline">{{ perm.key }}</span>
+                <span class="text-sm text-slate-800 group-hover:text-blue-600 transition-colors">{{ perm.label }}</span>
+                <span class="text-[9px] text-slate-400 font-mono hidden sm:inline">{{ perm.key }}</span>
               </div>
               <button
                 type="button"
                 :class="[
                   'relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0',
-                  rolePermissions[perm.key] ? 'bg-blue-600' : 'bg-slate-300 dark:bg-slate-600',
+                  rolePermissions[perm.key] ? 'bg-blue-600' : 'bg-slate-300',
                 ]"
                 @click="togglePermission(perm.key)"
               >
@@ -81,8 +81,8 @@
 
         <!-- Save button -->
         <div class="flex items-center justify-between pt-2">
-          <p v-if="saveSuccess" class="text-xs font-semibold text-emerald-600 dark:text-emerald-400">Perubahan tersimpan!</p>
-          <p v-if="saveError" class="text-xs font-semibold text-red-600 dark:text-red-400">{{ saveError }}</p>
+          <p v-if="saveSuccess" class="text-xs font-semibold text-emerald-600">Perubahan tersimpan!</p>
+          <p v-if="saveError" class="text-xs font-semibold text-red-600">{{ saveError }}</p>
           <button
             type="button"
             :disabled="saving"
@@ -100,10 +100,10 @@
     <!-- TAB: Kategori Cashbox                       -->
     <!-- ============================================ -->
     <template v-if="activeTab === 'cashbox'">
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-6 text-center">
-        <BoxesIcon class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Kategori Cashbox</p>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1 mb-3">Kelola kategori kas terpisah (Retail, Subsidi Pupuk, dll).</p>
+      <div class="bg-white border border-slate-200 rounded-lg p-6 text-center">
+        <BoxesIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
+        <p class="text-sm font-semibold text-slate-700">Kategori Cashbox</p>
+        <p class="text-xs text-slate-500 mt-1 mb-3">Kelola kategori kas terpisah (Retail, Subsidi Pupuk, dll).</p>
         <RouterLink
           to="/admin/cashbox-categories"
           class="inline-flex items-center gap-1.5 h-8 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700"
@@ -117,37 +117,37 @@
     <!-- TAB: Audit Log                              -->
     <!-- ============================================ -->
     <template v-if="activeTab === 'audit'">
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-        <div class="px-5 py-3 border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex items-center justify-between">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Audit Log</h3>
-          <button type="button" class="text-[10px] font-semibold text-blue-600 dark:text-blue-400" @click="fetchAuditLogs">Refresh</button>
+      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-900">Audit Log</h3>
+          <button type="button" class="text-[10px] font-semibold text-blue-600" @click="fetchAuditLogs">Refresh</button>
         </div>
         <div v-if="auditLoading" class="flex items-center justify-center py-12">
           <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
         </div>
         <div v-else-if="auditLogs.length === 0" class="px-5 py-10 text-center">
-          <p class="text-xs text-slate-500 dark:text-slate-400">Belum ada aktivitas tercatat.</p>
+          <p class="text-xs text-slate-500">Belum ada aktivitas tercatat.</p>
         </div>
         <div v-else class="overflow-x-auto max-h-[500px] overflow-y-auto">
           <table class="w-full">
-            <thead class="border-b border-slate-200 dark:border-slate-800 sticky top-0 bg-white dark:bg-slate-900">
+            <thead class="border-b border-slate-200 sticky top-0 bg-white">
               <tr>
-                <th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Waktu</th>
-                <th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">User</th>
-                <th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Aksi</th>
-                <th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Resource</th>
-                <th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Detail</th>
+                <th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 uppercase">Waktu</th>
+                <th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 uppercase">User</th>
+                <th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 uppercase">Aksi</th>
+                <th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 uppercase">Resource</th>
+                <th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 uppercase">Detail</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-              <tr v-for="log in auditLogs" :key="log.id" class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                <td class="px-4 py-2 text-xs font-mono text-slate-600 dark:text-slate-400 whitespace-nowrap">{{ formatDateTime(log.createdAt) }}</td>
-                <td class="px-4 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200">{{ log.userName }}</td>
+            <tbody class="divide-y divide-slate-100">
+              <tr v-for="log in auditLogs" :key="log.id" class="hover:bg-slate-50/50">
+                <td class="px-4 py-2 text-xs font-mono text-slate-600 whitespace-nowrap">{{ formatDateTime(log.createdAt) }}</td>
+                <td class="px-4 py-2 text-xs font-semibold text-slate-800">{{ log.userName }}</td>
                 <td class="px-4 py-2">
                   <span :class="['px-1.5 py-0.5 text-[9px] font-bold uppercase rounded', actionBadge(log.action)]">{{ log.action }}</span>
                 </td>
-                <td class="px-4 py-2 text-xs text-slate-600 dark:text-slate-400">{{ log.resource || '-' }}</td>
-                <td class="px-4 py-2 text-xs text-slate-500 dark:text-slate-400 max-w-[200px] truncate">{{ log.details || '-' }}</td>
+                <td class="px-4 py-2 text-xs text-slate-600">{{ log.resource || '-' }}</td>
+                <td class="px-4 py-2 text-xs text-slate-500 max-w-[200px] truncate">{{ log.details || '-' }}</td>
               </tr>
             </tbody>
           </table>
@@ -161,17 +161,17 @@
     <template v-if="activeTab === 'system'">
       <div class="space-y-4">
         <!-- Maintenance Mode -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
+        <div class="bg-white border border-slate-200 rounded-lg p-5">
           <div class="flex items-center justify-between">
             <div>
-              <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">Maintenance Mode</h3>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Nonaktifkan akses kasir ke webapp saat maintenance.</p>
+              <h3 class="text-sm font-bold text-slate-900">Maintenance Mode</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Nonaktifkan akses kasir ke webapp saat maintenance.</p>
             </div>
             <button
               type="button"
               :class="[
                 'relative w-12 h-6 rounded-full transition-colors',
-                systemSettings.maintenanceMode ? 'bg-red-500' : 'bg-slate-300 dark:bg-slate-600',
+                systemSettings.maintenanceMode ? 'bg-red-500' : 'bg-slate-300',
               ]"
               @click="systemSettings.maintenanceMode = !systemSettings.maintenanceMode"
             >
@@ -186,28 +186,28 @@
         </div>
 
         <!-- Auto-Logout Timeout -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-2">Auto-Logout Timeout</h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Durasi idle sebelum admin otomatis logout (menit).</p>
+        <div class="bg-white border border-slate-200 rounded-lg p-5">
+          <h3 class="text-sm font-bold text-slate-900 mb-2">Auto-Logout Timeout</h3>
+          <p class="text-xs text-slate-500 mb-3">Durasi idle sebelum admin otomatis logout (menit).</p>
           <input
             v-model.number="systemSettings.autoLogoutMinutes"
             type="number"
             min="5"
             max="480"
-            class="h-9 w-24 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none"
+            class="h-9 w-24 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none"
           />
         </div>
 
         <!-- PIN Lock Attempts -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-5">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 mb-2">Max PIN Attempts</h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mb-3">Berapa kali kasir boleh salah PIN sebelum akun terkunci.</p>
+        <div class="bg-white border border-slate-200 rounded-lg p-5">
+          <h3 class="text-sm font-bold text-slate-900 mb-2">Max PIN Attempts</h3>
+          <p class="text-xs text-slate-500 mb-3">Berapa kali kasir boleh salah PIN sebelum akun terkunci.</p>
           <input
             v-model.number="systemSettings.maxPinAttempts"
             type="number"
             min="3"
             max="10"
-            class="h-9 w-24 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none"
+            class="h-9 w-24 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none"
           />
         </div>
 
@@ -228,24 +228,24 @@
     <!-- TAB: Danger Zone                            -->
     <!-- ============================================ -->
     <template v-if="activeTab === 'danger'">
-      <div class="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl p-5 space-y-4">
+      <div class="bg-red-50 border border-red-200 rounded-lg p-5 space-y-4">
         <div class="flex items-start gap-3">
           <AlertTriangleIcon class="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
           <div>
-            <h3 class="text-sm font-bold text-red-800 dark:text-red-300">Danger Zone</h3>
-            <p class="text-xs text-red-600 dark:text-red-400 mt-1">Aksi di bawah ini tidak bisa di-undo. Gunakan dengan sangat hati-hati.</p>
+            <h3 class="text-sm font-bold text-red-800">Danger Zone</h3>
+            <p class="text-xs text-red-600 mt-1">Aksi di bawah ini tidak bisa di-undo. Gunakan dengan sangat hati-hati.</p>
           </div>
         </div>
 
         <!-- Reset Data Cabang -->
-        <div class="bg-white dark:bg-slate-900 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-center justify-between">
+        <div class="bg-white border border-red-200 rounded-lg p-4 flex items-center justify-between">
           <div>
-            <p class="text-xs font-bold text-slate-900 dark:text-slate-100">Reset Data Cabang</p>
-            <p class="text-[10px] text-slate-500 dark:text-slate-400">Hapus semua transaksi, stok, hutang di cabang terpilih. Produk tetap ada.</p>
+            <p class="text-xs font-bold text-slate-900">Reset Data Cabang</p>
+            <p class="text-[10px] text-slate-500">Hapus semua transaksi, stok, hutang di cabang terpilih. Produk tetap ada.</p>
           </div>
           <button
             type="button"
-            class="h-8 px-3 text-[11px] font-semibold text-red-600 border border-red-300 dark:border-red-700 rounded-md hover:bg-red-50 dark:hover:bg-red-950/30"
+            class="h-8 px-3 text-[11px] font-semibold text-red-600 border border-red-300 rounded-md hover:bg-red-50"
             @click="confirmResetBranch"
           >
             Reset...
@@ -253,14 +253,14 @@
         </div>
 
         <!-- Seed Default Permissions -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-4 flex items-center justify-between">
+        <div class="bg-white border border-slate-200 rounded-lg p-4 flex items-center justify-between">
           <div>
-            <p class="text-xs font-bold text-slate-900 dark:text-slate-100">Re-seed Permission Defaults</p>
-            <p class="text-[10px] text-slate-500 dark:text-slate-400">Reset permission ADMIN ke default bawaan. Aman dipanggil berkali-kali.</p>
+            <p class="text-xs font-bold text-slate-900">Re-seed Permission Defaults</p>
+            <p class="text-[10px] text-slate-500">Reset permission ADMIN ke default bawaan. Aman dipanggil berkali-kali.</p>
           </div>
           <button
             type="button"
-            class="h-8 px-3 text-[11px] font-semibold text-blue-600 border border-blue-300 dark:border-blue-700 rounded-md hover:bg-blue-50 dark:hover:bg-blue-950/30"
+            class="h-8 px-3 text-[11px] font-semibold text-blue-600 border border-blue-300 rounded-md hover:bg-blue-50"
             @click="seedPermissions"
           >
             Seed
@@ -477,11 +477,11 @@ function formatDateTime(iso: string): string {
 }
 
 function actionBadge(action: string): string {
-  if (action === 'LOGIN') return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300';
-  if (action === 'VOID') return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
-  if (action.includes('CREATE') || action.includes('ADD')) return 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300';
-  if (action.includes('DELETE') || action.includes('REMOVE')) return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300';
-  return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
+  if (action === 'LOGIN') return 'bg-blue-100 text-blue-700';
+  if (action === 'VOID') return 'bg-red-100 text-red-700';
+  if (action.includes('CREATE') || action.includes('ADD')) return 'bg-emerald-100 text-emerald-700';
+  if (action.includes('DELETE') || action.includes('REMOVE')) return 'bg-red-100 text-red-700';
+  return 'bg-slate-100 text-slate-600';
 }
 
 // ============================================
@@ -536,3 +536,17 @@ onMounted(() => {
   fetchSystemSettings();
 });
 </script>
+
+
+<style scoped>
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.space-y-5 > * { animation: fadeSlideUp 0.4s ease-out both; }
+.space-y-5 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-5 > *:nth-child(2) { animation-delay: 80ms; }
+.space-y-5 > *:nth-child(3) { animation-delay: 160ms; }
+.space-y-5 > *:nth-child(4) { animation-delay: 240ms; }
+@keyframes checkPop { 0% { transform: scale(0.8); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+input[type="checkbox"]:checked { animation: checkPop 0.2s ease-out; }
+table tbody tr { transition: all 0.15s ease; }
+table tbody tr:hover { box-shadow: inset 3px 0 0 #6366F1; }
+</style>

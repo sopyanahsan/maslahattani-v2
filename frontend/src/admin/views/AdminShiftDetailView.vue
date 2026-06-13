@@ -1,7 +1,7 @@
 <template>
   <!-- Mobile blocker -->
   <div class="md:hidden flex flex-col items-center justify-center min-h-[60vh] px-6 text-center">
-    <div class="w-16 h-16 rounded-2xl bg-amber-100 flex items-center justify-center mb-4">
+    <div class="w-16 h-16 rounded-lg bg-amber-100 flex items-center justify-center mb-4">
       <MonitorIcon class="w-8 h-8 text-amber-600" />
     </div>
     <h2 class="text-lg font-bold text-slate-900 mb-2">Layar Terlalu Kecil</h2>
@@ -18,7 +18,7 @@
         <RouterLink
           :to="{ name: 'admin-shifts' }"
           class="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center
-                 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                 hover:bg-slate-50 transition-colors"
         >
           <ArrowLeftIcon class="w-4 h-4 text-slate-600" />
         </RouterLink>
@@ -31,7 +31,7 @@
     <!-- Loading state -->
     <div v-if="loading" class="flex items-center justify-center py-20">
       <Loader2Icon class="w-6 h-6 animate-spin text-slate-400" />
-      <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat data shift...</span>
+      <span class="ml-2 text-sm text-slate-500">Memuat data shift...</span>
     </div>
 
     <!-- Error state -->
@@ -56,7 +56,7 @@
       <!-- ============================================ -->
       <!-- COLUMN 1: Sales Summary                     -->
       <!-- ============================================ -->
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
         <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             <ReceiptIcon class="w-4 h-4 text-blue-600" />
@@ -69,7 +69,7 @@
           <div
             v-for="cb in shift.cashBoxes"
             :key="cb.id"
-            class="space-y-2 pb-3 border-b border-slate-100 last:border-0 last:pb-0"
+            class="space-y-2 pb-3 border-b border-slate-200 last:border-0 last:pb-0"
           >
             <div class="flex items-center gap-2 mb-1.5">
               <span
@@ -81,7 +81,7 @@
               >
                 {{ cb.category.code.slice(0, 2) }}
               </span>
-              <span class="text-xs font-semibold text-slate-800 dark:text-slate-200">{{ cb.category.name }}</span>
+              <span class="text-xs font-semibold text-slate-800">{{ cb.category.name }}</span>
             </div>
 
             <!-- Tunai -->
@@ -91,13 +91,13 @@
                   <BanknoteIcon class="w-3.5 h-3.5 text-emerald-500" />
                   Tunai (Expected)
                 </span>
-                <span class="text-xs font-mono font-semibold text-slate-900 dark:text-slate-100">
+                <span class="text-xs font-mono font-semibold text-slate-900">
                   {{ formatRupiah(cb.startingCash + cb.expectedCash) }}
                 </span>
               </div>
               <div class="flex items-center justify-between pl-5">
                 <span class="text-[11px] text-slate-400">Actual (kasir)</span>
-                <span class="text-xs font-mono text-slate-600 dark:text-slate-400">
+                <span class="text-xs font-mono text-slate-600">
                   {{ cb.actualCash != null ? formatRupiah(cb.actualCash) : '—' }}
                 </span>
               </div>
@@ -110,13 +110,13 @@
                   <QrCodeIcon class="w-3.5 h-3.5 text-blue-500" />
                   QRIS (Expected)
                 </span>
-                <span class="text-xs font-mono font-semibold text-slate-900 dark:text-slate-100">
+                <span class="text-xs font-mono font-semibold text-slate-900">
                   {{ formatRupiah(cb.expectedQRIS) }}
                 </span>
               </div>
               <div class="flex items-center justify-between pl-5">
                 <span class="text-[11px] text-slate-400">Actual (kasir)</span>
-                <span class="text-xs font-mono text-slate-600 dark:text-slate-400">
+                <span class="text-xs font-mono text-slate-600">
                   {{ cb.actualQRIS != null ? formatRupiah(cb.actualQRIS) : '—' }}
                 </span>
               </div>
@@ -138,65 +138,65 @@
           <!-- Totals -->
           <div class="border-t border-slate-200 pt-3 space-y-1.5">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Total Expected (Tunai)</span>
-              <span class="text-sm font-mono font-bold text-slate-950 dark:text-slate-100">
+              <span class="text-xs font-bold text-slate-700">Total Expected (Tunai)</span>
+              <span class="text-sm font-mono font-bold text-slate-950">
                 {{ formatRupiah(totalExpectedCash) }}
               </span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-slate-500 dark:text-slate-400">Total QRIS</span>
-              <span class="text-xs font-mono font-semibold text-slate-700 dark:text-slate-300">
+              <span class="text-xs text-slate-500">Total QRIS</span>
+              <span class="text-xs font-mono font-semibold text-slate-700">
                 {{ formatRupiah(totalExpectedQRIS) }}
               </span>
             </div>
           </div>
 
           <!-- Transaction count + Payment Breakdown -->
-          <div class="bg-slate-50 dark:bg-slate-800/50 rounded-lg px-3 py-2.5 space-y-2">
+          <div class="bg-slate-50 rounded-lg px-3 py-2.5 space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Jumlah Transaksi</span>
-              <span class="text-sm font-mono font-bold text-slate-900 dark:text-slate-100">
+              <span class="text-xs font-semibold text-slate-700">Jumlah Transaksi</span>
+              <span class="text-sm font-mono font-bold text-slate-900">
                 {{ transactions.length }} trx
               </span>
             </div>
 
             <!-- Payment method breakdown -->
-            <div v-if="transactions.length > 0" class="space-y-1 pt-1 border-t border-slate-200 dark:border-slate-800">
+            <div v-if="transactions.length > 0" class="space-y-1 pt-1 border-t border-slate-200">
               <div v-if="paymentBreakdown.cash > 0" class="flex items-center justify-between">
                 <span class="text-[10px] text-slate-500 flex items-center gap-1">
                   <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Cash
                 </span>
-                <span class="text-[10px] font-mono text-slate-700 dark:text-slate-300">{{ formatRupiah(paymentBreakdown.cash) }} ({{ paymentBreakdown.cashCount }}x)</span>
+                <span class="text-[10px] font-mono text-slate-700">{{ formatRupiah(paymentBreakdown.cash) }} ({{ paymentBreakdown.cashCount }}x)</span>
               </div>
               <div v-if="paymentBreakdown.qris > 0" class="flex items-center justify-between">
                 <span class="text-[10px] text-slate-500 flex items-center gap-1">
                   <span class="w-2 h-2 rounded-full bg-blue-500"></span> QRIS
                 </span>
-                <span class="text-[10px] font-mono text-slate-700 dark:text-slate-300">{{ formatRupiah(paymentBreakdown.qris) }} ({{ paymentBreakdown.qrisCount }}x)</span>
+                <span class="text-[10px] font-mono text-slate-700">{{ formatRupiah(paymentBreakdown.qris) }} ({{ paymentBreakdown.qrisCount }}x)</span>
               </div>
               <div v-if="paymentBreakdown.transfer > 0" class="flex items-center justify-between">
                 <span class="text-[10px] text-slate-500 flex items-center gap-1">
                   <span class="w-2 h-2 rounded-full bg-indigo-500"></span> Transfer
                 </span>
-                <span class="text-[10px] font-mono text-slate-700 dark:text-slate-300">{{ formatRupiah(paymentBreakdown.transfer) }} ({{ paymentBreakdown.transferCount }}x)</span>
+                <span class="text-[10px] font-mono text-slate-700">{{ formatRupiah(paymentBreakdown.transfer) }} ({{ paymentBreakdown.transferCount }}x)</span>
               </div>
               <div v-if="paymentBreakdown.hutang > 0" class="flex items-center justify-between">
                 <span class="text-[10px] text-slate-500 flex items-center gap-1">
                   <span class="w-2 h-2 rounded-full bg-amber-500"></span> Hutang
                 </span>
-                <span class="text-[10px] font-mono text-slate-700 dark:text-slate-300">{{ formatRupiah(paymentBreakdown.hutang) }} ({{ paymentBreakdown.hutangCount }}x)</span>
+                <span class="text-[10px] font-mono text-slate-700">{{ formatRupiah(paymentBreakdown.hutang) }} ({{ paymentBreakdown.hutangCount }}x)</span>
               </div>
             </div>
 
             <!-- Total omzet -->
-            <div v-if="transactions.length > 0" class="flex items-center justify-between pt-1 border-t border-slate-200 dark:border-slate-800">
-              <span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">Total Omzet Shift</span>
-              <span class="text-xs font-mono font-bold text-slate-900 dark:text-slate-100">{{ formatRupiah(totalOmzetShift) }}</span>
+            <div v-if="transactions.length > 0" class="flex items-center justify-between pt-1 border-t border-slate-200">
+              <span class="text-[10px] font-bold text-slate-600">Total Omzet Shift</span>
+              <span class="text-xs font-mono font-bold text-slate-900">{{ formatRupiah(totalOmzetShift) }}</span>
             </div>
           </div>
 
           <!-- Shift time info -->
-          <div class="space-y-1.5 text-[11px] text-slate-500 dark:text-slate-400">
+          <div class="space-y-1.5 text-[11px] text-slate-500">
             <div class="flex justify-between">
               <span>Mulai</span>
               <span class="font-mono">{{ formatDateTime(shift.startTime) }}</span>
@@ -207,13 +207,13 @@
             </div>
             <div class="flex justify-between">
               <span>Kasir</span>
-              <span class="font-medium text-slate-700 dark:text-slate-300">
+              <span class="font-medium text-slate-700">
                 {{ shift.user?.username ?? shift.user?.email ?? '—' }}
               </span>
             </div>
             <div class="flex justify-between">
               <span>Durasi</span>
-              <span class="font-mono font-medium text-slate-700 dark:text-slate-300">{{ duration }}</span>
+              <span class="font-mono font-medium text-slate-700">{{ duration }}</span>
             </div>
           </div>
         </div>
@@ -222,7 +222,7 @@
       <!-- ============================================ -->
       <!-- COLUMN 2: Cash Input (Total + Optional Detail) -->
       <!-- ============================================ -->
-      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
         <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             <CoinsIcon class="w-4 h-4 text-amber-600" />
@@ -253,7 +253,7 @@
               >
                 {{ cb.category.code.slice(0, 2) }}
               </span>
-              <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              <span class="text-xs font-semibold text-slate-700">
                 {{ cb.category.name }}
               </span>
             </div>
@@ -262,7 +262,7 @@
             <div>
               <label class="text-[10px] font-semibold text-slate-600 uppercase tracking-wide">Total Uang Tunai Fisik</label>
               <div class="relative mt-1">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-mono text-slate-500 dark:text-slate-400">Rp</span>
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-mono text-slate-500">Rp</span>
                 <input
                   :value="getDenomTotal(cb.categoryId) > 0 ? formatRupiah(getDenomTotal(cb.categoryId)).replace('Rp', '').trim() : ''"
                   type="text"
@@ -296,7 +296,7 @@
 
             <div
               v-if="shift.cashBoxes.length > 1"
-              class="border-b border-slate-100 pb-3 mb-3 last:border-0 last:pb-0 last:mb-0"
+              class="border-b border-slate-200 pb-3 mb-3 last:border-0 last:pb-0 last:mb-0"
             />
           </div>
         </div>
@@ -305,7 +305,7 @@
       <!-- ============================================ -->
       <!-- COLUMN 2B: Kas Tunai Agen & Rek BRILink         -->
       <!-- ============================================ -->
-      <div v-if="brilinkEnabled" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm lg:col-span-3">
+      <div v-if="brilinkEnabled" class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm lg:col-span-3">
         <div class="px-5 py-3 border-b border-slate-200 bg-teal-50">
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             <CreditCardIcon class="w-4 h-4 text-teal-600" />
@@ -383,7 +383,7 @@
       <!-- ============================================ -->
       <div class="space-y-5">
         <!-- Reconciliation Card -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
           <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
             <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
               <ScaleIcon class="w-4 h-4 text-purple-600" />
@@ -396,7 +396,7 @@
             <div
               v-for="cb in shift.cashBoxes"
               :key="'recon-' + cb.id"
-              class="space-y-2 pb-3 border-b border-slate-100 last:border-0 last:pb-0"
+              class="space-y-2 pb-3 border-b border-slate-200 last:border-0 last:pb-0"
             >
               <p
                 v-if="shift.cashBoxes.length > 1"
@@ -407,23 +407,23 @@
 
               <!-- Actual (from denomination) -->
               <div class="flex items-center justify-between">
-                <span class="text-xs text-slate-500 dark:text-slate-400">Actual (Hitung Fisik)</span>
-                <span class="text-xs font-mono font-semibold text-slate-900 dark:text-slate-100">
+                <span class="text-xs text-slate-500">Actual (Hitung Fisik)</span>
+                <span class="text-xs font-mono font-semibold text-slate-900">
                   {{ formatRupiah(getDenomTotal(cb.categoryId)) }}
                 </span>
               </div>
 
               <!-- Expected -->
               <div class="flex items-center justify-between">
-                <span class="text-xs text-slate-500 dark:text-slate-400">Expected (Sistem)</span>
-                <span class="text-xs font-mono font-semibold text-slate-900 dark:text-slate-100">
+                <span class="text-xs text-slate-500">Expected (Sistem)</span>
+                <span class="text-xs font-mono font-semibold text-slate-900">
                   {{ formatRupiah(cb.startingCash + cb.expectedCash) }}
                 </span>
               </div>
 
               <!-- Difference -->
               <div class="flex items-center justify-between pt-1">
-                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Selisih</span>
+                <span class="text-xs font-bold text-slate-700">Selisih</span>
                 <span
                   :class="[
                     'text-sm font-mono font-bold',
@@ -477,7 +477,7 @@
               class="border-t border-slate-200 pt-3 space-y-1.5"
             >
               <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-slate-700 dark:text-slate-300">Total Selisih</span>
+                <span class="text-xs font-bold text-slate-700">Total Selisih</span>
                 <span
                   :class="[
                     'text-sm font-mono font-bold',
@@ -496,7 +496,7 @@
         </div>
 
         <!-- Notes Card -->
-        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+        <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
           <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
             <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
               <FileTextIcon class="w-4 h-4 text-slate-500" />
@@ -505,7 +505,7 @@
           </div>
           <div class="p-5 space-y-3">
             <!-- Existing notes from kasir -->
-            <div v-if="shift.notes" class="bg-slate-50 dark:bg-slate-800/50 rounded-md px-3 py-2">
+            <div v-if="shift.notes" class="bg-slate-50 rounded-md px-3 py-2">
               <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Catatan Kasir</p>
               <p class="text-xs text-slate-700 whitespace-pre-line">{{ shift.notes }}</p>
             </div>
@@ -518,8 +518,8 @@
               <textarea
                 v-model="finalizeNotes"
                 rows="3"
-                class="w-full text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md px-3 py-2
-                       focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none
+                class="w-full text-sm border border-slate-200 rounded-md px-3 py-2
+                       focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none
                        disabled:bg-slate-100 disabled:text-slate-400 resize-none"
                 placeholder="Catatan tambahan untuk finalisasi..."
                 :disabled="shift.status === 'FINALIZED'"
@@ -888,3 +888,20 @@ function colorText(color?: string | null): string {
 // ============================================
 onMounted(loadDetail);
 </script>
+
+
+<style scoped>
+@keyframes fadeSlideUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+.space-y-5 > * { animation: fadeSlideUp 0.4s ease-out both; }
+.space-y-5 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-5 > *:nth-child(2) { animation-delay: 80ms; }
+.space-y-5 > *:nth-child(3) { animation-delay: 160ms; }
+.space-y-5 > *:nth-child(4) { animation-delay: 240ms; }
+.space-y-5 > *:nth-child(5) { animation-delay: 320ms; }
+@keyframes popIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+.grid > div[class*="rounded-lg"] { animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+.grid > div:nth-child(1) { animation-delay: 100ms; }
+.grid > div:nth-child(2) { animation-delay: 180ms; }
+.grid > div:nth-child(3) { animation-delay: 260ms; }
+.grid > div:nth-child(4) { animation-delay: 340ms; }
+</style>
