@@ -1,10 +1,10 @@
 <template>
-  <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
+  <div class="bg-white dark:bg-[#1e2020] rounded-lg border border-slate-200 dark:border-[#3d4948] overflow-hidden">
     <!-- Header -->
-    <div class="px-4 sm:px-5 py-3 border-b border-slate-200 flex items-center justify-between">
+    <div class="px-4 sm:px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] flex items-center justify-between">
       <div>
-        <h3 class="text-sm font-bold text-slate-950">Riwayat Transaksi BRILink</h3>
-        <p class="text-[11px] text-slate-500">
+        <h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">Riwayat Transaksi BRILink</h3>
+        <p class="text-[11px] text-slate-500 dark:text-[#869392]">
           {{ filtered.length }} transaksi ditampilkan dari {{ transactions.length }} total
         </p>
       </div>
@@ -17,7 +17,7 @@
     </div>
 
     <!-- Filter Chips -->
-    <div class="px-4 sm:px-5 py-3 border-b border-slate-200 bg-slate-50/50 overflow-x-auto">
+    <div class="px-4 sm:px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]/50 overflow-x-auto">
       <div class="flex items-center gap-1.5 flex-nowrap min-w-max">
         <!-- Semua -->
         <FilterChip

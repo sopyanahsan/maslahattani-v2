@@ -4,11 +4,11 @@
     <!-- STICKY TOP BAR                                -->
     <!-- ============================================ -->
     <div
-      class="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3.5 bg-white border-b border-slate-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+      class="-mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 py-3.5 bg-white dark:bg-[#1a1c1c] border-b border-slate-200 dark:border-[#3d4948] flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
     >
       <!-- Period selector -->
       <div
-        class="inline-flex items-center gap-0.5 bg-slate-100 border border-slate-200 rounded-lg p-1 self-start"
+        class="inline-flex items-center gap-0.5 bg-slate-100 dark:bg-[#292a2a] border border-slate-200 dark:border-[#3d4948] rounded-lg p-1 self-start"
       >
         <button
           v-for="p in periods"
@@ -18,7 +18,7 @@
             'px-3.5 py-1.5 text-xs font-semibold rounded-md transition-all',
             store.period === p.value
               ? 'bg-blue-600 text-white shadow-sm'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-white',
+              : 'text-slate-600 dark:text-[#bcc9c7] hover:text-slate-900 dark:hover:text-[#e3e2e2] hover:bg-white dark:hover:bg-[#1e2020]',
           ]"
           @click="setPeriod(p.value)"
         >
@@ -28,7 +28,7 @@
 
       <!-- Last updated indicator -->
       <div class="flex items-center gap-2 flex-wrap">
-        <span class="text-[11px] text-slate-500 font-medium">
+        <span class="text-[11px] text-slate-500 dark:text-[#869392] font-medium">
           {{ lastUpdatedLabel }}
         </span>
       </div>
@@ -367,7 +367,7 @@ const SectionWrapper: FunctionalComponent<
       'div',
       {
         class:
-          'rounded-lg border border-red-200 bg-red-50 p-5 flex items-start gap-3 shadow-sm',
+          'rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/30 p-5 flex items-start gap-3 shadow-sm',
       },
       [
         h(AlertTriangleIcon, {
@@ -376,12 +376,12 @@ const SectionWrapper: FunctionalComponent<
         h('div', { class: 'flex-1 min-w-0' }, [
           h(
             'p',
-            { class: 'text-sm font-bold text-red-800' },
+            { class: 'text-sm font-bold text-red-800 dark:text-red-200' },
             'Section gagal dimuat',
           ),
           h(
             'p',
-            { class: 'text-[11px] text-red-700 mt-1 break-words leading-relaxed' },
+            { class: 'text-[11px] text-red-700 dark:text-red-300 mt-1 break-words leading-relaxed' },
             props.error,
           ),
           h(
@@ -433,14 +433,14 @@ const ComparisonRow: FunctionalComponent<{
   const widthPrevious = `${Math.min(100, Math.max(2, (props.previous / max) * 100))}%`;
 
   if (props.loading) {
-    return h('div', { class: 'h-12 bg-slate-100 rounded animate-pulse' });
+    return h('div', { class: 'h-12 bg-slate-100 dark:bg-[#292a2a] rounded animate-pulse' });
   }
 
   return h('div', { class: 'space-y-1' }, [
     h('div', { class: 'flex items-center justify-between' }, [
       h(
         'span',
-        { class: 'text-xs font-semibold text-slate-700' },
+        { class: 'text-xs font-semibold text-slate-700 dark:text-[#bcc9c7]' },
         props.label,
       ),
       h(
@@ -461,7 +461,7 @@ const ComparisonRow: FunctionalComponent<{
         'div',
         {
           class:
-            'h-2 bg-slate-100 rounded-full overflow-hidden flex items-center',
+            'h-2 bg-slate-100 dark:bg-[#292a2a] rounded-full overflow-hidden flex items-center',
         },
         [
           h('div', {
@@ -474,7 +474,7 @@ const ComparisonRow: FunctionalComponent<{
         'div',
         {
           class:
-            'h-2 bg-slate-100 rounded-full overflow-hidden flex items-center',
+            'h-2 bg-slate-100 dark:bg-[#292a2a] rounded-full overflow-hidden flex items-center',
         },
         [
           h('div', {
@@ -488,7 +488,7 @@ const ComparisonRow: FunctionalComponent<{
       'div',
       {
         class:
-          'flex justify-between text-[10px] text-slate-500 font-mono',
+          'flex justify-between text-[10px] text-slate-500 dark:text-[#869392] font-mono',
       },
       [h('span', null, `Sekarang: ${fmt(props.current)}`), h('span', null, `Sebelumnya: ${fmt(props.previous)}`)],
     ),

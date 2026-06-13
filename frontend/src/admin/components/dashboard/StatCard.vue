@@ -3,8 +3,8 @@
     :class="[
       'rounded-lg border shadow-sm p-4 sm:p-5 transition-colors',
       disabled
-        ? 'bg-slate-50 border-slate-200 border-dashed'
-        : 'bg-white border-slate-200',
+        ? 'bg-slate-50 dark:bg-[#1a1c1c] border-slate-200 dark:border-[#3d4948] border-dashed'
+        : 'bg-white dark:bg-[#1e2020] border-slate-200 dark:border-[#3d4948]',
     ]"
   >
     <div class="flex items-start justify-between mb-3">
@@ -33,7 +33,7 @@
         v-else-if="delta && !loading"
         :class="[
           'text-[11px] font-semibold flex items-center gap-0.5',
-          deltaPositive ? 'text-emerald-600' : 'text-amber-600',
+          deltaPositive ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400',
         ]"
       >
         <component
@@ -47,18 +47,18 @@
     <p
       :class="[
         'text-[11px] sm:text-xs mb-1',
-        disabled ? 'text-slate-400' : 'text-slate-500',
+        disabled ? 'text-slate-400 dark:text-[#869392]' : 'text-slate-500 dark:text-[#bcc9c7]',
       ]"
     >
       {{ label }}
     </p>
 
-    <p v-if="loading" class="h-7 w-24 bg-slate-200 rounded animate-pulse"></p>
+    <p v-if="loading" class="h-7 w-24 bg-slate-200 dark:bg-[#292a2a] rounded animate-pulse"></p>
     <p
       v-else
       :class="[
         'text-lg sm:text-xl font-bold font-mono leading-tight break-words',
-        disabled ? 'text-slate-400' : 'text-slate-950',
+        disabled ? 'text-slate-400 dark:text-[#869392]' : 'text-slate-950 dark:text-[#e3e2e2]',
       ]"
     >
       {{ value }}
@@ -101,24 +101,24 @@ const props = withDefaults(
 
 const toneIconBg = computed(() => {
   const map: Record<Tone, string> = {
-    blue: 'bg-blue-100',
-    indigo: 'bg-indigo-100',
-    emerald: 'bg-emerald-100',
-    amber: 'bg-amber-100',
-    red: 'bg-red-100',
-    slate: 'bg-slate-100',
+    blue: 'bg-blue-100 dark:bg-blue-900/30',
+    indigo: 'bg-indigo-100 dark:bg-indigo-900/30',
+    emerald: 'bg-emerald-100 dark:bg-emerald-900/30',
+    amber: 'bg-amber-100 dark:bg-amber-900/30',
+    red: 'bg-red-100 dark:bg-red-900/30',
+    slate: 'bg-slate-100 dark:bg-[#292a2a]',
   };
   return map[props.tone];
 });
 
 const toneIconColor = computed(() => {
   const map: Record<Tone, string> = {
-    blue: 'text-blue-600',
-    indigo: 'text-indigo-600',
-    emerald: 'text-emerald-600',
-    amber: 'text-amber-600',
-    red: 'text-red-600',
-    slate: 'text-slate-700',
+    blue: 'text-blue-600 dark:text-blue-400',
+    indigo: 'text-indigo-600 dark:text-indigo-400',
+    emerald: 'text-emerald-600 dark:text-emerald-400',
+    amber: 'text-amber-600 dark:text-amber-400',
+    red: 'text-red-600 dark:text-red-400',
+    slate: 'text-slate-700 dark:text-[#bcc9c7]',
   };
   return map[props.tone];
 });
