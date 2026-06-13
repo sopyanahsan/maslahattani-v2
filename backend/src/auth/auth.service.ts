@@ -628,11 +628,11 @@ export class AuthService {
         await this.prisma.subscription.create({
           data: {
             tenantId: result.tenant.id,
-            plan: 'BASIC',
+            plan: 'TRIAL',
             cycle: 'MONTHLY',
             status: 'TRIAL',
             startDate: new Date(),
-            endDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+            endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           },
         });
       } catch {
