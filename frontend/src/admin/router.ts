@@ -35,7 +35,7 @@ const routes: RouteRecordRaw[] = [
     path: '/owner',
     name: 'owner-dashboard',
     component: () => import('@/owner/OwnerDashboard.vue'),
-    meta: { title: 'Posify Owner Dashboard', requiresAuth: true, roles: ['SUPER_ADMIN'], platformOwnerOnly: true },
+    meta: { title: 'Posify Owner Dashboard', requiresAuth: true, roles: ['DEVELOPER'], platformOwnerOnly: true },
   },
 
   // === Admin Auth (Guest Only) ===
