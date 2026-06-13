@@ -6,7 +6,7 @@
       <h1 class="relative text-lg font-bold">Pengaturan</h1>
       <p class="relative text-xs text-slate-300 mt-0.5">Kelola konfigurasi toko, struk, dan preferensi sistem.</p>
     </div>
-      <p class="text-xs text-slate-500 mt-0.5">
+      <p class="text-xs text-slate-500 dark:text-[#869392] mt-0.5">
         Konfigurasi toko, struk, bahasa, alert, dan preferensi sistem.
       </p>
     </div>
@@ -36,8 +36,8 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-      <span class="ml-2 text-sm text-slate-500">Memuat pengaturan...</span>
+      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
+      <span class="ml-2 text-sm text-slate-500 dark:text-[#869392]">Memuat pengaturan...</span>
     </div>
 
     <!-- Error -->
@@ -55,10 +55,10 @@
       <!-- ============================================ -->
       <section
         v-if="activeTab === 'shop'"
-        class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
+        class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden"
       >
         <div
-          class="px-5 py-3 border-b border-slate-200 bg-slate-50"
+          class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]"
         >
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             <StoreIcon class="w-4 h-4 text-blue-600" /> Data Toko
@@ -73,7 +73,7 @@
               <input
                 v-model="shopForm.name"
                 type="text"
-                class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
+                class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
               />
             </div>
             <div>
@@ -83,7 +83,7 @@
               <input
                 v-model="shopForm.phone"
                 type="text"
-                class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
+                class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
               />
             </div>
           </div>
@@ -121,9 +121,9 @@
       <!-- ============================================ -->
       <section
         v-if="activeTab === 'shop'"
-        class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
+        class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden"
       >
-        <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+        <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             Zona Waktu
           </h3>
@@ -143,7 +143,7 @@
               ]"
               @click="handleChangeTimezone(tz.value)"
             >
-              <p class="text-sm font-bold text-slate-900">{{ tz.label }}</p>
+              <p class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ tz.label }}</p>
               <p class="text-[10px] text-slate-500 mt-0.5">{{ tz.offset }}</p>
               <p v-if="currentTimezone === tz.value" class="text-[10px] font-semibold text-[#00A19B] mt-1">Aktif</p>
             </button>
@@ -162,10 +162,10 @@
       <!-- ============================================ -->
       <section
         v-if="activeTab === 'receipt'"
-        class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
+        class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden"
       >
         <div
-          class="px-5 py-3 border-b border-slate-200 bg-slate-50"
+          class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]"
         >
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             <PrinterIcon class="w-4 h-4 text-amber-600" /> Pengaturan Struk
@@ -202,7 +202,7 @@
               v-model="receiptForm.footerMessage"
               type="text"
               placeholder="Terima kasih sudah berbelanja!"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
             />
           </div>
 
@@ -299,10 +299,10 @@
       <!-- POS / Kasir Settings (same tab as receipt) -->
       <section
         v-if="activeTab === 'receipt'"
-        class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
+        class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden"
       >
         <div
-          class="px-5 py-3 border-b border-slate-200 bg-slate-50"
+          class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]"
         >
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             <SettingsIcon class="w-4 h-4 text-blue-600" /> POS / Kasir
@@ -340,7 +340,7 @@
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Default metode bayar</label>
-            <select v-model="posForm.defaultPaymentMethod" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 outline-none">
+            <select v-model="posForm.defaultPaymentMethod" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none">
               <option value="CASH">Cash (Tunai)</option>
               <option value="QRIS">QRIS</option>
               <option value="TRANSFER">Transfer Bank</option>
@@ -355,10 +355,10 @@
       <!-- ============================================ -->
       <section
         v-if="activeTab === 'alerts'"
-        class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
+        class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden"
       >
         <div
-          class="px-5 py-3 border-b border-slate-200 bg-slate-50"
+          class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]"
         >
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             <BellIcon class="w-4 h-4 text-orange-600" />
@@ -381,7 +381,7 @@
               v-model.number="alertForm.lowStockThreshold"
               type="number"
               min="0"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
             />
             <p class="text-[10px] text-slate-500 mt-1">
               Produk dengan stok ≤ angka ini akan masuk alert "Stok Menipis".
@@ -401,7 +401,7 @@
               v-model.number="alertForm.shiftDurationWarningHours"
               type="number"
               min="0"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
             />
             <p class="text-[10px] text-slate-500 mt-1">
               Shift OPEN yang sudah lebih dari sekian jam akan dianggap "lupa
@@ -421,7 +421,7 @@
               v-model.number="alertForm.overdueDebtDaysBeforeNotice"
               type="number"
               min="0"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
             />
             <p class="text-[10px] text-slate-500 mt-1">
               0 = tampil saat tepat jatuh tempo. 3 = tampil 3 hari sebelumnya.
@@ -441,7 +441,7 @@
               v-model.number="alertForm.brilinkFailedTransactionThreshold"
               type="number"
               min="0"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none font-mono"
             />
             <p class="text-[10px] text-slate-500 mt-1">
               Jika jumlah transaksi BRILink gagal hari ini ≥ angka ini, akan muncul alert
@@ -528,8 +528,8 @@
         <SystemSettingsView />
 
         <!-- Keamanan Section -->
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
             <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
               <SettingsIcon class="w-4 h-4 text-red-600" /> Keamanan
             </h3>
@@ -579,7 +579,7 @@
                   type="number"
                   min="3"
                   max="10"
-                  class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 outline-none"
+                  class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none"
                 />
                 <p class="text-[10px] text-slate-500 mt-1">
                   Kasir yang salah PIN sebanyak ini akan di-lock sementara. Default: 5.
@@ -596,7 +596,7 @@
                   type="number"
                   min="1"
                   max="60"
-                  class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 outline-none"
+                  class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none"
                 />
                 <p class="text-[10px] text-slate-500 mt-1">
                   Berapa lama akun kasir di-lock setelah max percobaan. Default: 15 menit.

@@ -42,7 +42,7 @@
       class="bg-white border border-slate-200 rounded-2xl p-12 text-center"
     >
       <component :is="Loader2Icon" class="w-6 h-6 animate-spin text-blue-600 mx-auto mb-2" />
-      <p class="text-xs text-slate-500">Memuat kategori…</p>
+      <p class="text-xs text-slate-500 dark:text-[#869392]">Memuat kategori…</p>
     </div>
 
     <!-- Error -->
@@ -72,8 +72,8 @@
       class="bg-white border border-slate-200 rounded-2xl p-12 text-center"
     >
       <component :is="WalletIcon" class="w-10 h-10 text-slate-300 mx-auto mb-3" />
-      <p class="text-sm font-semibold text-slate-900">Belum ada kategori</p>
-      <p class="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
+      <p class="text-sm font-semibold text-slate-900 dark:text-[#e3e2e2]">Belum ada kategori</p>
+      <p class="text-xs text-slate-500 dark:text-[#869392] mt-1 max-w-sm mx-auto">
         Klik tombol "Tambah Kategori" untuk membuat kategori cashbox pertama.
       </p>
     </div>
@@ -85,7 +85,7 @@
     >
       <!-- Desktop table -->
       <table class="hidden md:table w-full">
-        <thead class="bg-slate-50 border-b border-slate-200">
+        <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
           <tr>
             <th class="px-4 py-3 text-left text-[10px] font-bold uppercase tracking-wider text-slate-600">
               Kategori
@@ -114,7 +114,7 @@
           <tr
             v-for="cat in categories"
             :key="cat.id"
-            class="hover:bg-slate-50 transition-colors"
+            class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
           >
             <td class="px-4 py-3">
               <div class="flex items-center gap-3">
@@ -218,7 +218,7 @@
             </span>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-1.5 flex-wrap">
-                <p class="text-sm font-semibold text-slate-900">{{ cat.name }}</p>
+                <p class="text-sm font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ cat.name }}</p>
                 <span
                   v-if="cat.isDefault"
                   class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-[9px] font-bold uppercase tracking-wide"
@@ -236,7 +236,7 @@
                   {{ cat.isActive ? 'Aktif' : 'Non' }}
                 </span>
               </div>
-              <code class="text-[11px] font-mono text-slate-500">{{ cat.code }}</code>
+              <code class="text-[11px] font-mono text-slate-500 dark:text-[#869392]">{{ cat.code }}</code>
               <p
                 v-if="cat.description"
                 class="text-[11px] text-slate-500 mt-0.5"

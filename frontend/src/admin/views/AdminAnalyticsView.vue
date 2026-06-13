@@ -5,7 +5,7 @@
       <div></div>
 
       <!-- Period Selector -->
-      <div class="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+      <div class="flex items-center gap-1 bg-slate-100 dark:bg-[#292a2a] rounded-lg p-1">
         <button
           v-for="p in periods"
           :key="p.value"
@@ -23,7 +23,7 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="flex flex-col items-center py-16 text-slate-500">
+    <div v-if="loading" class="flex flex-col items-center py-16 text-slate-500 dark:text-[#869392]">
       <svg class="w-8 h-8 animate-spin mb-3 text-blue-500" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
@@ -86,8 +86,8 @@
         <!-- Revenue Chart -->
         <div class="lg:col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden">
           <div class="px-4 sm:px-5 py-3 border-b border-slate-200">
-            <h3 class="text-sm font-bold text-slate-950">Grafik Pendapatan</h3>
-            <p class="text-[11px] text-slate-500">Revenue & profit per periode</p>
+            <h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">Grafik Pendapatan</h3>
+            <p class="text-[11px] text-slate-500 dark:text-[#869392]">Revenue & profit per periode</p>
           </div>
           <div class="p-4 sm:p-5">
             <div v-if="revenueChart.labels.length === 0" class="py-8 text-center text-xs text-slate-400">
@@ -145,8 +145,8 @@
         <!-- Month Comparison -->
         <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
           <div class="px-4 sm:px-5 py-3 border-b border-slate-200">
-            <h3 class="text-sm font-bold text-slate-950">Perbandingan Bulan</h3>
-            <p class="text-[11px] text-slate-500">Bulan ini vs bulan lalu</p>
+            <h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">Perbandingan Bulan</h3>
+            <p class="text-[11px] text-slate-500 dark:text-[#869392]">Bulan ini vs bulan lalu</p>
           </div>
           <div class="p-4 sm:p-5 space-y-4">
             <!-- Revenue Comparison -->
@@ -229,15 +229,15 @@
         <!-- Top Products -->
         <div class="lg:col-span-2 bg-white rounded-lg border border-slate-200 overflow-hidden">
           <div class="px-4 sm:px-5 py-3 border-b border-slate-200">
-            <h3 class="text-sm font-bold text-slate-950">Produk Terlaris</h3>
-            <p class="text-[11px] text-slate-500">Top 10 berdasarkan revenue</p>
+            <h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">Produk Terlaris</h3>
+            <p class="text-[11px] text-slate-500 dark:text-[#869392]">Top 10 berdasarkan revenue</p>
           </div>
           <div v-if="topProducts.length === 0" class="p-8 text-center">
             <p class="text-xs text-slate-400">Belum ada data produk</p>
           </div>
           <div v-else class="overflow-x-auto">
             <table class="w-full min-w-[500px]">
-              <thead class="bg-slate-50 border-b border-slate-200">
+              <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
                 <tr>
                   <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-700 uppercase tracking-wide w-8">#</th>
                   <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-700 uppercase tracking-wide">Produk</th>
@@ -250,11 +250,11 @@
                 <tr
                   v-for="(product, idx) in topProducts"
                   :key="product.productId"
-                  class="hover:bg-slate-50 transition-colors"
+                  class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
                 >
                   <td class="px-4 py-2.5 text-sm text-slate-500 font-mono">{{ idx + 1 }}</td>
                   <td class="px-4 py-2.5">
-                    <p class="text-sm font-medium text-slate-900">{{ product.name }}</p>
+                    <p class="text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">{{ product.name }}</p>
                     <p class="text-[10px] text-slate-400 font-mono">{{ product.sku }}</p>
                   </td>
                   <td class="px-4 py-2.5 text-sm text-right text-slate-700 font-mono">{{ product.totalSold }}</td>
@@ -269,8 +269,8 @@
         <!-- Payment Breakdown -->
         <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
           <div class="px-4 sm:px-5 py-3 border-b border-slate-200">
-            <h3 class="text-sm font-bold text-slate-950">Metode Pembayaran</h3>
-            <p class="text-[11px] text-slate-500">Breakdown per metode</p>
+            <h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">Metode Pembayaran</h3>
+            <p class="text-[11px] text-slate-500 dark:text-[#869392]">Breakdown per metode</p>
           </div>
           <div class="p-4 sm:p-5 space-y-3">
             <div v-if="paymentBreakdown.total === 0" class="py-4 text-center text-xs text-slate-400">
@@ -306,8 +306,8 @@
       <!-- Hourly Distribution -->
       <div class="bg-white rounded-lg border border-slate-200 overflow-hidden">
         <div class="px-4 sm:px-5 py-3 border-b border-slate-200">
-          <h3 class="text-sm font-bold text-slate-950">Distribusi Jam Sibuk</h3>
-          <p class="text-[11px] text-slate-500">Rata-rata transaksi per jam ({{ periodLabel }})</p>
+          <h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">Distribusi Jam Sibuk</h3>
+          <p class="text-[11px] text-slate-500 dark:text-[#869392]">Rata-rata transaksi per jam ({{ periodLabel }})</p>
         </div>
         <div class="p-4 sm:p-5">
           <div v-if="hourlyData.length === 0" class="py-8 text-center text-xs text-slate-400">

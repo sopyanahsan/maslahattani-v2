@@ -11,12 +11,12 @@
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="stat-card bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] font-semibold text-blue-600 uppercase tracking-wide">Total Pembelian</p>
-        <p class="text-lg font-bold text-slate-950 mt-1">{{ formatRupiah(stats.totalPurchaseThisMonth) }}</p>
+        <p class="text-lg font-bold text-slate-950 dark:text-[#e3e2e2] mt-1">{{ formatRupiah(stats.totalPurchaseThisMonth) }}</p>
         <p class="text-[10px] text-slate-400 mt-0.5">bulan ini</p>
       </div>
-      <div class="stat-card bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] font-semibold text-amber-600 uppercase tracking-wide">PO Pending</p>
         <p class="text-lg font-bold text-amber-600 mt-1">{{ stats.poPending }}</p>
         <p class="text-[10px] text-slate-400 mt-0.5">
@@ -24,20 +24,20 @@
           <span v-if="stats.overdueCount > 0" class="text-red-600 font-semibold"> · {{ stats.overdueCount }} overdue!</span>
         </p>
       </div>
-      <div class="stat-card bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] font-semibold text-emerald-600 uppercase tracking-wide">Supplier Aktif</p>
-        <p class="text-lg font-bold text-slate-950 mt-1">{{ stats.activeSuppliers }}</p>
+        <p class="text-lg font-bold text-slate-950 dark:text-[#e3e2e2] mt-1">{{ stats.activeSuppliers }}</p>
         <p class="text-[10px] text-slate-400 mt-0.5">dari {{ suppliers.length }} total</p>
       </div>
-      <div class="stat-card bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] font-semibold text-indigo-600 uppercase tracking-wide">PO Bulan Ini</p>
-        <p class="text-lg font-bold text-slate-950 mt-1">{{ stats.poThisMonth }}</p>
+        <p class="text-lg font-bold text-slate-950 dark:text-[#e3e2e2] mt-1">{{ stats.poThisMonth }}</p>
         <p class="text-[10px] text-slate-400 mt-0.5">{{ stats.poReceivedThisMonth }} sudah diterima</p>
       </div>
     </div>
 
     <!-- Tabs -->
-    <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+    <div class="flex gap-1 bg-slate-100 dark:bg-[#292a2a] rounded-lg p-1 w-fit">
       <button
         v-for="tab in tabs"
         :key="tab.key"
@@ -53,7 +53,7 @@
     <!-- ============================================ -->
     <template v-if="activeTab === 'suppliers'">
       <div class="flex justify-between items-center">
-        <p class="text-xs text-slate-500">{{ suppliers.length }} supplier</p>
+        <p class="text-xs text-slate-500 dark:text-[#869392]">{{ suppliers.length }} supplier</p>
         <button
           type="button"
           class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors"
@@ -67,11 +67,11 @@
         <div
           v-for="s in suppliers"
           :key="s.id"
-          class="bg-white border border-slate-200 rounded-lg p-4 flex items-center justify-between hover:border-slate-200 transition-colors"
+          class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 flex items-center justify-between hover:border-slate-200 transition-colors"
         >
           <div>
-            <p class="text-sm font-semibold text-slate-900">{{ s.name }}</p>
-            <p class="text-xs text-slate-500 mt-0.5">
+            <p class="text-sm font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ s.name }}</p>
+            <p class="text-xs text-slate-500 dark:text-[#869392] mt-0.5">
               {{ s.phone || '-' }} &middot; {{ s.address || 'Alamat belum diisi' }}
             </p>
           </div>
@@ -92,7 +92,7 @@
       <div class="flex justify-between items-center">
         <select
           v-model="poFilterStatus"
-          class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none"
+          class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none"
           @change="fetchPOs"
         >
           <option value="">Semua Status</option>
@@ -114,22 +114,22 @@
         <div
           v-for="po in purchaseOrders"
           :key="po.id"
-          class="bg-white border border-slate-200 rounded-lg p-4 hover:border-slate-200 transition-colors cursor-pointer"
+          class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 hover:border-slate-200 transition-colors cursor-pointer"
           @click="openPODetail(po)"
         >
           <div class="flex items-start justify-between">
             <div>
               <div class="flex items-center gap-2">
-                <span class="text-sm font-bold text-slate-900">{{ po.orderNumber }}</span>
+                <span class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ po.orderNumber }}</span>
                 <span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', poStatusBadge(po.status)]">
                   {{ poStatusLabel(po.status) }}
                 </span>
               </div>
-              <p class="text-xs text-slate-500 mt-1">
+              <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">
                 {{ po.supplierName }} &middot; {{ po.itemCount }} item &middot; {{ formatDate(po.createdAt) }}
               </p>
             </div>
-            <p class="text-sm font-bold text-slate-900">{{ formatRupiah(po.totalAmount) }}</p>
+            <p class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(po.totalAmount) }}</p>
           </div>
         </div>
       </div>
@@ -139,14 +139,14 @@
     <!-- Supplier Modal                                -->
     <!-- ============================================ -->
     <teleport to="body">
-      <div v-if="showSupplierModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="showSupplierModal = false">
+      <div v-if="showSupplierModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showSupplierModal = false">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
           <h2 class="text-base font-bold text-slate-900 mb-4">{{ editingSupplier ? 'Edit Supplier' : 'Tambah Supplier' }}</h2>
           <form @submit.prevent="handleSaveSupplier" class="space-y-3">
-            <input v-model="supplierForm.name" placeholder="Nama supplier *" required class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" />
-            <input v-model="supplierForm.phone" placeholder="No. HP" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" />
-            <input v-model="supplierForm.address" placeholder="Alamat" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" />
-            <textarea v-model="supplierForm.notes" placeholder="Catatan" rows="2" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none resize-none"></textarea>
+            <input v-model="supplierForm.name" placeholder="Nama supplier *" required class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" />
+            <input v-model="supplierForm.phone" placeholder="No. HP" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" />
+            <input v-model="supplierForm.address" placeholder="Alamat" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" />
+            <textarea v-model="supplierForm.notes" placeholder="Catatan" rows="2" class="w-full px-3 py-2 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none resize-none"></textarea>
             <div class="flex justify-end gap-2 pt-2">
               <button type="button" @click="showSupplierModal = false" class="h-9 px-4 text-xs font-semibold text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-50">Batal</button>
               <button type="submit" :disabled="savingSupplier" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700">
@@ -162,12 +162,12 @@
     <!-- PO Detail Modal                               -->
     <!-- ============================================ -->
     <teleport to="body">
-      <div v-if="showPODetail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="showPODetail = false">
+      <div v-if="showPODetail" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showPODetail = false">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
           <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
             <div>
-              <h2 class="text-base font-bold text-slate-900">{{ poDetail?.orderNumber }}</h2>
-              <p class="text-xs text-slate-500">{{ poDetail?.supplier.name }} &middot; {{ poDetail ? formatDate(poDetail.createdAt) : '' }}</p>
+              <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ poDetail?.orderNumber }}</h2>
+              <p class="text-xs text-slate-500 dark:text-[#869392]">{{ poDetail?.supplier.name }} &middot; {{ poDetail ? formatDate(poDetail.createdAt) : '' }}</p>
             </div>
             <div class="flex items-center gap-2">
               <button
@@ -214,7 +214,7 @@
                 <tbody>
                   <tr v-for="item in poDetail.items" :key="item.id" class="border-b border-slate-200 last:border-0">
                     <td class="py-2 pr-3">
-                      <p class="text-xs font-medium text-slate-900">{{ item.productName }}</p>
+                      <p class="text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ item.productName }}</p>
                       <p class="text-[10px] text-slate-400">{{ item.productSku }}</p>
                     </td>
                     <td class="py-2 pr-3 text-right text-xs">{{ item.quantity }}</td>
@@ -230,7 +230,7 @@
                 <tfoot>
                   <tr class="border-t border-slate-200">
                     <td colspan="3" class="pt-2 text-right text-xs font-bold text-slate-700">Total</td>
-                    <td class="pt-2 text-right text-sm font-bold text-slate-900">{{ formatRupiah(poDetail.totalAmount) }}</td>
+                    <td class="pt-2 text-right text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(poDetail.totalAmount) }}</td>
                   </tr>
                 </tfoot>
               </table>
@@ -265,15 +265,15 @@
     <!-- Create PO Modal (with product search)         -->
     <!-- ============================================ -->
     <teleport to="body">
-      <div v-if="showCreatePO" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="showCreatePO = false">
+      <div v-if="showCreatePO" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showCreatePO = false">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
           <h2 class="text-base font-bold text-slate-900 mb-1">Buat Purchase Order</h2>
           <p class="text-xs text-slate-500 mb-4">Cari produk, tentukan qty. Harga beli diisi nanti saat terima barang.</p>
           <form @submit.prevent="handleCreatePO" class="space-y-4">
             <!-- Supplier -->
             <div>
-              <label class="text-[11px] font-bold text-slate-600 uppercase">Supplier *</label>
-              <select v-model="poForm.supplierId" required class="mt-1 w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+              <label class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Supplier *</label>
+              <select v-model="poForm.supplierId" required class="mt-1 w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none">
                 <option value="">Pilih supplier</option>
                 <option v-for="s in suppliers" :key="s.id" :value="s.id">{{ s.name }}</option>
               </select>
@@ -281,7 +281,7 @@
 
             <!-- Product Search -->
             <div>
-              <label class="text-[11px] font-bold text-slate-600 uppercase">Tambah Produk</label>
+              <label class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Tambah Produk</label>
               <div class="relative mt-1">
                 <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -290,7 +290,7 @@
                   v-model="productSearchQuery"
                   type="text"
                   placeholder="Cari nama produk atau SKU..."
-                  class="w-full h-9 pl-8 pr-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
+                  class="w-full h-9 pl-8 pr-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
                   @input="handleProductSearch"
                   @focus="productSearchQuery.length >= 2 && (showProductDropdown = true)"
                   @blur="setTimeout(() => showProductDropdown = false, 200)"
@@ -298,7 +298,7 @@
                 <!-- Dropdown results -->
                 <div
                   v-if="showProductDropdown"
-                  class="absolute z-10 top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-56 overflow-y-auto"
+                  class="absolute z-10 top-full left-0 right-0 mt-1 bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-lg max-h-56 overflow-y-auto"
                 >
                   <div v-if="productSearchLoading" class="px-3 py-4 text-center text-xs text-slate-400">
                     Mencari...
@@ -404,7 +404,7 @@
 
             <!-- Selected Items -->
             <div v-if="poForm.items.length > 0">
-              <label class="text-[11px] font-bold text-slate-600 uppercase">Item Pesanan ({{ poForm.items.length }})</label>
+              <label class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Item Pesanan ({{ poForm.items.length }})</label>
               <div class="mt-1.5 space-y-2">
                 <div
                   v-for="(item, idx) in poForm.items"
@@ -422,11 +422,11 @@
                   </div>
                   <div class="grid grid-cols-2 gap-2">
                     <div>
-                      <label class="text-[9px] text-slate-500">Qty *</label>
+                      <label class="text-[9px] text-slate-500 dark:text-[#869392]">Qty *</label>
                       <input v-model.number="item.quantity" type="number" min="1" required class="w-full h-7 px-2 text-xs font-mono border border-slate-200 rounded-md outline-none focus:border-blue-600" />
                     </div>
                     <div>
-                      <label class="text-[9px] text-slate-500">Harga beli <span class="text-slate-400">(opsional)</span></label>
+                      <label class="text-[9px] text-slate-500 dark:text-[#869392]">Harga beli <span class="text-slate-400">(opsional)</span></label>
                       <div class="relative">
                         <span class="absolute left-2 top-1/2 -translate-y-1/2 text-[9px] text-slate-400">Rp</span>
                         <input v-model.number="item.unitCost" type="number" min="0" placeholder="Isi nanti" class="w-full h-7 pl-6 pr-2 text-xs font-mono text-right border border-slate-200 rounded-md outline-none focus:border-blue-600" />
@@ -442,12 +442,12 @@
               <svg class="w-8 h-8 text-slate-300 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
               </svg>
-              <p class="text-xs text-slate-500">Cari dan tambahkan produk di atas</p>
+              <p class="text-xs text-slate-500 dark:text-[#869392]">Cari dan tambahkan produk di atas</p>
             </div>
 
             <!-- Notes -->
             <div>
-              <label class="text-[11px] font-bold text-slate-600 uppercase">Catatan</label>
+              <label class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Catatan</label>
               <textarea v-model="poForm.notes" placeholder="Catatan untuk supplier (opsional)" rows="2" class="mt-1 w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none resize-none focus:border-blue-600"></textarea>
             </div>
 
@@ -466,7 +466,7 @@
     <!-- Partial Receive Modal (with actualCost)       -->
     <!-- ============================================ -->
     <teleport to="body">
-      <div v-if="showPartialReceive" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="showPartialReceive = false">
+      <div v-if="showPartialReceive" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showPartialReceive = false">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
           <h2 class="text-base font-bold text-slate-900 mb-1">Terima Barang</h2>
           <p class="text-xs text-slate-500 mb-4">Masukkan qty diterima dan <strong>harga beli dari nota supplier</strong> per item.</p>
@@ -475,7 +475,7 @@
               <div class="flex items-center justify-between">
                 <div class="min-w-0">
                   <p class="text-xs font-semibold text-slate-900 truncate">{{ item.productName }}</p>
-                  <p class="text-[10px] text-slate-500">Sisa: {{ item.remaining }} dari {{ item.orderQty }}</p>
+                  <p class="text-[10px] text-slate-500 dark:text-[#869392]">Sisa: {{ item.remaining }} dari {{ item.orderQty }}</p>
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-2">
@@ -486,7 +486,7 @@
                     type="number"
                     :min="0"
                     :max="item.remaining"
-                    class="w-full h-8 px-2 text-sm font-mono text-center border border-slate-200 rounded-md focus:border-blue-600 outline-none"
+                    class="w-full h-8 px-2 text-sm font-mono text-center border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none"
                   />
                 </div>
                 <div>
@@ -498,7 +498,7 @@
                       type="number"
                       :min="0"
                       :placeholder="String(item.lastCost || 0)"
-                      class="w-full h-8 pl-7 pr-2 text-sm font-mono text-right border border-slate-200 rounded-md focus:border-blue-600 outline-none"
+                      class="w-full h-8 pl-7 pr-2 text-sm font-mono text-right border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none"
                     />
                   </div>
                   <p v-if="item.lastCost" class="text-[9px] text-slate-400 mt-0.5">Terakhir: {{ formatRupiah(item.lastCost) }}</p>
@@ -520,7 +520,7 @@
     <!-- Price Review Modal (after receive)            -->
     <!-- ============================================ -->
     <teleport to="body">
-      <div v-if="showPriceReviewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="showPriceReviewModal = false">
+      <div v-if="showPriceReviewModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showPriceReviewModal = false">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-xl p-6 max-h-[85vh] overflow-hidden flex flex-col">
           <!-- Header -->
           <div class="flex items-start gap-3 mb-4">
@@ -530,8 +530,8 @@
               </svg>
             </div>
             <div>
-              <h2 class="text-base font-bold text-slate-900">Review Harga Produk</h2>
-              <p class="text-xs text-slate-500 mt-0.5">
+              <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">Review Harga Produk</h2>
+              <p class="text-xs text-slate-500 dark:text-[#869392] mt-0.5">
                 {{ (pendingNewProducts.length + pendingPriceChanges.length) }} produk perlu diset/update harganya.
               </p>
             </div>
@@ -557,7 +557,7 @@
                 >
                   <div class="flex items-center justify-between">
                     <div>
-                      <p class="text-xs font-semibold text-slate-900">{{ item.productName }}</p>
+                      <p class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ item.productName }}</p>
                       <p class="text-[10px] text-slate-400 font-mono">{{ item.productSku }}</p>
                     </div>
                     <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-700">BARU</span>
@@ -566,7 +566,7 @@
                   <div class="grid grid-cols-3 gap-2 text-center">
                     <div class="bg-white rounded-md p-1.5 border border-emerald-100">
                       <p class="text-[9px] text-emerald-600 uppercase font-bold">Harga Beli</p>
-                      <p class="text-xs font-mono font-bold text-slate-900">{{ formatRupiah(item.cost) }}</p>
+                      <p class="text-xs font-mono font-bold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(item.cost) }}</p>
                     </div>
                     <div class="bg-white rounded-md p-1.5 border border-emerald-100">
                       <p class="text-[9px] text-blue-600 uppercase">Margin</p>
@@ -612,7 +612,7 @@
                 >
                   <div class="flex items-center justify-between">
                     <div>
-                      <p class="text-xs font-semibold text-slate-900">{{ item.productName }}</p>
+                      <p class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ item.productName }}</p>
                       <p class="text-[10px] text-slate-400 font-mono">{{ item.productSku }}</p>
                     </div>
                     <span

@@ -31,8 +31,8 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-      <span class="ml-2 text-sm text-slate-500">Memuat konfigurasi...</span>
+      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
+      <span class="ml-2 text-sm text-slate-500 dark:text-[#869392]">Memuat konfigurasi...</span>
     </div>
 
     <template v-else>
@@ -47,7 +47,7 @@
             <p class="text-sm font-bold" :class="config.isActive ? 'text-emerald-800' : 'text-slate-700'">
               {{ config.isActive ? 'Tripay Aktif' : 'Tripay Belum Aktif' }}
             </p>
-            <p class="text-xs text-slate-500">
+            <p class="text-xs text-slate-500 dark:text-[#869392]">
               {{ config.isActive ? `Mode: ${config.mode} — Merchant: ${config.merchantCode}` : 'Masukkan kredensial API untuk mengaktifkan PPOB.' }}
             </p>
             <p v-if="config.lastVerifiedAt" class="text-[10px] text-slate-400 mt-0.5">
@@ -91,8 +91,8 @@
         </div>
 
         <!-- Config Form -->
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
             <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
               <KeyIcon class="w-4 h-4 text-blue-600" /> Kredensial Tripay API
             </h3>
@@ -105,23 +105,23 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="sm:col-span-2">
                 <label class="block text-xs font-semibold text-slate-700 mb-1">API Key</label>
-                <input v-model="form.apiKey" type="password" placeholder="DEV-xxxxxxxx" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+                <input v-model="form.apiKey" type="password" placeholder="DEV-xxxxxxxx" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               </div>
               <div class="sm:col-span-2">
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Private Key</label>
-                <input v-model="form.privateKey" type="password" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+                <input v-model="form.privateKey" type="password" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Merchant Code</label>
-                <input v-model="form.merchantCode" type="text" placeholder="T12345" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+                <input v-model="form.merchantCode" type="text" placeholder="T12345" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">PIN Transaksi</label>
-                <input v-model="form.pin" type="password" placeholder="4 digit" maxlength="4" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+                <input v-model="form.pin" type="password" placeholder="4 digit" maxlength="4" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               </div>
               <div>
                 <label class="block text-xs font-semibold text-slate-700 mb-1">Mode</label>
-                <select v-model="form.mode" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
+                <select v-model="form.mode" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
                   <option value="sandbox">Sandbox (Testing)</option>
                   <option value="production">Production (Live)</option>
                 </select>
@@ -156,8 +156,8 @@
         </div>
 
         <!-- PPOB Categories Info -->
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
             <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
               <ZapIcon class="w-4 h-4 text-amber-500" /> Layanan PPOB Tersedia
             </h3>
@@ -176,12 +176,12 @@
 
       <!-- TAB: WEBHOOK -->
       <section v-if="activeTab === 'webhook'" class="space-y-4">
-        <div class="bg-white border border-slate-200 rounded-lg p-6 text-center">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-6 text-center">
           <div class="w-14 h-14 mx-auto rounded-full bg-slate-100 flex items-center justify-center mb-3">
             <WebhookIcon class="w-7 h-7 text-slate-400" />
           </div>
           <h3 class="text-sm font-bold text-slate-700">Webhook & Callback</h3>
-          <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+          <p class="text-xs text-slate-500 dark:text-[#869392] mt-1 max-w-md mx-auto">
             URL callback Tripay untuk update status transaksi otomatis. Set di panel Tripay:
           </p>
           <div class="mt-3 inline-flex items-center gap-2 px-3 py-2 bg-slate-100 border border-slate-200 rounded-lg">

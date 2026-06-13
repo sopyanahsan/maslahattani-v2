@@ -3,7 +3,7 @@
     <div></div>
 
     <!-- Tabs -->
-    <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+    <div class="flex gap-1 bg-slate-100 dark:bg-[#292a2a] rounded-lg p-1 w-fit">
       <button v-for="tab in tabs" :key="tab.key" type="button"
         :class="['h-8 px-4 text-xs font-semibold rounded-md transition-colors',
           activeTab === tab.key ? 'bg-white text-slate-900 shadow-sm'
@@ -19,7 +19,7 @@
     <template v-if="activeTab === 'mutasi'">
       <!-- Kas Cards (like BRILink rekening style) -->
       <div class="flex items-center justify-between">
-        <p class="text-xs text-slate-500">{{ (cashBox?.cashBoxes || []).length }} kas aktif</p>
+        <p class="text-xs text-slate-500 dark:text-[#869392]">{{ (cashBox?.cashBoxes || []).length }} kas aktif</p>
         <button type="button"
           class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5"
           @click="openCashBoxModal(null)">
@@ -43,7 +43,7 @@
               <p class="text-[11px] font-semibold text-slate-700 truncate max-w-[120px]">{{ cb.label }}</p>
               <span v-if="cb.isDefault" class="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0" title="Default"></span>
             </div>
-            <p class="text-sm font-bold font-mono tabular-nums whitespace-nowrap leading-tight" :class="cb.balance > 0 ? 'text-slate-900' : 'text-red-500'">{{ formatRupiah(cb.balance) }}</p>
+            <p class="text-sm font-bold font-mono tabular-nums whitespace-nowrap leading-tight" :class="cb.balance > 0 ? 'text-slate-900 dark:text-[#e3e2e2]' : 'text-red-500'">{{ formatRupiah(cb.balance) }}</p>
           </div>
           <div class="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity shrink-0">
             <button type="button" class="w-6 h-6 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-bold flex items-center justify-center hover:bg-emerald-100 transition-colors" @click="openMutationModalForKas('CASH_IN', cb)" title="Setor">+</button>
@@ -56,12 +56,12 @@
 
       <!-- Filter -->
       <div class="flex flex-col sm:flex-row gap-3">
-        <select v-model="mutasiCategoryFilter" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="fetchHistory">
+        <select v-model="mutasiCategoryFilter" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="fetchHistory">
           <option value="">Semua Kas</option>
           <option v-for="cb in cashBox?.cashBoxes || []" :key="cb.id" :value="cb.categoryId || cb.id">{{ cb.label }}</option>
         </select>
-        <input v-model="mutasiStartDate" type="date" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="fetchHistory" />
-        <input v-model="mutasiEndDate" type="date" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="fetchHistory" />
+        <input v-model="mutasiStartDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="fetchHistory" />
+        <input v-model="mutasiEndDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="fetchHistory" />
         <div class="flex-1"></div>
         <span v-if="historyMeta" class="text-xs text-slate-500 self-center">{{ historyMeta.total }} mutasi</span>
       </div>
@@ -73,22 +73,22 @@
       </div>
 
       <!-- Empty -->
-      <div v-else-if="historyData.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+      <div v-else-if="historyData.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
         <WalletIcon class="w-12 h-12 text-slate-300 mx-auto mb-3" />
         <p class="text-sm font-bold text-slate-700">Belum ada riwayat mutasi</p>
       </div>
 
       <!-- Table -->
-      <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+      <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full min-w-[600px]">
-            <thead class="bg-slate-50 border-b border-slate-200">
+            <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
               <tr>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">Tanggal</th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase">Tipe</th>
-                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase">Jumlah</th>
-                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase">Saldo Setelah</th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">Catatan</th>
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Tanggal</th>
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Tipe</th>
+                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Jumlah</th>
+                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Saldo Setelah</th>
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Catatan</th>
               </tr>
             </thead>
 
@@ -104,7 +104,7 @@
           </table>
         </div>
         <div v-if="historyMeta && historyMeta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 flex items-center justify-between">
-          <p class="text-xs text-slate-500">Hal. {{ historyMeta.page }} / {{ historyMeta.totalPages }}</p>
+          <p class="text-xs text-slate-500 dark:text-[#869392]">Hal. {{ historyMeta.page }} / {{ historyMeta.totalPages }}</p>
           <div class="flex gap-1">
             <button :disabled="historyMeta.page <= 1" class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded disabled:opacity-40 text-slate-700 hover:bg-slate-50" @click="fetchHistoryPage(historyMeta!.page - 1)">Prev</button>
             <button :disabled="historyMeta.page >= historyMeta.totalPages" class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded disabled:opacity-40 text-slate-700 hover:bg-slate-50" @click="fetchHistoryPage(historyMeta!.page + 1)">Next</button>
@@ -132,14 +132,14 @@
       <!-- Loading -->
       <div v-if="kelolaLoading" class="flex items-center justify-center py-16">
         <Loader2Icon class="w-5 h-5 animate-spin text-blue-600" />
-        <span class="ml-2 text-sm text-slate-500">Memuat kas...</span>
+        <span class="ml-2 text-sm text-slate-500 dark:text-[#869392]">Memuat kas...</span>
       </div>
 
       <!-- Empty -->
-      <div v-else-if="kelolaKasList.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+      <div v-else-if="kelolaKasList.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
         <BoxesIcon class="w-12 h-12 text-slate-300 mx-auto mb-3" />
         <p class="text-sm font-bold text-slate-700">Belum ada kas</p>
-        <p class="text-xs text-slate-500 mt-1">Tambahkan kas retail untuk mulai tracking saldo.</p>
+        <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">Tambahkan kas retail untuk mulai tracking saldo.</p>
       </div>
 
 
@@ -163,7 +163,7 @@
           </div>
 
           <!-- Balance -->
-          <p class="text-lg font-bold font-mono tabular-nums leading-tight mb-3" :class="kas.balance > 0 ? 'text-slate-900' : 'text-red-500'">
+          <p class="text-lg font-bold font-mono tabular-nums leading-tight mb-3" :class="kas.balance > 0 ? 'text-slate-900 dark:text-[#e3e2e2]' : 'text-red-500'">
             {{ formatRupiah(kas.balance) }}
           </p>
 
@@ -193,13 +193,13 @@
           <h3 class="text-sm font-bold" :class="mutationType === 'CASH_IN' ? 'text-emerald-700' : 'text-red-700'">{{ mutationType === 'CASH_IN' ? 'Cash In' : 'Cash Out' }}</h3>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Kas / Kategori *</label>
-            <select v-model="mutationCategoryId" required class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
+            <select v-model="mutationCategoryId" required class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
               <option value="">— Pilih Kas —</option>
               <option v-for="cat in mutationCategories" :key="cat.id" :value="cat.id">{{ cat.name }} ({{ cat.code }})</option>
             </select>
           </div>
-          <div><label class="block text-xs font-semibold text-slate-700 mb-1">Jumlah (Rp) *</label><input v-model.number="mutationAmount" type="number" min="1" required class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" /></div>
-          <div><label class="block text-xs font-semibold text-slate-700 mb-1">Catatan</label><input v-model="mutationNotes" type="text" placeholder="Opsional" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" /></div>
+          <div><label class="block text-xs font-semibold text-slate-700 mb-1">Jumlah (Rp) *</label><input v-model.number="mutationAmount" type="number" min="1" required class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" /></div>
+          <div><label class="block text-xs font-semibold text-slate-700 mb-1">Catatan</label><input v-model="mutationNotes" type="text" placeholder="Opsional" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" /></div>
           <div v-if="mutationError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ mutationError }}</div>
           <div class="flex justify-end gap-2 pt-2">
             <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md hover:bg-slate-200" @click="showMutationModal = false">Batal</button>
@@ -215,16 +215,16 @@
       <div v-if="showCashBoxModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showCashBoxModal = false"></div>
         <form class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleSaveCashBox">
-          <h3 class="text-sm font-bold text-slate-900">{{ editingCashBox ? 'Edit Kas' : 'Tambah Kas Baru' }}</h3>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ editingCashBox ? 'Edit Kas' : 'Tambah Kas Baru' }}</h3>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Kas <span class="text-red-500">*</span></label>
             <input v-model="cashBoxForm.label" type="text" required placeholder="Kas Retail"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">{{ editingCashBox ? 'Saldo (update manual)' : 'Saldo Awal (Rp)' }}</label>
             <input v-model.number="cashBoxForm.balance" type="number" min="0" placeholder="0"
-              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
             <p class="text-[10px] text-slate-400 mt-0.5">{{ editingCashBox ? 'Ubah saldo akan tercatat sebagai mutasi penyesuaian.' : 'Saldo kas saat ini. Bisa 0 kalau baru.' }}</p>
           </div>
           <div v-if="cashBoxError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ cashBoxError }}</div>

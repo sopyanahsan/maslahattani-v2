@@ -10,8 +10,8 @@
 
     <!-- Filter Bar -->
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap items-start sm:items-center">
-      <input v-model="startDate" type="date" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
-      <input v-model="endDate" type="date" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+      <input v-model="startDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+      <input v-model="endDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
       <button type="button" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-md hover:bg-blue-700 transition-colors flex items-center gap-1.5 shadow-sm" @click="fetchReport">Terapkan</button>
       <div class="flex items-center gap-1.5">
         <button v-for="r in quickRanges" :key="r.label" type="button" :class="['h-7 px-2.5 text-[11px] font-medium rounded-md transition-all', activeRange === r.label ? 'bg-blue-600 text-white shadow-sm' : 'border border-slate-200 text-slate-900 hover:bg-slate-50 hover:border-blue-300']" @click="applyRange(r.days, r.label)">{{ r.label }}</button>
@@ -45,35 +45,35 @@
     <template v-else-if="report">
       <!-- KPI Summary -->
       <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
-        <div class="kpi-card bg-white border border-slate-200 rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
+        <div class="kpi-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
           <p class="text-[10px] text-slate-500 uppercase tracking-wide">Total Transaksi</p>
-          <p class="text-lg font-bold font-mono text-slate-950 mt-1">{{ (report.summary?.totalTransactions ?? 0).toLocaleString('id-ID') }}</p>
+          <p class="text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] dark:text-[#e3e2e2] mt-1">{{ (report.summary?.totalTransactions ?? 0).toLocaleString('id-ID') }}</p>
         </div>
-        <div class="kpi-card bg-white border border-slate-200 rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
+        <div class="kpi-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
           <p class="text-[10px] text-slate-500 uppercase tracking-wide">Volume</p>
           <p class="text-lg font-bold font-mono text-blue-600 mt-1">{{ formatRupiah(report.summary?.volume ?? 0) }}</p>
         </div>
-        <div class="kpi-card bg-white border border-slate-200 rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
+        <div class="kpi-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
           <p class="text-[10px] text-slate-500 uppercase tracking-wide">Fee Earnings</p>
           <p class="text-lg font-bold font-mono text-emerald-600 mt-1">{{ formatRupiah(report.summary?.feeEarnings ?? 0) }}</p>
         </div>
-        <div class="kpi-card bg-white border border-slate-200 rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
+        <div class="kpi-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
           <p class="text-[10px] text-slate-500 uppercase tracking-wide">Avg Fee/Trx</p>
           <p class="text-lg font-bold font-mono text-indigo-600 mt-1">{{ formatRupiah(report.summary?.avgFee ?? 0) }}</p>
         </div>
-        <div class="kpi-card bg-white border border-slate-200 rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
+        <div class="kpi-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 text-center shadow-sm hover:shadow-md transition-shadow">
           <p class="text-[10px] text-slate-500 uppercase tracking-wide">Void</p>
           <p class="text-lg font-bold font-mono text-red-600 mt-1">{{ report.summary?.voidedCount ?? 0 }}</p>
         </div>
       </div>
 
       <!-- Grafik Trend Volume + Fee -->
-      <div v-if="report.dailyTrend.length > 0" class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
+      <div v-if="report.dailyTrend.length > 0" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 shadow-sm">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-sm font-bold text-slate-950">Grafik Trend Harian</h3>
+          <h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">Grafik Trend Harian</h3>
           <div class="flex items-center gap-3">
-            <span class="flex items-center gap-1.5 text-[10px] text-slate-500"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block" /> Volume</span>
-            <span class="flex items-center gap-1.5 text-[10px] text-slate-500"><span class="w-3 h-3 rounded-full bg-emerald-400 inline-block" /> Fee</span>
+            <span class="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-[#869392]"><span class="w-3 h-3 rounded-full bg-blue-500 inline-block" /> Volume</span>
+            <span class="flex items-center gap-1.5 text-[10px] text-slate-500 dark:text-[#869392]"><span class="w-3 h-3 rounded-full bg-emerald-400 inline-block" /> Fee</span>
           </div>
         </div>
         <div class="flex gap-2">
@@ -105,18 +105,18 @@
       </div>
 
       <!-- Category Breakdown -->
-      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-        <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
-          <h3 class="text-sm font-bold text-slate-950">Breakdown per Kategori</h3>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
+          <h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">Breakdown per Kategori</h3>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead class="border-b border-slate-200"><tr><th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-500 uppercase">Kategori</th><th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 uppercase">Trx</th><th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 uppercase">Volume</th><th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 uppercase">Fee</th><th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-500 uppercase">%</th></tr></thead>
             <tbody class="divide-y divide-slate-100">
               <tr v-for="cat in report.categoryBreakdown" :key="cat.category" class="hover:bg-slate-50">
-                <td class="px-4 py-2.5 text-xs font-semibold text-slate-900">{{ categoryLabel(cat.category) }}</td>
+                <td class="px-4 py-2.5 text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ categoryLabel(cat.category) }}</td>
                 <td class="px-4 py-2.5 text-right text-xs font-mono">{{ cat.count }}</td>
-                <td class="px-4 py-2.5 text-right text-xs font-mono font-semibold text-slate-900">{{ formatRupiah(cat.volume) }}</td>
+                <td class="px-4 py-2.5 text-right text-xs font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(cat.volume) }}</td>
                 <td class="px-4 py-2.5 text-right text-xs font-mono text-emerald-600">{{ formatRupiah(cat.fee) }}</td>
                 <td class="px-4 py-2.5 text-right">
                   <div class="flex items-center justify-end gap-2">
@@ -131,9 +131,9 @@
       </div>
 
       <!-- Daily Trend Table -->
-      <div v-if="report.dailyTrend.length > 0" class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-        <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
-          <h3 class="text-sm font-bold text-slate-950">Detail Harian</h3>
+      <div v-if="report.dailyTrend.length > 0" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
+          <h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">Detail Harian</h3>
         </div>
         <div class="overflow-x-auto max-h-[350px] overflow-y-auto">
           <table class="w-full">
@@ -145,13 +145,13 @@
 
       <!-- Kasir + Top Customers -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div v-if="report.cashierPerformance.length > 0" class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50"><h3 class="text-sm font-bold text-slate-950">Performa Kasir</h3></div>
-          <div class="overflow-x-auto"><table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 uppercase">Kasir</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Trx</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Volume</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Fee</th></tr></thead><tbody class="divide-y divide-slate-100"><tr v-for="c in report.cashierPerformance" :key="c.cashierId"><td class="px-4 py-2 text-xs font-semibold text-slate-900">{{ c.cashierName }}</td><td class="px-4 py-2 text-right text-xs font-mono">{{ c.count }}</td><td class="px-4 py-2 text-right text-xs font-mono">{{ formatCompact(c.volume) }}</td><td class="px-4 py-2 text-right text-xs font-mono text-emerald-600">{{ formatCompact(c.fee) }}</td></tr></tbody></table></div>
+        <div v-if="report.cashierPerformance.length > 0" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]"><h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">Performa Kasir</h3></div>
+          <div class="overflow-x-auto"><table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 uppercase">Kasir</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Trx</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Volume</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Fee</th></tr></thead><tbody class="divide-y divide-slate-100"><tr v-for="c in report.cashierPerformance" :key="c.cashierId"><td class="px-4 py-2 text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ c.cashierName }}</td><td class="px-4 py-2 text-right text-xs font-mono">{{ c.count }}</td><td class="px-4 py-2 text-right text-xs font-mono">{{ formatCompact(c.volume) }}</td><td class="px-4 py-2 text-right text-xs font-mono text-emerald-600">{{ formatCompact(c.fee) }}</td></tr></tbody></table></div>
         </div>
-        <div v-if="report.topCustomers.length > 0" class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50"><h3 class="text-sm font-bold text-slate-950">Top Pelanggan BRILink</h3></div>
-          <div class="overflow-x-auto"><table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 uppercase">#</th><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 uppercase">Nama</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Trx</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Volume</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Fee</th></tr></thead><tbody class="divide-y divide-slate-100"><tr v-for="(tc, i) in report.topCustomers" :key="tc.customerName"><td class="px-4 py-2 text-xs text-slate-400 font-bold">{{ i + 1 }}</td><td class="px-4 py-2 text-xs font-semibold text-slate-900">{{ tc.customerName }}</td><td class="px-4 py-2 text-right text-xs font-mono">{{ tc.count }}</td><td class="px-4 py-2 text-right text-xs font-mono">{{ formatCompact(tc.volume) }}</td><td class="px-4 py-2 text-right text-xs font-mono text-emerald-600">{{ formatCompact(tc.fee) }}</td></tr></tbody></table></div>
+        <div v-if="report.topCustomers.length > 0" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]"><h3 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">Top Pelanggan BRILink</h3></div>
+          <div class="overflow-x-auto"><table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 uppercase">#</th><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-500 uppercase">Nama</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Trx</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Volume</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-500 uppercase">Fee</th></tr></thead><tbody class="divide-y divide-slate-100"><tr v-for="(tc, i) in report.topCustomers" :key="tc.customerName"><td class="px-4 py-2 text-xs text-slate-400 font-bold">{{ i + 1 }}</td><td class="px-4 py-2 text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ tc.customerName }}</td><td class="px-4 py-2 text-right text-xs font-mono">{{ tc.count }}</td><td class="px-4 py-2 text-right text-xs font-mono">{{ formatCompact(tc.volume) }}</td><td class="px-4 py-2 text-right text-xs font-mono text-emerald-600">{{ formatCompact(tc.fee) }}</td></tr></tbody></table></div>
         </div>
       </div>
     </template>

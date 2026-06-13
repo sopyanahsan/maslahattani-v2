@@ -4,7 +4,7 @@
     <div></div>
 
     <!-- Tabs -->
-    <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+    <div class="flex gap-1 bg-slate-100 dark:bg-[#292a2a] rounded-lg p-1 w-fit">
       <button
         v-for="tab in tabs"
         :key="tab.key"
@@ -30,9 +30,9 @@
       <!-- ════════════════════════════════════════════ -->
       <!-- KAS TUNAI AGEN — selalu ada (auto-created)   -->
       <!-- ════════════════════════════════════════════ -->
-      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg overflow-hidden shadow-sm">
         <!-- Card header -->
-        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 bg-slate-50">
+        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
           <div class="flex items-center gap-2.5">
             <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
               <WalletIcon class="w-4 h-4 text-emerald-600" />
@@ -59,7 +59,7 @@
             <p class="text-[10px] font-semibold uppercase tracking-wider text-slate-400 mb-0.5">Saldo Kas</p>
             <div v-if="kasLoading" class="h-7 w-32 rounded-lg bg-slate-100 animate-pulse" />
             <p v-else class="text-2xl font-bold font-mono leading-tight"
-              :class="kasIsLow ? 'text-red-600' : 'text-slate-900'">
+              :class="kasIsLow ? 'text-red-600' : 'text-slate-900 dark:text-[#e3e2e2]'">
               {{ formatRupiah(kasBox?.balance ?? 0) }}
             </p>
             <!-- Status badges -->
@@ -131,7 +131,7 @@
 
       <!-- Actions bar -->
       <div class="flex items-center justify-between">
-        <p class="text-xs text-slate-500">{{ accounts.length }} rekening aktif</p>
+        <p class="text-xs text-slate-500 dark:text-[#869392]">{{ accounts.length }} rekening aktif</p>
         <button type="button" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5" @click="openAccountModal(null)">
           <PlusIcon class="w-3.5 h-3.5" /> Tambah Rekening
         </button>
@@ -139,14 +139,14 @@
 
       <!-- Loading -->
       <div v-if="accountsLoading" class="flex items-center justify-center py-16">
-        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
       </div>
 
       <!-- Empty -->
-      <div v-else-if="accounts.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+      <div v-else-if="accounts.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
         <LandmarkIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
         <p class="text-sm font-semibold text-slate-700">Belum ada rekening BRI</p>
-        <p class="text-xs text-slate-500 mt-1">Tambahkan rekening BRI agen untuk mulai tracking saldo.</p>
+        <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">Tambahkan rekening BRI agen untuk mulai tracking saldo.</p>
       </div>
 
       <template v-else>
@@ -187,7 +187,7 @@
             </div>
             <!-- Saldo -->
             <p class="text-sm font-bold font-mono whitespace-nowrap leading-tight mb-2"
-              :class="account.balance < account.lowBalanceThreshold ? 'text-red-500' : 'text-slate-900'">
+              :class="account.balance < account.lowBalanceThreshold ? 'text-red-500' : 'text-slate-900 dark:text-[#e3e2e2]'">
               {{ formatRupiah(account.balance) }}
             </p>
             <!-- Action buttons -->
@@ -201,41 +201,41 @@
 
         <!-- Mutasi langsung di bawah strip (sama persis kayak Kas Retail) -->
         <div class="flex flex-col sm:flex-row gap-3">
-          <select v-model="mutasiFilter.accountId" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="resetMutasiAndFetch">
+          <select v-model="mutasiFilter.accountId" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="resetMutasiAndFetch">
             <option value="">Semua Rekening</option>
             <option v-for="acc in accounts" :key="acc.id" :value="acc.id">{{ acc.label }}</option>
           </select>
-          <input v-model="mutasiFilter.startDate" type="date" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="resetMutasiAndFetch" />
-          <input v-model="mutasiFilter.endDate" type="date" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="resetMutasiAndFetch" />
+          <input v-model="mutasiFilter.startDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="resetMutasiAndFetch" />
+          <input v-model="mutasiFilter.endDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" @change="resetMutasiAndFetch" />
           <div class="flex-1"></div>
           <span v-if="mutasiMeta" class="text-xs text-slate-500 self-center">{{ mutasiMeta.total }} mutasi</span>
         </div>
 
         <!-- Loading mutasi -->
         <div v-if="mutasiLoading" class="flex items-center justify-center py-12">
-          <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+          <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
         </div>
         <!-- Empty mutasi -->
-        <div v-else-if="mutasiData.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-8 text-center">
+        <div v-else-if="mutasiData.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-8 text-center">
           <WalletIcon class="w-8 h-8 text-slate-300 mx-auto mb-2" />
-          <p class="text-xs text-slate-500">Belum ada mutasi.</p>
+          <p class="text-xs text-slate-500 dark:text-[#869392]">Belum ada mutasi.</p>
         </div>
         <!-- Mutasi Table -->
-        <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+        <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full min-w-[700px]">
-              <thead class="bg-slate-50 border-b border-slate-200">
+              <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
                 <tr>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">Tanggal</th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">Rekening</th>
-                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase">Tipe</th>
-                  <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase">Jumlah</th>
-                  <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase">Saldo Setelah</th>
-                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">Catatan</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Tanggal</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Rekening</th>
+                  <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Tipe</th>
+                  <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Jumlah</th>
+                  <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Saldo Setelah</th>
+                  <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Catatan</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-slate-100">
-                <tr v-for="mut in mutasiData" :key="mut.id" class="hover:bg-slate-50 transition-colors">
+                <tr v-for="mut in mutasiData" :key="mut.id" class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors">
                   <td class="px-4 py-3 text-xs text-slate-600 font-mono">{{ formatDateTime(mut.createdAt) }}</td>
                   <td class="px-4 py-3 text-xs text-slate-700">{{ mut.accountLabel }}</td>
                   <td class="px-4 py-3 text-center"><span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', mutationTypeBadge(mut.type)]">{{ mutationTypeLabel(mut.type) }}</span></td>
@@ -247,7 +247,7 @@
             </table>
           </div>
           <div v-if="mutasiMeta && mutasiMeta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 flex items-center justify-between">
-            <p class="text-xs text-slate-500">Hal. {{ mutasiMeta.page }} / {{ mutasiMeta.totalPages }}</p>
+            <p class="text-xs text-slate-500 dark:text-[#869392]">Hal. {{ mutasiMeta.page }} / {{ mutasiMeta.totalPages }}</p>
             <div class="flex gap-1">
               <button :disabled="mutasiMeta.page <= 1" class="h-7 px-2 text-xs border border-slate-200 rounded disabled:opacity-40 text-slate-700" @click="fetchMutasi(mutasiMeta!.page - 1)">Prev</button>
               <button :disabled="mutasiMeta.page >= mutasiMeta.totalPages" class="h-7 px-2 text-xs border border-slate-200 rounded disabled:opacity-40 text-slate-700" @click="fetchMutasi(mutasiMeta!.page + 1)">Next</button>
@@ -269,7 +269,7 @@
       <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
         <select
           v-model="riwayatFilter.category"
-          class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none"
+          class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none"
           @change="fetchRiwayat(1)"
         >
           <option value="">Semua Kategori</option>
@@ -283,7 +283,7 @@
         </select>
         <select
           v-model="riwayatFilter.status"
-          class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none"
+          class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none"
           @change="fetchRiwayat(1)"
         >
           <option value="">Semua Status</option>
@@ -294,13 +294,13 @@
         <input
           v-model="riwayatFilter.startDate"
           type="date"
-          class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none"
+          class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none"
           @change="fetchRiwayat(1)"
         />
         <input
           v-model="riwayatFilter.endDate"
           type="date"
-          class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none"
+          class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none"
           @change="fetchRiwayat(1)"
         />
         <div class="flex-1"></div>
@@ -309,40 +309,40 @@
 
       <!-- Loading -->
       <div v-if="riwayatLoading" class="flex items-center justify-center py-16">
-        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-        <span class="ml-2 text-sm text-slate-500">Memuat riwayat...</span>
+        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
+        <span class="ml-2 text-sm text-slate-500 dark:text-[#869392]">Memuat riwayat...</span>
       </div>
 
       <!-- Empty -->
-      <div v-else-if="riwayatData.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+      <div v-else-if="riwayatData.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
         <WalletIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
         <p class="text-sm font-semibold text-slate-700">Belum ada transaksi BRILink</p>
-        <p class="text-xs text-slate-500 mt-1">Transaksi dari webapp kasir akan muncul di sini.</p>
+        <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">Transaksi dari webapp kasir akan muncul di sini.</p>
       </div>
 
       <!-- Table -->
-      <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+      <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
           <table class="w-full min-w-[900px]">
-            <thead class="bg-slate-50 border-b border-slate-200">
+            <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
               <tr>
-                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase">Waktu</th>
-                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase">Ref</th>
-                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase">Kategori</th>
-                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase">Customer</th>
-                <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 uppercase">Nominal</th>
-                <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 uppercase">Fee</th>
-                <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase">Flow</th>
-                <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase">Status</th>
-                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase">Rekening</th>
-                <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase">Admin</th>
-                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase">Kasir</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Waktu</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Ref</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Kategori</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Customer</th>
+                <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Nominal</th>
+                <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Fee</th>
+                <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Flow</th>
+                <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Status</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Rekening</th>
+                <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Admin</th>
+                <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Kasir</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              <tr v-for="trx in riwayatData" :key="trx.id" class="hover:bg-slate-50 transition-colors">
+              <tr v-for="trx in riwayatData" :key="trx.id" class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors">
                 <td class="px-3 py-2.5 text-xs text-slate-600 font-mono whitespace-nowrap">{{ formatDateTime(trx.createdAt) }}</td>
-                <td class="px-3 py-2.5"><code class="text-[10px] font-mono text-slate-900">{{ trx.refNumber }}</code></td>
+                <td class="px-3 py-2.5"><code class="text-[10px] font-mono text-slate-900 dark:text-[#e3e2e2]">{{ trx.refNumber }}</code></td>
                 <td class="px-3 py-2.5">
                   <span :class="['inline-flex px-1.5 py-0.5 rounded text-[9px] font-bold uppercase', riwayatCategoryBadge(trx.category)]">
                     {{ riwayatCategoryShort(trx.category) }}
@@ -352,7 +352,7 @@
                   <p class="text-xs text-slate-900 truncate max-w-[140px]">{{ trx.customerName }}</p>
                   <p class="text-[10px] font-mono text-slate-400 truncate max-w-[140px]">{{ trx.destination }}</p>
                 </td>
-                <td class="px-3 py-2.5 text-right text-xs font-mono font-semibold text-slate-900">{{ formatRupiah(trx.amount) }}</td>
+                <td class="px-3 py-2.5 text-right text-xs font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(trx.amount) }}</td>
                 <td class="px-3 py-2.5 text-right text-xs font-mono text-emerald-600">{{ trx.fee > 0 ? '+' + formatRupiah(trx.fee) : '—' }}</td>
                 <td class="px-3 py-2.5 text-center">
                   <span v-if="trx.flowDirection" :class="['text-[9px] font-bold px-1.5 py-0.5 rounded', trx.flowDirection === 'CREDIT' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700']">
@@ -366,7 +366,7 @@
                   </span>
                 </td>
                 <td class="px-3 py-2.5 text-xs text-slate-600">
-                  <span v-if="trx.accountLabel" class="font-medium text-slate-900">{{ trx.accountLabel }}</span>
+                  <span v-if="trx.accountLabel" class="font-medium text-slate-900 dark:text-[#e3e2e2]">{{ trx.accountLabel }}</span>
                   <span v-if="trx.accountNumber" class="text-[10px] font-mono text-slate-400 ml-1">({{ trx.accountNumber.slice(-4) }})</span>
                   <span v-if="!trx.accountLabel" class="text-slate-400">—</span>
                 </td>
@@ -384,7 +384,7 @@
 
         <!-- Pagination -->
         <div v-if="riwayatMeta && riwayatMeta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 flex items-center justify-between">
-          <p class="text-xs text-slate-500">Halaman {{ riwayatMeta.page }} dari {{ riwayatMeta.totalPages }}</p>
+          <p class="text-xs text-slate-500 dark:text-[#869392]">Halaman {{ riwayatMeta.page }} dari {{ riwayatMeta.totalPages }}</p>
           <div class="flex items-center gap-1">
             <button :disabled="riwayatMeta.page <= 1" class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-40 text-slate-700" @click="fetchRiwayat(riwayatMeta!.page - 1)">Prev</button>
             <button :disabled="riwayatMeta.page >= riwayatMeta.totalPages" class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-40 text-slate-700" @click="fetchRiwayat(riwayatMeta!.page + 1)">Next</button>
@@ -399,28 +399,28 @@
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showAccountModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showAccountModal = false" />
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showAccountModal = false" />
         <form
           class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4"
           @submit.prevent="handleSaveAccount"
         >
-          <h3 class="text-sm font-bold text-slate-900">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">
             {{ editingAccount ? 'Edit Rekening' : 'Tambah Rekening Baru' }}
           </h3>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Label <span class="text-red-500">*</span></label>
             <input v-model="accountForm.label" type="text" required placeholder="BRI Default"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">No. Rekening <span class="text-red-500">*</span></label>
             <input v-model="accountForm.accountNumber" type="text" required placeholder="1234567890"
-              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Pemilik</label>
             <input v-model="accountForm.accountHolder" type="text" placeholder="Nama pemilik rekening"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
           <div class="grid grid-cols-2 gap-3">
             <div>
@@ -428,7 +428,7 @@
                 {{ editingAccount ? 'Koreksi Saldo' : 'Saldo Awal' }}
               </label>
               <input v-model.number="accountForm.balance" type="number" min="0" placeholder="0"
-                class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+                class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
               <!-- Hint saat mode edit -->
               <p v-if="editingAccount && accountForm.balance !== editingAccount.balance" class="text-[10px] text-amber-600 mt-0.5 flex items-center gap-1">
                 <span>⟳</span> Akan dicatat sebagai Adjustment
@@ -437,7 +437,7 @@
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Threshold Low Balance</label>
               <input v-model.number="accountForm.lowBalanceThreshold" type="number" min="0"
-                class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+                class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
             </div>
           </div>
           <div class="flex items-end pb-1">
@@ -467,31 +467,31 @@
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showMutationModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showMutationModal = false" />
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showMutationModal = false" />
         <form
           class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4"
           @submit.prevent="handleMutationSubmit"
         >
-          <h3 class="text-sm font-bold text-slate-900">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">
             {{ mutationType === 'setor' ? 'Setor Saldo' : 'Tarik Saldo' }} — {{ mutationAccount?.label }}
           </h3>
-          <p class="text-xs text-slate-500">
+          <p class="text-xs text-slate-500 dark:text-[#869392]">
             Saldo saat ini: <span class="font-mono font-bold">{{ formatRupiah(mutationAccount?.balance ?? 0) }}</span>
           </p>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Jumlah (Rp) <span class="text-red-500">*</span></label>
             <input v-model.number="mutationForm.amount" type="number" min="1" required
-              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Referensi</label>
             <input v-model="mutationForm.reference" type="text" placeholder="No. setoran / keterangan"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan</label>
             <input v-model="mutationForm.notes" type="text" placeholder="Opsional"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
 
 
@@ -518,12 +518,12 @@
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showTransferModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showTransferModal = false" />
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showTransferModal = false" />
         <form
           class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4"
           @submit.prevent="handleTransferSubmit"
         >
-          <h3 class="text-sm font-bold text-slate-900">Pindah Saldo Antar Rekening</h3>
+          <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">Pindah Saldo Antar Rekening</h3>
 
           <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
             <p class="text-[10px] font-semibold text-blue-700">Dari:</p>
@@ -536,7 +536,7 @@
             <select
               v-model="transferToId"
               required
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 outline-none"
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none"
             >
               <option value="">— Pilih Rekening Tujuan —</option>
               <option
@@ -557,7 +557,7 @@
               min="1"
               :max="transferFrom?.balance ?? 0"
               required
-              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-blue-600 outline-none"
+              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none"
             />
           </div>
 
@@ -567,7 +567,7 @@
               v-model="transferNotes"
               type="text"
               placeholder="Opsional"
-              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 outline-none"
+              class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none"
             />
           </div>
 
@@ -591,19 +591,19 @@
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showHistoryModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showHistoryModal = false" />
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showHistoryModal = false" />
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-slate-900">Riwayat Mutasi — {{ historyAccount?.label }}</h3>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">Riwayat Mutasi — {{ historyAccount?.label }}</h3>
             <button type="button" class="text-slate-400 hover:text-slate-600" @click="showHistoryModal = false">✕</button>
           </div>
 
 
           <div v-if="historyLoading" class="flex items-center justify-center py-8">
-            <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+            <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
           </div>
           <div v-else-if="historyData.length === 0" class="text-center py-8">
-            <p class="text-xs text-slate-500">Belum ada mutasi.</p>
+            <p class="text-xs text-slate-500 dark:text-[#869392]">Belum ada mutasi.</p>
           </div>
           <div v-else class="space-y-2">
             <div
@@ -616,7 +616,7 @@
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-xs font-semibold text-slate-900 truncate">{{ mut.description }}</p>
-                <p class="text-[10px] text-slate-500">
+                <p class="text-[10px] text-slate-500 dark:text-[#869392]">
                   {{ formatDateTime(mut.createdAt) }}
                   <span v-if="mut.createdBy"> &bull; {{ mut.createdBy.username || mut.createdBy.email }}</span>
                 </p>
@@ -635,7 +635,7 @@
 
           <!-- Pagination -->
           <div v-if="historyMeta && historyMeta.totalPages > 1" class="flex items-center justify-between pt-2">
-            <p class="text-[10px] text-slate-500">Hal. {{ historyMeta.page }} / {{ historyMeta.totalPages }}</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392]">Hal. {{ historyMeta.page }} / {{ historyMeta.totalPages }}</p>
             <div class="flex gap-1">
               <button :disabled="historyMeta.page <= 1" class="h-7 px-2 text-xs border border-slate-200 rounded disabled:opacity-40" @click="fetchHistory(historyMeta!.page - 1)">Prev</button>
               <button :disabled="historyMeta.page >= historyMeta.totalPages" class="h-7 px-2 text-xs border border-slate-200 rounded disabled:opacity-40" @click="fetchHistory(historyMeta!.page + 1)">Next</button>
@@ -650,7 +650,7 @@
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showKasModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showKasModal = false" />
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showKasModal = false" />
         <form
           class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4"
           @submit.prevent="handleKasSubmit"
@@ -662,10 +662,10 @@
               <ArrowUpCircleIcon v-else class="w-5 h-5 text-red-500" />
             </div>
             <div>
-              <h3 class="text-sm font-bold text-slate-900">
+              <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">
                 {{ kasModalType === 'cashin' ? 'Cash In — Tambah Kas' : 'Cash Out — Ambil Kas' }}
               </h3>
-              <p class="text-[11px] text-slate-500">
+              <p class="text-[11px] text-slate-500 dark:text-[#869392]">
                 Saldo saat ini: <span class="font-mono font-semibold">{{ formatRupiah(kasBox?.balance ?? 0) }}</span>
               </p>
             </div>
@@ -690,7 +690,7 @@
                 v-for="n in [100000, 500000, 1000000, 5000000]"
                 :key="n"
                 type="button"
-                class="h-7 rounded-lg border border-slate-200 text-[10px] font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                class="h-7 rounded-lg border border-slate-200 text-[10px] font-semibold text-slate-600 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
                 @click="kasForm.amount += n"
               >+{{ n >= 1000000 ? (n / 1000000) + 'Jt' : (n / 1000) + 'K' }}</button>
             </div>
@@ -743,20 +743,20 @@
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showKasMutasiModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showKasMutasiModal = false" />
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showKasMutasiModal = false" />
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           <!-- Header -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2.5">
               <WalletIcon class="w-4 h-4 text-emerald-600" />
-              <h3 class="text-sm font-bold text-slate-900">Riwayat Mutasi — Kas Tunai Agen</h3>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">Riwayat Mutasi — Kas Tunai Agen</h3>
             </div>
             <button type="button" class="text-slate-400 hover:text-slate-600 p-1" @click="showKasMutasiModal = false">✕</button>
           </div>
 
           <!-- Loading -->
           <div v-if="kasMutasiLoading" class="flex items-center justify-center py-10">
-            <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+            <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
           </div>
 
           <!-- Empty -->
@@ -770,7 +770,7 @@
             <div
               v-for="mut in kasMutasiData"
               :key="mut.id"
-              class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+              class="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
             >
               <div class="flex items-center gap-3 min-w-0">
                 <span :class="['text-[9px] font-bold px-2 py-0.5 rounded shrink-0', kasMutTypeBadge(mut.type)]">
@@ -792,7 +792,7 @@
 
           <!-- Pagination -->
           <div v-if="kasMutasiMeta && kasMutasiMeta.totalPages > 1" class="flex items-center justify-between pt-2 border-t border-slate-200">
-            <p class="text-[10px] text-slate-500">Hal. {{ kasMutasiPage }} / {{ kasMutasiMeta.totalPages }}</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392]">Hal. {{ kasMutasiPage }} / {{ kasMutasiMeta.totalPages }}</p>
             <div class="flex gap-1">
               <button :disabled="kasMutasiPage <= 1" class="h-7 px-2.5 text-xs border border-slate-200 rounded-lg disabled:opacity-40 text-slate-600 hover:bg-slate-50" @click="fetchKasMutasi(kasMutasiPage - 1)">Prev</button>
               <button :disabled="kasMutasiPage >= kasMutasiMeta.totalPages" class="h-7 px-2.5 text-xs border border-slate-200 rounded-lg disabled:opacity-40 text-slate-600 hover:bg-slate-50" @click="fetchKasMutasi(kasMutasiPage + 1)">Next</button>

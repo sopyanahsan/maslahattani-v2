@@ -10,7 +10,7 @@
 
     <!-- Filters -->
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
-      <select v-model="filter.source" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch">
+      <select v-model="filter.source" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch">
         <option value="">Semua Sumber</option>
         <option value="SALE">Penjualan</option>
         <option value="SALE_VOID">Void Penjualan</option>
@@ -23,7 +23,7 @@
         <option value="BULK_UPLOAD">Import Excel</option>
         <option value="INITIAL">Stok Awal</option>
       </select>
-      <select v-model="filter.type" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch">
+      <select v-model="filter.type" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch">
         <option value="">Semua Tipe</option>
         <option value="IN">Masuk</option>
         <option value="OUT">Keluar</option>
@@ -31,44 +31,44 @@
         <option value="TRANSFER_IN">Transfer Masuk</option>
         <option value="TRANSFER_OUT">Transfer Keluar</option>
       </select>
-      <input v-model="filter.startDate" type="date" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch" />
-      <input v-model="filter.endDate" type="date" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch" />
+      <input v-model="filter.startDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch" />
+      <input v-model="filter.endDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch" />
       <div class="flex-1"></div>
       <span v-if="meta" class="text-xs text-slate-500 self-center">{{ meta.total }} riwayat</span>
     </div>
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
     </div>
 
     <!-- Empty -->
-    <div v-else-if="items.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+    <div v-else-if="items.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
       <ClipboardListIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
       <p class="text-sm font-semibold text-slate-700">Belum ada riwayat stok</p>
-      <p class="text-xs text-slate-500 mt-1">Riwayat akan muncul setelah ada transaksi, restock, transfer, atau opname.</p>
+      <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">Riwayat akan muncul setelah ada transaksi, restock, transfer, atau opname.</p>
     </div>
 
     <!-- Table -->
-    <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+    <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[900px]">
-          <thead class="bg-slate-50 border-b border-slate-200">
+          <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
             <tr>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 uppercase">Waktu</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 uppercase">Produk</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-900 uppercase">Tipe</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 uppercase">Sumber</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-900 uppercase">Qty</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 uppercase">Oleh</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 uppercase">Catatan</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 dark:text-[#bcc9c7] uppercase">Waktu</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 dark:text-[#bcc9c7] uppercase">Produk</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-900 dark:text-[#bcc9c7] uppercase">Tipe</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 dark:text-[#bcc9c7] uppercase">Sumber</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-900 dark:text-[#bcc9c7] uppercase">Qty</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 dark:text-[#bcc9c7] uppercase">Oleh</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 dark:text-[#bcc9c7] uppercase">Catatan</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr v-for="h in items" :key="h.id" class="hover:bg-slate-50/50 transition-colors">
               <td class="px-4 py-3 text-xs text-slate-900 font-mono whitespace-nowrap">{{ formatDateTime(h.createdAt) }}</td>
               <td class="px-4 py-3">
-                <p class="text-sm font-medium text-slate-900">{{ h.stock?.product?.name || '—' }}</p>
+                <p class="text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">{{ h.stock?.product?.name || '—' }}</p>
                 <p class="text-[10px] text-slate-400 font-mono">{{ h.stock?.product?.sku || '' }}</p>
               </td>
               <td class="px-4 py-3 text-center">
@@ -89,7 +89,7 @@
               <td class="px-4 py-3">
                 <div v-if="h.createdBy" class="flex items-center gap-1.5">
                   <div class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
-                    <span class="text-[8px] font-bold text-slate-900">{{ (h.createdBy.username || h.createdBy.email || '?')[0].toUpperCase() }}</span>
+                    <span class="text-[8px] font-bold text-slate-900 dark:text-[#e3e2e2]">{{ (h.createdBy.username || h.createdBy.email || '?')[0].toUpperCase() }}</span>
                   </div>
                   <div>
                     <p class="text-[11px] font-medium text-slate-800">{{ h.createdBy.username || h.createdBy.email }}</p>
@@ -106,7 +106,7 @@
 
       <!-- Pagination -->
       <div v-if="meta && meta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 flex items-center justify-between">
-        <p class="text-xs text-slate-500">Hal. {{ meta.page }} / {{ meta.totalPages }}</p>
+        <p class="text-xs text-slate-500 dark:text-[#869392]">Hal. {{ meta.page }} / {{ meta.totalPages }}</p>
         <div class="flex gap-1">
           <button :disabled="meta.page <= 1" class="h-7 px-2.5 text-xs border border-slate-200 rounded disabled:opacity-40 text-slate-700" @click="fetchData(meta!.page - 1)">Prev</button>
           <button :disabled="meta.page >= meta.totalPages" class="h-7 px-2.5 text-xs border border-slate-200 rounded disabled:opacity-40 text-slate-700" @click="fetchData(meta!.page + 1)">Next</button>

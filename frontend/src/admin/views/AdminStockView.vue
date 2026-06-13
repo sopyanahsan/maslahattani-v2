@@ -12,7 +12,7 @@
         <button
           type="button"
           class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
-                 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
+                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
           @click="showRestockModal = true"
         >
           <PackagePlusIcon class="w-4 h-4 text-emerald-600" />
@@ -21,7 +21,7 @@
         <button
           type="button"
           class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
-                 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
+                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
           @click="showOpnameModal = true"
         >
           <ClipboardCheckIcon class="w-4 h-4 text-blue-600" />
@@ -32,34 +32,34 @@
 
     <!-- Summary Cards -->
     <div v-if="summary" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="stat-card bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[11px] text-slate-500 uppercase tracking-wide">Total Produk</p>
-        <p class="text-lg font-bold font-mono tabular-nums text-slate-950 mt-1">
+        <p class="text-lg font-bold font-mono tabular-nums text-slate-950 dark:text-[#e3e2e2] mt-1">
           {{ summary.totalProducts }}
         </p>
       </div>
-      <div class="stat-card bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[11px] text-slate-500 uppercase tracking-wide">Stok Habis</p>
         <p class="text-lg font-bold font-mono tabular-nums text-red-600 mt-1">
           {{ summary.outOfStock }}
         </p>
       </div>
-      <div class="stat-card bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[11px] text-slate-500 uppercase tracking-wide">Stok Menipis (&le;5)</p>
         <p class="text-lg font-bold font-mono tabular-nums text-amber-600 mt-1">
           {{ summary.lowStock }}
         </p>
       </div>
-      <div class="stat-card bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="stat-card bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[11px] text-slate-500 uppercase tracking-wide">Nilai Stok (Modal)</p>
-        <p class="text-lg font-bold font-mono tabular-nums text-slate-950 mt-1">
+        <p class="text-lg font-bold font-mono tabular-nums text-slate-950 dark:text-[#e3e2e2] mt-1">
           {{ formatRupiah(summary.totalStockValue) }}
         </p>
       </div>
     </div>
 
     <!-- Tab switcher -->
-    <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+    <div class="flex gap-1 bg-slate-100 dark:bg-[#292a2a] rounded-lg p-1 w-fit">
       <button
         v-for="tab in tabs"
         :key="tab.value"
@@ -82,7 +82,7 @@
       <!-- Loading -->
       <div v-if="loading" class="flex items-center justify-center py-12">
         <Loader2Icon class="w-5 h-5 animate-spin text-blue-600" />
-        <span class="ml-2 text-sm text-slate-500">Memuat stok...</span>
+        <span class="ml-2 text-sm text-slate-500 dark:text-[#869392]">Memuat stok...</span>
       </div>
 
       <!-- Error -->
@@ -100,25 +100,25 @@
       <!-- Stock table -->
       <div
         v-else-if="stockItems.length > 0"
-        class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
+        class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden"
       >
         <div class="overflow-x-auto">
           <table class="w-full min-w-[600px]">
-            <thead class="bg-slate-50 border-b border-slate-200">
+            <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
               <tr>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">
                   Produk
                 </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">
                   SKU
                 </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">
                   Qty
                 </th>
-                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">
                   Nilai (Modal)
                 </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">
                   Status
                 </th>
               </tr>
@@ -127,15 +127,15 @@
               <tr
                 v-for="item in stockItems"
                 :key="item.id"
-                class="hover:bg-slate-50 transition-colors"
+                class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
               >
-                <td class="px-4 py-3 text-sm font-medium text-slate-900">
+                <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">
                   {{ item.product.name }}
                 </td>
                 <td class="px-4 py-3">
                   <code class="text-xs font-mono text-slate-600">{{ item.product.sku }}</code>
                 </td>
-                <td class="px-4 py-3 text-center text-sm font-mono tabular-nums font-semibold text-slate-900">
+                <td class="px-4 py-3 text-center text-sm font-mono tabular-nums font-semibold text-slate-900 dark:text-[#e3e2e2]">
                   {{ item.quantity }}
                 </td>
                 <td class="px-4 py-3 text-right text-sm font-mono tabular-nums text-slate-700">
@@ -161,9 +161,9 @@
         </div>
       </div>
 
-      <div v-else class="bg-white border border-dashed border-slate-200 rounded-lg p-8 text-center">
+      <div v-else class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-8 text-center">
         <PackageIcon class="w-12 h-12 text-slate-300 mx-auto mb-2" />
-        <p class="text-sm font-bold text-slate-500">Belum ada data stok.</p>
+        <p class="text-sm font-bold text-slate-500 dark:text-[#869392]">Belum ada data stok.</p>
       </div>
     </section>
 
@@ -173,33 +173,33 @@
     <section v-if="activeTab === 'history'">
       <div v-if="historyLoading" class="flex items-center justify-center py-12">
         <Loader2Icon class="w-5 h-5 animate-spin text-blue-600" />
-        <span class="ml-2 text-sm text-slate-500">Memuat riwayat...</span>
+        <span class="ml-2 text-sm text-slate-500 dark:text-[#869392]">Memuat riwayat...</span>
       </div>
 
       <div
         v-else-if="historyItems.length > 0"
-        class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
+        class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden"
       >
         <div class="overflow-x-auto">
           <table class="w-full min-w-[650px]">
-            <thead class="bg-slate-50 border-b border-slate-200">
+            <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
               <tr>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">
                   Waktu
                 </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">
                   Produk
                 </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">
                   Tipe
                 </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">
                   Sumber
                 </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">
                   Perubahan
                 </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">
                   Catatan
                 </th>
               </tr>
@@ -208,12 +208,12 @@
               <tr
                 v-for="h in historyItems"
                 :key="h.id"
-                class="hover:bg-slate-50 transition-colors"
+                class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
               >
                 <td class="px-4 py-2.5 text-xs text-slate-600 font-mono tabular-nums">
                   {{ formatDateTime(h.createdAt) }}
                 </td>
-                <td class="px-4 py-2.5 text-sm text-slate-900">
+                <td class="px-4 py-2.5 text-sm text-slate-900 dark:text-[#e3e2e2]">
                   {{ h.stock.product.name }}
                 </td>
                 <td class="px-4 py-2.5 text-center">
@@ -273,7 +273,7 @@
           v-if="historyMeta && historyMeta.totalPages > 1"
           class="px-4 py-3 border-t border-slate-200 flex items-center justify-between"
         >
-          <p class="text-xs text-slate-500">
+          <p class="text-xs text-slate-500 dark:text-[#869392]">
             Halaman {{ historyMeta.page }} dari {{ historyMeta.totalPages }}
           </p>
           <div class="flex items-center gap-1">
@@ -297,9 +297,9 @@
         </div>
       </div>
 
-      <div v-else class="bg-white border border-dashed border-slate-200 rounded-lg p-8 text-center">
+      <div v-else class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-8 text-center">
         <HistoryIcon class="w-12 h-12 text-slate-300 mx-auto mb-2" />
-        <p class="text-sm font-bold text-slate-500">Belum ada riwayat stok.</p>
+        <p class="text-sm font-bold text-slate-500 dark:text-[#869392]">Belum ada riwayat stok.</p>
       </div>
     </section>
 
@@ -311,7 +311,7 @@
         v-if="showRestockModal"
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showRestockModal = false"></div>
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showRestockModal = false"></div>
         <form
           class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4"
           @submit.prevent="handleRestock"
@@ -405,7 +405,7 @@
         v-if="showOpnameModal"
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showOpnameModal = false"></div>
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showOpnameModal = false"></div>
         <form
           class="relative bg-white rounded-lg shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto"
           @submit.prevent="handleOpname"
@@ -414,7 +414,7 @@
             <ClipboardCheckIcon class="w-5 h-5 text-blue-600" />
             Stok Opname
           </h2>
-          <p class="text-xs text-slate-500">
+          <p class="text-xs text-slate-500 dark:text-[#869392]">
             Input stok fisik aktual per produk. Sistem otomatis hitung selisih.
           </p>
 
@@ -429,7 +429,7 @@
                 <p class="text-xs font-medium text-slate-900 truncate">
                   {{ item.productName }}
                 </p>
-                <p class="text-[10px] text-slate-500">Sistem: {{ item.systemQty }}</p>
+                <p class="text-[10px] text-slate-500 dark:text-[#869392]">Sistem: {{ item.systemQty }}</p>
               </div>
               <input
                 v-model.number="item.actualQuantity"

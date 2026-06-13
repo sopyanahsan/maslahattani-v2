@@ -9,7 +9,7 @@
     </div>
 
     <!-- Current Plan Status -->
-    <div class="bg-white border border-slate-200 rounded-lg p-6 shadow-sm">
+    <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-6 shadow-sm">
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <p class="text-xs text-slate-500 uppercase tracking-wide font-semibold">Paket Aktif</p>
@@ -21,7 +21,7 @@
         </div>
         <div v-if="subscription?.endDate" class="text-right">
           <p class="text-[10px] text-slate-500 uppercase tracking-wide font-semibold">Jatuh Tempo</p>
-          <p class="text-base font-bold text-slate-950 mt-0.5">{{ formatDate(subscription.endDate) }}</p>
+          <p class="text-base font-bold text-slate-950 dark:text-[#e3e2e2] mt-0.5">{{ formatDate(subscription.endDate) }}</p>
           <p v-if="subscription.daysRemaining !== null" :class="['text-xs font-bold mt-0.5', subscription.daysRemaining <= 7 ? 'text-red-600' : subscription.daysRemaining <= 14 ? 'text-amber-600' : 'text-emerald-600']">
             {{ subscription.daysRemaining }} hari lagi
           </p>
@@ -51,7 +51,7 @@
       <p class="text-xs text-slate-500 mb-4">Upgrade kapan saja. Downgrade berlaku di periode berikutnya.</p>
 
       <!-- Cycle toggle -->
-      <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit mb-6">
+      <div class="flex gap-1 bg-slate-100 dark:bg-[#292a2a] rounded-lg p-1 w-fit mb-6">
         <button v-for="c in cycles" :key="c.key" :class="['h-8 px-4 text-xs font-semibold rounded-md transition-all', cycle === c.key ? 'bg-white text-slate-950 shadow-sm' : 'text-slate-500 hover:text-slate-900']" @click="cycle = c.key">
           {{ c.label }}
           <span v-if="c.key === 'yearly'" class="ml-1 text-[9px] text-emerald-600 font-bold">-17%</span>
@@ -72,9 +72,9 @@
               <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
             </div>
           </div>
-          <h4 class="text-sm font-bold text-slate-950">{{ plan.name }}</h4>
-          <p class="text-xl font-bold text-slate-950 mt-1">Rp {{ formatPrice(plan.price[cycle]) }}</p>
-          <p class="text-[10px] text-slate-500">{{ cycle === 'lifetime' ? 'sekali bayar selamanya' : cycle === 'yearly' ? 'per tahun' : 'per bulan' }}</p>
+          <h4 class="text-sm font-bold text-slate-950 dark:text-[#e3e2e2]">{{ plan.name }}</h4>
+          <p class="text-xl font-bold text-slate-950 dark:text-[#e3e2e2] mt-1">Rp {{ formatPrice(plan.price[cycle]) }}</p>
+          <p class="text-[10px] text-slate-500 dark:text-[#869392]">{{ cycle === 'lifetime' ? 'sekali bayar selamanya' : cycle === 'yearly' ? 'per tahun' : 'per bulan' }}</p>
           <ul class="mt-3 space-y-1.5">
             <li v-for="f in plan.features" :key="f" class="text-[11px] text-slate-600 flex items-start gap-1.5">
               <svg class="w-3 h-3 text-emerald-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
@@ -86,8 +86,8 @@
     </div>
 
     <!-- Payment Instructions -->
-    <div v-if="selectedPlan" class="bg-white border border-slate-200 rounded-lg p-6 space-y-4 shadow-sm">
-      <h3 class="text-base font-bold text-slate-950">Pembayaran</h3>
+    <div v-if="selectedPlan" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-6 space-y-4 shadow-sm">
+      <h3 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2]">Pembayaran</h3>
 
       <!-- Total -->
       <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
@@ -98,24 +98,24 @@
 
       <!-- Transfer Info -->
       <div class="space-y-3">
-        <p class="text-xs font-bold text-slate-900 uppercase tracking-wide">Transfer ke:</p>
+        <p class="text-xs font-bold text-slate-900 dark:text-[#bcc9c7] uppercase tracking-wide">Transfer ke:</p>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div class="border border-slate-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
             <p class="text-xs font-bold text-slate-950 mb-1">SeaBank</p>
-            <p class="text-lg font-mono font-bold text-slate-950">9012 3456 7890</p>
-            <p class="text-[10px] text-slate-500">a.n. Sopyan Ahsan</p>
+            <p class="text-lg font-mono font-bold text-slate-950 dark:text-[#e3e2e2]">9012 3456 7890</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392]">a.n. Sopyan Ahsan</p>
           </div>
           <div class="border border-slate-200 rounded-lg p-4 hover:border-blue-300 transition-colors">
             <p class="text-xs font-bold text-slate-950 mb-1">BCA</p>
-            <p class="text-lg font-mono font-bold text-slate-950">1234 5678 90</p>
-            <p class="text-[10px] text-slate-500">a.n. Sopyan Ahsan</p>
+            <p class="text-lg font-mono font-bold text-slate-950 dark:text-[#e3e2e2]">1234 5678 90</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392]">a.n. Sopyan Ahsan</p>
           </div>
         </div>
       </div>
 
       <!-- Steps -->
       <div class="border-t border-slate-200 pt-4 space-y-3">
-        <p class="text-xs font-bold text-slate-900 uppercase tracking-wide">Setelah transfer:</p>
+        <p class="text-xs font-bold text-slate-900 dark:text-[#bcc9c7] uppercase tracking-wide">Setelah transfer:</p>
         <ol class="space-y-1.5 text-xs text-slate-600 list-decimal list-inside">
           <li>Transfer sesuai nominal + kode unik (3 digit terakhir)</li>
           <li>Screenshot bukti transfer</li>

@@ -51,7 +51,7 @@
         class="bg-white rounded-2xl shadow-xl border border-slate-200 p-8 text-center"
       >
         <div class="text-4xl mb-3 opacity-50">🏪</div>
-        <p class="text-base font-semibold text-slate-900">Belum ada cabang</p>
+        <p class="text-base font-semibold text-slate-900 dark:text-[#e3e2e2]">Belum ada cabang</p>
         <p class="text-sm text-slate-600 mt-1 max-w-sm mx-auto">
           Sistem belum punya cabang terdaftar. Hubungi developer untuk seed data
           atau buat cabang pertama via API.
@@ -89,7 +89,7 @@
               <h3 class="text-base font-bold text-slate-950 truncate">
                 {{ shop.name }}
               </h3>
-              <p class="text-xs text-slate-500 mt-0.5 line-clamp-1">
+              <p class="text-xs text-slate-500 dark:text-[#869392] mt-0.5 line-clamp-1">
                 {{ shop.address }}
               </p>
               <p class="text-[11px] font-mono text-slate-400 mt-0.5">

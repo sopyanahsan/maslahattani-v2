@@ -2,14 +2,14 @@
   <div class="space-y-5">
     <!-- Header -->
     <div>
-      <h1 class="text-xl font-bold text-slate-950">Laporan Retail</h1>
-      <p class="text-xs text-slate-500 mt-0.5">Analisis penjualan, laba rugi, produk, dan customer.</p>
+      <h1 class="text-xl font-bold text-slate-950 dark:text-[#e3e2e2]">Laporan Retail</h1>
+      <p class="text-xs text-slate-500 dark:text-[#869392] mt-0.5">Analisis penjualan, laba rugi, produk, dan customer.</p>
     </div>
 
     <!-- Filter Bar -->
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap items-start sm:items-center">
-      <input v-model="startDate" type="date" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
-      <input v-model="endDate" type="date" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+      <input v-model="startDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+      <input v-model="endDate" type="date" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
       <button type="button" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 flex items-center gap-1.5" @click="fetchAll">
         Terapkan
       </button>
@@ -48,14 +48,14 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+    <div class="flex gap-1 bg-slate-100 dark:bg-[#292a2a] rounded-lg p-1 w-fit">
       <button v-for="tab in tabs" :key="tab.key" type="button" :class="['h-8 px-4 text-xs font-semibold rounded-md transition-colors', activeTab === tab.key ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-600 hover:text-slate-900']" @click="activeTab = tab.key">{{ tab.label }}</button>
     </div>
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
       <div class="w-6 h-6 border-4 border-slate-200 border-t-[#03a29c] rounded-full animate-spin" />
-      <span class="ml-3 text-sm text-slate-500">Memuat laporan...</span>
+      <span class="ml-3 text-sm text-slate-500 dark:text-[#869392]">Memuat laporan...</span>
     </div>
 
     <template v-else>
@@ -65,26 +65,26 @@
       <template v-if="activeTab === 'sales' && salesReport">
         <!-- KPI Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm text-center">
+          <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm text-center">
             <p class="text-[10px] text-slate-500 uppercase">Omzet</p>
             <p class="text-lg font-bold font-mono tabular-nums text-slate-900 mt-1">{{ formatRupiah(salesReport.summary.omzet) }}</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm text-center">
+          <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm text-center">
             <p class="text-[10px] text-slate-500 uppercase">Laba Kotor</p>
             <p class="text-lg font-bold font-mono tabular-nums text-emerald-600 mt-1">{{ formatRupiah(salesReport.summary.profit) }}</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm text-center">
+          <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm text-center">
             <p class="text-[10px] text-slate-500 uppercase">Transaksi</p>
             <p class="text-lg font-bold font-mono tabular-nums text-slate-900 mt-1">{{ salesReport.summary.totalTransactions }}</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm text-center">
+          <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm text-center">
             <p class="text-[10px] text-slate-500 uppercase">Margin</p>
             <p class="text-lg font-bold font-mono tabular-nums text-blue-600 mt-1">{{ salesReport.summary.marginPercent }}%</p>
           </div>
         </div>
 
         <!-- Grafik Trend Penjualan -->
-        <div v-if="salesReport.dailyTrend.length > 0" class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
+        <div v-if="salesReport.dailyTrend.length > 0" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 shadow-sm">
           <h3 class="text-sm font-bold text-slate-900 mb-4">Grafik Trend Penjualan</h3>
           <div class="flex gap-2">
             <div class="flex flex-col justify-between h-48 text-right pr-1 shrink-0 w-12">
@@ -114,26 +114,26 @@
         </div>
 
         <!-- Method Breakdown -->
-        <div v-if="salesReport.methodBreakdown.length > 0" class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
+        <div v-if="salesReport.methodBreakdown.length > 0" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 shadow-sm">
           <h3 class="text-sm font-bold text-slate-900 mb-3">Breakdown Metode Bayar</h3>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
             <div v-for="m in salesReport.methodBreakdown" :key="m.method" class="border border-slate-200 rounded-lg p-3 text-center">
               <span :class="['inline-flex px-2 py-0.5 rounded text-[9px] font-bold uppercase mb-2', methodBadge(m.method)]">{{ m.method }}</span>
-              <p class="text-sm font-bold font-mono tabular-nums text-slate-900">{{ formatRupiah(m.totalAmount) }}</p>
+              <p class="text-sm font-bold font-mono tabular-nums text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(m.totalAmount) }}</p>
               <p class="text-[10px] text-slate-400 mt-0.5">{{ m.count }} trx</p>
             </div>
           </div>
         </div>
 
         <!-- Daily Trend Table -->
-        <div v-if="salesReport.dailyTrend.length > 0" class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
-            <h3 class="text-sm font-bold text-slate-900">Trend Harian</h3>
+        <div v-if="salesReport.dailyTrend.length > 0" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
+            <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">Trend Harian</h3>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full">
-              <thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">Tanggal</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Omzet</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Profit</th><th class="px-4 py-2 text-center text-[10px] font-bold text-slate-600 uppercase">Trx</th></tr></thead>
-              <tbody class="divide-y divide-slate-100"><tr v-for="d in salesReport.dailyTrend" :key="d.date" class="hover:bg-slate-50"><td class="px-4 py-2 text-xs font-mono tabular-nums text-slate-700">{{ d.date }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums text-slate-900">{{ formatRupiah(d.omzet) }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums text-emerald-600">{{ formatRupiah(d.profit) }}</td><td class="px-4 py-2 text-center text-xs font-mono tabular-nums text-slate-700">{{ d.transactions }}</td></tr></tbody>
+              <thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Tanggal</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Omzet</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Profit</th><th class="px-4 py-2 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Trx</th></tr></thead>
+              <tbody class="divide-y divide-slate-100"><tr v-for="d in salesReport.dailyTrend" :key="d.date" class="hover:bg-slate-50"><td class="px-4 py-2 text-xs font-mono tabular-nums text-slate-700">{{ d.date }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(d.omzet) }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums text-emerald-600">{{ formatRupiah(d.profit) }}</td><td class="px-4 py-2 text-center text-xs font-mono tabular-nums text-slate-700">{{ d.transactions }}</td></tr></tbody>
             </table>
           </div>
         </div>
@@ -144,25 +144,25 @@
       <!-- ============================================ -->
       <template v-if="activeTab === 'labarugi' && salesReport">
         <!-- P&L Statement -->
-        <div class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm max-w-lg">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 shadow-sm max-w-lg">
           <h3 class="text-sm font-bold text-slate-900 mb-4">Laporan Laba Rugi</h3>
           <div class="space-y-3">
-            <div class="flex justify-between text-sm"><span class="text-slate-700">Pendapatan (Omzet)</span><span class="font-mono tabular-nums font-bold text-slate-900">{{ formatRupiah(salesReport.summary.omzet) }}</span></div>
+            <div class="flex justify-between text-sm"><span class="text-slate-700">Pendapatan (Omzet)</span><span class="font-mono tabular-nums font-bold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(salesReport.summary.omzet) }}</span></div>
             <div class="flex justify-between text-sm"><span class="text-slate-700">HPP (Harga Pokok Penjualan)</span><span class="font-mono tabular-nums text-red-500">- {{ formatRupiah(salesReport.summary.modal) }}</span></div>
             <div class="flex justify-between text-sm"><span class="text-slate-700">Diskon Diberikan</span><span class="font-mono tabular-nums text-amber-500">- {{ formatRupiah(salesReport.summary.diskon) }}</span></div>
-            <div class="border-t border-slate-200 pt-3 flex justify-between text-base"><span class="font-bold text-slate-900">Laba Kotor</span><span class="font-mono tabular-nums font-bold text-emerald-600">{{ formatRupiah(salesReport.summary.profit) }}</span></div>
+            <div class="border-t border-slate-200 pt-3 flex justify-between text-base"><span class="font-bold text-slate-900 dark:text-[#e3e2e2]">Laba Kotor</span><span class="font-mono tabular-nums font-bold text-emerald-600">{{ formatRupiah(salesReport.summary.profit) }}</span></div>
             <div class="flex justify-between text-xs text-slate-400"><span>Margin Profit</span><span class="font-mono tabular-nums">{{ salesReport.summary.marginPercent }}%</span></div>
             <div class="flex justify-between text-xs text-slate-400"><span>Void</span><span class="font-mono tabular-nums">{{ salesReport.summary.totalVoided }} transaksi</span></div>
           </div>
         </div>
 
         <!-- Perbandingan Periode -->
-        <div v-if="comparison" class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
+        <div v-if="comparison" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 shadow-sm">
           <h3 class="text-sm font-bold text-slate-900 mb-4">Perbandingan Periode</h3>
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div class="text-center">
               <p class="text-[10px] text-slate-500 uppercase mb-1">Omzet</p>
-              <p class="text-sm font-bold font-mono tabular-nums text-slate-900">{{ formatRupiah(comparison.current.omzet) }}</p>
+              <p class="text-sm font-bold font-mono tabular-nums text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(comparison.current.omzet) }}</p>
               <p class="text-[10px] text-slate-400">vs {{ formatRupiah(comparison.previous.omzet) }}</p>
               <span :class="['text-[11px] font-bold', comparison.change.omzet >= 0 ? 'text-emerald-600' : 'text-red-500']">{{ comparison.change.omzet >= 0 ? '+' : '' }}{{ comparison.change.omzet }}%</span>
             </div>
@@ -174,7 +174,7 @@
             </div>
             <div class="text-center">
               <p class="text-[10px] text-slate-500 uppercase mb-1">Transaksi</p>
-              <p class="text-sm font-bold font-mono tabular-nums text-slate-900">{{ comparison.current.transactions }}</p>
+              <p class="text-sm font-bold font-mono tabular-nums text-slate-900 dark:text-[#e3e2e2]">{{ comparison.current.transactions }}</p>
               <p class="text-[10px] text-slate-400">vs {{ comparison.previous.transactions }}</p>
               <span :class="['text-[11px] font-bold', comparison.change.transactions >= 0 ? 'text-emerald-600' : 'text-red-500']">{{ comparison.change.transactions >= 0 ? '+' : '' }}{{ comparison.change.transactions }}%</span>
             </div>
@@ -189,68 +189,68 @@
       <template v-if="activeTab === 'products' && productReport">
         <!-- Summary Cards -->
         <div class="grid grid-cols-3 gap-3">
-          <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm text-center">
+          <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm text-center">
             <p class="text-[10px] text-slate-500 uppercase">Total Produk</p>
             <p class="text-lg font-bold text-slate-900 mt-1">{{ productReport.totalProducts }}</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm text-center">
+          <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm text-center">
             <p class="text-[10px] text-slate-500 uppercase">Terjual</p>
             <p class="text-lg font-bold text-emerald-600 mt-1">{{ productReport.productsWithSales }}</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm text-center">
+          <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm text-center">
             <p class="text-[10px] text-slate-500 uppercase">Tidak Laku</p>
             <p class="text-lg font-bold text-red-500 mt-1">{{ productReport.productsWithoutSales }}</p>
           </div>
         </div>
 
         <!-- Top Selling -->
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
           <div class="px-5 py-3 border-b border-slate-200 bg-emerald-50"><h3 class="text-sm font-bold text-emerald-800">Top 10 Produk Terlaris</h3></div>
           <div class="overflow-x-auto">
-            <table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">#</th><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">Produk</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Qty</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Revenue</th></tr></thead>
-              <tbody class="divide-y divide-slate-100"><tr v-for="(p, i) in productReport.topSelling" :key="p.productId" class="hover:bg-slate-50"><td class="px-4 py-2 text-xs text-slate-400">{{ i + 1 }}</td><td class="px-4 py-2 text-xs font-medium text-slate-900">{{ p.name }} <span class="text-slate-400">({{ p.sku }})</span></td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums text-slate-700">{{ p.qtySold }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums font-semibold text-slate-900">{{ formatRupiah(p.revenue) }}</td></tr></tbody>
+            <table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">#</th><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Produk</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Qty</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Revenue</th></tr></thead>
+              <tbody class="divide-y divide-slate-100"><tr v-for="(p, i) in productReport.topSelling" :key="p.productId" class="hover:bg-slate-50"><td class="px-4 py-2 text-xs text-slate-400">{{ i + 1 }}</td><td class="px-4 py-2 text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ p.name }} <span class="text-slate-400">({{ p.sku }})</span></td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums text-slate-700">{{ p.qtySold }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(p.revenue) }}</td></tr></tbody>
             </table>
           </div>
         </div>
 
         <!-- Slow Moving -->
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
           <div class="px-5 py-3 border-b border-slate-200 bg-red-50"><h3 class="text-sm font-bold text-red-800">Produk Slow Moving (Ga Laku)</h3></div>
           <div class="overflow-x-auto">
-            <table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">Produk</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Harga</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Terjual</th></tr></thead>
-              <tbody class="divide-y divide-slate-100"><tr v-for="p in productReport.slowMoving" :key="p.productId" class="hover:bg-slate-50"><td class="px-4 py-2 text-xs font-medium text-slate-900">{{ p.name }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums text-slate-700">{{ formatRupiah(p.price || 0) }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums" :class="p.qtySold === 0 ? 'text-red-500 font-bold' : 'text-slate-600'">{{ p.qtySold }}</td></tr></tbody>
+            <table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Produk</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Harga</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Terjual</th></tr></thead>
+              <tbody class="divide-y divide-slate-100"><tr v-for="p in productReport.slowMoving" :key="p.productId" class="hover:bg-slate-50"><td class="px-4 py-2 text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ p.name }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums text-slate-700">{{ formatRupiah(p.price || 0) }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums" :class="p.qtySold === 0 ? 'text-red-500 font-bold' : 'text-slate-600'">{{ p.qtySold }}</td></tr></tbody>
             </table>
           </div>
         </div>
 
         <!-- Highest Margin -->
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
           <div class="px-5 py-3 border-b border-slate-200 bg-blue-50"><h3 class="text-sm font-bold text-blue-800">Produk Margin Tertinggi</h3></div>
           <div class="overflow-x-auto">
-            <table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">Produk</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Margin</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">%</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Total Profit</th></tr></thead>
-              <tbody class="divide-y divide-slate-100"><tr v-for="p in productReport.highestMargin" :key="p.productId" class="hover:bg-slate-50"><td class="px-4 py-2 text-xs font-medium text-slate-900">{{ p.name }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums text-slate-700">{{ formatRupiah(p.margin || 0) }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums text-blue-600 font-bold">{{ p.marginPercent }}%</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums font-semibold text-emerald-600">{{ formatRupiah(p.totalProfit || 0) }}</td></tr></tbody>
+            <table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Produk</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Margin</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">%</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Total Profit</th></tr></thead>
+              <tbody class="divide-y divide-slate-100"><tr v-for="p in productReport.highestMargin" :key="p.productId" class="hover:bg-slate-50"><td class="px-4 py-2 text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ p.name }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums text-slate-700">{{ formatRupiah(p.margin || 0) }}</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums text-blue-600 font-bold">{{ p.marginPercent }}%</td><td class="px-4 py-2 text-right text-xs font-mono tabular-nums font-semibold text-emerald-600">{{ formatRupiah(p.totalProfit || 0) }}</td></tr></tbody>
             </table>
           </div>
         </div>
 
         <!-- Kategori Produk -->
-        <div v-if="productReport.categoryBreakdown && productReport.categoryBreakdown.length > 0" class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+        <div v-if="productReport.categoryBreakdown && productReport.categoryBreakdown.length > 0" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
           <div class="px-5 py-3 border-b border-slate-200 bg-violet-50"><h3 class="text-sm font-bold text-violet-800">Penjualan per Kategori Produk</h3></div>
           <div class="overflow-x-auto">
-            <table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">Kategori</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Produk</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Qty Terjual</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Revenue</th></tr></thead>
-              <tbody class="divide-y divide-slate-100"><tr v-for="c in productReport.categoryBreakdown" :key="c.categoryId" class="hover:bg-slate-50"><td class="px-4 py-2.5 text-xs font-semibold text-slate-800">{{ c.name }}</td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums text-slate-500">{{ c.productCount }}</td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums text-slate-700">{{ c.qty }}</td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums font-semibold text-slate-900">{{ formatRupiah(c.revenue) }}</td></tr></tbody>
+            <table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Kategori</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Produk</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Qty Terjual</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Revenue</th></tr></thead>
+              <tbody class="divide-y divide-slate-100"><tr v-for="c in productReport.categoryBreakdown" :key="c.categoryId" class="hover:bg-slate-50"><td class="px-4 py-2.5 text-xs font-semibold text-slate-800">{{ c.name }}</td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums text-slate-500 dark:text-[#869392]">{{ c.productCount }}</td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums text-slate-700">{{ c.qty }}</td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(c.revenue) }}</td></tr></tbody>
             </table>
           </div>
         </div>
 
         <!-- Stok Menipis -->
-        <div v-if="productReport.lowStock && productReport.lowStock.length > 0" class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+        <div v-if="productReport.lowStock && productReport.lowStock.length > 0" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
           <div class="px-5 py-3 border-b border-slate-200 bg-amber-50">
             <h3 class="text-sm font-bold text-amber-800">Stok Menipis (≤ {{ productReport.lowStockThreshold }} pcs)</h3>
             <p class="text-[10px] text-amber-600 mt-0.5">Produk yang perlu segera di-restock</p>
           </div>
           <div class="overflow-x-auto">
-            <table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">Produk</th><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">SKU</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Sisa Stok</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Threshold</th></tr></thead>
+            <table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Produk</th><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">SKU</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Sisa Stok</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Threshold</th></tr></thead>
               <tbody class="divide-y divide-slate-100"><tr v-for="s in productReport.lowStock" :key="s.productId" class="hover:bg-amber-50/50"><td class="px-4 py-2.5 text-xs font-semibold text-slate-800">{{ s.name }}</td><td class="px-4 py-2.5 text-xs font-mono text-slate-400">{{ s.sku }}</td><td class="px-4 py-2.5 text-right"><span :class="['text-xs font-mono tabular-nums font-bold', s.currentStock === 0 ? 'text-red-600' : 'text-amber-600']">{{ s.currentStock }}</span></td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums text-slate-400">≤ {{ s.threshold }}</td></tr></tbody>
             </table>
           </div>
@@ -263,30 +263,30 @@
       <template v-if="activeTab === 'customers' && customerReport">
         <!-- Summary -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm text-center">
+          <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm text-center">
             <p class="text-[10px] text-slate-500 uppercase">Total Customer</p>
             <p class="text-lg font-bold text-slate-900 mt-1">{{ customerReport.summary.totalUniqueCustomers }}</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm text-center">
+          <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm text-center">
             <p class="text-[10px] text-slate-500 uppercase">Repeat</p>
             <p class="text-lg font-bold text-blue-600 mt-1">{{ customerReport.summary.repeatCustomers }}</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm text-center">
+          <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm text-center">
             <p class="text-[10px] text-slate-500 uppercase">New</p>
             <p class="text-lg font-bold text-blue-600 mt-1">{{ customerReport.summary.newCustomers }}</p>
           </div>
-          <div class="bg-white border border-slate-200 rounded-lg p-4 shadow-sm text-center">
+          <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm text-center">
             <p class="text-[10px] text-slate-500 uppercase">Baru Daftar</p>
             <p class="text-lg font-bold text-amber-600 mt-1">{{ customerReport.summary.newlyRegistered }}</p>
           </div>
         </div>
 
         <!-- Top Spenders -->
-        <div class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
-          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50"><h3 class="text-sm font-bold text-slate-900">Customer Ranking (Top Spender)</h3></div>
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]"><h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">Customer Ranking (Top Spender)</h3></div>
           <div class="overflow-x-auto">
-            <table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">#</th><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 uppercase">Nama</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Total Belanja</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Profit</th><th class="px-4 py-2 text-center text-[10px] font-bold text-slate-600 uppercase">Trx</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 uppercase">Avg/Visit</th></tr></thead>
-              <tbody class="divide-y divide-slate-100"><tr v-for="(c, i) in customerReport.topSpenders" :key="c.customerId" class="hover:bg-slate-50"><td class="px-4 py-2.5 text-xs text-slate-400 font-bold">{{ i + 1 }}</td><td class="px-4 py-2.5"><p class="text-xs font-semibold text-slate-900">{{ c.name }}</p><p v-if="c.phone" class="text-[10px] text-slate-400">{{ c.phone }}</p></td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums font-bold text-slate-900">{{ formatRupiah(c.totalSpent) }}</td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums text-emerald-600">{{ formatRupiah(c.totalProfit) }}</td><td class="px-4 py-2.5 text-center text-xs font-mono tabular-nums text-slate-700">{{ c.transactionCount }}</td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums text-slate-600">{{ formatRupiah(c.avgPerVisit) }}</td></tr></tbody>
+            <table class="w-full"><thead class="border-b border-slate-200"><tr><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">#</th><th class="px-4 py-2 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Nama</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Total Belanja</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Profit</th><th class="px-4 py-2 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Trx</th><th class="px-4 py-2 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase">Avg/Visit</th></tr></thead>
+              <tbody class="divide-y divide-slate-100"><tr v-for="(c, i) in customerReport.topSpenders" :key="c.customerId" class="hover:bg-slate-50"><td class="px-4 py-2.5 text-xs text-slate-400 font-bold">{{ i + 1 }}</td><td class="px-4 py-2.5"><p class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ c.name }}</p><p v-if="c.phone" class="text-[10px] text-slate-400">{{ c.phone }}</p></td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums font-bold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(c.totalSpent) }}</td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums text-emerald-600">{{ formatRupiah(c.totalProfit) }}</td><td class="px-4 py-2.5 text-center text-xs font-mono tabular-nums text-slate-700">{{ c.transactionCount }}</td><td class="px-4 py-2.5 text-right text-xs font-mono tabular-nums text-slate-600">{{ formatRupiah(c.avgPerVisit) }}</td></tr></tbody>
             </table>
           </div>
         </div>

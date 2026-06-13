@@ -26,28 +26,28 @@
     <!-- Rekap Opname Bulan Ini -->
     <div class="bg-emerald-50/50 border border-emerald-100 rounded-lg p-5">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-bold text-slate-900">Rekap Opname Bulan Ini</h2>
-        <span class="text-xs text-slate-500">{{ currentMonthYear }}</span>
+        <h2 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">Rekap Opname Bulan Ini</h2>
+        <span class="text-xs text-slate-500 dark:text-[#869392]">{{ currentMonthYear }}</span>
       </div>
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="bg-white border border-slate-200 rounded-lg p-3">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3">
           <p class="text-[10px] font-semibold text-red-500 uppercase tracking-wide">Kerugian</p>
           <p class="text-lg font-bold text-red-600 mt-1">{{ monthlyStats.totalLoss }} item</p>
           <p class="text-[10px] text-slate-400 mt-0.5">produk kurang (defisit)</p>
         </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-3">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3">
           <p class="text-[10px] font-semibold text-emerald-500 uppercase tracking-wide">Akurasi Stok</p>
           <p class="text-lg font-bold text-slate-900 mt-1">
             {{ monthlyStats.totalItems > 0 ? Math.round((monthlyStats.matched / monthlyStats.totalItems) * 100) + '%' : '—' }}
           </p>
           <p class="text-[10px] text-slate-400 mt-0.5">item cocok / dihitung</p>
         </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-3">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3">
           <p class="text-[10px] font-semibold text-blue-500 uppercase tracking-wide">Jumlah Sesi</p>
           <p class="text-lg font-bold text-slate-900 mt-1">{{ monthlyStats.totalSessions }}</p>
           <p class="text-[10px] text-slate-400 mt-0.5">sesi bulan ini</p>
         </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-3">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3">
           <p class="text-[10px] font-semibold text-slate-500 uppercase tracking-wide">Opname Terakhir</p>
           <p class="text-lg font-bold text-slate-900 mt-1">{{ monthlyStats.lastOpnameDate || '—' }}</p>
           <p class="text-[10px] text-slate-400 mt-0.5">{{ monthlyStats.lastOpnameDate ? '' : 'belum ada' }}</p>
@@ -85,13 +85,13 @@
       <div
         v-for="session in sessions"
         :key="session.id"
-        class="bg-white border border-slate-200 rounded-lg p-4 hover:border-slate-200 transition-colors cursor-pointer"
+        class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 hover:border-slate-200 transition-colors cursor-pointer"
         @click="openDetail(session)"
       >
         <div class="flex items-start justify-between">
           <div>
             <div class="flex items-center gap-2">
-              <span class="text-sm font-bold text-slate-900">{{ session.sessionNumber }}</span>
+              <span class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ session.sessionNumber }}</span>
               <span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', statusBadge(session.status)]">
                 {{ statusLabel(session.status) }}
               </span>
@@ -107,7 +107,7 @@
                 {{ session.passcode }}
               </span>
             </div>
-            <p class="text-xs text-slate-500 mt-1">
+            <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">
               Oleh {{ session.conductorName }} &middot; {{ formatDate(session.createdAt) }}
             </p>
             <p v-if="session.participantCount && session.participantCount > 0" class="text-[10px] text-slate-400 mt-0.5">
@@ -158,7 +158,7 @@
         v-if="showCreateModal"
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showCreateModal = false"></div>
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showCreateModal = false"></div>
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           <h2 class="text-base font-bold text-slate-900 flex items-center gap-2">
             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,7 +181,7 @@
                 ]"
                 @click="createMode = 'all'; selectedRackIds = []"
               >
-                <p class="text-xs font-bold text-slate-900">Semua Produk</p>
+                <p class="text-xs font-bold text-slate-900 dark:text-[#e3e2e2]">Semua Produk</p>
                 <p class="text-[10px] text-slate-500 mt-0.5">Hitung seluruh produk cabang ini</p>
               </button>
               <button
@@ -194,7 +194,7 @@
                 ]"
                 @click="createMode = 'by-rack'"
               >
-                <p class="text-xs font-bold text-slate-900">Per Rak</p>
+                <p class="text-xs font-bold text-slate-900 dark:text-[#e3e2e2]">Per Rak</p>
                 <p class="text-[10px] text-slate-500 mt-0.5">Pilih rak tertentu saja</p>
               </button>
             </div>
@@ -229,7 +229,7 @@
                   @change="toggleRackSelection(rack.id)"
                 />
                 <div class="flex-1 min-w-0">
-                  <p class="text-xs font-semibold text-slate-900">{{ rack.code }} <span v-if="rack.name" class="font-normal text-slate-500">— {{ rack.name }}</span></p>
+                  <p class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ rack.code }} <span v-if="rack.name" class="font-normal text-slate-500 dark:text-[#869392]">— {{ rack.name }}</span></p>
                   <p class="text-[10px] text-slate-400">{{ rack.zoneName }} · {{ rack.productCount }} produk</p>
                 </div>
               </label>
@@ -273,7 +273,7 @@
         v-if="showPasscodeModal"
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showPasscodeModal = false"></div>
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showPasscodeModal = false"></div>
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 text-center space-y-4">
           <!-- Success icon -->
           <div class="mx-auto w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center">
@@ -283,8 +283,8 @@
           </div>
 
           <div>
-            <h2 class="text-base font-bold text-slate-900">Sesi Opname Dibuat!</h2>
-            <p class="text-xs text-slate-500 mt-1">
+            <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">Sesi Opname Dibuat!</h2>
+            <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">
               Berikan kode ini ke petugas untuk mulai menghitung stok di webapp.
             </p>
           </div>
@@ -339,15 +339,15 @@
     <teleport to="body">
       <div
         v-if="showDetail"
-        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm"
         @click.self="showDetail = false"
       >
         <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[90vh] overflow-hidden flex flex-col">
           <!-- Modal Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
             <div>
-              <h2 class="text-base font-bold text-slate-900">{{ detail?.sessionNumber }}</h2>
-              <p class="text-xs text-slate-500">
+              <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ detail?.sessionNumber }}</h2>
+              <p class="text-xs text-slate-500 dark:text-[#869392]">
                 {{ detail?.conductorName }} &middot; {{ detail ? formatDate(detail.createdAt) : '' }}
               </p>
             </div>
@@ -443,7 +443,7 @@
                     class="border-b border-slate-200 last:border-0"
                   >
                     <td class="py-2.5 pr-3">
-                      <p class="text-xs font-medium text-slate-900">{{ item.productName }}</p>
+                      <p class="text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ item.productName }}</p>
                       <p class="text-[10px] text-slate-400">{{ item.productSku }}</p>
                     </td>
                     <td class="py-2.5 pr-3 text-right text-xs text-slate-700">{{ item.systemQty }}</td>
@@ -496,7 +496,7 @@
               <button
                 type="button"
                 class="h-9 px-4 text-xs font-semibold text-slate-700 border border-slate-200 rounded-lg
-                       hover:bg-slate-50 transition-colors"
+                       hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
                 @click="handleComplete(false)"
                 :disabled="completing"
               >
@@ -523,7 +523,7 @@
         v-if="showConfirmModal"
         class="fixed inset-0 z-[60] flex items-center justify-center p-4"
       >
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="handleConfirmNo"></div>
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="handleConfirmNo"></div>
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4">
           <div class="text-center">
             <div class="mx-auto w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mb-3">
@@ -531,7 +531,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
               </svg>
             </div>
-            <h3 class="text-base font-bold text-slate-900">{{ confirmTitle }}</h3>
+            <h3 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ confirmTitle }}</h3>
             <p class="text-sm text-slate-500 mt-1.5">{{ confirmMessage }}</p>
           </div>
           <div class="flex gap-2">
@@ -561,7 +561,7 @@
         v-if="showAlertModal"
         class="fixed inset-0 z-[60] flex items-center justify-center p-4"
       >
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showAlertModal = false"></div>
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showAlertModal = false"></div>
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4">
           <div class="text-center">
             <div
@@ -581,7 +581,7 @@
                 <path v-else stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"/>
               </svg>
             </div>
-            <h3 class="text-base font-bold text-slate-900">{{ alertTitle }}</h3>
+            <h3 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ alertTitle }}</h3>
             <p class="text-sm text-slate-500 mt-1.5">{{ alertMessage }}</p>
           </div>
           <button

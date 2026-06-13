@@ -7,7 +7,7 @@
         <button
           type="button"
           class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
-                 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
+                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
           @click="openMutationModal('CASH_IN')"
         >
           <ArrowDownIcon class="w-4 h-4 text-emerald-600" />
@@ -16,7 +16,7 @@
         <button
           type="button"
           class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
-                 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
+                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
           @click="openMutationModal('CASH_OUT')"
         >
           <ArrowUpIcon class="w-4 h-4 text-red-600" />
@@ -25,7 +25,7 @@
         <button
           type="button"
           class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
-                 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
+                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
           @click="showAuditModal = true"
         >
           <ClipboardCheckIcon class="w-4 h-4 text-blue-600" />
@@ -36,35 +36,35 @@
 
     <!-- Summary cards -->
     <div v-if="kasSummary" class="grid grid-cols-2 lg:grid-cols-5 gap-3">
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500">Saldo Kas</p>
-        <p class="text-lg font-bold font-mono text-slate-950 mt-1">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4">
+        <p class="text-[11px] text-slate-500 dark:text-[#869392]">Saldo Kas</p>
+        <p class="text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] dark:text-[#e3e2e2] mt-1">
           {{ formatRupiah(kasSummary.cashBoxBalance) }}
         </p>
         <p v-if="kasSummary.lastAudit" class="text-[10px] text-slate-400 mt-1">
           Audit: {{ formatDate(kasSummary.lastAudit) }}
         </p>
       </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500">Cash</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4">
+        <p class="text-[11px] text-slate-500 dark:text-[#869392]">Cash</p>
         <p class="text-lg font-bold font-mono text-emerald-600 mt-1">
           {{ formatRupiah(kasSummary.breakdown.cash) }}
         </p>
       </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500">QRIS</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4">
+        <p class="text-[11px] text-slate-500 dark:text-[#869392]">QRIS</p>
         <p class="text-lg font-bold font-mono text-blue-600 mt-1">
           {{ formatRupiah(kasSummary.breakdown.qris) }}
         </p>
       </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500">Transfer</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4">
+        <p class="text-[11px] text-slate-500 dark:text-[#869392]">Transfer</p>
         <p class="text-lg font-bold font-mono text-indigo-600 mt-1">
           {{ formatRupiah(kasSummary.breakdown.transfer) }}
         </p>
       </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-4">
-        <p class="text-[11px] text-slate-500">Hutang</p>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4">
+        <p class="text-[11px] text-slate-500 dark:text-[#869392]">Hutang</p>
         <p class="text-lg font-bold font-mono text-amber-600 mt-1">
           {{ formatRupiah(kasSummary.breakdown.hutang) }}
         </p>
@@ -103,13 +103,13 @@
     <!-- ============================================ -->
     <template v-if="activeTab === 'pending'">
       <div v-if="pendingLoading" class="flex items-center justify-center py-16">
-        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-        <span class="ml-2 text-sm text-slate-500">Memuat pengeluaran pending...</span>
+        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
+        <span class="ml-2 text-sm text-slate-500 dark:text-[#869392]">Memuat pengeluaran pending...</span>
       </div>
 
       <div v-else-if="pendingError" class="bg-red-50 border border-red-200 rounded-lg p-4 text-sm text-red-700">{{ pendingError }}</div>
 
-      <div v-else-if="pendingItems.length === 0" class="bg-white border border-dashed border-slate-300 rounded-xl p-10 text-center">
+      <div v-else-if="pendingItems.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-300 rounded-xl p-10 text-center">
         <ShieldCheckIcon class="w-10 h-10 text-emerald-300 mx-auto mb-3" />
         <p class="text-sm font-semibold text-slate-700">Tidak ada pengeluaran yang menunggu persetujuan</p>
         <p class="text-xs text-slate-400 mt-1">Semua cash-out sudah diverifikasi.</p>
@@ -125,7 +125,7 @@
           <div class="flex-1 min-w-0 space-y-1">
             <div class="flex items-center gap-2">
               <span class="inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-amber-100 text-amber-700">PENDING</span>
-              <span class="text-xs text-slate-500">{{ formatDateTime(item.createdAt) }}</span>
+              <span class="text-xs text-slate-500 dark:text-[#869392]">{{ formatDateTime(item.createdAt) }}</span>
             </div>
             <p class="text-sm font-bold text-slate-900 font-mono">{{ formatRupiah(item.amount) }}</p>
             <p class="text-xs text-slate-600">
@@ -167,7 +167,7 @@
         <div v-if="rejectModalId" class="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div class="absolute inset-0 bg-black/40" @click="rejectModalId = null"></div>
           <form class="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleReject(rejectModalId!)">
-            <h3 class="text-base font-bold text-slate-900">Alasan Penolakan</h3>
+            <h3 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">Alasan Penolakan</h3>
             <input
               v-model="rejectReason"
               type="text"
@@ -210,8 +210,8 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
-      <span class="ml-2 text-sm text-slate-500">Memuat riwayat...</span>
+      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
+      <span class="ml-2 text-sm text-slate-500 dark:text-[#869392]">Memuat riwayat...</span>
     </div>
 
     <!-- Error -->
@@ -221,7 +221,7 @@
     </div>
 
     <!-- Empty -->
-    <div v-else-if="payments.length === 0" class="bg-white border border-dashed border-slate-300 rounded-xl p-10 text-center">
+    <div v-else-if="payments.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-300 rounded-xl p-10 text-center">
       <WalletIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
       <p class="text-sm font-semibold text-slate-700">Belum ada riwayat pembayaran</p>
     </div>
@@ -230,17 +230,17 @@
     <div v-else class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[650px]">
-          <thead class="bg-slate-50 border-b border-slate-200">
+          <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
             <tr>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">Waktu</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">No. Trx</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Metode</th>
-              <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">Jumlah</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">Status</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Waktu</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">No. Trx</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Metode</th>
+              <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Jumlah</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Status</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
-            <tr v-for="p in payments" :key="p.id" class="hover:bg-slate-50 transition-colors">
+            <tr v-for="p in payments" :key="p.id" class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors">
               <td class="px-4 py-2.5 text-xs text-slate-600 font-mono">{{ formatDateTime(p.createdAt) }}</td>
               <td class="px-4 py-2.5">
                 <code class="text-xs font-mono text-slate-700">{{ p.transaction?.transactionNumber ?? '—' }}</code>
@@ -250,7 +250,7 @@
                   {{ p.method }}
                 </span>
               </td>
-              <td class="px-4 py-2.5 text-right text-sm font-mono font-semibold text-slate-900">
+              <td class="px-4 py-2.5 text-right text-sm font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">
                 {{ formatRupiah(p.amount) }}
               </td>
               <td class="px-4 py-2.5 text-center">
@@ -265,7 +265,7 @@
 
       <!-- Pagination -->
       <div v-if="meta && meta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 flex items-center justify-between">
-        <p class="text-xs text-slate-500">Halaman {{ meta.page }} dari {{ meta.totalPages }}</p>
+        <p class="text-xs text-slate-500 dark:text-[#869392]">Halaman {{ meta.page }} dari {{ meta.totalPages }}</p>
         <div class="flex items-center gap-1">
           <button :disabled="meta.page <= 1" class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed" @click="goPage(meta!.page - 1)">Prev</button>
           <button :disabled="meta.page >= meta.totalPages" class="h-7 px-2.5 text-xs font-medium border border-slate-200 rounded-md hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed" @click="goPage(meta!.page + 1)">Next</button>
@@ -351,13 +351,13 @@
             <ClipboardCheckIcon class="w-5 h-5 text-blue-600" />
             Audit Saldo Kas
           </h2>
-          <p class="text-xs text-slate-500">
+          <p class="text-xs text-slate-500 dark:text-[#869392]">
             Hitung uang fisik di laci kas, lalu input totalnya. Sistem bandingkan dgn saldo digital.
           </p>
 
           <div v-if="kasSummary" class="bg-slate-50 rounded-md px-3 py-2 text-xs">
-            <span class="text-slate-500">Saldo sistem: </span>
-            <span class="font-mono font-semibold text-slate-900">{{ formatRupiah(kasSummary.cashBoxBalance) }}</span>
+            <span class="text-slate-500 dark:text-[#869392]">Saldo sistem: </span>
+            <span class="font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(kasSummary.cashBoxBalance) }}</span>
           </div>
 
           <div>

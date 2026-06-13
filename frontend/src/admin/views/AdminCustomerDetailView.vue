@@ -7,7 +7,7 @@
       </button>
       <div>
         <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">{{ data?.customer?.name || 'Customer' }}</h1>
-        <p class="text-xs text-slate-500 mt-0.5">
+        <p class="text-xs text-slate-500 dark:text-[#869392] mt-0.5">
           {{ data?.customer?.phone || '-' }}
           <span v-if="data?.customer?.address"> · {{ data.customer.address }}</span>
         </p>
@@ -50,7 +50,7 @@
               <p class="text-xs font-medium text-slate-800 dark:text-slate-200">{{ p.name }}</p>
             </div>
             <div class="flex items-center gap-4">
-              <span class="text-[10px] text-slate-500">{{ p.qty }}x</span>
+              <span class="text-[10px] text-slate-500 dark:text-[#869392]">{{ p.qty }}x</span>
               <span class="text-xs font-mono font-semibold text-slate-700 dark:text-slate-300">{{ formatRupiah(p.total) }}</span>
             </div>
           </div>
@@ -97,7 +97,7 @@
           </div>
           <div class="text-right">
             <p class="text-sm font-bold font-mono text-slate-900 dark:text-slate-100">{{ formatRupiah(t.total) }}</p>
-            <p class="text-[10px] text-slate-500">nominal {{ formatRupiah(t.amount) }} + fee {{ formatRupiah(t.fee) }}</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392]">nominal {{ formatRupiah(t.amount) }} + fee {{ formatRupiah(t.fee) }}</p>
           </div>
         </div>
       </div>

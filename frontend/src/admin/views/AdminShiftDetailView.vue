@@ -18,7 +18,7 @@
         <RouterLink
           :to="{ name: 'admin-shifts' }"
           class="w-8 h-8 rounded-lg border border-slate-200 flex items-center justify-center
-                 hover:bg-slate-50 transition-colors"
+                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
         >
           <ArrowLeftIcon class="w-4 h-4 text-slate-600" />
         </RouterLink>
@@ -30,8 +30,8 @@
 
     <!-- Loading state -->
     <div v-if="loading" class="flex items-center justify-center py-20">
-      <Loader2Icon class="w-6 h-6 animate-spin text-slate-400" />
-      <span class="ml-2 text-sm text-slate-500">Memuat data shift...</span>
+      <Loader2Icon class="w-6 h-6 animate-spin text-slate-400 dark:text-[#869392]" />
+      <span class="ml-2 text-sm text-slate-500 dark:text-[#869392]">Memuat data shift...</span>
     </div>
 
     <!-- Error state -->
@@ -56,8 +56,8 @@
       <!-- ============================================ -->
       <!-- COLUMN 1: Sales Summary                     -->
       <!-- ============================================ -->
-      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-        <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg overflow-hidden shadow-sm">
+        <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             <ReceiptIcon class="w-4 h-4 text-blue-600" />
             Ringkasan Penjualan
@@ -91,7 +91,7 @@
                   <BanknoteIcon class="w-3.5 h-3.5 text-emerald-500" />
                   Tunai (Expected)
                 </span>
-                <span class="text-xs font-mono font-semibold text-slate-900">
+                <span class="text-xs font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">
                   {{ formatRupiah(cb.startingCash + cb.expectedCash) }}
                 </span>
               </div>
@@ -110,7 +110,7 @@
                   <QrCodeIcon class="w-3.5 h-3.5 text-blue-500" />
                   QRIS (Expected)
                 </span>
-                <span class="text-xs font-mono font-semibold text-slate-900">
+                <span class="text-xs font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">
                   {{ formatRupiah(cb.expectedQRIS) }}
                 </span>
               </div>
@@ -139,12 +139,12 @@
           <div class="border-t border-slate-200 pt-3 space-y-1.5">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold text-slate-700">Total Expected (Tunai)</span>
-              <span class="text-sm font-mono font-bold text-slate-950">
+              <span class="text-sm font-mono font-bold text-slate-950 dark:text-[#e3e2e2]">
                 {{ formatRupiah(totalExpectedCash) }}
               </span>
             </div>
             <div class="flex items-center justify-between">
-              <span class="text-xs text-slate-500">Total QRIS</span>
+              <span class="text-xs text-slate-500 dark:text-[#869392]">Total QRIS</span>
               <span class="text-xs font-mono font-semibold text-slate-700">
                 {{ formatRupiah(totalExpectedQRIS) }}
               </span>
@@ -155,7 +155,7 @@
           <div class="bg-slate-50 rounded-lg px-3 py-2.5 space-y-2">
             <div class="flex items-center justify-between">
               <span class="text-xs font-semibold text-slate-700">Jumlah Transaksi</span>
-              <span class="text-sm font-mono font-bold text-slate-900">
+              <span class="text-sm font-mono font-bold text-slate-900 dark:text-[#e3e2e2]">
                 {{ transactions.length }} trx
               </span>
             </div>
@@ -191,12 +191,12 @@
             <!-- Total omzet -->
             <div v-if="transactions.length > 0" class="flex items-center justify-between pt-1 border-t border-slate-200">
               <span class="text-[10px] font-bold text-slate-600">Total Omzet Shift</span>
-              <span class="text-xs font-mono font-bold text-slate-900">{{ formatRupiah(totalOmzetShift) }}</span>
+              <span class="text-xs font-mono font-bold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(totalOmzetShift) }}</span>
             </div>
           </div>
 
           <!-- Shift time info -->
-          <div class="space-y-1.5 text-[11px] text-slate-500">
+          <div class="space-y-1.5 text-[11px] text-slate-500 dark:text-[#869392]">
             <div class="flex justify-between">
               <span>Mulai</span>
               <span class="font-mono">{{ formatDateTime(shift.startTime) }}</span>
@@ -222,8 +222,8 @@
       <!-- ============================================ -->
       <!-- COLUMN 2: Cash Input (Total + Optional Detail) -->
       <!-- ============================================ -->
-      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-        <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg overflow-hidden shadow-sm">
+        <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             <CoinsIcon class="w-4 h-4 text-amber-600" />
             Hitung Kas Fisik
@@ -260,9 +260,9 @@
 
             <!-- Total Cash Input (PRIMARY - single field) -->
             <div>
-              <label class="text-[10px] font-semibold text-slate-600 uppercase tracking-wide">Total Uang Tunai Fisik</label>
+              <label class="text-[10px] font-semibold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Total Uang Tunai Fisik</label>
               <div class="relative mt-1">
-                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-mono text-slate-500">Rp</span>
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-sm font-mono text-slate-500 dark:text-[#869392]">Rp</span>
                 <input
                   :value="getDenomTotal(cb.categoryId) > 0 ? formatRupiah(getDenomTotal(cb.categoryId)).replace('Rp', '').trim() : ''"
                   type="text"
@@ -305,7 +305,7 @@
       <!-- ============================================ -->
       <!-- COLUMN 2B: Kas Tunai Agen & Rek BRILink         -->
       <!-- ============================================ -->
-      <div v-if="brilinkEnabled" class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm lg:col-span-3">
+      <div v-if="brilinkEnabled" class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg overflow-hidden shadow-sm lg:col-span-3">
         <div class="px-5 py-3 border-b border-slate-200 bg-teal-50">
           <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
             <CreditCardIcon class="w-4 h-4 text-teal-600" />
@@ -323,12 +323,12 @@
                 Kas Tunai Agen
               </p>
               <div class="flex justify-between text-xs">
-                <span class="text-slate-500">Saldo Sistem</span>
-                <span class="font-mono font-semibold text-slate-900">{{ formatRupiah(brilinkCashBoxBalance) }}</span>
+                <span class="text-slate-500 dark:text-[#869392]">Saldo Sistem</span>
+                <span class="font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(brilinkCashBoxBalance) }}</span>
               </div>
               <div v-if="brilinkCloseData?.actualBrilinkCash != null" class="flex justify-between text-xs">
-                <span class="text-slate-500">Aktual (Kasir)</span>
-                <span class="font-mono font-semibold text-slate-900">{{ formatRupiah(brilinkCloseData.actualBrilinkCash) }}</span>
+                <span class="text-slate-500 dark:text-[#869392]">Aktual (Kasir)</span>
+                <span class="font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(brilinkCloseData.actualBrilinkCash) }}</span>
               </div>
               <div v-if="brilinkCloseData?.actualBrilinkCash != null" class="flex justify-between text-xs font-semibold" :class="brilinkCloseData.actualBrilinkCash - brilinkCashBoxBalance >= 0 ? 'text-emerald-600' : 'text-red-600'">
                 <span>Selisih</span>
@@ -349,12 +349,12 @@
               </p>
               <p class="text-[10px] font-mono text-slate-400">{{ acc.accountNumber }}</p>
               <div class="flex justify-between text-xs">
-                <span class="text-slate-500">Saldo Sistem</span>
-                <span class="font-mono font-semibold text-slate-900">{{ formatRupiah(acc.balance) }}</span>
+                <span class="text-slate-500 dark:text-[#869392]">Saldo Sistem</span>
+                <span class="font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(acc.balance) }}</span>
               </div>
               <div v-if="getAccountSnapshot(acc.id)" class="flex justify-between text-xs">
-                <span class="text-slate-500">Aktual (Cek Mutasi)</span>
-                <span class="font-mono font-semibold text-slate-900">{{ formatRupiah(getAccountSnapshot(acc.id)!) }}</span>
+                <span class="text-slate-500 dark:text-[#869392]">Aktual (Cek Mutasi)</span>
+                <span class="font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(getAccountSnapshot(acc.id)!) }}</span>
               </div>
               <div v-if="getAccountSnapshot(acc.id)" class="flex justify-between text-xs font-semibold" :class="getAccountSnapshot(acc.id)! - acc.balance >= 0 ? 'text-emerald-600' : 'text-red-600'">
                 <span>Selisih</span>
@@ -367,12 +367,12 @@
           <!-- Total Summary -->
           <div v-if="brilinkAccounts.length > 0" class="mt-4 pt-4 border-t border-slate-200 flex flex-wrap gap-6 text-xs">
             <div>
-              <span class="text-slate-500">Total Saldo Rek BRILink (Sistem):</span>
-              <span class="ml-2 font-mono font-bold text-slate-900">{{ formatRupiah(totalBrilinkAccountBalance) }}</span>
+              <span class="text-slate-500 dark:text-[#869392]">Total Saldo Rek BRILink (Sistem):</span>
+              <span class="ml-2 font-mono font-bold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(totalBrilinkAccountBalance) }}</span>
             </div>
             <div>
-              <span class="text-slate-500">Kas Tunai Agen:</span>
-              <span class="ml-2 font-mono font-bold text-slate-900">{{ formatRupiah(brilinkCashBoxBalance) }}</span>
+              <span class="text-slate-500 dark:text-[#869392]">Kas Tunai Agen:</span>
+              <span class="ml-2 font-mono font-bold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(brilinkCashBoxBalance) }}</span>
             </div>
           </div>
         </div>
@@ -383,8 +383,8 @@
       <!-- ============================================ -->
       <div class="space-y-5">
         <!-- Reconciliation Card -->
-        <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg overflow-hidden shadow-sm">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
             <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
               <ScaleIcon class="w-4 h-4 text-purple-600" />
               Rekonsiliasi
@@ -400,23 +400,23 @@
             >
               <p
                 v-if="shift.cashBoxes.length > 1"
-                class="text-[11px] font-bold text-slate-600 uppercase tracking-wide"
+                class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide"
               >
                 {{ cb.category.name }}
               </p>
 
               <!-- Actual (from denomination) -->
               <div class="flex items-center justify-between">
-                <span class="text-xs text-slate-500">Actual (Hitung Fisik)</span>
-                <span class="text-xs font-mono font-semibold text-slate-900">
+                <span class="text-xs text-slate-500 dark:text-[#869392]">Actual (Hitung Fisik)</span>
+                <span class="text-xs font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">
                   {{ formatRupiah(getDenomTotal(cb.categoryId)) }}
                 </span>
               </div>
 
               <!-- Expected -->
               <div class="flex items-center justify-between">
-                <span class="text-xs text-slate-500">Expected (Sistem)</span>
-                <span class="text-xs font-mono font-semibold text-slate-900">
+                <span class="text-xs text-slate-500 dark:text-[#869392]">Expected (Sistem)</span>
+                <span class="text-xs font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">
                   {{ formatRupiah(cb.startingCash + cb.expectedCash) }}
                 </span>
               </div>
@@ -431,7 +431,7 @@
                       ? 'text-emerald-600'
                       : getDifference(cb.categoryId, cb.startingCash + cb.expectedCash) < 0
                         ? 'text-red-600'
-                        : 'text-slate-900',
+                        : 'text-slate-900 dark:text-[#e3e2e2]',
                   ]"
                 >
                   {{ formatVariance(getDifference(cb.categoryId, cb.startingCash + cb.expectedCash)) }}
@@ -485,7 +485,7 @@
                       ? 'text-emerald-600'
                       : grandDifference < 0
                         ? 'text-red-600'
-                        : 'text-slate-900',
+                        : 'text-slate-900 dark:text-[#e3e2e2]',
                   ]"
                 >
                   {{ formatVariance(grandDifference) }}
@@ -496,8 +496,8 @@
         </div>
 
         <!-- Notes Card -->
-        <div class="bg-white border border-slate-200 rounded-lg overflow-hidden shadow-sm">
-          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg overflow-hidden shadow-sm">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
             <h3 class="text-sm font-bold text-slate-900 flex items-center gap-2">
               <FileTextIcon class="w-4 h-4 text-slate-500" />
               Catatan

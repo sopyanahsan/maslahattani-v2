@@ -3,7 +3,7 @@
     <!-- Action bar -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <span v-if="overview" class="text-xs text-slate-500">{{ overview.shops.length }} cabang</span>
+        <span v-if="overview" class="text-xs text-slate-500 dark:text-[#869392]">{{ overview.shops.length }} cabang</span>
       </div>
       <button type="button" class="h-9 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-1.5 shrink-0" @click="openCreateModal">
         <PlusIcon class="w-4 h-4" /> Tambah Cabang
@@ -33,11 +33,11 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
     </div>
 
     <!-- Empty -->
-    <div v-else-if="!overview || overview.shops.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+    <div v-else-if="!overview || overview.shops.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
       <StoreIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
       <p class="text-sm font-semibold text-slate-700">Belum ada cabang</p>
     </div>
@@ -70,20 +70,20 @@
         <!-- Stats Grid -->
         <div class="px-5 pb-4 grid grid-cols-4 gap-3">
           <div class="text-center">
-            <p class="text-base font-bold font-mono text-slate-900">{{ formatCompact(shop.stats.omzetHariIni) }}</p>
-            <p class="text-[9px] text-slate-500">Omzet</p>
+            <p class="text-base font-bold font-mono text-slate-900 dark:text-[#e3e2e2]">{{ formatCompact(shop.stats.omzetHariIni) }}</p>
+            <p class="text-[9px] text-slate-500 dark:text-[#869392]">Omzet</p>
           </div>
           <div class="text-center">
-            <p class="text-base font-bold font-mono text-slate-900">{{ shop.stats.trxHariIni }}</p>
-            <p class="text-[9px] text-slate-500">Trx</p>
+            <p class="text-base font-bold font-mono text-slate-900 dark:text-[#e3e2e2]">{{ shop.stats.trxHariIni }}</p>
+            <p class="text-[9px] text-slate-500 dark:text-[#869392]">Trx</p>
           </div>
           <div class="text-center">
-            <p class="text-base font-bold font-mono" :class="shop.stats.stokRendah > 0 ? 'text-amber-600' : 'text-slate-900'">{{ shop.stats.stokRendah }}</p>
-            <p class="text-[9px] text-slate-500">Stok Rendah</p>
+            <p class="text-base font-bold font-mono" :class="shop.stats.stokRendah > 0 ? 'text-amber-600' : 'text-slate-900 dark:text-[#e3e2e2]'">{{ shop.stats.stokRendah }}</p>
+            <p class="text-[9px] text-slate-500 dark:text-[#869392]">Stok Rendah</p>
           </div>
           <div class="text-center">
             <p class="text-base font-bold font-mono" :class="shop.stats.kasirAktif > 0 ? 'text-emerald-600' : 'text-slate-400'">{{ shop.stats.kasirAktif }}</p>
-            <p class="text-[9px] text-slate-500">Kasir Online</p>
+            <p class="text-[9px] text-slate-500 dark:text-[#869392]">Kasir Online</p>
           </div>
         </div>
 
@@ -110,10 +110,10 @@
       <div v-if="showModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/40" @click="showModal = false"></div>
         <form class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleSubmit">
-          <h2 class="text-base font-bold text-slate-950">{{ editingShop ? 'Edit Cabang' : 'Tambah Cabang Baru' }}</h2>
+          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2]">{{ editingShop ? 'Edit Cabang' : 'Tambah Cabang Baru' }}</h2>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Cabang <span class="text-red-500">*</span></label>
-            <input v-model="form.name" type="text" required placeholder="Nama Cabang" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+            <input v-model="form.name" type="text" required placeholder="Nama Cabang" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Alamat <span class="text-red-500">*</span></label>
@@ -121,7 +121,7 @@
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">No. Telepon <span class="text-red-500">*</span></label>
-            <input v-model="form.phone" type="text" required placeholder="08123456789" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md focus:border-blue-600 outline-none" />
+            <input v-model="form.phone" type="text" required placeholder="08123456789" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-blue-600 outline-none" />
           </div>
           <div v-if="formError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ formError }}</div>
           <div class="flex justify-end gap-2 pt-2">
@@ -145,7 +145,7 @@
               <Trash2Icon class="w-5 h-5 text-red-600" />
             </div>
             <div>
-              <h3 class="text-sm font-bold text-slate-900">Hapus Cabang?</h3>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">Hapus Cabang?</h3>
               <p class="text-xs text-slate-600 mt-1">
                 Cabang <strong>{{ deletingShop?.name }}</strong> akan dihapus. Cabang yang masih punya data (kasir/produk/transaksi) tidak bisa dihapus.
               </p>

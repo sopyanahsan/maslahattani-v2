@@ -11,7 +11,7 @@
     </div>
 
     <!-- Tabs -->
-    <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+    <div class="flex gap-1 bg-slate-100 dark:bg-[#292a2a] rounded-lg p-1 w-fit">
       <button
         v-for="tab in tabs"
         :key="tab.key"
@@ -49,14 +49,14 @@
 
       <!-- Loading -->
       <div v-if="feesLoading" class="flex items-center justify-center py-16">
-        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
       </div>
 
       <!-- Empty -->
-      <div v-else-if="fees.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+      <div v-else-if="fees.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
         <PercentIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
-        <p class="text-sm font-semibold text-slate-900">Belum ada fee rule</p>
-        <p class="text-xs text-slate-500 mt-1">Tambah aturan fee untuk menghitung biaya layanan otomatis.</p>
+        <p class="text-sm font-semibold text-slate-900 dark:text-[#e3e2e2]">Belum ada fee rule</p>
+        <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">Tambah aturan fee untuk menghitung biaya layanan otomatis.</p>
       </div>
 
       <!-- Fee table grouped by category -->
@@ -64,12 +64,12 @@
         <div
           v-for="(group, category) in feesByCategory"
           :key="category"
-          class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
+          class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden"
         >
-          <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <div class="px-4 py-3 bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948] flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span :class="['w-3 h-3 rounded-sm', categoryColor(category)]" />
-              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wide">{{ categoryLabel(category) }}</h3>
+              <h3 class="text-xs font-bold text-slate-900 dark:text-[#bcc9c7] uppercase tracking-wide">{{ categoryLabel(category) }}</h3>
               <span class="text-[10px] text-slate-400">({{ group.length }} rules)</span>
             </div>
           </div>
@@ -89,7 +89,7 @@
               </thead>
               <tbody class="divide-y divide-slate-100">
                 <tr v-for="fee in group" :key="fee.id" class="hover:bg-slate-50">
-                  <td class="px-4 py-2.5 text-xs font-medium text-slate-900">{{ fee.label }}</td>
+                  <td class="px-4 py-2.5 text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ fee.label }}</td>
                   <td class="px-4 py-2.5 text-xs font-mono text-right text-slate-600">{{ formatRupiah(fee.minAmount) }}</td>
                   <td class="px-4 py-2.5 text-xs font-mono text-right text-slate-600">{{ formatRupiah(fee.maxAmount) }}</td>
                   <td class="px-4 py-2.5 text-xs font-mono text-right text-red-600">{{ formatRupiah(fee.systemFee || 0) }}</td>
@@ -128,9 +128,9 @@
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showFeeModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showFeeModal = false" />
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showFeeModal = false" />
         <form class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleSaveFee">
-          <h3 class="text-sm font-bold text-slate-900">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">
             {{ editingFee ? 'Edit Fee Rule' : 'Tambah Fee Rule' }}
           </h3>
 
@@ -199,7 +199,7 @@
 
           <label class="flex items-center gap-2 cursor-pointer">
             <input v-model="feeForm.isActive" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-200 rounded" />
-            <span class="text-xs font-semibold text-slate-900">Aktif</span>
+            <span class="text-xs font-semibold text-slate-900 dark:text-[#e3e2e2]">Aktif</span>
           </label>
 
           <div v-if="feeError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ feeError }}</div>

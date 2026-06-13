@@ -13,7 +13,7 @@
       <div class="flex gap-2 items-center">
         <select
           v-model="filterStatus"
-          class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none"
+          class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none"
           @change="fetchTransfers"
         >
           <option value="">Semua Status</option>
@@ -26,7 +26,7 @@
         </select>
         <select
           v-model="filterDirection"
-          class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none"
+          class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none"
           @change="fetchTransfers"
         >
           <option value="all">Semua Arah</option>
@@ -70,7 +70,7 @@
         <div class="flex items-start justify-between">
           <div>
             <div class="flex items-center gap-2">
-              <span class="text-sm font-bold text-slate-900">{{ t.transferNumber }}</span>
+              <span class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">{{ t.transferNumber }}</span>
               <span :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', statusBadge(t.status)]">
                 {{ statusLabel(t.status) }}
               </span>
@@ -90,7 +90,7 @@
                 KELUAR
               </span>
             </div>
-            <p class="text-xs text-slate-500 mt-1">
+            <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">
               {{ t.fromShopName }} &rarr; {{ t.toShopName }} &middot; {{ t.itemCount }} item
             </p>
             <p class="text-[11px] text-slate-400 mt-0.5">
@@ -115,28 +115,28 @@
     <!-- Create Transfer Modal                        -->
     <!-- ============================================ -->
     <teleport to="body">
-      <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="showCreateModal = false">
+      <div v-if="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showCreateModal = false">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6 max-h-[85vh] overflow-y-auto">
           <h2 class="text-base font-bold text-slate-900 mb-4">Buat Transfer Stok</h2>
           <form @submit.prevent="handleCreateTransfer" class="space-y-4">
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="text-[11px] font-bold text-slate-600 uppercase">Dari Cabang</label>
+                <label class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Dari Cabang</label>
                 <div class="mt-1 h-9 px-3 flex items-center text-sm bg-slate-100 border border-slate-200 rounded-lg text-slate-700 font-medium">
                   {{ currentShopName || 'Cabang aktif' }}
                 </div>
                 <p class="text-[9px] text-slate-400 mt-0.5">Otomatis dari cabang aktif</p>
               </div>
               <div>
-                <label class="text-[11px] font-bold text-slate-600 uppercase">Ke Cabang *</label>
-                <select v-model="createForm.toShopId" required class="mt-1 w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+                <label class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Ke Cabang *</label>
+                <select v-model="createForm.toShopId" required class="mt-1 w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none">
                   <option value="">Pilih cabang tujuan</option>
                   <option v-for="shop in destinationShops" :key="shop.id" :value="shop.id">{{ shop.name }}</option>
                 </select>
               </div>
             </div>
             <div>
-              <label class="text-[11px] font-bold text-slate-600 uppercase">Item Transfer</label>
+              <label class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Item Transfer</label>
               <div v-for="(item, idx) in createForm.items" :key="idx" class="flex gap-2 mt-2">
                 <select v-model="item.productId" required class="flex-1 h-8 px-2 text-xs border border-slate-200 rounded-lg outline-none">
                   <option value="">Pilih produk</option>
@@ -163,12 +163,12 @@
     <!-- Transfer Detail Modal                        -->
     <!-- ============================================ -->
     <teleport to="body">
-      <div v-if="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="showDetailModal = false">
+      <div v-if="showDetailModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showDetailModal = false">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
           <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
             <div>
-              <h2 class="text-base font-bold text-slate-900">{{ detail?.transferNumber }}</h2>
-              <p class="text-xs text-slate-500">{{ detail?.fromShop.name }} &rarr; {{ detail?.toShop.name }}</p>
+              <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ detail?.transferNumber }}</h2>
+              <p class="text-xs text-slate-500 dark:text-[#869392]">{{ detail?.fromShop.name }} &rarr; {{ detail?.toShop.name }}</p>
             </div>
             <div class="flex items-center gap-2">
               <span v-if="detail" :class="['inline-flex px-2 py-0.5 rounded text-[10px] font-bold uppercase', statusBadge(detail.status)]">
@@ -185,21 +185,21 @@
               <!-- Transfer Info -->
               <div class="grid grid-cols-2 gap-4 mb-4 text-xs">
                 <div>
-                  <p class="text-slate-500">Diminta oleh</p>
-                  <p class="font-medium text-slate-900">{{ detail.requestedBy.name }}</p>
+                  <p class="text-slate-500 dark:text-[#869392]">Diminta oleh</p>
+                  <p class="font-medium text-slate-900 dark:text-[#e3e2e2]">{{ detail.requestedBy.name }}</p>
                   <p class="text-slate-400">{{ formatDateTime(detail.requestedAt) }}</p>
                 </div>
                 <div v-if="detail.approvedBy">
-                  <p class="text-slate-500">{{ detail.status === 'REJECTED' ? 'Ditolak oleh' : 'Disetujui oleh' }}</p>
-                  <p class="font-medium text-slate-900">{{ detail.approvedBy.name }}</p>
+                  <p class="text-slate-500 dark:text-[#869392]">{{ detail.status === 'REJECTED' ? 'Ditolak oleh' : 'Disetujui oleh' }}</p>
+                  <p class="font-medium text-slate-900 dark:text-[#e3e2e2]">{{ detail.approvedBy.name }}</p>
                   <p class="text-slate-400">{{ detail.approvedAt ? formatDateTime(detail.approvedAt) : '-' }}</p>
                 </div>
                 <div v-if="detail.shippedAt">
-                  <p class="text-slate-500">Dikirim</p>
+                  <p class="text-slate-500 dark:text-[#869392]">Dikirim</p>
                   <p class="text-slate-400">{{ formatDateTime(detail.shippedAt) }}</p>
                 </div>
                 <div v-if="detail.receivedAt">
-                  <p class="text-slate-500">Diterima</p>
+                  <p class="text-slate-500 dark:text-[#869392]">Diterima</p>
                   <p class="text-slate-400">{{ formatDateTime(detail.receivedAt) }}</p>
                 </div>
               </div>
@@ -226,7 +226,7 @@
                 <tbody>
                   <tr v-for="item in detail.items" :key="item.id" class="border-b border-slate-200 last:border-0">
                     <td class="py-2 pr-3">
-                      <p class="text-xs font-medium text-slate-900">{{ item.productName }}</p>
+                      <p class="text-xs font-medium text-slate-900 dark:text-[#e3e2e2]">{{ item.productName }}</p>
                       <p class="text-[10px] text-slate-400">{{ item.productSku }}</p>
                     </td>
                     <td class="py-2 pr-3 text-right text-xs">{{ item.quantity }}</td>
@@ -294,7 +294,7 @@
     <!-- Reject Modal                                  -->
     <!-- ============================================ -->
     <teleport to="body">
-      <div v-if="showRejectModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="showRejectModal = false">
+      <div v-if="showRejectModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click.self="showRejectModal = false">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-sm p-6">
           <h2 class="text-base font-bold text-slate-900 mb-3">Tolak Transfer</h2>
           <textarea v-model="rejectNotes" placeholder="Alasan penolakan (opsional)" rows="3" class="w-full px-3 py-2 text-sm border border-slate-200 rounded-lg outline-none resize-none"></textarea>

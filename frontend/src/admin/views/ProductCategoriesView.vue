@@ -9,14 +9,14 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
     </div>
 
     <!-- Empty -->
     <div v-else-if="categories.length === 0" class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center">
       <TagIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
       <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada kategori</p>
-      <p class="text-xs text-slate-500 mt-1">Buat kategori pertama untuk mengelompokkan produk.</p>
+      <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">Buat kategori pertama untuk mengelompokkan produk.</p>
     </div>
 
     <!-- List -->
@@ -28,7 +28,7 @@
           </div>
           <div>
             <p class="text-sm font-semibold text-slate-800 dark:text-slate-100">{{ cat.name }}</p>
-            <p class="text-[10px] text-slate-500">{{ cat._count?.products || 0 }} produk</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392]">{{ cat._count?.products || 0 }} produk</p>
           </div>
         </div>
         <div class="flex items-center gap-1">

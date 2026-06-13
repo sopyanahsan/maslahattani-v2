@@ -9,11 +9,11 @@
 
     <!-- Controls -->
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap items-start sm:items-center">
-      <select v-model="filterCategory" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" @change="fetchProducts">
+      <select v-model="filterCategory" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" @change="fetchProducts">
         <option value="">Semua Kategori</option>
         <option v-for="cat in categories" :key="cat.id" :value="cat.id">{{ cat.name }}</option>
       </select>
-      <select v-model="paperSize" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+      <select v-model="paperSize" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none">
         <option value="105">Label No.105 (25×38mm) — 55/lembar</option>
         <option value="109">Label No.109 (13×38mm) — 105/lembar</option>
         <option value="108">Label No.108 (19×38mm) — 70/lembar</option>
@@ -25,7 +25,7 @@
         <span class="text-xs text-slate-700">Tampilkan Harga</span>
       </label>
       <div class="flex-1"></div>
-      <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 flex items-center gap-1.5" @click="selectAll">
+      <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg hover:bg-slate-50 flex items-center gap-1.5" @click="selectAll">
         Pilih Semua
       </button>
       <button type="button" :disabled="selectedIds.length === 0" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5" @click="handlePrint">
@@ -38,28 +38,28 @@
       <span class="text-sm text-slate-400">Memuat produk...</span>
     </div>
 
-    <div v-else-if="products.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+    <div v-else-if="products.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
       <p class="text-sm font-semibold text-slate-700">Belum ada produk</p>
     </div>
 
-    <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+    <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
-          <thead class="bg-slate-50 border-b border-slate-200">
+          <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
             <tr>
               <th class="px-3 py-2.5 text-center w-10"><input type="checkbox" :checked="allSelected" class="w-4 h-4 text-blue-600 border-slate-200 rounded" @change="toggleAll" /></th>
-              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">Produk</th>
-              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">SKU / Barcode</th>
-              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">Kategori</th>
-              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase">Harga</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Produk</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">SKU / Barcode</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Kategori</th>
+              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Harga</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr v-for="p in products" :key="p.id" class="hover:bg-slate-50/50 cursor-pointer" @click="toggleSelect(p.id)">
               <td class="px-3 py-2.5 text-center"><input type="checkbox" :checked="selectedIds.includes(p.id)" class="w-4 h-4 text-blue-600 border-slate-200 rounded pointer-events-none" /></td>
-              <td class="px-3 py-2.5 text-sm font-medium text-slate-900">{{ p.name }}</td>
+              <td class="px-3 py-2.5 text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">{{ p.name }}</td>
               <td class="px-3 py-2.5"><code class="text-[10px] font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded">{{ p.barcode || p.sku }}</code></td>
-              <td class="px-3 py-2.5 text-xs text-slate-500">{{ p.category?.name || '—' }}</td>
+              <td class="px-3 py-2.5 text-xs text-slate-500 dark:text-[#869392]">{{ p.category?.name || '—' }}</td>
               <td class="px-3 py-2.5 text-right text-xs font-mono text-slate-700">{{ formatRupiah(p.price) }}</td>
             </tr>
           </tbody>

@@ -10,7 +10,7 @@
     </div>
 
     <!-- Profile photo + name section -->
-    <section class="bg-white border border-slate-200 rounded-lg p-5 shadow-sm">
+    <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 shadow-sm">
       <div class="flex items-center gap-4">
         <div class="relative group">
           <div class="w-20 h-20 rounded-full bg-blue-100 border-2 border-blue-200
@@ -29,8 +29,8 @@
           </div>
         </div>
         <div class="flex-1 min-w-0">
-          <p class="text-base font-bold text-slate-950">{{ displayName }}</p>
-          <p class="text-xs text-slate-500">{{ user?.email || 'Belum ada email' }}</p>
+          <p class="text-base font-bold text-slate-950 dark:text-[#e3e2e2]">{{ displayName }}</p>
+          <p class="text-xs text-slate-500 dark:text-[#869392]">{{ user?.email || 'Belum ada email' }}</p>
           <span class="inline-flex mt-1.5 text-[10px] font-bold uppercase tracking-wide
                        bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
             {{ roleLabel }}
@@ -42,7 +42,7 @@
     </section>
 
     <!-- Personal data form -->
-    <section class="bg-white border border-slate-200 rounded-lg p-5">
+    <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5">
       <h2 class="text-sm font-bold text-slate-900 mb-4">Data Pribadi</h2>
       <form @submit.prevent="handleSaveProfile" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
@@ -135,14 +135,14 @@
     </section>
 
     <!-- Security section -->
-    <section class="bg-white border border-slate-200 rounded-lg p-5">
+    <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5">
       <h2 class="text-sm font-bold text-slate-900 mb-4">Keamanan</h2>
 
       <!-- Change password -->
       <div class="flex items-center justify-between py-3 border-b border-slate-200">
         <div>
-          <p class="text-sm font-medium text-slate-900">Password</p>
-          <p class="text-xs text-slate-500">
+          <p class="text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">Password</p>
+          <p class="text-xs text-slate-500 dark:text-[#869392]">
             Terakhir diganti: {{ lastPasswordResetLabel }}
           </p>
         </div>
@@ -150,7 +150,7 @@
           type="button"
           class="h-9 px-4 text-xs font-semibold border border-slate-200
                  text-slate-700 rounded-lg
-                 hover:bg-slate-50 transition-colors"
+                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
           @click="showChangePassword = true"
         >
           Ganti Password
@@ -160,9 +160,9 @@
       <!-- 2FA OTP toggle -->
       <div class="flex items-center justify-between py-3">
         <div class="flex-1 min-w-0 mr-4">
-          <p class="text-sm font-medium text-slate-900">Two-Factor Authentication (2FA)</p>
+          <p class="text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">Two-Factor Authentication (2FA)</p>
           <p v-if="otpEnabled" class="text-xs text-emerald-600 mt-0.5">Aktif — Kode OTP dikirim ke email saat login.</p>
-          <p v-else class="text-xs text-slate-500 mt-0.5">Nonaktif — Login langsung tanpa OTP.</p>
+          <p v-else class="text-xs text-slate-500 dark:text-[#869392] mt-0.5">Nonaktif — Login langsung tanpa OTP.</p>
           <p v-if="!user?.email && !otpEnabled" class="text-[10px] text-amber-600 mt-0.5">
             Perlu email untuk mengaktifkan 2FA.
           </p>
@@ -189,9 +189,9 @@
     <!-- Change Password Modal -->
     <teleport to="body">
       <div v-if="showChangePassword" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showChangePassword = false"></div>
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showChangePassword = false"></div>
         <form class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleChangePassword">
-          <h3 class="text-base font-bold text-slate-900">{{ hasRealPassword ? 'Ganti Password' : 'Set Password' }}</h3>
+          <h3 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ hasRealPassword ? 'Ganti Password' : 'Set Password' }}</h3>
 
           <!-- Only show "Password Lama" if user has a real password (not Google-only) -->
           <div v-if="hasRealPassword">
@@ -201,7 +201,7 @@
               type="password"
               required
               placeholder="Masukkan password saat ini"
-              class="mt-1 w-full h-9 px-3 text-sm bg-white border border-slate-200 rounded-lg text-slate-900 focus:border-blue-500 outline-none"
+              class="mt-1 w-full h-9 px-3 text-sm bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg text-slate-900 focus:border-blue-500 outline-none"
             />
           </div>
           <div v-else class="bg-blue-50 border border-blue-200 rounded-md p-3">
@@ -216,7 +216,7 @@
               required
               minlength="6"
               placeholder="Minimal 6 karakter"
-              class="mt-1 w-full h-9 px-3 text-sm bg-white border border-slate-200 rounded-lg text-slate-900 focus:border-blue-500 outline-none"
+              class="mt-1 w-full h-9 px-3 text-sm bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg text-slate-900 focus:border-blue-500 outline-none"
             />
           </div>
 
@@ -228,7 +228,7 @@
               required
               minlength="6"
               placeholder="Ulangi password baru"
-              class="mt-1 w-full h-9 px-3 text-sm bg-white border border-slate-200 rounded-lg text-slate-900 focus:border-blue-500 outline-none"
+              class="mt-1 w-full h-9 px-3 text-sm bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg text-slate-900 focus:border-blue-500 outline-none"
             />
           </div>
 

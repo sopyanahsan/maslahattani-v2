@@ -8,8 +8,8 @@
       <div class="flex items-center gap-2">
         <button
           type="button"
-          class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white border border-slate-200 rounded-lg
-                 hover:bg-slate-50 transition-colors flex items-center gap-1.5 shrink-0"
+          class="h-9 px-4 text-xs font-semibold text-slate-700 bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg
+                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5 shrink-0"
           @click="showBulkModal = true"
         >
           <UploadIcon class="w-3.5 h-3.5" />
@@ -71,7 +71,7 @@
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
       <Loader2Icon class="w-5 h-5 animate-spin text-blue-600" />
-      <span class="ml-2 text-sm text-slate-500">Memuat produk...</span>
+      <span class="ml-2 text-sm text-slate-500 dark:text-[#869392]">Memuat produk...</span>
     </div>
 
     <!-- Error -->
@@ -89,38 +89,38 @@
     <!-- Empty state -->
     <div
       v-else-if="products.length === 0"
-      class="bg-white border border-dashed border-slate-200 rounded-lg p-12 text-center shadow-sm"
+      class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-12 text-center shadow-sm"
     >
       <PackageIcon class="w-12 h-12 text-slate-300 mx-auto mb-3" />
       <p class="text-sm font-bold text-slate-700">Belum ada produk</p>
-      <p class="text-xs text-slate-500 mt-1.5">
+      <p class="text-xs text-slate-500 dark:text-[#869392] mt-1.5">
         {{ searchQuery ? 'Tidak ditemukan produk dengan kata kunci tersebut.' : 'Tambah produk pertama untuk mulai berjualan.' }}
       </p>
     </div>
 
     <!-- Product Table -->
-    <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+    <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[700px]">
-          <thead class="bg-slate-50 border-b border-slate-200">
+          <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
             <tr>
-              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase tracking-wide w-12">Img</th>
-              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wide">SKU</th>
-              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wide">Nama Barang</th>
-              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wide">Kategori</th>
-              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase tracking-wide">Stok</th>
-              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase tracking-wide">Satuan</th>
-              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 uppercase tracking-wide">Harga Jual</th>
-              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 uppercase tracking-wide">Harga Beli</th>
-              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 uppercase tracking-wide">Margin</th>
-              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase tracking-wide">Aksi</th>
+              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide w-12">Img</th>
+              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">SKU</th>
+              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Nama Barang</th>
+              <th class="px-3 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Kategori</th>
+              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Stok</th>
+              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Satuan</th>
+              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Harga Jual</th>
+              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Harga Beli</th>
+              <th class="px-3 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Margin</th>
+              <th class="px-3 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr
               v-for="product in products"
               :key="product.id"
-              class="hover:bg-slate-50 transition-colors"
+              class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
             >
               <td class="px-3 py-2.5 text-center">
                 <div class="w-8 h-8 rounded-md bg-slate-100 border border-slate-200 overflow-hidden mx-auto flex items-center justify-center">
@@ -137,7 +137,7 @@
                 </div>
               </td>
               <td class="px-3 py-2.5">
-                <p class="text-sm font-medium text-slate-900">{{ product.name }}</p>
+                <p class="text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">{{ product.name }}</p>
               </td>
               <td class="px-3 py-2.5">
                 <span v-if="getCategoryName(product.categoryId)" class="text-xs text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full">{{ getCategoryName(product.categoryId) }}</span>
@@ -146,7 +146,7 @@
               <td class="px-3 py-2.5 text-center">
                 <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold', getTotalStock(product) === 0 ? 'bg-red-100 text-red-700' : getTotalStock(product) <= 5 ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700']">{{ getTotalStock(product) }}</span>
               </td>
-              <td class="px-3 py-2.5 text-center text-xs text-slate-500">{{ product.unit || 'pcs' }}</td>
+              <td class="px-3 py-2.5 text-center text-xs text-slate-500 dark:text-[#869392]">{{ product.unit || 'pcs' }}</td>
               <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-900 tabular-nums">{{ formatRupiah(product.price) }}</td>
               <td class="px-3 py-2.5 text-right text-sm font-mono text-slate-600 tabular-nums">{{ formatRupiah(product.cost) }}</td>
               <td class="px-3 py-2.5 text-right">
@@ -230,7 +230,7 @@
           class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4 max-h-[90vh] overflow-y-auto"
           @submit.prevent="handleSubmitForm"
         >
-          <h2 class="text-base font-bold text-slate-950">
+          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2]">
             {{ editingProduct ? 'Edit Produk' : 'Tambah Produk Baru' }}
           </h2>
 
@@ -553,7 +553,7 @@
               <Trash2Icon class="w-5 h-5 text-red-600" />
             </div>
             <div>
-              <h3 class="text-sm font-bold text-slate-900">Hapus Produk?</h3>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">Hapus Produk?</h3>
               <p class="text-xs text-slate-600 mt-1">
                 Produk <strong>{{ deletingProduct?.name }}</strong> akan dihapus (soft delete).
                 Data historis tetap tersimpan.
@@ -598,15 +598,15 @@
         <div class="absolute inset-0 bg-black/50" @click="showStockHistoryModal = false"></div>
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-bold text-slate-900">Riwayat Stok — {{ stockHistoryProduct?.name }}</h3>
+            <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">Riwayat Stok — {{ stockHistoryProduct?.name }}</h3>
             <button type="button" class="text-slate-400 hover:text-slate-600" @click="showStockHistoryModal = false">✕</button>
           </div>
 
           <div v-if="stockHistoryLoading" class="flex items-center justify-center py-8">
-            <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+            <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
           </div>
           <div v-else-if="stockHistoryData.length === 0" class="text-center py-8">
-            <p class="text-xs text-slate-500">Belum ada riwayat stok.</p>
+            <p class="text-xs text-slate-500 dark:text-[#869392]">Belum ada riwayat stok.</p>
           </div>
           <div v-else class="space-y-2">
             <div v-for="h in stockHistoryData" :key="h.id"
@@ -641,8 +641,8 @@
       <div v-if="showBulkModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50" @click="closeBulkModal"></div>
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
-          <h2 class="text-base font-bold text-slate-950">Upload Massal Produk (Excel)</h2>
-          <p class="text-xs text-slate-500">
+          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2]">Upload Massal Produk (Excel)</h2>
+          <p class="text-xs text-slate-500 dark:text-[#869392]">
             Upload file <strong>.xlsx</strong> atau <strong>.csv</strong> untuk menambah banyak produk sekaligus. Maksimal 500 produk per upload.
           </p>
 
@@ -674,7 +674,7 @@
             >
               <UploadIcon class="w-6 h-6 mx-auto mb-2" :class="bulkFile ? 'text-emerald-500' : 'text-slate-400'" />
               <p v-if="bulkFile" class="text-xs font-semibold text-emerald-700">{{ bulkFile.name }}</p>
-              <p v-else class="text-xs text-slate-500">Klik atau drag file Excel (.xlsx, .csv) ke sini</p>
+              <p v-else class="text-xs text-slate-500 dark:text-[#869392]">Klik atau drag file Excel (.xlsx, .csv) ke sini</p>
               <input
                 type="file"
                 accept=".xlsx,.xls,.csv"

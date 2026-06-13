@@ -6,26 +6,26 @@
       <h1 class="relative text-lg font-bold">Pengaturan Sistem</h1>
       <p class="relative text-xs text-emerald-100 mt-0.5">Fitur toggle, mode shift, konfigurasi BRILink module.</p>
     </div>
-      <p class="text-xs text-slate-500 mt-0.5">Toggle fitur ON/OFF untuk menyesuaikan webapp kasir sesuai kebutuhan toko.</p>
+      <p class="text-xs text-slate-500 dark:text-[#869392] mt-0.5">Toggle fitur ON/OFF untuk menyesuaikan webapp kasir sesuai kebutuhan toko.</p>
     </div>
 
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
     </div>
 
     <template v-else>
       <!-- Modul -->
-      <section class="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+      <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 space-y-4">
         <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Modul</h2>
         <ToggleRow v-model="form.brilinkEnabled" label="Modul BRILink" desc="Menu BRILink, transaksi, fee, laporan BRILink. Jika OFF: bottom nav hanya 4 tab, dashboard retail only." />
       </section>
 
       <!-- Shift -->
-      <section class="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+      <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 space-y-4">
         <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Shift</h2>
         <div class="space-y-1">
           <label class="text-xs font-semibold text-slate-700">Mode Shift</label>
-          <select v-model="form.shiftMode" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+          <select v-model="form.shiftMode" class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none">
             <option value="FLOWING">Saldo Mengalir (rekomendasi UMKM)</option>
             <option value="RESET">Shift Reset (setiap shift input modal awal)</option>
           </select>
@@ -37,13 +37,13 @@
       </section>
 
       <!-- Kas & Pengeluaran -->
-      <section class="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+      <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 space-y-4">
         <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Kas & Pengeluaran</h2>
         <ToggleRow v-model="form.cashOutApprovalEnabled" label="Approval Pengeluaran (Cash Out)" desc="Kasir bisa cash out langsung, admin verifikasi belakangan. Jika OFF: tanpa approval." />
       </section>
 
       <!-- Metode Pembayaran -->
-      <section class="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+      <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 space-y-4">
         <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Metode Pembayaran</h2>
         <ToggleRow v-model="form.paymentCashEnabled" label="Tunai" desc="Pembayaran cash/tunai di POS." />
         <ToggleRow v-model="form.paymentQrisEnabled" label="QRIS" desc="Pembayaran via QRIS (QR Code)." />
@@ -51,7 +51,7 @@
       </section>
 
       <!-- Fitur POS -->
-      <section class="bg-white border border-slate-200 rounded-lg p-5 space-y-4">
+      <section class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5 space-y-4">
         <h2 class="text-sm font-bold text-slate-800 uppercase tracking-wide">Fitur POS</h2>
         <ToggleRow v-model="form.saveBillEnabled" label="Simpan Bill (Open Bill)" desc="Kasir bisa park transaksi dan buka kembali nanti." />
         <ToggleRow v-model="form.discountPerItemEnabled" label="Diskon Per Produk" desc="Kasir bisa beri diskon per item di keranjang." />
@@ -74,7 +74,7 @@
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showConfirmModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showConfirmModal = false"></div>
+        <div class="absolute inset-0 bg-black/50 dark:bg-black/60 backdrop-blur-sm" @click="showConfirmModal = false"></div>
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
           <div class="flex items-start gap-3">
             <div class="shrink-0 w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
@@ -83,8 +83,8 @@
               </svg>
             </div>
             <div>
-              <h3 class="text-base font-bold text-slate-900">Konfirmasi Perubahan Pengaturan</h3>
-              <p class="text-xs text-slate-500 mt-1">
+              <h3 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">Konfirmasi Perubahan Pengaturan</h3>
+              <p class="text-xs text-slate-500 dark:text-[#869392] mt-1">
                 Perubahan ini akan <strong>langsung diterapkan</strong> ke webapp kasir yang sedang aktif.
               </p>
             </div>

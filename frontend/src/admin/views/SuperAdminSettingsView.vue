@@ -1,7 +1,7 @@
 <template>
   <div class="space-y-5">
     <!-- Tabs -->
-    <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
+    <div class="flex gap-1 bg-slate-100 dark:bg-[#292a2a] rounded-lg p-1 w-fit">
       <button
         v-for="tab in tabs"
         :key="tab.key"
@@ -27,7 +27,7 @@
         <label class="text-xs font-semibold text-slate-600">Role:</label>
         <select
           v-model="selectedRole"
-          class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
+          class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
           @change="fetchRolePermissions"
         >
           <option value="ADMIN">Admin Cabang</option>
@@ -37,7 +37,7 @@
 
       <!-- Loading -->
       <div v-if="permLoading" class="flex items-center justify-center py-12">
-        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+        <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
       </div>
 
       <!-- Permission Groups -->
@@ -45,9 +45,9 @@
         <div
           v-for="group in permissionGroups"
           :key="group.group"
-          class="bg-white border border-slate-200 rounded-lg overflow-hidden"
+          class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg overflow-hidden"
         >
-          <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
+          <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a]">
             <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wide">{{ group.group }}</h3>
           </div>
           <div class="px-5 py-3 space-y-3">
@@ -100,10 +100,10 @@
     <!-- TAB: Kategori Cashbox                       -->
     <!-- ============================================ -->
     <template v-if="activeTab === 'cashbox'">
-      <div class="bg-white border border-slate-200 rounded-lg p-6 text-center">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-6 text-center">
         <BoxesIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
         <p class="text-sm font-semibold text-slate-700">Kategori Cashbox</p>
-        <p class="text-xs text-slate-500 mt-1 mb-3">Kelola kategori kas terpisah (Retail, Subsidi Pupuk, dll).</p>
+        <p class="text-xs text-slate-500 dark:text-[#869392] mt-1 mb-3">Kelola kategori kas terpisah (Retail, Subsidi Pupuk, dll).</p>
         <RouterLink
           to="/admin/cashbox-categories"
           class="inline-flex items-center gap-1.5 h-8 px-4 bg-blue-600 text-white text-xs font-semibold rounded-lg hover:bg-blue-700"
@@ -117,16 +117,16 @@
     <!-- TAB: Audit Log                              -->
     <!-- ============================================ -->
     <template v-if="activeTab === 'audit'">
-      <div class="bg-white border border-slate-200 rounded-lg overflow-hidden">
-        <div class="px-5 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-          <h3 class="text-sm font-bold text-slate-900">Audit Log</h3>
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg overflow-hidden">
+        <div class="px-5 py-3 border-b border-slate-200 dark:border-[#3d4948] bg-slate-50 dark:bg-[#292a2a] flex items-center justify-between">
+          <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">Audit Log</h3>
           <button type="button" class="text-[10px] font-semibold text-blue-600" @click="fetchAuditLogs">Refresh</button>
         </div>
         <div v-if="auditLoading" class="flex items-center justify-center py-12">
-          <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+          <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
         </div>
         <div v-else-if="auditLogs.length === 0" class="px-5 py-10 text-center">
-          <p class="text-xs text-slate-500">Belum ada aktivitas tercatat.</p>
+          <p class="text-xs text-slate-500 dark:text-[#869392]">Belum ada aktivitas tercatat.</p>
         </div>
         <div v-else class="overflow-x-auto max-h-[500px] overflow-y-auto">
           <table class="w-full">
@@ -161,11 +161,11 @@
     <template v-if="activeTab === 'system'">
       <div class="space-y-4">
         <!-- Maintenance Mode -->
-        <div class="bg-white border border-slate-200 rounded-lg p-5">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5">
           <div class="flex items-center justify-between">
             <div>
-              <h3 class="text-sm font-bold text-slate-900">Maintenance Mode</h3>
-              <p class="text-xs text-slate-500 mt-0.5">Nonaktifkan akses kasir ke webapp saat maintenance.</p>
+              <h3 class="text-sm font-bold text-slate-900 dark:text-[#e3e2e2]">Maintenance Mode</h3>
+              <p class="text-xs text-slate-500 dark:text-[#869392] mt-0.5">Nonaktifkan akses kasir ke webapp saat maintenance.</p>
             </div>
             <button
               type="button"
@@ -186,7 +186,7 @@
         </div>
 
         <!-- Auto-Logout Timeout -->
-        <div class="bg-white border border-slate-200 rounded-lg p-5">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5">
           <h3 class="text-sm font-bold text-slate-900 mb-2">Auto-Logout Timeout</h3>
           <p class="text-xs text-slate-500 mb-3">Durasi idle sebelum admin otomatis logout (menit).</p>
           <input
@@ -194,12 +194,12 @@
             type="number"
             min="5"
             max="480"
-            class="h-9 w-24 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none"
+            class="h-9 w-24 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none"
           />
         </div>
 
         <!-- PIN Lock Attempts -->
-        <div class="bg-white border border-slate-200 rounded-lg p-5">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-5">
           <h3 class="text-sm font-bold text-slate-900 mb-2">Max PIN Attempts</h3>
           <p class="text-xs text-slate-500 mb-3">Berapa kali kasir boleh salah PIN sebelum akun terkunci.</p>
           <input
@@ -207,7 +207,7 @@
             type="number"
             min="3"
             max="10"
-            class="h-9 w-24 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none"
+            class="h-9 w-24 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none"
           />
         </div>
 
@@ -240,8 +240,8 @@
         <!-- Reset Data Cabang -->
         <div class="bg-white border border-red-200 rounded-lg p-4 flex items-center justify-between">
           <div>
-            <p class="text-xs font-bold text-slate-900">Reset Data Cabang</p>
-            <p class="text-[10px] text-slate-500">Hapus semua transaksi, stok, hutang di cabang terpilih. Produk tetap ada.</p>
+            <p class="text-xs font-bold text-slate-900 dark:text-[#e3e2e2]">Reset Data Cabang</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392]">Hapus semua transaksi, stok, hutang di cabang terpilih. Produk tetap ada.</p>
           </div>
           <button
             type="button"
@@ -253,10 +253,10 @@
         </div>
 
         <!-- Seed Default Permissions -->
-        <div class="bg-white border border-slate-200 rounded-lg p-4 flex items-center justify-between">
+        <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 flex items-center justify-between">
           <div>
-            <p class="text-xs font-bold text-slate-900">Re-seed Permission Defaults</p>
-            <p class="text-[10px] text-slate-500">Reset permission ADMIN ke default bawaan. Aman dipanggil berkali-kali.</p>
+            <p class="text-xs font-bold text-slate-900 dark:text-[#e3e2e2]">Re-seed Permission Defaults</p>
+            <p class="text-[10px] text-slate-500 dark:text-[#869392]">Reset permission ADMIN ke default bawaan. Aman dipanggil berkali-kali.</p>
           </div>
           <button
             type="button"

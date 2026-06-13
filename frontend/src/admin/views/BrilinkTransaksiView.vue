@@ -18,10 +18,10 @@
           <div class="w-8 h-8 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
             <HashIcon class="w-4 h-4 text-blue-600 dark:text-blue-400" />
           </div>
-          <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500">HARI INI</span>
+          <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 dark:text-[#869392]">HARI INI</span>
         </div>
         <p class="text-[11px] text-slate-500 dark:text-slate-400">Total Transaksi</p>
-        <p class="text-lg font-bold font-mono text-slate-950 dark:text-slate-100">
+        <p class="text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] dark:text-slate-100">
           {{ kpi ? kpi.transactions.current : 0 }}
           <span class="text-xs font-normal text-slate-400">/ {{ kpi?.transactions.target ?? 0 }}</span>
         </p>
@@ -36,10 +36,10 @@
           <div class="w-8 h-8 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
             <BanknoteIcon class="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
           </div>
-          <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500">{{ kpi?.volume.percent ?? 0 }}%</span>
+          <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 dark:text-[#869392]">{{ kpi?.volume.percent ?? 0 }}%</span>
         </div>
         <p class="text-[11px] text-slate-500 dark:text-slate-400">Volume</p>
-        <p class="text-lg font-bold font-mono text-slate-950 dark:text-slate-100">{{ formatCompact(kpi?.volume.current ?? 0) }}</p>
+        <p class="text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] dark:text-slate-100">{{ formatCompact(kpi?.volume.current ?? 0) }}</p>
         <div class="mt-2 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
           <div class="h-full rounded-full bg-indigo-500 transition-all duration-500" :style="{ width: (kpi?.volume.percent ?? 0) + '%' }" />
         </div>
@@ -51,7 +51,7 @@
           <div class="w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
             <TrendingUpIcon class="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500">{{ kpi?.fee.percent ?? 0 }}%</span>
+          <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 dark:text-[#869392]">{{ kpi?.fee.percent ?? 0 }}%</span>
         </div>
         <p class="text-[11px] text-slate-500 dark:text-slate-400">Fee / Profit</p>
         <p class="text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400">{{ formatCompact(kpi?.fee.current ?? 0) }}</p>
@@ -167,7 +167,7 @@
 
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
-      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400" />
+      <Loader2Icon class="w-5 h-5 animate-spin text-slate-400 dark:text-[#869392]" />
       <span class="ml-2 text-sm text-slate-500 dark:text-slate-400">Memuat transaksi...</span>
     </div>
 

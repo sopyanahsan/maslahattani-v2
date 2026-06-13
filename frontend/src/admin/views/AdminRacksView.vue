@@ -8,7 +8,7 @@
         <p class="relative text-xs text-violet-100 mt-0.5">Kelola zona, rak, dan cetak label QR untuk navigasi toko.</p>
       </div>
       <div class="flex items-center gap-2 shrink-0">
-        <select v-model="filterZoneId" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" @change="fetchRacks">
+        <select v-model="filterZoneId" class="h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" @change="fetchRacks">
           <option value="">Semua Zona</option>
           <option v-for="z in zones" :key="z.id" :value="z.id">{{ z.name }} ({{ z.rackCount }})</option>
         </select>
@@ -24,23 +24,23 @@
 
     <!-- Racks Table -->
     <div v-if="loading" class="text-center py-10 text-slate-400 text-sm">Memuat rak...</div>
-    <div v-else-if="racks.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+    <div v-else-if="racks.length === 0" class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-10 text-center">
       <p class="text-sm font-semibold text-slate-700">Belum ada rak</p>
       <p class="text-xs text-slate-400 mt-1">Buat zona dulu, lalu tambahkan rak di dalamnya.</p>
     </div>
-    <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+    <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full">
-          <thead class="bg-slate-50 border-b border-slate-200">
+          <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
             <tr>
               <th class="px-3 py-2.5 text-center w-10">
                 <input type="checkbox" :checked="allSelected" class="w-4 h-4 text-blue-600 border-slate-200 rounded" @change="toggleAll" />
               </th>
-              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">Kode</th>
-              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">Nama</th>
-              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase">Zona</th>
-              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase">Produk</th>
-              <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase">Aksi</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Kode</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Nama</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Zona</th>
+              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Produk</th>
+              <th class="px-3 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
@@ -63,7 +63,7 @@
     </div>
 
     <!-- Zones List (collapsible) -->
-    <details class="bg-white border border-slate-200 rounded-lg p-4">
+    <details class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4">
       <summary class="text-sm font-bold text-slate-900 cursor-pointer select-none">Kelola Zona ({{ zones.length }})</summary>
       <div class="mt-3 space-y-2">
         <div v-for="z in zones" :key="z.id" class="flex items-center justify-between py-2 px-3 bg-slate-50 rounded-lg">
@@ -86,16 +86,16 @@
       <div v-if="showZoneModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="showZoneModal = false">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden">
           <div class="px-6 py-4 border-b border-slate-200">
-            <h2 class="text-base font-bold text-slate-900">{{ editingZone ? 'Edit Zona' : 'Tambah Zona' }}</h2>
+            <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ editingZone ? 'Edit Zona' : 'Tambah Zona' }}</h2>
           </div>
           <div class="px-6 py-5 space-y-3">
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Nama Zona</label>
-              <input v-model="zoneForm.name" type="text" placeholder="cth. Minuman Dingin" class="w-full h-10 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" />
+              <input v-model="zoneForm.name" type="text" placeholder="cth. Minuman Dingin" class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" />
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Deskripsi (opsional)</label>
-              <input v-model="zoneForm.description" type="text" placeholder="cth. Rak kulkas depan kasir" class="w-full h-10 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" />
+              <input v-model="zoneForm.description" type="text" placeholder="cth. Rak kulkas depan kasir" class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" />
             </div>
           </div>
           <div class="px-6 py-4 border-t border-slate-200 flex justify-end gap-2">
@@ -113,23 +113,23 @@
       <div v-if="showRackModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="showRackModal = false">
         <div class="bg-white rounded-lg shadow-xl w-full max-w-sm overflow-hidden">
           <div class="px-6 py-4 border-b border-slate-200">
-            <h2 class="text-base font-bold text-slate-900">{{ editingRack ? 'Edit Rak' : 'Tambah Rak' }}</h2>
+            <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">{{ editingRack ? 'Edit Rak' : 'Tambah Rak' }}</h2>
           </div>
           <div class="px-6 py-5 space-y-3">
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Zona</label>
-              <select v-model="rackForm.zoneId" class="w-full h-10 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none">
+              <select v-model="rackForm.zoneId" class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none">
                 <option value="">— Pilih Zona —</option>
                 <option v-for="z in zones" :key="z.id" :value="z.id">{{ z.name }}</option>
               </select>
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Kode Rak</label>
-              <input v-model="rackForm.code" type="text" placeholder="cth. A1, B-03" class="w-full h-10 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none font-mono" />
+              <input v-model="rackForm.code" type="text" placeholder="cth. A1, B-03" class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none font-mono" />
             </div>
             <div>
               <label class="block text-xs font-semibold text-slate-700 mb-1">Nama (opsional)</label>
-              <input v-model="rackForm.name" type="text" placeholder="cth. Rak Atas Kiri" class="w-full h-10 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" />
+              <input v-model="rackForm.name" type="text" placeholder="cth. Rak Atas Kiri" class="w-full h-10 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none" />
             </div>
           </div>
           <div class="px-6 py-4 border-t border-slate-200 flex justify-end gap-2">
@@ -149,8 +149,8 @@
           <!-- Header -->
           <div class="flex items-center justify-between px-6 py-4 border-b border-slate-200">
             <div>
-              <h2 class="text-base font-bold text-slate-900">Rak {{ detailRack?.code }}</h2>
-              <p class="text-xs text-slate-500">{{ detailRack?.zoneName }}{{ detailRack?.name ? ' — ' + detailRack.name : '' }}</p>
+              <h2 class="text-base font-bold text-slate-900 dark:text-[#e3e2e2]">Rak {{ detailRack?.code }}</h2>
+              <p class="text-xs text-slate-500 dark:text-[#869392]">{{ detailRack?.zoneName }}{{ detailRack?.name ? ' — ' + detailRack.name : '' }}</p>
             </div>
             <button @click="showRackDetail = false" class="text-slate-400 hover:text-slate-600">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -168,7 +168,7 @@
                 v-model="searchUnassigned"
                 type="text"
                 placeholder="Cari produk (nama / SKU)..."
-                class="w-full h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none"
+                class="w-full h-9 px-3 text-sm border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-lg focus:border-blue-600 outline-none"
                 @input="debouncedSearchUnassigned"
               />
               <!-- Search Results -->

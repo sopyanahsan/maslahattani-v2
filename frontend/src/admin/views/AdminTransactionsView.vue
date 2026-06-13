@@ -5,27 +5,27 @@
 
     <!-- Stats cards (6 KPI) -->
     <div v-if="stats" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-      <div class="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Omzet</p>
-        <p class="text-base sm:text-lg font-bold font-mono text-slate-950 mt-1 tabular-nums">{{ formatRupiah(stats.omzet) }}</p>
+        <p class="text-base sm:text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] dark:text-[#e3e2e2] mt-1 tabular-nums">{{ formatRupiah(stats.omzet) }}</p>
       </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Laba Kotor</p>
         <p class="text-base sm:text-lg font-bold font-mono text-emerald-600 mt-1 tabular-nums">{{ formatRupiah(stats.profit) }}</p>
       </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Transaksi</p>
-        <p class="text-base sm:text-lg font-bold font-mono text-slate-950 mt-1 tabular-nums">{{ stats.totalTransaksi }}</p>
+        <p class="text-base sm:text-lg font-bold font-mono text-slate-950 dark:text-[#e3e2e2] dark:text-[#e3e2e2] mt-1 tabular-nums">{{ stats.totalTransaksi }}</p>
       </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">AOV</p>
         <p class="text-base sm:text-lg font-bold font-mono text-blue-600 mt-1 tabular-nums">{{ formatRupiah(stats.totalTransaksi > 0 ? Math.round(stats.omzet / stats.totalTransaksi) : 0) }}</p>
       </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Diskon</p>
         <p class="text-base sm:text-lg font-bold font-mono text-amber-600 mt-1 tabular-nums">{{ formatRupiah(stats.totalDiskon ?? 0) }}</p>
       </div>
-      <div class="bg-white border border-slate-200 rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
+      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-3 sm:p-4 shadow-sm hover:shadow-md transition-shadow">
         <p class="text-[10px] text-slate-500 font-medium uppercase tracking-wide">Void</p>
         <p class="text-base sm:text-lg font-bold font-mono text-red-600 mt-1 tabular-nums">{{ stats.totalVoid }}</p>
       </div>
@@ -100,7 +100,7 @@
     <!-- Loading -->
     <div v-if="loading" class="flex items-center justify-center py-16">
       <Loader2Icon class="w-5 h-5 animate-spin text-blue-600" />
-      <span class="ml-2 text-sm text-slate-500">Memuat transaksi...</span>
+      <span class="ml-2 text-sm text-slate-500 dark:text-[#869392]">Memuat transaksi...</span>
     </div>
 
     <!-- Error -->
@@ -118,40 +118,40 @@
     <!-- Empty state -->
     <div
       v-else-if="transactions.length === 0"
-      class="bg-white border border-dashed border-slate-200 rounded-lg p-12 text-center shadow-sm"
+      class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-200 rounded-lg p-12 text-center shadow-sm"
     >
       <ReceiptIcon class="w-12 h-12 text-slate-300 mx-auto mb-3" />
       <p class="text-sm font-bold text-slate-700">Belum ada transaksi</p>
-      <p class="text-xs text-slate-500 mt-1.5 max-w-[260px] mx-auto">Transaksi dari POS kasir akan muncul di sini.</p>
+      <p class="text-xs text-slate-500 dark:text-[#869392] mt-1.5 max-w-[260px] mx-auto">Transaksi dari POS kasir akan muncul di sini.</p>
     </div>
 
 
     <!-- Transaction table -->
-    <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
+    <div v-else class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[750px]">
-          <thead class="bg-slate-50 border-b border-slate-200">
+          <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
             <tr>
-              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wide">No. Transaksi</th>
-              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wide">Pembeli</th>
-              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wide">Kasir</th>
-              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-600 uppercase tracking-wide">Waktu</th>
-              <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase tracking-wide">Item</th>
-              <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase tracking-wide">Metode</th>
-              <th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-600 uppercase tracking-wide">Total</th>
-              <th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-600 uppercase tracking-wide">Profit</th>
-              <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase tracking-wide">Status</th>
-              <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-600 uppercase tracking-wide">Aksi</th>
+              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">No. Transaksi</th>
+              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Pembeli</th>
+              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Kasir</th>
+              <th class="px-4 py-2.5 text-left text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Waktu</th>
+              <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Item</th>
+              <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Metode</th>
+              <th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Total</th>
+              <th class="px-4 py-2.5 text-right text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Profit</th>
+              <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Status</th>
+              <th class="px-4 py-2.5 text-center text-[10px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide">Aksi</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-100">
             <tr
               v-for="trx in transactions"
               :key="trx.id"
-              class="hover:bg-slate-50 transition-colors"
+              class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
             >
               <td class="px-4 py-3">
-                <code class="text-xs font-mono text-slate-900">{{ trx.transactionNumber }}</code>
+                <code class="text-xs font-mono text-slate-900 dark:text-[#e3e2e2]">{{ trx.transactionNumber }}</code>
               </td>
               <td class="px-4 py-3">
                 <span v-if="trx.customerName" class="text-xs font-medium text-slate-800">{{ trx.customerName }}</span>
@@ -249,8 +249,8 @@
         <div class="relative bg-white rounded-lg shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[85vh] overflow-y-auto">
           <div class="flex items-start justify-between">
             <div>
-              <h2 class="text-base font-bold text-slate-950">Detail Transaksi</h2>
-              <code class="text-xs font-mono text-slate-500">{{ detailTrx.transactionNumber }}</code>
+              <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2]">Detail Transaksi</h2>
+              <code class="text-xs font-mono text-slate-500 dark:text-[#869392]">{{ detailTrx.transactionNumber }}</code>
             </div>
             <span :class="['inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase', statusBadge(detailTrx.status)]">
               {{ statusLabel(detailTrx.status) }}
@@ -260,26 +260,26 @@
           <!-- Info grid -->
           <div class="grid grid-cols-2 gap-3 text-xs">
             <div>
-              <p class="text-slate-500">Kasir</p>
-              <p class="font-semibold text-slate-900">{{ detailTrx.user?.username ?? detailTrx.user?.email ?? '—' }}</p>
+              <p class="text-slate-500 dark:text-[#869392]">Kasir</p>
+              <p class="font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ detailTrx.user?.username ?? detailTrx.user?.email ?? '—' }}</p>
             </div>
             <div>
-              <p class="text-slate-500">Pembeli</p>
-              <p class="font-semibold text-slate-900">
+              <p class="text-slate-500 dark:text-[#869392]">Pembeli</p>
+              <p class="font-semibold text-slate-900 dark:text-[#e3e2e2]">
                 {{ detailTrx.customerName || 'Umum' }}
                 <span v-if="detailTrx.customerPhone" class="text-slate-500 font-normal"> · {{ detailTrx.customerPhone }}</span>
               </p>
             </div>
             <div>
-              <p class="text-slate-500">Waktu</p>
+              <p class="text-slate-500 dark:text-[#869392]">Waktu</p>
               <p class="font-semibold text-slate-900 font-mono">{{ formatDateTime(detailTrx.createdAt) }}</p>
             </div>
             <div>
-              <p class="text-slate-500">Total</p>
+              <p class="text-slate-500 dark:text-[#869392]">Total</p>
               <p class="font-semibold text-slate-900 font-mono">{{ formatRupiah(detailTrx.totalPrice) }}</p>
             </div>
             <div>
-              <p class="text-slate-500">Profit</p>
+              <p class="text-slate-500 dark:text-[#869392]">Profit</p>
               <p class="font-semibold text-emerald-700 font-mono">{{ formatRupiah(detailTrx.totalPrice - detailTrx.totalCost) }}</p>
             </div>
           </div>
@@ -296,7 +296,7 @@
 
           <!-- Items -->
           <div>
-            <p class="text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2">Item ({{ detailTrx.items.length }})</p>
+            <p class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide mb-2">Item ({{ detailTrx.items.length }})</p>
             <div class="space-y-1.5">
               <div v-for="item in detailTrx.items" :key="item.id" class="flex items-center justify-between bg-slate-50 rounded-md px-3 py-2">
                 <div class="min-w-0 flex-1">
@@ -313,11 +313,11 @@
 
           <!-- Payments -->
           <div>
-            <p class="text-[11px] font-bold text-slate-600 uppercase tracking-wide mb-2">Pembayaran</p>
+            <p class="text-[11px] font-bold text-slate-600 dark:text-[#869392] uppercase tracking-wide mb-2">Pembayaran</p>
             <div class="space-y-1">
               <div v-for="p in detailTrx.payments" :key="p.id" class="flex items-center justify-between text-xs">
                 <span :class="['font-bold uppercase px-2 py-0.5 rounded', methodBadge(p.method)]">{{ p.method }}</span>
-                <span class="font-mono font-semibold text-slate-900">{{ formatRupiah(p.amount) }}</span>
+                <span class="font-mono font-semibold text-slate-900 dark:text-[#e3e2e2]">{{ formatRupiah(p.amount) }}</span>
               </div>
             </div>
           </div>
@@ -339,14 +339,14 @@
         <form class="relative bg-white rounded-lg shadow-xl w-full max-w-sm p-6 space-y-4" @submit.prevent="handleVoid">
           <h3 class="text-sm font-bold text-red-700">Void Transaksi</h3>
           <p class="text-xs text-slate-600">
-            Batalkan <strong class="text-slate-900">{{ voidTrx.transactionNumber }}</strong> ({{ formatRupiah(voidTrx.totalPrice) }})?
+            Batalkan <strong class="text-slate-900 dark:text-[#e3e2e2]">{{ voidTrx.transactionNumber }}</strong> ({{ formatRupiah(voidTrx.totalPrice) }})?
             Stok akan dikembalikan.
           </p>
 
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Kode OTP <span class="text-red-500">*</span></label>
             <input v-model="voidForm.otp" type="text" required minlength="6" placeholder="Masukkan OTP admin"
-              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none" />
+              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md focus:border-red-500 focus:ring-1 focus:ring-red-500 outline-none" />
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-700 mb-1">Alasan <span class="text-red-500">*</span></label>
