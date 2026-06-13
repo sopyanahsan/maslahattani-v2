@@ -1,15 +1,17 @@
 <template>
   <div class="space-y-5">
     <!-- Header -->
-    <div>
-      <h1 class="text-xl font-bold text-slate-950 dark:text-slate-100">Pengaturan Fee BRILink</h1>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+    <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-5 text-white shadow-lg">
+      <div class="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-white/10" />
+      <div class="absolute -left-4 -bottom-4 w-24 h-24 rounded-full bg-white/5" />
+      <h1 class="relative text-xl font-bold">Pengaturan Fee BRILink</h1>
+      <p class="relative text-xs text-blue-100 mt-0.5">
         Atur fee per kategori &amp; nominal, serta daftar produk/layanan BRILink.
       </p>
     </div>
 
     <!-- Tabs -->
-    <div class="flex gap-1 bg-slate-100 dark:bg-slate-800 rounded-lg p-1 w-fit">
+    <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
       <button
         v-for="tab in tabs"
         :key="tab.key"
@@ -17,8 +19,8 @@
         :class="[
           'h-8 px-4 text-xs font-semibold rounded-md transition-colors',
           activeTab === tab.key
-            ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 shadow-sm'
-            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200',
+            ? 'bg-white text-slate-900 shadow-sm'
+            : 'text-slate-600 hover:text-slate-900',
         ]"
         @click="activeTab = tab.key"
       >
@@ -32,7 +34,7 @@
     <template v-if="activeTab === 'fee-rules'">
       <!-- Actions -->
       <div class="flex items-center justify-between">
-        <p class="text-sm text-slate-600 dark:text-slate-400">
+        <p class="text-sm text-slate-600">
           Aturan fee berdasarkan kategori dan range nominal transaksi.
         </p>
         <button
@@ -51,10 +53,10 @@
       </div>
 
       <!-- Empty -->
-      <div v-else-if="fees.length === 0" class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center">
-        <PercentIcon class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-        <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada fee rule</p>
-        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Tambah aturan fee untuk menghitung biaya layanan otomatis.</p>
+      <div v-else-if="fees.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+        <PercentIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
+        <p class="text-sm font-semibold text-slate-900">Belum ada fee rule</p>
+        <p class="text-xs text-slate-500 mt-1">Tambah aturan fee untuk menghitung biaya layanan otomatis.</p>
       </div>
 
       <!-- Fee table grouped by category -->
@@ -62,19 +64,19 @@
         <div
           v-for="(group, category) in feesByCategory"
           :key="category"
-          class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden"
+          class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
         >
-          <div class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+          <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span :class="['w-3 h-3 rounded-sm', categoryColor(category)]" />
-              <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wide">{{ categoryLabel(category) }}</h3>
+              <h3 class="text-xs font-bold text-slate-900 uppercase tracking-wide">{{ categoryLabel(category) }}</h3>
               <span class="text-[10px] text-slate-400">({{ group.length }} rules)</span>
             </div>
           </div>
           <div class="overflow-x-auto">
             <table class="w-full">
               <thead>
-                <tr class="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wide">
+                <tr class="text-[10px] text-slate-500 uppercase tracking-wide">
                   <th class="px-4 py-2 text-left">Label</th>
                   <th class="px-4 py-2 text-right">Min</th>
                   <th class="px-4 py-2 text-right">Max</th>
@@ -85,18 +87,18 @@
                   <th class="px-4 py-2 text-center">Aksi</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-                <tr v-for="fee in group" :key="fee.id" class="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                  <td class="px-4 py-2.5 text-xs font-medium text-slate-900 dark:text-slate-100">{{ fee.label }}</td>
-                  <td class="px-4 py-2.5 text-xs font-mono text-right text-slate-600 dark:text-slate-400">{{ formatRupiah(fee.minAmount) }}</td>
-                  <td class="px-4 py-2.5 text-xs font-mono text-right text-slate-600 dark:text-slate-400">{{ formatRupiah(fee.maxAmount) }}</td>
-                  <td class="px-4 py-2.5 text-xs font-mono text-right text-red-600 dark:text-red-400">{{ formatRupiah(fee.systemFee || 0) }}</td>
+              <tbody class="divide-y divide-slate-100">
+                <tr v-for="fee in group" :key="fee.id" class="hover:bg-slate-50">
+                  <td class="px-4 py-2.5 text-xs font-medium text-slate-900">{{ fee.label }}</td>
+                  <td class="px-4 py-2.5 text-xs font-mono text-right text-slate-600">{{ formatRupiah(fee.minAmount) }}</td>
+                  <td class="px-4 py-2.5 text-xs font-mono text-right text-slate-600">{{ formatRupiah(fee.maxAmount) }}</td>
+                  <td class="px-4 py-2.5 text-xs font-mono text-right text-red-600">{{ formatRupiah(fee.systemFee || 0) }}</td>
                   <td class="px-4 py-2.5 text-center">
-                    <span :class="['text-[10px] font-bold px-1.5 py-0.5 rounded', fee.feeType === 'FLAT' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300' : 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300']">
+                    <span :class="['text-[10px] font-bold px-1.5 py-0.5 rounded', fee.feeType === 'FLAT' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700']">
                       {{ fee.feeType }}
                     </span>
                   </td>
-                  <td class="px-4 py-2.5 text-xs font-mono text-right font-semibold text-emerald-600 dark:text-emerald-400">
+                  <td class="px-4 py-2.5 text-xs font-mono text-right font-semibold text-emerald-600">
                     {{ fee.feeType === 'FLAT' ? formatRupiah(fee.feeAmount) : fee.feePercent + '%' }}
                   </td>
                   <td class="px-4 py-2.5 text-center">
@@ -126,15 +128,15 @@
     <!-- ============================================ -->
     <Teleport to="body">
       <div v-if="showFeeModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40" @click="showFeeModal = false" />
-        <form class="relative bg-white dark:bg-slate-900 rounded-xl shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleSaveFee">
-          <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showFeeModal = false" />
+        <form class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4" @submit.prevent="handleSaveFee">
+          <h3 class="text-sm font-bold text-slate-900">
             {{ editingFee ? 'Edit Fee Rule' : 'Tambah Fee Rule' }}
           </h3>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Kategori *</label>
-            <select v-model="feeForm.category" required class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md">
+            <label class="block text-xs font-semibold text-slate-900 mb-1">Kategori *</label>
+            <select v-model="feeForm.category" required class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md">
               <option value="TRANSFER_BRI">Transfer BRI</option>
               <option value="TRANSFER_OTHER">Transfer Bank Lain</option>
               <option value="TARIK_TUNAI">Tarik Tunai</option>
@@ -142,37 +144,37 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Label *</label>
-            <input v-model="feeForm.label" type="text" required placeholder="Transfer BRI s/d 5jt" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md" />
+            <label class="block text-xs font-semibold text-slate-900 mb-1">Label *</label>
+            <input v-model="feeForm.label" type="text" required placeholder="Transfer BRI s/d 5jt" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md" />
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Min Nominal *</label>
-              <input v-model.number="feeForm.minAmount" type="number" min="0" required class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md" />
+              <label class="block text-xs font-semibold text-slate-900 mb-1">Min Nominal *</label>
+              <input v-model.number="feeForm.minAmount" type="number" min="0" required class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md" />
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Max Nominal *</label>
-              <input v-model.number="feeForm.maxAmount" type="number" min="0" required class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md" />
+              <label class="block text-xs font-semibold text-slate-900 mb-1">Max Nominal *</label>
+              <input v-model.number="feeForm.maxAmount" type="number" min="0" required class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md" />
             </div>
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Biaya Sistem / Potongan Bank (Rp)</label>
-            <input v-model.number="feeForm.systemFee" type="number" min="0" placeholder="0" class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md" />
+            <label class="block text-xs font-semibold text-slate-900 mb-1">Biaya Sistem / Potongan Bank (Rp)</label>
+            <input v-model.number="feeForm.systemFee" type="number" min="0" placeholder="0" class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md" />
             <p class="text-[10px] text-slate-400 mt-0.5">Biaya yang dipotong bank/sistem (bukan profit agen). Rp 0 jika tidak ada.</p>
           </div>
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">Tipe Fee *</label>
-              <select v-model="feeForm.feeType" class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md">
+              <label class="block text-xs font-semibold text-slate-900 mb-1">Tipe Fee *</label>
+              <select v-model="feeForm.feeType" class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md">
                 <option value="FLAT">Flat (Rp)</option>
                 <option value="PERCENT">Persen (%)</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <label class="block text-xs font-semibold text-slate-900 mb-1">
                 {{ feeForm.feeType === 'FLAT' ? 'Fee (Rp) *' : 'Fee (%) *' }}
               </label>
               <input
@@ -181,7 +183,7 @@
                 type="number"
                 min="0"
                 required
-                class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md"
+                class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md"
               />
               <input
                 v-else
@@ -190,20 +192,20 @@
                 min="0"
                 step="0.1"
                 required
-                class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-md"
+                class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md"
               />
             </div>
           </div>
 
           <label class="flex items-center gap-2 cursor-pointer">
-            <input v-model="feeForm.isActive" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-300 rounded" />
-            <span class="text-xs font-semibold text-slate-700 dark:text-slate-300">Aktif</span>
+            <input v-model="feeForm.isActive" type="checkbox" class="w-4 h-4 text-blue-600 border-slate-200 rounded" />
+            <span class="text-xs font-semibold text-slate-900">Aktif</span>
           </label>
 
-          <div v-if="feeError" class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300">{{ feeError }}</div>
+          <div v-if="feeError" class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700">{{ feeError }}</div>
 
           <div class="flex justify-end gap-2 pt-2">
-            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-md hover:bg-slate-200 dark:hover:bg-slate-700" @click="showFeeModal = false">Batal</button>
+            <button type="button" class="h-9 px-4 text-xs font-semibold text-slate-900 bg-slate-100 rounded-md hover:bg-slate-200" @click="showFeeModal = false">Batal</button>
             <button type="submit" :disabled="savingFee" class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50">
               {{ savingFee ? '...' : editingFee ? 'Simpan' : 'Tambah' }}
             </button>
@@ -385,3 +387,45 @@ async function handleDeleteFee(fee: BrilinkFeeDto) {
 // ============================================
 onMounted(fetchFees);
 </script>
+
+<style scoped>
+/* ── Fancy CSS: smooth card entrance ── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.space-y-5 > *:nth-child(n) {
+  animation: fadeSlideUp 0.4s ease-out both;
+}
+.space-y-5 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-5 > *:nth-child(2) { animation-delay: 60ms; }
+.space-y-5 > *:nth-child(3) { animation-delay: 120ms; }
+.space-y-5 > *:nth-child(4) { animation-delay: 180ms; }
+
+/* table row hover glow */
+table tbody tr {
+  transition: all 0.15s ease;
+}
+table tbody tr:hover {
+  box-shadow: inset 3px 0 0 #2563EB;
+}
+
+/* active status dot pulse */
+@keyframes dotPulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.6); opacity: 0.6; }
+}
+.bg-emerald-500 {
+  animation: dotPulse 2s ease-in-out infinite;
+}
+
+/* modal entrance */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+form[class*="relative"] {
+  animation: scaleIn 0.2s ease-out;
+}
+</style>
