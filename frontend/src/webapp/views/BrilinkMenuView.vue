@@ -219,8 +219,245 @@
       </ul>
     </div>
 
-    <!-- Bottom sheets and modals remain the same structure but with showcase tokens -->
-    <!-- They are included below but abbreviated for commit size -->
+    <!-- ============================================================ -->
+    <!-- BOTTOM SHEET: Kas Tunai Agen — Cash In / Cash Out            -->
+    <!-- ============================================================ -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showKasPanel" class="fixed inset-0 z-50 flex items-end justify-center font-sans">
+          <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showKasPanel = false" />
+          <div class="relative w-full max-w-lg bg-white rounded-t-xl border-t border-slate-200 shadow-xl">
+            <div class="w-10 h-1 rounded-full bg-slate-200 mx-auto mt-3 mb-1" />
+            <div class="flex items-center justify-between px-5 py-3 border-b border-slate-200">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <WalletIcon class="w-4 h-4 text-emerald-600" />
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-slate-950">Kas Tunai Agen</p>
+                  <p class="text-[10px] text-slate-500">Saldo: <span class="font-mono font-semibold">{{ formatRupiah(saldoKas) }}</span></p>
+                </div>
+              </div>
+              <button class="p-1.5 rounded-md hover:bg-slate-100 transition-colors" @click="showKasPanel = false">
+                <XIcon class="w-4 h-4 text-slate-400" />
+              </button>
+            </div>
+            <div class="flex gap-2 px-5 pt-4 pb-2">
+              <button type="button"
+                :class="['flex-1 h-10 rounded-md text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors border',
+                  kasTab === 'cashin' ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-slate-100 text-slate-900 border-slate-200 hover:bg-slate-200']"
+                @click="kasTab = 'cashin'; kasForm.amount = 0; kasForm.notes = ''; kasError = null">
+                <ArrowDownCircleIcon class="w-4 h-4" /> Cash In
+              </button>
+              <button type="button"
+                :class="['flex-1 h-10 rounded-md text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors border',
+                  kasTab === 'cashout' ? 'bg-red-600 text-white border-red-600' : 'bg-slate-100 text-slate-900 border-slate-200 hover:bg-slate-200']"
+                @click="kasTab = 'cashout'; kasForm.amount = 0; kasForm.notes = ''; kasError = null">
+                <ArrowUpCircleIcon class="w-4 h-4" /> Cash Out
+              </button>
+            </div>
+            <form class="px-5 pb-6 space-y-4" @submit.prevent="handleKasSubmit">
+              <div>
+                <label class="block text-xs font-semibold text-slate-900 mb-1.5">Jumlah (Rp) <span class="text-red-500">*</span></label>
+                <input v-model.number="kasForm.amount" type="number" min="1" required placeholder="0"
+                  class="w-full h-12 px-4 text-xl font-mono font-bold text-center border border-slate-200 rounded-md bg-white text-slate-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+                <div class="grid grid-cols-4 gap-1.5 mt-2">
+                  <button v-for="n in [100000,500000,1000000,5000000]" :key="n" type="button"
+                    class="h-7 rounded-md border border-slate-200 text-[10px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                    @click="kasForm.amount += n">+{{ n >= 1000000 ? (n/1000000)+'Jt' : (n/1000)+'K' }}</button>
+                </div>
+                <button type="button" class="text-[10px] text-slate-400 mt-0.5 hover:text-slate-600" @click="kasForm.amount = 0">Reset</button>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-900 mb-1.5">Keterangan <span class="text-slate-400 font-normal">(opsional)</span></label>
+                <input v-model="kasForm.notes" type="text"
+                  :placeholder="kasTab === 'cashin' ? 'Contoh: Setoran modal pagi...' : 'Contoh: Ambil untuk bayar listrik...'"
+                  class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+              </div>
+              <div v-if="kasError" class="bg-red-50 border border-red-200 rounded-md p-3 text-xs text-red-700">{{ kasError }}</div>
+              <button type="submit" :disabled="kasSubmitting || kasForm.amount <= 0"
+                :class="['w-full h-12 rounded-md text-sm font-semibold text-white flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed',
+                  kasTab === 'cashin' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-red-600 hover:bg-red-700']">
+                <Loader2Icon v-if="kasSubmitting" class="w-4 h-4 animate-spin" />
+                <ArrowDownCircleIcon v-else-if="kasTab === 'cashin'" class="w-4 h-4" />
+                <ArrowUpCircleIcon v-else class="w-4 h-4" />
+                {{ kasSubmitting ? 'Memproses...' : kasTab === 'cashin' ? 'Cash In Kas' : 'Cash Out Kas' }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- ============================================================ -->
+    <!-- BOTTOM SHEET: Rekening — Tambah / Tarik Saldo                -->
+    <!-- ============================================================ -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showRekModal" class="fixed inset-0 z-50 flex items-end justify-center font-sans">
+          <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showRekModal = false" />
+          <form class="relative w-full max-w-lg bg-white rounded-t-xl border-t border-slate-200 shadow-xl p-5 space-y-4" @submit.prevent="handleRekSubmit">
+            <div class="w-10 h-1 rounded-full bg-slate-200 mx-auto -mt-1 mb-1" />
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-base font-bold text-slate-950">{{ rekType === 'tambah' ? 'Tambah Saldo Rekening' : 'Tarik Saldo Rekening' }}</h3>
+                <p class="text-[11px] text-slate-500 mt-0.5">{{ rekAccount?.label }} · <span class="font-mono">{{ rekAccount?.accountNumber }}</span></p>
+              </div>
+              <button type="button" class="p-1.5 rounded-md hover:bg-slate-100 transition-colors" @click="showRekModal = false">
+                <XIcon class="w-4 h-4 text-slate-400" />
+              </button>
+            </div>
+            <div class="rounded-lg px-4 py-3 flex items-center justify-between"
+              :class="rekType === 'tambah' ? 'bg-blue-50 border border-blue-100' : 'bg-red-50 border border-red-100'">
+              <span class="text-xs text-slate-600">Saldo saat ini</span>
+              <span class="text-sm font-bold font-mono text-slate-950">{{ formatRupiah(rekAccount?.balance ?? 0) }}</span>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-900 mb-1.5">Jumlah (Rp) <span class="text-red-500">*</span></label>
+              <input v-model.number="rekForm.amount" type="number" min="1" required placeholder="0"
+                class="w-full h-11 px-4 text-base font-mono font-bold text-center border border-slate-200 rounded-md bg-white text-slate-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+              <div class="grid grid-cols-4 gap-1.5 mt-2">
+                <button v-for="n in [100000,500000,1000000,2000000]" :key="n" type="button"
+                  class="h-7 rounded-md border border-slate-200 text-[10px] font-semibold text-slate-700 hover:bg-slate-50 transition-colors"
+                  @click="rekForm.amount += n">+{{ n >= 1000000 ? (n/1000000)+'Jt' : (n/1000)+'K' }}</button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-900 mb-1.5">Referensi <span class="text-slate-400 font-normal">(opsional)</span></label>
+              <input v-model="rekForm.reference" type="text" :placeholder="rekType === 'tambah' ? 'No. setoran / bukti transfer...' : 'No. referensi penarikan...'"
+                class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-900 mb-1.5">Keterangan <span class="text-slate-400 font-normal">(opsional)</span></label>
+              <input v-model="rekForm.notes" type="text" :placeholder="rekType === 'tambah' ? 'Contoh: Top up modal BRILink...' : 'Contoh: Bayar tagihan...'"
+                class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+            </div>
+            <div v-if="rekError" class="bg-red-50 border border-red-200 rounded-md p-3 text-xs text-red-700">{{ rekError }}</div>
+            <div class="flex gap-2 pt-1">
+              <button type="button" class="flex-1 h-10 border border-slate-200 rounded-md text-sm font-semibold text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors" @click="showRekModal = false">Batal</button>
+              <button type="submit" :disabled="rekSubmitting || rekForm.amount <= 0"
+                :class="['flex-1 h-10 rounded-md text-sm font-semibold text-white flex items-center justify-center gap-2 transition-colors disabled:opacity-50',
+                  rekType === 'tambah' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-red-600 hover:bg-red-700']">
+                <Loader2Icon v-if="rekSubmitting" class="w-4 h-4 animate-spin" />
+                <PlusCircleIcon v-else-if="rekType === 'tambah'" class="w-4 h-4" />
+                <MinusCircleIcon v-else class="w-4 h-4" />
+                {{ rekSubmitting ? 'Memproses...' : rekType === 'tambah' ? 'Tambah Saldo' : 'Tarik Saldo' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- ============================================================ -->
+    <!-- BOTTOM SHEET: Pindah Saldo Antar Rekening                    -->
+    <!-- ============================================================ -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showPindahModal" class="fixed inset-0 z-50 flex items-end justify-center font-sans">
+          <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showPindahModal = false" />
+          <form class="relative w-full max-w-lg bg-white rounded-t-xl border-t border-slate-200 shadow-xl p-5 space-y-4" @submit.prevent="handlePindahSubmit">
+            <div class="w-10 h-1 rounded-full bg-slate-200 mx-auto -mt-1 mb-1" />
+            <div class="flex items-center justify-between">
+              <div>
+                <h3 class="text-base font-bold text-slate-950">Pindah Saldo Antar Rekening</h3>
+                <p class="text-[11px] text-slate-500 mt-0.5">Transfer internal BRILink</p>
+              </div>
+              <button type="button" class="p-1.5 rounded-md hover:bg-slate-100 transition-colors" @click="showPindahModal = false">
+                <XIcon class="w-4 h-4 text-slate-400" />
+              </button>
+            </div>
+            <div class="rounded-lg px-4 py-3 bg-blue-50 border border-blue-100">
+              <p class="text-[10px] font-semibold text-blue-700 uppercase tracking-wide mb-0.5">Dari</p>
+              <p class="text-sm font-bold text-slate-900">{{ pindahFrom?.label }}</p>
+              <p class="text-[10px] font-mono text-slate-500">{{ pindahFrom?.accountNumber }} · Saldo: {{ formatRupiah(pindahFrom?.balance ?? 0) }}</p>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-900 mb-1.5">Rekening Tujuan <span class="text-red-500">*</span></label>
+              <select v-model="pindahToId" required class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white text-slate-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none">
+                <option value="">— Pilih rekening tujuan —</option>
+                <option v-for="acc in accounts.filter(a => a.id !== pindahFrom?.id)" :key="acc.id" :value="acc.id">
+                  {{ acc.label }} ({{ acc.accountNumber }}) — {{ formatRupiah(acc.balance) }}
+                </option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-900 mb-1.5">Jumlah (Rp) <span class="text-red-500">*</span></label>
+              <input v-model.number="pindahAmount" type="number" min="1" :max="pindahFrom?.balance ?? 0" required placeholder="0"
+                class="w-full h-11 px-4 text-base font-mono font-bold text-center border border-slate-200 rounded-md bg-white text-slate-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+              <button type="button" class="text-[10px] text-blue-600 font-semibold mt-1 hover:underline" @click="pindahAmount = pindahFrom?.balance ?? 0">
+                Pindah semua ({{ formatRupiah(pindahFrom?.balance ?? 0) }})
+              </button>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-900 mb-1.5">Keterangan <span class="text-slate-400 font-normal">(opsional)</span></label>
+              <input v-model="pindahNotes" type="text" placeholder="Contoh: Pemerataan saldo..."
+                class="w-full h-10 px-3 text-sm border border-slate-200 rounded-md bg-white text-slate-900 placeholder:text-slate-400 focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none" />
+            </div>
+            <div v-if="pindahError" class="bg-red-50 border border-red-200 rounded-md p-3 text-xs text-red-700">{{ pindahError }}</div>
+            <div class="flex gap-2 pt-1">
+              <button type="button" class="flex-1 h-10 border border-slate-200 rounded-md text-sm font-semibold text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors" @click="showPindahModal = false">Batal</button>
+              <button type="submit" :disabled="pindahSubmitting || !pindahToId || pindahAmount <= 0"
+                class="flex-1 h-10 rounded-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 flex items-center justify-center gap-2 disabled:opacity-50 transition-colors">
+                <Loader2Icon v-if="pindahSubmitting" class="w-4 h-4 animate-spin" />
+                <ArrowLeftRightIcon v-else class="w-4 h-4" />
+                {{ pindahSubmitting ? 'Memproses...' : 'Pindah Saldo' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- ============================================================ -->
+    <!-- DETAIL MODAL: BRILink Transaction                             -->
+    <!-- ============================================================ -->
+    <Teleport to="body">
+      <Transition name="sheet">
+        <div v-if="showDetail && selectedTrx" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center font-sans">
+          <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showDetail = false" />
+          <div class="relative w-full sm:max-w-md bg-white rounded-t-xl sm:rounded-xl border-t sm:border border-slate-200 shadow-xl max-h-[90vh] overflow-y-auto">
+            <div class="w-10 h-1 rounded-full bg-slate-200 mx-auto mt-3 sm:hidden" />
+            <div class="sticky top-0 bg-white border-b border-slate-200 px-5 py-3 flex items-center justify-between z-10">
+              <h3 class="text-base font-bold text-slate-950">Detail Transaksi BRILink</h3>
+              <button class="p-1.5 rounded-md hover:bg-slate-100 transition-colors" @click="showDetail = false"><XIcon class="w-4 h-4 text-slate-400" /></button>
+            </div>
+            <div class="p-5 space-y-4">
+              <div class="bg-slate-50 rounded-lg p-4 space-y-2 border border-slate-200">
+                <div class="flex justify-between"><span class="text-xs text-slate-500">Status</span><span :class="['text-xs font-medium px-2.5 py-0.5 rounded-full', selectedTrx.status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-700' : selectedTrx.status === 'VOIDED' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700']">{{ selectedTrx.status === 'SUCCESS' ? 'Sukses' : selectedTrx.status === 'VOIDED' ? 'Void' : 'Pending' }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500">No. Ref</span><span class="text-xs font-mono font-medium text-slate-900">{{ selectedTrx.refNumber }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500">Kategori</span><span class="text-xs font-semibold text-slate-900">{{ BRILINK_CATEGORY_LABELS[selectedTrx.category] }}</span></div>
+                <div class="flex justify-between"><span class="text-xs text-slate-500">Tanggal</span><span class="text-xs text-slate-800">{{ formatDateTime(selectedTrx.createdAt) }}</span></div>
+              </div>
+              <div class="bg-white border border-slate-200 rounded-lg p-4 space-y-2">
+                <div class="flex justify-between"><span class="text-xs text-slate-500">Customer</span><span class="text-xs font-semibold text-slate-900">{{ selectedTrx.customerName }}</span></div>
+                <div v-if="selectedTrx.destination" class="flex justify-between"><span class="text-xs text-slate-500">Tujuan</span><span class="text-xs font-mono text-slate-800">{{ selectedTrx.destination }}</span></div>
+              </div>
+              <div class="border-t border-slate-200 pt-3 space-y-1.5">
+                <div class="flex justify-between text-xs text-slate-600"><span>Nominal</span><span class="font-mono">{{ formatRupiah(selectedTrx.amount) }}</span></div>
+                <div class="flex justify-between text-xs text-emerald-600"><span>Biaya Admin</span><span class="font-mono font-bold">{{ formatRupiah(selectedTrx.fee) }}</span></div>
+                <div class="flex justify-between text-base font-bold text-slate-950 pt-1 border-t border-slate-200"><span>Total</span><span class="font-mono">{{ formatRupiah(selectedTrx.category === 'TARIK_TUNAI' ? selectedTrx.amount : selectedTrx.amount + selectedTrx.fee) }}</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
+    <!-- ============================================================ -->
+    <!-- TOAST                                                          -->
+    <!-- ============================================================ -->
+    <Teleport to="body">
+      <Transition name="toast">
+        <div v-if="toast"
+          class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] px-4 py-2.5 rounded-lg shadow-lg flex items-center gap-2 text-sm font-medium max-w-sm border-l-4"
+          :class="toast.type === 'success' ? 'bg-slate-900 text-white border-emerald-500' : 'bg-slate-900 text-white border-red-500'">
+          <CheckCircleIcon v-if="toast.type === 'success'" class="w-4 h-4 shrink-0" />
+          <XIcon v-else class="w-4 h-4 shrink-0" />
+          <span>{{ toast.message }}</span>
+        </div>
+      </Transition>
+    </Teleport>
 
   </div>
 </template>
