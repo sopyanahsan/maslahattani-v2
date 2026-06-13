@@ -40,7 +40,7 @@ export interface LoginPinPayload {
 // Shared types
 // ============================================
 
-export type UserRole = 'SUPER_ADMIN' | 'ADMIN' | 'KASIR' | 'CASHIER_SUPERVISOR';
+export type UserRole = 'DEVELOPER' | 'SUPER_ADMIN' | 'ADMIN' | 'KASIR' | 'CASHIER_SUPERVISOR';
 export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
 
 export interface AuthUserDto {
@@ -48,9 +48,13 @@ export interface AuthUserDto {
   email?: string | null;
   username?: string | null;
   fullName?: string | null;
+  avatarUrl?: string | null;
   role: UserRole;
   status: UserStatus;
   shopId?: string | null;
+  tenantId?: string | null;
+  subscriptionStatus?: string | null;
+  subscriptionPlan?: string | null;
   mustChangePassword?: boolean;
   mustChangePin?: boolean;
 }

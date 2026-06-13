@@ -840,9 +840,11 @@ export class AuthService {
         fullName: true,
         phone: true,
         address: true,
+        avatarUrl: true,
         role: true,
         status: true,
         shopId: true,
+        tenantId: true,
         otpEnabled: true,
         emailVerifiedAt: true,
         lastLogin: true,
@@ -873,11 +875,27 @@ export class AuthService {
       });
     }
 
+    // Fetch subscription status for license badge
+    let subscriptionStatus: string | null = null;
+    let subscriptionPlan: string | null = null;
+    if (user.tenantId) {
+      const sub = await this.prisma.subscription.findUnique({
+        where: { tenantId: user.tenantId },
+        select: { status: true, plan: true },
+      });
+      if (sub) {
+        subscriptionStatus = sub.status;
+        subscriptionPlan = sub.plan;
+      }
+    }
+
     return {
       ...user,
       shopId: effectiveShopId,
       currentShop,
       emailVerified: user.emailVerifiedAt !== null,
+      subscriptionStatus,
+      subscriptionPlan,
     };
   }
 
