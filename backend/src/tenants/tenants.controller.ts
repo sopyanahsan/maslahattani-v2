@@ -24,7 +24,7 @@ export class TenantsController {
 
   @Get()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.DEVELOPER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List all tenants with subscription info (owner dashboard)' })
   async listTenants(
@@ -43,7 +43,7 @@ export class TenantsController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.DEVELOPER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get tenant detail (owner dashboard)' })
   async getTenant(@Param('id') id: string) {
@@ -52,7 +52,7 @@ export class TenantsController {
 
   @Put(':id/activate')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.DEVELOPER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Activate subscription (after payment verification)' })
   async activateTenant(
@@ -64,7 +64,7 @@ export class TenantsController {
 
   @Put(':id/suspend')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.DEVELOPER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Suspend tenant (manual block)' })
   async suspendTenant(@Param('id') tenantId: string) {
@@ -77,7 +77,7 @@ export class TenantsController {
 
   @Get('payments/pending')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.DEVELOPER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'List pending payments (for owner to verify)' })
   async listPendingPayments(@Query('page') page?: string) {
@@ -86,7 +86,7 @@ export class TenantsController {
 
   @Put('payments/:id/verify')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.DEVELOPER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Verify payment → activate subscription' })
   async verifyPayment(@Param('id') paymentId: string, @Body() body: { notes?: string }) {
@@ -95,7 +95,7 @@ export class TenantsController {
 
   @Put('payments/:id/reject')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.DEVELOPER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Reject payment' })
   async rejectPayment(@Param('id') paymentId: string, @Body() body: { reason: string }) {
@@ -108,7 +108,7 @@ export class TenantsController {
 
   @Get('stats/overview')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.SUPER_ADMIN)
+  @Roles(Role.DEVELOPER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Platform stats: total tenants, MRR, etc' })
   async getStats() {

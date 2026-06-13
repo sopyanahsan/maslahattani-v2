@@ -15,6 +15,7 @@ datasource db {
 // ============================================
 
 enum Role {
+  DEVELOPER
   SUPER_ADMIN
   ADMIN
   KASIR
@@ -1362,9 +1363,10 @@ model RolePermission {
 
 enum PlanType {
   TRIAL
-  BASIC
+  STARTER
+  BRILINK
   PRO
-  ENTERPRISE
+  BUSINESS
 }
 
 enum CycleType {
@@ -1431,10 +1433,16 @@ model Subscription {
 
   // Feature flags per plan
   brilinkEnabled    Boolean @default(false)
+  ppobEnabled       Boolean @default(false)
+  shiftEnabled      Boolean @default(false)
+  multiUserEnabled  Boolean @default(false)
   exportEnabled     Boolean @default(false)
   opnameEnabled     Boolean @default(false)
   supplierEnabled   Boolean @default(false)
   transferEnabled   Boolean @default(false)
+  labelPrintEnabled Boolean @default(false)
+  rackEnabled       Boolean @default(false)
+  apiIntegrationEnabled Boolean @default(false)
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt

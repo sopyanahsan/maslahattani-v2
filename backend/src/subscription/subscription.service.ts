@@ -1,13 +1,20 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { PLAN_CONFIGS, PLAN_PRICING, calculateEndDate, calculateGraceEnd } from './plan-config';
+import {
+  PLAN_CONFIGS,
+  PLAN_PRICING,
+  LYNK_PAYMENT_LINKS,
+  BANK_TRANSFER_INFO,
+  calculateEndDate,
+  calculateGraceEnd,
+} from './plan-config';
 
 @Injectable()
 export class SubscriptionService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * Create a trial subscription for a new tenant.
+   * Create a trial subscription for a new tenant (30 days free).
    */
   async createTrialSubscription(tenantId: string) {
     const config = PLAN_CONFIGS.TRIAL;
@@ -27,10 +34,16 @@ export class SubscriptionService {
         maxUsers: config.maxUsers,
         maxProducts: config.maxProducts,
         brilinkEnabled: config.brilinkEnabled,
+        ppobEnabled: config.ppobEnabled,
+        shiftEnabled: config.shiftEnabled,
+        multiUserEnabled: config.multiUserEnabled,
         exportEnabled: config.exportEnabled,
         opnameEnabled: config.opnameEnabled,
         supplierEnabled: config.supplierEnabled,
         transferEnabled: config.transferEnabled,
+        labelPrintEnabled: config.labelPrintEnabled,
+        rackEnabled: config.rackEnabled,
+        apiIntegrationEnabled: config.apiIntegrationEnabled,
       },
     });
   }
@@ -57,13 +70,19 @@ export class SubscriptionService {
         endDate,
         graceEndsAt: endDate ? calculateGraceEnd(endDate, plan) : null,
         maxBranches: config.maxBranches,
-        maxUsers: config.maxUsers,
-        maxProducts: config.maxProducts === -1 ? 999 : config.maxProducts,
+        maxUsers: config.maxUsers === -1 ? 999 : config.maxUsers,
+        maxProducts: config.maxProducts === -1 ? 99999 : config.maxProducts,
         brilinkEnabled: config.brilinkEnabled,
+        ppobEnabled: config.ppobEnabled,
+        shiftEnabled: config.shiftEnabled,
+        multiUserEnabled: config.multiUserEnabled,
         exportEnabled: config.exportEnabled,
         opnameEnabled: config.opnameEnabled,
         supplierEnabled: config.supplierEnabled,
         transferEnabled: config.transferEnabled,
+        labelPrintEnabled: config.labelPrintEnabled,
+        rackEnabled: config.rackEnabled,
+        apiIntegrationEnabled: config.apiIntegrationEnabled,
       },
       update: {
         plan: plan as any,
@@ -73,13 +92,19 @@ export class SubscriptionService {
         endDate,
         graceEndsAt: endDate ? calculateGraceEnd(endDate, plan) : null,
         maxBranches: config.maxBranches,
-        maxUsers: config.maxUsers,
-        maxProducts: config.maxProducts === -1 ? 999 : config.maxProducts,
+        maxUsers: config.maxUsers === -1 ? 999 : config.maxUsers,
+        maxProducts: config.maxProducts === -1 ? 99999 : config.maxProducts,
         brilinkEnabled: config.brilinkEnabled,
+        ppobEnabled: config.ppobEnabled,
+        shiftEnabled: config.shiftEnabled,
+        multiUserEnabled: config.multiUserEnabled,
         exportEnabled: config.exportEnabled,
         opnameEnabled: config.opnameEnabled,
         supplierEnabled: config.supplierEnabled,
         transferEnabled: config.transferEnabled,
+        labelPrintEnabled: config.labelPrintEnabled,
+        rackEnabled: config.rackEnabled,
+        apiIntegrationEnabled: config.apiIntegrationEnabled,
       },
     });
   }
@@ -88,17 +113,47 @@ export class SubscriptionService {
    * Get subscription status for a tenant.
    */
   async getSubscription(tenantId: string) {
-    return this.prisma.subscription.findUnique({ where: { tenantId } });
+    const sub = await this.prisma.subscription.findUnique({ where: { tenantId } });
+    if (!sub) return null;
+
+    const now = new Date();
+    const daysRemaining = sub.endDate
+      ? Math.max(0, Math.ceil((sub.endDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
+      : null; // null = lifetime
+
+    return {
+      ...sub,
+      daysRemaining,
+      isExpiringSoon: daysRemaining !== null && daysRemaining <= 7,
+      planLabel: PLAN_CONFIGS[sub.plan]?.label || sub.plan,
+    };
+  }
+
+  /**
+   * Get pricing + Lynk.id links for billing page.
+   */
+  getPricing() {
+    return {
+      plans: PLAN_PRICING,
+      configs: Object.entries(PLAN_CONFIGS)
+        .filter(([key]) => key !== 'TRIAL')
+        .map(([key, config]) => ({
+          key,
+          ...config,
+          pricing: PLAN_PRICING[key],
+        })),
+      paymentLinks: LYNK_PAYMENT_LINKS,
+      bankTransfer: BANK_TRANSFER_INFO,
+    };
   }
 
   /**
    * Check if tenant can add more branches.
    */
   async canAddBranch(tenantId: string): Promise<boolean> {
-    const sub = await this.getSubscription(tenantId);
+    const sub = await this.prisma.subscription.findUnique({ where: { tenantId } });
     if (!sub) return false;
-    if (sub.maxBranches === 999) return true; // unlimited
-
+    if (sub.maxBranches >= 999) return true;
     const shopCount = await this.prisma.shop.count({ where: { tenantId } });
     return shopCount < sub.maxBranches;
   }
@@ -107,10 +162,9 @@ export class SubscriptionService {
    * Check if tenant can add more users.
    */
   async canAddUser(tenantId: string): Promise<boolean> {
-    const sub = await this.getSubscription(tenantId);
+    const sub = await this.prisma.subscription.findUnique({ where: { tenantId } });
     if (!sub) return false;
-    if (sub.maxUsers === 999) return true; // unlimited
-
+    if (sub.maxUsers >= 999) return true;
     const userCount = await this.prisma.user.count({ where: { tenantId } });
     return userCount < sub.maxUsers;
   }
@@ -119,26 +173,15 @@ export class SubscriptionService {
    * Check if tenant can add more products.
    */
   async canAddProduct(tenantId: string): Promise<boolean> {
-    const sub = await this.getSubscription(tenantId);
+    const sub = await this.prisma.subscription.findUnique({ where: { tenantId } });
     if (!sub) return false;
-    if (sub.maxProducts === 999) return true; // unlimited
-
-    const shops = await this.prisma.shop.findMany({
-      where: { tenantId },
-      select: { id: true },
-    });
+    if (sub.maxProducts >= 99999) return true;
+    const shops = await this.prisma.shop.findMany({ where: { tenantId }, select: { id: true } });
     const shopIds = shops.map((s) => s.id);
     const productCount = await this.prisma.product.count({
       where: { shopId: { in: shopIds }, deletedAt: null },
     });
     return productCount < sub.maxProducts;
-  }
-
-  /**
-   * Get pricing info for billing page.
-   */
-  getPricing() {
-    return PLAN_PRICING;
   }
 
   /**
@@ -149,23 +192,5 @@ export class SubscriptionService {
       where: { tenantId },
       data: { status: 'SUSPENDED' },
     });
-  }
-
-  /**
-   * Get all tenants with subscription info (for owner dashboard).
-   */
-  async getAllTenantsWithSubscriptions(page = 1, limit = 20) {
-    const skip = (page - 1) * limit;
-    const [data, total] = await Promise.all([
-      this.prisma.tenant.findMany({
-        include: { subscription: true, _count: { select: { shops: true, users: true } } },
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      this.prisma.tenant.count(),
-    ]);
-
-    return { data, meta: { total, page, limit, totalPages: Math.ceil(total / limit) } };
   }
 }
