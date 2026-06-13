@@ -2,12 +2,17 @@
   <div class="space-y-5">
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-      <div></div>
-      <div class="flex items-center gap-2">
+      <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-violet-600 to-indigo-600 px-6 py-5 text-white shadow-lg flex-1">
+        <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+        <div class="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white/5" />
+        <h1 class="relative text-lg font-bold">Stok &amp; Inventaris</h1>
+        <p class="relative text-xs text-violet-100 mt-0.5">Overview stok, restok cepat, dan opname produk.</p>
+      </div>
+      <div class="flex items-center gap-2 shrink-0">
         <button
           type="button"
-          class="h-9 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-lg
-                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
+          class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
+                 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
           @click="showRestockModal = true"
         >
           <PackagePlusIcon class="w-4 h-4 text-emerald-600" />
@@ -15,8 +20,8 @@
         </button>
         <button
           type="button"
-          class="h-9 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-lg
-                 hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors flex items-center gap-1.5"
+          class="h-9 px-3 text-xs font-semibold border border-slate-200 rounded-lg
+                 hover:bg-slate-50 transition-colors flex items-center gap-1.5"
           @click="showOpnameModal = true"
         >
           <ClipboardCheckIcon class="w-4 h-4 text-blue-600" />
@@ -27,42 +32,42 @@
 
     <!-- Summary Cards -->
     <div v-if="summary" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm">
-        <p class="text-[11px] text-slate-500 dark:text-[#869392]">Total Produk</p>
-        <p class="text-lg font-bold font-mono tabular-nums text-slate-950 dark:text-[#e3e2e2] mt-1">
+      <div class="stat-card bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[11px] text-slate-500 uppercase tracking-wide">Total Produk</p>
+        <p class="text-lg font-bold font-mono tabular-nums text-slate-950 mt-1">
           {{ summary.totalProducts }}
         </p>
       </div>
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm">
-        <p class="text-[11px] text-slate-500 dark:text-[#869392]">Stok Habis</p>
+      <div class="stat-card bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[11px] text-slate-500 uppercase tracking-wide">Stok Habis</p>
         <p class="text-lg font-bold font-mono tabular-nums text-red-600 mt-1">
           {{ summary.outOfStock }}
         </p>
       </div>
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm">
-        <p class="text-[11px] text-slate-500 dark:text-[#869392]">Stok Menipis (≤5)</p>
+      <div class="stat-card bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[11px] text-slate-500 uppercase tracking-wide">Stok Menipis (&le;5)</p>
         <p class="text-lg font-bold font-mono tabular-nums text-amber-600 mt-1">
           {{ summary.lowStock }}
         </p>
       </div>
-      <div class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-lg p-4 shadow-sm">
-        <p class="text-[11px] text-slate-500 dark:text-[#869392]">Nilai Stok (Modal)</p>
-        <p class="text-lg font-bold font-mono tabular-nums text-slate-950 dark:text-[#e3e2e2] mt-1">
+      <div class="stat-card bg-white border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+        <p class="text-[11px] text-slate-500 uppercase tracking-wide">Nilai Stok (Modal)</p>
+        <p class="text-lg font-bold font-mono tabular-nums text-slate-950 mt-1">
           {{ formatRupiah(summary.totalStockValue) }}
         </p>
       </div>
     </div>
 
     <!-- Tab switcher -->
-    <div class="flex items-center gap-1 border-b border-slate-200 dark:border-[#3d4948]">
+    <div class="flex gap-1 bg-slate-100 rounded-lg p-1 w-fit">
       <button
         v-for="tab in tabs"
         :key="tab.value"
         :class="[
-          'px-4 py-2 text-xs font-semibold border-b-2 transition-colors -mb-px',
+          'h-8 px-4 text-xs font-semibold rounded-md transition-all',
           activeTab === tab.value
-            ? 'border-[#03a29c] text-[#03a29c]'
-            : 'border-transparent text-slate-500 hover:text-slate-700 dark:text-[#bcc9c7] dark:hover:text-[#e3e2e2]',
+            ? 'bg-white text-slate-950 shadow-sm'
+            : 'text-slate-500 hover:text-slate-900',
         ]"
         @click="activeTab = tab.value"
       >
@@ -76,64 +81,64 @@
     <section v-if="activeTab === 'overview'">
       <!-- Loading -->
       <div v-if="loading" class="flex items-center justify-center py-12">
-        <Loader2Icon class="w-5 h-5 animate-spin text-[#03a29c]" />
-        <span class="ml-2 text-sm text-slate-500 dark:text-[#bcc9c7]">Memuat stok...</span>
+        <Loader2Icon class="w-5 h-5 animate-spin text-blue-600" />
+        <span class="ml-2 text-sm text-slate-500">Memuat stok...</span>
       </div>
 
       <!-- Error -->
       <div
         v-else-if="error"
-        class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-4 shadow-sm flex items-start gap-2"
+        class="bg-red-50 border border-red-200 rounded-lg p-4 shadow-sm flex items-start gap-2"
       >
         <AlertCircleIcon class="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
         <div>
-          <p class="text-sm font-bold text-red-800 dark:text-red-200">Error</p>
-          <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
+          <p class="text-sm font-bold text-red-800">Error</p>
+          <p class="text-sm text-red-700">{{ error }}</p>
         </div>
       </div>
 
       <!-- Stock table -->
       <div
         v-else-if="stockItems.length > 0"
-        class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl shadow-sm overflow-hidden"
+        class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
       >
         <div class="overflow-x-auto">
           <table class="w-full min-w-[600px]">
-            <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
+            <thead class="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   Produk
                 </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   SKU
                 </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   Qty
                 </th>
-                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-right text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   Nilai (Modal)
                 </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   Status
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-[#3d4948]">
+            <tbody class="divide-y divide-slate-100">
               <tr
                 v-for="item in stockItems"
                 :key="item.id"
-                class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
+                class="hover:bg-slate-50 transition-colors"
               >
-                <td class="px-4 py-3 text-sm font-medium text-slate-900 dark:text-[#e3e2e2]">
+                <td class="px-4 py-3 text-sm font-medium text-slate-900">
                   {{ item.product.name }}
                 </td>
                 <td class="px-4 py-3">
-                  <code class="text-xs font-mono text-slate-600 dark:text-[#bcc9c7]">{{ item.product.sku }}</code>
+                  <code class="text-xs font-mono text-slate-600">{{ item.product.sku }}</code>
                 </td>
-                <td class="px-4 py-3 text-center text-sm font-mono tabular-nums font-semibold text-slate-900 dark:text-[#e3e2e2]">
+                <td class="px-4 py-3 text-center text-sm font-mono tabular-nums font-semibold text-slate-900">
                   {{ item.quantity }}
                 </td>
-                <td class="px-4 py-3 text-right text-sm font-mono tabular-nums text-slate-700 dark:text-[#bcc9c7]">
+                <td class="px-4 py-3 text-right text-sm font-mono tabular-nums text-slate-700">
                   {{ formatRupiah(item.quantity * item.product.cost) }}
                 </td>
                 <td class="px-4 py-3 text-center">
@@ -156,9 +161,9 @@
         </div>
       </div>
 
-      <div v-else class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-300 dark:border-[#3d4948] rounded-xl p-8 text-center">
-        <PackageIcon class="w-12 h-12 text-slate-300 dark:text-[#3d4948] mx-auto mb-2" />
-        <p class="text-sm font-bold text-slate-500 dark:text-[#bcc9c7]">Belum ada data stok.</p>
+      <div v-else class="bg-white border border-dashed border-slate-200 rounded-lg p-8 text-center">
+        <PackageIcon class="w-12 h-12 text-slate-300 mx-auto mb-2" />
+        <p class="text-sm font-bold text-slate-500">Belum ada data stok.</p>
       </div>
     </section>
 
@@ -167,48 +172,48 @@
     <!-- ============================================ -->
     <section v-if="activeTab === 'history'">
       <div v-if="historyLoading" class="flex items-center justify-center py-12">
-        <Loader2Icon class="w-5 h-5 animate-spin text-[#03a29c]" />
-        <span class="ml-2 text-sm text-slate-500 dark:text-[#bcc9c7]">Memuat riwayat...</span>
+        <Loader2Icon class="w-5 h-5 animate-spin text-blue-600" />
+        <span class="ml-2 text-sm text-slate-500">Memuat riwayat...</span>
       </div>
 
       <div
         v-else-if="historyItems.length > 0"
-        class="bg-white dark:bg-[#1e2020] border border-slate-200 dark:border-[#3d4948] rounded-xl shadow-sm overflow-hidden"
+        class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden"
       >
         <div class="overflow-x-auto">
           <table class="w-full min-w-[650px]">
-            <thead class="bg-slate-50 dark:bg-[#292a2a] border-b border-slate-200 dark:border-[#3d4948]">
+            <thead class="bg-slate-50 border-b border-slate-200">
               <tr>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   Waktu
                 </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   Produk
                 </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   Tipe
                 </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   Sumber
                 </th>
-                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   Perubahan
                 </th>
-                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-[#bcc9c7] uppercase tracking-wide">
+                <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 uppercase tracking-wide">
                   Catatan
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100 dark:divide-[#3d4948]">
+            <tbody class="divide-y divide-slate-100">
               <tr
                 v-for="h in historyItems"
                 :key="h.id"
-                class="hover:bg-slate-50 dark:hover:bg-[#292a2a] transition-colors"
+                class="hover:bg-slate-50 transition-colors"
               >
-                <td class="px-4 py-2.5 text-xs text-slate-600 dark:text-[#bcc9c7] font-mono tabular-nums">
+                <td class="px-4 py-2.5 text-xs text-slate-600 font-mono tabular-nums">
                   {{ formatDateTime(h.createdAt) }}
                 </td>
-                <td class="px-4 py-2.5 text-sm text-slate-900 dark:text-[#e3e2e2]">
+                <td class="px-4 py-2.5 text-sm text-slate-900">
                   {{ h.stock.product.name }}
                 </td>
                 <td class="px-4 py-2.5 text-center">
@@ -251,11 +256,11 @@
                   >
                     {{ h.quantityChange > 0 ? '+' : '' }}{{ h.quantityChange }}
                   </span>
-                  <span class="text-[10px] text-slate-400 dark:text-[#869392] ml-1">
+                  <span class="text-[10px] text-slate-400 ml-1">
                     ({{ h.quantityBefore }} → {{ h.quantityAfter }})
                   </span>
                 </td>
-                <td class="px-4 py-2.5 text-xs text-slate-600 dark:text-[#bcc9c7] max-w-[200px] truncate">
+                <td class="px-4 py-2.5 text-xs text-slate-600 max-w-[200px] truncate">
                   {{ h.notes || '—' }}
                 </td>
               </tr>
@@ -266,24 +271,24 @@
         <!-- History pagination -->
         <div
           v-if="historyMeta && historyMeta.totalPages > 1"
-          class="px-4 py-3 border-t border-slate-200 dark:border-[#3d4948] flex items-center justify-between"
+          class="px-4 py-3 border-t border-slate-200 flex items-center justify-between"
         >
-          <p class="text-xs text-slate-500 dark:text-[#bcc9c7]">
+          <p class="text-xs text-slate-500">
             Halaman {{ historyMeta.page }} dari {{ historyMeta.totalPages }}
           </p>
           <div class="flex items-center gap-1">
             <button
               :disabled="historyMeta.page <= 1"
-              class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md
-                     hover:bg-slate-50 dark:hover:bg-[#292a2a] disabled:opacity-40 disabled:cursor-not-allowed dark:text-[#bcc9c7]"
+              class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded-md
+                     hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
               @click="fetchHistory(historyMeta!.page - 1)"
             >
               Prev
             </button>
             <button
               :disabled="historyMeta.page >= historyMeta.totalPages"
-              class="h-7 px-3 text-xs font-semibold border border-slate-200 dark:border-[#3d4948] rounded-md
-                     hover:bg-slate-50 dark:hover:bg-[#292a2a] disabled:opacity-40 disabled:cursor-not-allowed dark:text-[#bcc9c7]"
+              class="h-7 px-3 text-xs font-semibold border border-slate-200 rounded-md
+                     hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
               @click="fetchHistory(historyMeta!.page + 1)"
             >
               Next
@@ -292,9 +297,9 @@
         </div>
       </div>
 
-      <div v-else class="bg-white dark:bg-[#1e2020] border border-dashed border-slate-300 dark:border-[#3d4948] rounded-xl p-8 text-center">
-        <HistoryIcon class="w-12 h-12 text-slate-300 dark:text-[#3d4948] mx-auto mb-2" />
-        <p class="text-sm font-bold text-slate-500 dark:text-[#bcc9c7]">Belum ada riwayat stok.</p>
+      <div v-else class="bg-white border border-dashed border-slate-200 rounded-lg p-8 text-center">
+        <HistoryIcon class="w-12 h-12 text-slate-300 mx-auto mb-2" />
+        <p class="text-sm font-bold text-slate-500">Belum ada riwayat stok.</p>
       </div>
     </section>
 
@@ -306,26 +311,26 @@
         v-if="showRestockModal"
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
-        <div class="absolute inset-0 bg-black/50" @click="showRestockModal = false"></div>
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showRestockModal = false"></div>
         <form
-          class="relative bg-white dark:bg-[#1e2020] rounded-xl shadow-xl w-full max-w-md p-6 space-y-4"
+          class="relative bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4"
           @submit.prevent="handleRestock"
         >
-          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2] flex items-center gap-2">
+          <h2 class="text-base font-bold text-slate-950 flex items-center gap-2">
             <PackagePlusIcon class="w-5 h-5 text-emerald-600" />
             Restok Produk
           </h2>
 
           <!-- Product select -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
               Produk <span class="text-red-500">*</span>
             </label>
             <select
               v-model="restockForm.productId"
               required
-              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md
-                     focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
+              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md
+                     focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
             >
               <option value="">— Pilih produk —</option>
               <option v-for="item in stockItems" :key="item.productId" :value="item.productId">
@@ -336,7 +341,7 @@
 
           <!-- Quantity -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">
+            <label class="block text-xs font-semibold text-slate-700 mb-1">
               Jumlah Masuk <span class="text-red-500">*</span>
             </label>
             <input
@@ -345,26 +350,26 @@
               min="1"
               required
               placeholder="25"
-              class="w-full h-9 px-3 text-sm font-mono border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md
-                     focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
+              class="w-full h-9 px-3 text-sm font-mono border border-slate-200 rounded-md
+                     focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
             />
           </div>
 
           <!-- Notes -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Catatan</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan</label>
             <input
               v-model="restockForm.notes"
               type="text"
               placeholder="Restok dari supplier X"
-              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md
-                     focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
+              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md
+                     focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
             />
           </div>
 
           <div
             v-if="restockError"
-            class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300"
+            class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700"
           >
             {{ restockError }}
           </div>
@@ -372,8 +377,8 @@
           <div class="flex items-center justify-end gap-2 pt-2">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 dark:bg-[#292a2a] rounded-md
-                     hover:bg-slate-200 dark:hover:bg-[#3d4948]"
+              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md
+                     hover:bg-slate-200"
               @click="showRestockModal = false"
             >
               Batal
@@ -400,16 +405,16 @@
         v-if="showOpnameModal"
         class="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
-        <div class="absolute inset-0 bg-black/50" @click="showOpnameModal = false"></div>
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showOpnameModal = false"></div>
         <form
-          class="relative bg-white dark:bg-[#1e2020] rounded-xl shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto"
+          class="relative bg-white rounded-lg shadow-xl w-full max-w-lg p-6 space-y-4 max-h-[80vh] overflow-y-auto"
           @submit.prevent="handleOpname"
         >
-          <h2 class="text-base font-bold text-slate-950 dark:text-[#e3e2e2] flex items-center gap-2">
+          <h2 class="text-base font-bold text-slate-950 flex items-center gap-2">
             <ClipboardCheckIcon class="w-5 h-5 text-blue-600" />
             Stok Opname
           </h2>
-          <p class="text-xs text-slate-500 dark:text-[#869392]">
+          <p class="text-xs text-slate-500">
             Input stok fisik aktual per produk. Sistem otomatis hitung selisih.
           </p>
 
@@ -418,39 +423,39 @@
             <div
               v-for="item in opnameItems"
               :key="item.productId"
-              class="flex items-center gap-3 bg-slate-50 dark:bg-[#292a2a] rounded-md px-3 py-2"
+              class="flex items-center gap-3 bg-slate-50 rounded-md px-3 py-2"
             >
               <div class="flex-1 min-w-0">
-                <p class="text-xs font-medium text-slate-900 dark:text-[#e3e2e2] truncate">
+                <p class="text-xs font-medium text-slate-900 truncate">
                   {{ item.productName }}
                 </p>
-                <p class="text-[10px] text-slate-500 dark:text-[#869392]">Sistem: {{ item.systemQty }}</p>
+                <p class="text-[10px] text-slate-500">Sistem: {{ item.systemQty }}</p>
               </div>
               <input
                 v-model.number="item.actualQuantity"
                 type="number"
                 min="0"
-                class="w-20 h-8 px-2 text-sm font-mono text-center border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md
-                       focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
+                class="w-20 h-8 px-2 text-sm font-mono text-center border border-slate-200 rounded-md
+                       focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
               />
             </div>
           </div>
 
           <!-- Notes -->
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] mb-1">Catatan Opname</label>
+            <label class="block text-xs font-semibold text-slate-700 mb-1">Catatan Opname</label>
             <input
               v-model="opnameNotes"
               type="text"
               placeholder="Opname bulanan Mei 2026"
-              class="w-full h-9 px-3 text-sm border border-slate-300 dark:border-[#3d4948] dark:bg-[#1e2020] dark:text-[#e3e2e2] rounded-md
-                     focus:border-[#03a29c] focus:ring-1 focus:ring-[#03a29c]/30 outline-none"
+              class="w-full h-9 px-3 text-sm border border-slate-200 rounded-md
+                     focus:border-blue-600 focus:ring-2 focus:ring-blue-100 outline-none"
             />
           </div>
 
           <div
             v-if="opnameError"
-            class="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-md p-2 text-xs text-red-700 dark:text-red-300"
+            class="bg-red-50 border border-red-200 rounded-md p-2 text-xs text-red-700"
           >
             {{ opnameError }}
           </div>
@@ -471,8 +476,8 @@
           <div class="flex items-center justify-end gap-2 pt-2">
             <button
               type="button"
-              class="h-9 px-4 text-xs font-semibold text-slate-700 dark:text-[#bcc9c7] bg-slate-100 dark:bg-[#292a2a] rounded-md
-                     hover:bg-slate-200 dark:hover:bg-[#3d4948]"
+              class="h-9 px-4 text-xs font-semibold text-slate-700 bg-slate-100 rounded-md
+                     hover:bg-slate-200"
               @click="showOpnameModal = false"
             >
               {{ opnameResult ? 'Tutup' : 'Batal' }}
@@ -481,8 +486,8 @@
               v-if="!opnameResult"
               type="submit"
               :disabled="opnaming"
-              class="h-9 px-4 text-xs font-semibold text-white bg-[#03a29c] rounded-md
-                     hover:bg-[#028a85] disabled:opacity-50 flex items-center gap-1.5"
+              class="h-9 px-4 text-xs font-semibold text-white bg-blue-600 rounded-md
+                     hover:bg-blue-700 disabled:opacity-50 flex items-center gap-1.5"
             >
               <Loader2Icon v-if="opnaming" class="w-3.5 h-3.5 animate-spin" />
               Submit Opname
@@ -781,3 +786,72 @@ onMounted(fetchStock);
 
 useAutoRefresh(fetchStock);
 </script>
+
+<style scoped>
+/* ── Fancy CSS: staggered entrance ── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.space-y-5 > * {
+  animation: fadeSlideUp 0.45s ease-out both;
+}
+.space-y-5 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-5 > *:nth-child(2) { animation-delay: 70ms; }
+.space-y-5 > *:nth-child(3) { animation-delay: 140ms; }
+.space-y-5 > *:nth-child(4) { animation-delay: 210ms; }
+.space-y-5 > *:nth-child(5) { animation-delay: 280ms; }
+
+/* stat cards bounce in */
+@keyframes popIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}
+.stat-card {
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.stat-card:nth-child(1) { animation-delay: 150ms; }
+.stat-card:nth-child(2) { animation-delay: 230ms; }
+.stat-card:nth-child(3) { animation-delay: 310ms; }
+.stat-card:nth-child(4) { animation-delay: 390ms; }
+
+/* table row left-border glow on hover */
+table tbody tr {
+  transition: all 0.15s ease;
+}
+table tbody tr:hover {
+  box-shadow: inset 3px 0 0 #6366F1;
+}
+
+/* status badge micro-animation */
+@keyframes badgePop {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+span[class*="rounded-full"][class*="font-bold"] {
+  animation: badgePop 0.3s ease-out both;
+}
+
+/* modal scaleIn */
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+form[class*="relative"] {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* gradient header shimmer */
+@keyframes headerShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+header[class*="bg-gradient"],
+div[class*="bg-gradient-to-r"][class*="from-violet"] {
+  background-size: 200% 200%;
+  animation: headerShimmer 6s ease infinite;
+}
+</style>

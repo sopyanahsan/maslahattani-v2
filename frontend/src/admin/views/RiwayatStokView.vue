@@ -1,10 +1,16 @@
 <template>
   <div class="space-y-5">
-    <div></div>
+    <!-- Header -->
+    <div class="relative overflow-hidden rounded-lg bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-5 text-white shadow-lg">
+      <div class="absolute -right-6 -top-6 w-28 h-28 rounded-full bg-white/10" />
+      <div class="absolute -left-4 -bottom-4 w-20 h-20 rounded-full bg-white/5" />
+      <h1 class="relative text-lg font-bold">Riwayat Stok</h1>
+      <p class="relative text-xs text-indigo-100 mt-0.5">Riwayat lengkap keluar masuk barang — siapa, dari mana, metode bayar.</p>
+    </div>
 
     <!-- Filters -->
     <div class="flex flex-col sm:flex-row gap-3 flex-wrap">
-      <select v-model="filter.source" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none" @change="resetAndFetch">
+      <select v-model="filter.source" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch">
         <option value="">Semua Sumber</option>
         <option value="SALE">Penjualan</option>
         <option value="SALE_VOID">Void Penjualan</option>
@@ -17,7 +23,7 @@
         <option value="BULK_UPLOAD">Import Excel</option>
         <option value="INITIAL">Stok Awal</option>
       </select>
-      <select v-model="filter.type" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none" @change="resetAndFetch">
+      <select v-model="filter.type" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch">
         <option value="">Semua Tipe</option>
         <option value="IN">Masuk</option>
         <option value="OUT">Keluar</option>
@@ -25,10 +31,10 @@
         <option value="TRANSFER_IN">Transfer Masuk</option>
         <option value="TRANSFER_OUT">Transfer Keluar</option>
       </select>
-      <input v-model="filter.startDate" type="date" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none" @change="resetAndFetch" />
-      <input v-model="filter.endDate" type="date" class="h-9 px-3 text-sm border border-slate-300 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100 rounded-lg focus:border-blue-500 outline-none" @change="resetAndFetch" />
+      <input v-model="filter.startDate" type="date" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch" />
+      <input v-model="filter.endDate" type="date" class="h-9 px-3 text-sm border border-slate-200 rounded-lg focus:border-blue-600 outline-none" @change="resetAndFetch" />
       <div class="flex-1"></div>
-      <span v-if="meta" class="text-xs text-slate-500 dark:text-slate-400 self-center">{{ meta.total }} riwayat</span>
+      <span v-if="meta" class="text-xs text-slate-500 self-center">{{ meta.total }} riwayat</span>
     </div>
 
     <!-- Loading -->
@@ -37,32 +43,32 @@
     </div>
 
     <!-- Empty -->
-    <div v-else-if="items.length === 0" class="bg-white dark:bg-slate-900 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl p-10 text-center">
-      <ClipboardListIcon class="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-      <p class="text-sm font-semibold text-slate-700 dark:text-slate-300">Belum ada riwayat stok</p>
-      <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Riwayat akan muncul setelah ada transaksi, restock, transfer, atau opname.</p>
+    <div v-else-if="items.length === 0" class="bg-white border border-dashed border-slate-200 rounded-lg p-10 text-center">
+      <ClipboardListIcon class="w-10 h-10 text-slate-300 mx-auto mb-3" />
+      <p class="text-sm font-semibold text-slate-700">Belum ada riwayat stok</p>
+      <p class="text-xs text-slate-500 mt-1">Riwayat akan muncul setelah ada transaksi, restock, transfer, atau opname.</p>
     </div>
 
     <!-- Table -->
-    <div v-else class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden">
+    <div v-else class="bg-white border border-slate-200 rounded-lg shadow-sm overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full min-w-[900px]">
-          <thead class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800">
+          <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Waktu</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Produk</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Tipe</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Sumber</th>
-              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Qty</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Oleh</th>
-              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-600 dark:text-slate-400 uppercase">Catatan</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 uppercase">Waktu</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 uppercase">Produk</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-900 uppercase">Tipe</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 uppercase">Sumber</th>
+              <th class="px-4 py-2.5 text-center text-[11px] font-bold text-slate-900 uppercase">Qty</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 uppercase">Oleh</th>
+              <th class="px-4 py-2.5 text-left text-[11px] font-bold text-slate-900 uppercase">Catatan</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-            <tr v-for="h in items" :key="h.id" class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
-              <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400 font-mono whitespace-nowrap">{{ formatDateTime(h.createdAt) }}</td>
+          <tbody class="divide-y divide-slate-100">
+            <tr v-for="h in items" :key="h.id" class="hover:bg-slate-50/50 transition-colors">
+              <td class="px-4 py-3 text-xs text-slate-900 font-mono whitespace-nowrap">{{ formatDateTime(h.createdAt) }}</td>
               <td class="px-4 py-3">
-                <p class="text-sm font-medium text-slate-900 dark:text-slate-100">{{ h.stock?.product?.name || '—' }}</p>
+                <p class="text-sm font-medium text-slate-900">{{ h.stock?.product?.name || '—' }}</p>
                 <p class="text-[10px] text-slate-400 font-mono">{{ h.stock?.product?.sku || '' }}</p>
               </td>
               <td class="px-4 py-3 text-center">
@@ -75,35 +81,35 @@
                 </div>
               </td>
               <td class="px-4 py-3 text-center">
-                <span :class="['text-xs font-mono font-bold', h.quantityChange > 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-red-600 dark:text-red-400']">
+                <span :class="['text-xs font-mono font-bold', h.quantityChange > 0 ? 'text-emerald-600' : 'text-red-600']">
                   {{ h.quantityChange > 0 ? '+' : '' }}{{ h.quantityChange }}
                 </span>
                 <p class="text-[9px] text-slate-400 font-mono">{{ h.quantityBefore }}→{{ h.quantityAfter }}</p>
               </td>
               <td class="px-4 py-3">
                 <div v-if="h.createdBy" class="flex items-center gap-1.5">
-                  <div class="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center shrink-0">
-                    <span class="text-[8px] font-bold text-slate-600 dark:text-slate-300">{{ (h.createdBy.username || h.createdBy.email || '?')[0].toUpperCase() }}</span>
+                  <div class="w-5 h-5 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
+                    <span class="text-[8px] font-bold text-slate-900">{{ (h.createdBy.username || h.createdBy.email || '?')[0].toUpperCase() }}</span>
                   </div>
                   <div>
-                    <p class="text-[11px] font-medium text-slate-800 dark:text-slate-200">{{ h.createdBy.username || h.createdBy.email }}</p>
+                    <p class="text-[11px] font-medium text-slate-800">{{ h.createdBy.username || h.createdBy.email }}</p>
                     <p class="text-[9px] text-slate-400">{{ h.createdBy.role === 'ADMIN' || h.createdBy.role === 'SUPER_ADMIN' ? 'Admin' : 'Kasir' }}</p>
                   </div>
                 </div>
                 <span v-else class="text-[10px] text-slate-400">Sistem</span>
               </td>
-              <td class="px-4 py-3 text-xs text-slate-600 dark:text-slate-400 max-w-[180px] truncate">{{ h.notes || '—' }}</td>
+              <td class="px-4 py-3 text-xs text-slate-900 max-w-[180px] truncate">{{ h.notes || '—' }}</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <!-- Pagination -->
-      <div v-if="meta && meta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-        <p class="text-xs text-slate-500 dark:text-slate-400">Hal. {{ meta.page }} / {{ meta.totalPages }}</p>
+      <div v-if="meta && meta.totalPages > 1" class="px-4 py-3 border-t border-slate-200 flex items-center justify-between">
+        <p class="text-xs text-slate-500">Hal. {{ meta.page }} / {{ meta.totalPages }}</p>
         <div class="flex gap-1">
-          <button :disabled="meta.page <= 1" class="h-7 px-2.5 text-xs border border-slate-200 dark:border-slate-700 rounded disabled:opacity-40 text-slate-700 dark:text-slate-300" @click="fetchData(meta!.page - 1)">Prev</button>
-          <button :disabled="meta.page >= meta.totalPages" class="h-7 px-2.5 text-xs border border-slate-200 dark:border-slate-700 rounded disabled:opacity-40 text-slate-700 dark:text-slate-300" @click="fetchData(meta!.page + 1)">Next</button>
+          <button :disabled="meta.page <= 1" class="h-7 px-2.5 text-xs border border-slate-200 rounded disabled:opacity-40 text-slate-700" @click="fetchData(meta!.page - 1)">Prev</button>
+          <button :disabled="meta.page >= meta.totalPages" class="h-7 px-2.5 text-xs border border-slate-200 rounded disabled:opacity-40 text-slate-700" @click="fetchData(meta!.page + 1)">Next</button>
         </div>
       </div>
     </div>
@@ -135,8 +141,8 @@ function typeLabel(t: string) {
   return m[t] || t;
 }
 function typeBadge(t: string) {
-  const m: Record<string, string> = { IN: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', OUT: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300', OPNAME: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300', TRANSFER_IN: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300', TRANSFER_OUT: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300', ADJUSTMENT: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300' };
-  return m[t] || 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
+  const m: Record<string, string> = { IN: 'bg-emerald-100 text-emerald-700', OUT: 'bg-red-100 text-red-700', OPNAME: 'bg-blue-100 text-blue-700', TRANSFER_IN: 'bg-indigo-100 text-indigo-700', TRANSFER_OUT: 'bg-purple-100 text-purple-700', ADJUSTMENT: 'bg-amber-100 text-amber-700' };
+  return m[t] || 'bg-slate-100 text-slate-900';
 }
 
 function sourceLabel(s?: string | null) {
@@ -145,9 +151,9 @@ function sourceLabel(s?: string | null) {
   return m[s] || s;
 }
 function sourceBadge(s?: string | null) {
-  if (!s) return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
-  const m: Record<string, string> = { INITIAL: 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300', BULK_UPLOAD: 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300', STOCK_IN: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300', SALE: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300', SALE_VOID: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300', OPNAME_INLINE: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300', OPNAME_SESSION: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300', TRANSFER_OUT: 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300', TRANSFER_IN: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300', PURCHASE_ORDER: 'bg-teal-100 dark:bg-teal-900/30 text-teal-700 dark:text-teal-300', ADJUSTMENT: 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300' };
-  return m[s] || 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400';
+  if (!s) return 'bg-slate-100 text-slate-900';
+  const m: Record<string, string> = { INITIAL: 'bg-slate-100 text-slate-700', BULK_UPLOAD: 'bg-violet-100 text-violet-700', STOCK_IN: 'bg-emerald-100 text-emerald-700', SALE: 'bg-blue-100 text-blue-700', SALE_VOID: 'bg-amber-100 text-amber-700', OPNAME_INLINE: 'bg-cyan-100 text-cyan-700', OPNAME_SESSION: 'bg-cyan-100 text-cyan-700', TRANSFER_OUT: 'bg-purple-100 text-purple-700', TRANSFER_IN: 'bg-indigo-100 text-indigo-700', PURCHASE_ORDER: 'bg-teal-100 text-teal-700', ADJUSTMENT: 'bg-orange-100 text-orange-700' };
+  return m[s] || 'bg-slate-100 text-slate-900';
 }
 
 function pmLabel(m?: string | null) {
@@ -157,7 +163,7 @@ function pmLabel(m?: string | null) {
 }
 function pmBadge(m?: string | null) {
   if (!m) return '';
-  const map: Record<string, string> = { CASH: 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-300', QRIS: 'bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300', TRANSFER: 'bg-indigo-50 dark:bg-indigo-950/30 text-indigo-700 dark:text-indigo-300', HUTANG: 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300' };
+  const map: Record<string, string> = { CASH: 'bg-emerald-50 text-emerald-700', QRIS: 'bg-blue-50 text-blue-700', TRANSFER: 'bg-indigo-50 text-indigo-700', HUTANG: 'bg-amber-50 text-amber-700' };
   return map[m] || '';
 }
 
@@ -182,3 +188,58 @@ function resetAndFetch() { fetchData(1); }
 
 onMounted(() => { fetchData(1); });
 </script>
+
+<style scoped>
+/* ── Fancy CSS: staggered entrance ── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.space-y-5 > * {
+  animation: fadeSlideUp 0.45s ease-out both;
+}
+.space-y-5 > *:nth-child(1) { animation-delay: 0ms; }
+.space-y-5 > *:nth-child(2) { animation-delay: 80ms; }
+.space-y-5 > *:nth-child(3) { animation-delay: 160ms; }
+.space-y-5 > *:nth-child(4) { animation-delay: 240ms; }
+
+/* table row left-border glow on hover */
+table tbody tr {
+  transition: all 0.15s ease;
+}
+table tbody tr:hover {
+  box-shadow: inset 3px 0 0 #6366F1;
+}
+
+/* qty change number count effect */
+@keyframes countPop {
+  0% { transform: scale(0.7); opacity: 0; }
+  70% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+span[class*="font-mono"][class*="font-bold"] {
+  animation: countPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* gradient header slow shimmer */
+@keyframes headerShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+div[class*="bg-gradient-to-r"][class*="from-indigo"] {
+  background-size: 200% 200%;
+  animation: headerShimmer 6s ease infinite;
+}
+
+/* badge micro-animation */
+@keyframes badgeSlide {
+  from { opacity: 0; transform: translateX(-4px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+span[class*="rounded-full"][class*="font-semibold"],
+span[class*="rounded"][class*="font-bold"] {
+  animation: badgeSlide 0.3s ease-out both;
+}
+</style>
