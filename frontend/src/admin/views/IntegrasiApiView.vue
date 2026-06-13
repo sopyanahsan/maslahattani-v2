@@ -295,7 +295,7 @@ async function handleSaveConfig() {
   }
   saving.value = true; feedback.value = '';
   try {
-    await saveTripayConfig(form.value);
+    await saveTripayConfig(form.value, shopId.value);
     feedback.value = 'Konfigurasi berhasil disimpan!'; feedbackType.value = 'success';
     await loadConfig();
   } catch (err: any) {
@@ -306,7 +306,7 @@ async function handleSaveConfig() {
 async function handleVerify() {
   verifying.value = true; feedback.value = '';
   try {
-    const result = await verifyTripayConfig();
+    const result = await verifyTripayConfig(shopId.value);
     feedback.value = result.message || 'Koneksi berhasil!'; feedbackType.value = 'success';
     await loadConfig();
   } catch (err: any) {

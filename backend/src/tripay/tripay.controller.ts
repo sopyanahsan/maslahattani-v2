@@ -9,6 +9,7 @@ import {
   Headers,
   UseGuards,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { TripayService } from './tripay.service';
@@ -47,9 +48,13 @@ export class TripayController {
   @ApiOperation({ summary: 'Simpan/update konfigurasi Tripay API' })
   async saveConfig(
     @Body() dto: UpdateTripayConfigDto,
+    @Query('shopId') queryShopId: string,
     @Request() req: any,
   ) {
-    const shopId = req.user.shopId;
+    const shopId = req.user.shopId || queryShopId;
+    if (!shopId) {
+      throw new BadRequestException('shopId diperlukan. Pilih cabang terlebih dahulu.');
+    }
     return this.tripayService.saveConfig(shopId, dto);
   }
 
@@ -58,8 +63,14 @@ export class TripayController {
   @ApiBearerAuth()
   @RequirePermission('settings.manage')
   @ApiOperation({ summary: 'Verifikasi koneksi Tripay (test API key)' })
-  async verifyConfig(@Request() req: any) {
-    const shopId = req.user.shopId;
+  async verifyConfig(
+    @Query('shopId') queryShopId: string,
+    @Request() req: any,
+  ) {
+    const shopId = req.user.shopId || queryShopId;
+    if (!shopId) {
+      throw new BadRequestException('shopId diperlukan. Pilih cabang terlebih dahulu.');
+    }
     return this.tripayService.verifyConfig(shopId);
   }
 

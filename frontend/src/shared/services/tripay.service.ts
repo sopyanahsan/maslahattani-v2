@@ -81,13 +81,13 @@ export async function getTripayConfig(shopId: string): Promise<TripayConfig> {
   return data;
 }
 
-export async function saveTripayConfig(payload: TripayConfigPayload) {
-  const { data } = await api.patch('/tripay/config', payload);
+export async function saveTripayConfig(payload: TripayConfigPayload, shopId?: string) {
+  const { data } = await api.patch('/tripay/config', payload, { params: { shopId } });
   return data;
 }
 
-export async function verifyTripayConfig() {
-  const { data } = await api.post('/tripay/config/verify');
+export async function verifyTripayConfig(shopId?: string) {
+  const { data } = await api.post('/tripay/config/verify', null, { params: { shopId } });
   return data;
 }
 
