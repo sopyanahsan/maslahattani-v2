@@ -342,6 +342,17 @@ const routes: RouteRecordRaw[] = [
         meta: {
           title: 'Billing & Langganan',
           description: 'Pilih paket, bayar, dan kelola langganan Posify.',
+          skipSubscriptionCheck: true, // Always accessible even when expired
+        },
+      },
+      {
+        path: 'upgrade',
+        name: 'admin-upgrade',
+        component: () => import('@/admin/views/BillingView.vue'),
+        meta: {
+          title: 'Upgrade Lisensi',
+          description: 'Upgrade atau perpanjang lisensi Posify Anda.',
+          skipSubscriptionCheck: true,
         },
       },
       {
@@ -503,10 +514,10 @@ router.beforeEach(async (to, _from, next) => {
     }
   }
 
-  // Platform owner only: must be SUPER_ADMIN without tenantId
+  // Platform owner only: must be DEVELOPER role (platform owner)
   const platformOwnerOnly = !!getMeta<boolean>(to, 'platformOwnerOnly');
   if (platformOwnerOnly && authStore.user) {
-    if (authStore.user.role !== 'SUPER_ADMIN' || (authStore.user as any).tenantId) {
+    if (authStore.user.role !== 'DEVELOPER') {
       return next({ name: 'admin-home' });
     }
   }
@@ -514,6 +525,29 @@ router.beforeEach(async (to, _from, next) => {
   // Shop selection: super-admin yang baru login tanpa shopId tetap boleh
   // masuk dashboard. Branch switcher di AdminLayout header akan handle
   // pemilihan cabang. Tidak perlu paksa redirect ke select-shop page lagi.
+
+  // ============================================
+  // LICENSE LOCK: redirect to billing if subscription expired/suspended
+  // Skip for routes marked with skipSubscriptionCheck, or for DEVELOPER role
+  // ============================================
+  const skipSubCheck = !!getMeta<boolean>(to, 'skipSubscriptionCheck');
+  if (
+    !skipSubCheck &&
+    requiresAuth &&
+    authStore.user &&
+    authStore.user.role !== 'DEVELOPER' &&
+    (authStore.user as any).tenantId
+  ) {
+    try {
+      const subStatus = (authStore.user as any).subscriptionStatus;
+      if (subStatus === 'SUSPENDED' || subStatus === 'CANCELLED') {
+        // Fully locked — can only access billing/upgrade
+        if (to.name !== 'admin-billing' && to.name !== 'admin-upgrade') {
+          return next({ name: 'admin-billing' });
+        }
+      }
+    } catch { /* silent — don't block on check failure */ }
+  }
 
   next();
 });
