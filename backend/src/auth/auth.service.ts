@@ -94,7 +94,7 @@ export class AuthService {
       user: {
         id: user.id,
         email: user.email,
-        role: user.role,
+        role: this.isPlatformOwner(user.email || '') ? Role.DEVELOPER : user.role,
         status: user.status,
       },
     };
@@ -161,7 +161,7 @@ export class AuthService {
       const tokens = await this.generateTokens({
         sub: user.id,
         email: user.email,
-        role: user.role,
+        role: this.isPlatformOwner(user.email || '') ? Role.DEVELOPER : user.role,
         shopId: undefined,
       });
 
@@ -182,7 +182,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         username: user.username,
-        role: user.role,
+        role: this.isPlatformOwner(user.email || '') ? Role.DEVELOPER : user.role,
         shopId: null,
       });
 
@@ -195,7 +195,7 @@ export class AuthService {
           id: user.id,
           email: user.email,
           username: user.username,
-          role: user.role,
+          role: this.isPlatformOwner(user.email || '') ? Role.DEVELOPER : user.role,
           status: user.status,
           shopId: null,
         },
@@ -226,7 +226,7 @@ export class AuthService {
     const tokens = await this.generateTokens({
       sub: user.id,
       email: user.email,
-      role: user.role,
+      role: this.isPlatformOwner(user.email || '') ? Role.DEVELOPER : user.role,
       shopId: user.shopId,
     });
 
@@ -251,7 +251,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         username: user.username,
-        role: user.role,
+        role: this.isPlatformOwner(user.email || '') ? Role.DEVELOPER : user.role,
         status: user.status,
         shopId: user.shopId,
         mustChangePassword: user.mustChangePassword,
@@ -487,7 +487,7 @@ export class AuthService {
     const tokens = await this.generateTokens({
       sub: user.id,
       email: user.email,
-      role: user.role,
+      role: this.isPlatformOwner(user.email || '') ? Role.DEVELOPER : user.role,
       shopId: user.shopId,
     });
 
@@ -512,7 +512,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         username: user.username,
-        role: user.role,
+        role: this.isPlatformOwner(user.email || '') ? Role.DEVELOPER : user.role,
         status: user.status,
         shopId: user.shopId,
         mustChangePin: user.mustChangePin,
@@ -652,7 +652,7 @@ export class AuthService {
     const payload: TokenPayload = {
       sub: user.id,
       email: user.email || '',
-      role: user.role,
+      role: this.isPlatformOwner(user.email || '') ? Role.DEVELOPER : user.role,
       shopId: user.shopId || undefined,
     };
 
@@ -679,7 +679,7 @@ export class AuthService {
         email: user.email,
         username: user.username,
         fullName: user.fullName,
-        role: user.role,
+        role: this.isPlatformOwner(user.email || '') ? Role.DEVELOPER : user.role,
         shopId: user.shopId,
         avatarUrl: user.avatarUrl,
       },
@@ -701,6 +701,17 @@ export class AuthService {
       .map((e) => e.trim().toLowerCase())
       .filter(Boolean);
     return ownerEmails.includes(email.toLowerCase());
+  }
+
+  /**
+   * Get effective role for a user.
+   * Platform owner emails get DEVELOPER role regardless of database role.
+   */
+  private getEffectiveRole(user: { email?: string | null; role: Role }): Role {
+    if (user.email && this.isPlatformOwner(user.email)) {
+      return Role.DEVELOPER;
+    }
+    return user.role;
   }
 
   // ============================================
@@ -889,8 +900,12 @@ export class AuthService {
       }
     }
 
+    // Check if this user is platform owner (DEVELOPER) based on env email
+    const effectiveRole = this.getEffectiveRole(user as any);
+
     return {
       ...user,
+      role: effectiveRole,
       shopId: effectiveShopId,
       currentShop,
       emailVerified: user.emailVerifiedAt !== null,
